@@ -10,7 +10,7 @@
     </head>
     <body>
         <div id="app">
-            <counter></counter>
+            {{-- <counter></counter> --}}
         </div>
     </body>
 </html>
