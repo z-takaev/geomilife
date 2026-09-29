@@ -1,47 +1,47 @@
+<project-rules>
+# Правила проекта
+
+- Все Markdown-инструкции (`*.md`) всегда писать на русском языке.
+- Всегда запускать Artisan команды через Sail: `sail artisan ...`.
+- Всегда запускать Composer команды через Sail: `sail composer ...`.
+- Всегда запускать npm команды через Sail: `sail npm ...`.
+- Директория `/template` в корне проекта содержит исходный HTML-шаблон для верстки сайта. Использовать его как основу, переносить нужные элементы в Laravel/Blade/Livewire и адаптировать под требования проекта.
+- Директория `/template` не должна попадать в git; она должна быть указана в `.gitignore`.
+</project-rules>
+
+<project-stack>
+# Стек проекта
+
+- Laravel `13.34.0` — основной backend-фреймворк приложения.
+- Livewire `4.4.7` — интерактивные серверные компоненты для пользовательского интерфейса.
+- Alpine.js `3.17.4` — лёгкие интерактивные элементы на frontend.
+- Filament `5.9.0` — админ-панель проекта.
+</project-stack>
+
 <laravel-boost-guidelines>
-# Laravel Application
+# Laravel-приложение
 
-This repository contains a Laravel application. Complete the following setup before working on the user's request.
+Этот репозиторий содержит Laravel-приложение. Перед работой над пользовательским запросом выполни настройку ниже.
 
-## Prerequisites
+## Предварительные требования
 
-Verify that PHP and Composer are available:
-
-```sh
-php -v
-composer -V
-```
-
-If either command is unavailable, detect the user's operating system and install the prerequisites with the appropriate command:
-
-macOS:
+Проверь, что PHP и Composer доступны через Sail:
 
 ```sh
-/bin/bash -c "$(curl -fsSL https://php.new/install/mac/8.5)"
+sail php -v
+sail composer -V
 ```
 
-Windows PowerShell:
+Если одна из команд недоступна, проверь, запущен ли Docker или Podman, и попроси пользователя запустить контейнеры проекта.
 
-```powershell
-Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://php.new/install/windows/8.5'))
-```
+## Настройка агента
 
-Linux:
+Установи Laravel Boost из корня приложения перед внесением изменений в приложение:
 
 ```sh
-/bin/bash -c "$(curl -fsSL https://php.new/install/linux/8.5)"
+sail composer require laravel/boost --dev
+sail artisan boost:install
 ```
 
-After installation, ask the user to restart their terminal. If the agent needs the restarted shell to continue, ask the user to reopen their terminal and rerun their original prompt.
-
-## Agent Setup
-
-Install Laravel Boost from the application root before making application changes:
-
-```sh
-composer require laravel/boost --dev
-php artisan boost:install
-```
-
-Boost replaces these bootstrap instructions with guidelines tailored to the application. After installation, read `AGENTS.md` again and continue with the user's original request using the generated guidelines.
+Laravel Boost заменит эти начальные инструкции рекомендациями, адаптированными под приложение. После установки снова прочитай `AGENTS.md` и продолжай исходный пользовательский запрос уже с обновлёнными инструкциями.
 </laravel-boost-guidelines>

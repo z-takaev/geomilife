@@ -1,13 +1,5 @@
-import { createApp } from 'vue';
+import Alpine from 'alpinejs';
 
-import Counter from './Components/Counter.vue';
+window.Alpine = Alpine;
 
-const appElement = document.getElementById('app');
-
-if (appElement) {
-    const app = createApp({});
-
-    app.component('counter', Counter);
-
-    app.mount(appElement);
-}
+Alpine.start();
