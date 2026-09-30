@@ -6531,6 +6531,9 @@ select.select-2 {
     border-radius: 20px;
     overflow: hidden;
 }
+.home-hero-slide .sld_image img {
+    object-position: left center;
+}
 .home-hero-slider-wrap {
     /* margin-top: 30px; */
     margin-bottom: 50px;
@@ -6589,7 +6592,7 @@ select.select-2 {
 }
 @media (max-width: 575px) {
     .home-hero-slider .slider-wrap {
-        height: 350px;
+        height: 240px;
     }
 }
 

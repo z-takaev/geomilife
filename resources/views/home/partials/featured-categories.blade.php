@@ -16,7 +16,7 @@
     ];
 @endphp
 
-<section class="section-category home-content-section">
+<section id="catalog" class="section-category home-content-section">
     <div class="container">
         <div class="sect-head type-2 mb-30 wow fadeInUp">
             <h4 class="s-title text-primary">Наш каталог</h4>

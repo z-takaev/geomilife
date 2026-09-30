@@ -4,29 +4,23 @@
         <div dir="ltr" class="swiper tf-swiper sw-slide-show slider_effect_fade" data-auto="true" data-loop="true"
             data-effect="fade" data-delay="3000">
             <div class="swiper-wrapper">
-                <div class="swiper-slide">
-                    <div class="slider-wrap">
+                <div class="swiper-slide home-hero-slide home-hero-slide--opening">
+                    <a href="#catalog" class="slider-wrap d-block" aria-label="Смотреть каталог GeoMiLife">
                         <div class="sld_image">
-                            <img loading="lazy" width="1920" height="860"
-                                src="{{ asset('assets/images/slider/slider-10.jpg') }}" alt="Slider">
+                            <img loading="lazy" width="1920" height="720"
+                                src="{{ asset('assets/images/slider/hero-opening.jpg') }}"
+                                alt="Открытое производство сыродавленных масел GeoMiLife в Северной Осетии">
                         </div>
-                    </div>
+                    </a>
                 </div>
-                <div class="swiper-slide">
-                    <div class="slider-wrap">
+                <div class="swiper-slide home-hero-slide home-hero-slide--promo">
+                    <a href="#catalog" class="slider-wrap d-block" aria-label="Выбрать масла GeoMiLife">
                         <div class="sld_image">
-                            <img loading="lazy" width="1920" height="860"
-                                src="{{ asset('assets/images/slider/slider-11.jpg') }}" alt="Slider">
+                            <img loading="lazy" width="1920" height="720"
+                                src="{{ asset('assets/images/slider/hero-oils-promo.jpg') }}"
+                                alt="Набор сыродавленных масел GeoMiLife холодного отжима">
                         </div>
-                    </div>
-                </div>
-                <div class="swiper-slide">
-                    <div class="slider-wrap">
-                        <div class="sld_image">
-                            <img loading="lazy" width="1920" height="860"
-                                src="{{ asset('assets/images/slider/slider-12.jpg') }}" alt="Slider">
-                        </div>
-                    </div>
+                    </a>
                 </div>
             </div>
             <div class="sw-dot-default style-white tf-sw-pagination"></div>
