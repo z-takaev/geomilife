@@ -14,7 +14,7 @@ class Promo extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
-        'start_at'  => 'datetime',
-        'end_at'    => 'datetime',
+        'start_at' => 'datetime',
+        'end_at' => 'datetime',
     ];
 }

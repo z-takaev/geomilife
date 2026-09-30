@@ -1,0 +1,26 @@
+{
+    "$schema": "https://json.schemastore.org/prettierrc",
+    "plugins": ["@shufo/prettier-plugin-blade"],
+    "printWidth": 120,
+    "tabWidth": 4,
+    "useTabs": false,
+    "singleQuote": true,
+    "overrides": [
+        {
+            "files": ["*.blade.php"],
+            "options": {
+                "parser": "blade",
+                "phpVersion": "8.3",
+                "wrapAttributes": "auto",
+                "sortHtmlAttributes": "none",
+                "sortTailwindcssClasses": false
+            }
+        },
+        {
+            "files": ["*.json", "*.yml", "*.yaml"],
+            "options": {
+                "tabWidth": 2
+            }
+        }
+    ]
+}

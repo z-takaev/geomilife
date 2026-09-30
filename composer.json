@@ -51,6 +51,14 @@
             "@php artisan config:clear --ansi @no_additional_args",
             "@php artisan test"
         ],
+        "format": [
+            "@php vendor/bin/pint",
+            "npm run format"
+        ],
+        "format:check": [
+            "@php vendor/bin/pint --test",
+            "npm run format:check"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi",

@@ -132,7 +132,8 @@
                     <div class="form-content">
                         <fieldset class="tf-field">
                             <label for="email2" class="tf-lable">Your E-Mail Address</label>
-                            <input type="email" id="email2" placeholder="Email" autocomplete="email" required="">
+                            <input type="email" id="email2" placeholder="Email" autocomplete="email"
+                                required="">
                         </fieldset>
                         <button type="submit" class="tf-btn animate-btn w-100">
                             Login
@@ -276,7 +277,8 @@
                     </a>
                 </div>
                 <div class="text-center">
-                    <a href="shop-left-sidebar.html" class="fw-semibold text-primary link-2 text-decoration-underline">
+                    <a href="shop-left-sidebar.html"
+                        class="fw-semibold text-primary link-2 text-decoration-underline">
                         Or continue shopping
                     </a>
                 </div>
@@ -297,8 +299,8 @@
                 <li class="mini-product-cart file-delete">
                     <div class="prd-wrap">
                         <div class="prd_image">
-                            <img loading="lazy" width="100" height="100" src="{{ asset('assets/images/product/product-12.jpg') }}"
-                                alt="Image">
+                            <img loading="lazy" width="100" height="100"
+                                src="{{ asset('assets/images/product/product-12.jpg') }}" alt="Image">
                         </div>
                         <a href="product-single-1.html" class="prd_name link-underline text-primary fw-medium">
                             Smackn’ Grapes Tomates - 1KG
@@ -320,8 +322,8 @@
                 <li class="mini-product-cart file-delete">
                     <div class="prd-wrap">
                         <div class="prd_image">
-                            <img loading="lazy" width="100" height="100" src="{{ asset('assets/images/product/product-11.jpg') }}"
-                                alt="Image">
+                            <img loading="lazy" width="100" height="100"
+                                src="{{ asset('assets/images/product/product-11.jpg') }}" alt="Image">
                         </div>
                         <a href="product-single-1.html" class="prd_name link-underline text-primary fw-medium">
                             Range Large Brown Eggs, 18 Count
@@ -343,8 +345,8 @@
                 <li class="mini-product-cart file-delete">
                     <div class="prd-wrap">
                         <div class="prd_image">
-                            <img loading="lazy" width="100" height="100" src="{{ asset('assets/images/product/product-17.jpg') }}"
-                                alt="Image">
+                            <img loading="lazy" width="100" height="100"
+                                src="{{ asset('assets/images/product/product-17.jpg') }}" alt="Image">
                         </div>
                         <a href="product-single-1.html" class="prd_name link-underline text-primary fw-medium">
                             Earthbound Farm Organic Baby Spinach - 250GR
@@ -389,7 +391,8 @@
                     <div class="form-content">
                         <fieldset class="tf-field">
                             <label for="email" class="tf-lable">Email<span class="text-secondary">*</span></label>
-                            <input type="email" id="email" placeholder="Email" autocomplete="email" required="">
+                            <input type="email" id="email" placeholder="Email" autocomplete="email"
+                                required="">
                         </fieldset>
                         <fieldset class="tf-field ">
                             <label for="password" class="tf-lable ">Password<span
@@ -414,7 +417,8 @@
                                 <input id="agree" type="checkbox" class="tf-check style-4 radius-3">
                                 <label for="agree" class="text-primary text-caption-01">
                                     I agree to the
-                                    <a href="#" class="text-decoration-underline fw-medium text-primary link-2">Terms of
+                                    <a href="#"
+                                        class="text-decoration-underline fw-medium text-primary link-2">Terms of
                                         User</a>
                                 </label>
                             </div>
@@ -438,15 +442,15 @@
                         <div class="group-btn">
                             <a href="#" class="tf-btn style-stroke w-100">
                                 <span class="icon">
-                                    <img loading="lazy" width="24" height="24" src="{{ asset('assets/images/logo/face.svg') }}"
-                                        alt="Image">
+                                    <img loading="lazy" width="24" height="24"
+                                        src="{{ asset('assets/images/logo/face.svg') }}" alt="Image">
                                 </span>
                                 Facebook
                             </a>
                             <a href="#" class="tf-btn style-stroke w-100">
                                 <span class="icon">
-                                    <img loading="lazy" width="24" height="24" src="{{ asset('assets/images/logo/google.svg') }}"
-                                        alt="Image">
+                                    <img loading="lazy" width="24" height="24"
+                                        src="{{ asset('assets/images/logo/google.svg') }}" alt="Image">
                                 </span>
                                 Google
                             </a>
@@ -469,14 +473,15 @@
                     <div class="form-content">
                         <fieldset class="tf-field">
                             <label for="email3" class="tf-lable">Email<span class="text-secondary">*</span></label>
-                            <input type="email" id="email3" placeholder="Email" autocomplete="email" required="">
+                            <input type="email" id="email3" placeholder="Email" autocomplete="email"
+                                required="">
                         </fieldset>
                         <fieldset class="tf-field ">
                             <label for="password-log" class="tf-lable ">Password<span
                                     class="text-secondary">*</span></label>
                             <div class="password-wrapper">
-                                <input class="password-field" type="password" id="password-log" placeholder="Password"
-                                    autocomplete="current-password" required="">
+                                <input class="password-field" type="password" id="password-log"
+                                    placeholder="Password" autocomplete="current-password" required="">
                                 <span class="toggle-pass icon-eye-open"></span>
                             </div>
                         </fieldset>
@@ -516,7 +521,8 @@
                     <div class="offcanvas-body">
                         <form action="#" class="form-search">
                             <fieldset>
-                                <input type="text" placeholder="Search for anything" name="text" required="">
+                                <input type="text" placeholder="Search for anything" name="text"
+                                    required="">
                             </fieldset>
                             <button type="submit" class="link-2">
                                 <i class="icon icon-magnifying-glass"></i>

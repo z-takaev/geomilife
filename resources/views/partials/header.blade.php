@@ -39,8 +39,8 @@
             </div>
             <div class="header-left">
                 <a href="{{ url('/') }}" class="logo-site">
-                    <img loading="lazy" width="207" height="48" src="{{ asset('assets/images/logo/logo-default.svg') }}"
-                        alt="Logo">
+                    <img loading="lazy" width="207" height="48"
+                        src="{{ asset('assets/images/logo/logo-default.svg') }}" alt="Logo">
                 </a>
                 <nav class="box-navigation d-none d-xl-block">
                     <ul class="box-nav-menu">
@@ -159,8 +159,7 @@
                             </a>
                         </li>
                         <li class="d-none d-sm-block">
-                            <a href="#wishList" data-bs-toggle="offcanvas"
-                                class="nav-icon-item text-primary link">
+                            <a href="#wishList" data-bs-toggle="offcanvas" class="nav-icon-item text-primary link">
                                 <i class="icon icon-heart-stroke"></i>
                             </a>
                         </li>

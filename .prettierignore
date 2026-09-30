@@ -1,0 +1,10 @@
+/bootstrap/cache
+/node_modules
+/public/build
+/public/css/filament
+/public/js/filament
+/storage
+/template
+/vendor
+*.min.css
+*.min.js

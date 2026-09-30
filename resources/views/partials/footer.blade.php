@@ -5,8 +5,8 @@
             <div class="footer-inner">
                 <div class="inner-left">
                     <a href="{{ url('/') }}" class="logo-site">
-                        <img loading="lazy" width="207" height="48" src="{{ asset('assets/images/logo/logo-white.svg') }}"
-                            alt="">
+                        <img loading="lazy" width="207" height="48"
+                            src="{{ asset('assets/images/logo/logo-white.svg') }}" alt="">
                     </a>
                     <h5 class="title text-white font-main">
                         Subscribe For All The Top News!
