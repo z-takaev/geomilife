@@ -1,106 +1,41 @@
 <!-- Featured Categories -->
-<section class="section-category home-content-section tf-btn-swiper-main">
+@php
+    $categories = [
+        ['name' => 'Масла', 'image' => 'oils.png', 'background' => 'bg-peach-blush'],
+        ['name' => 'Мёд и продукты пчеловодства', 'image' => 'honey-products.png', 'background' => 'bg-pale-cream'],
+        ['name' => 'Жмых / мука', 'image' => 'oil-cake-flour.png', 'background' => 'bg-mint-whisper'],
+        ['name' => 'Семена', 'image' => 'seeds.png', 'background' => 'bg-ice-blue'],
+        ['name' => 'Урбеч', 'image' => 'urbech.png', 'background' => 'bg-lavender-mist'],
+        ['name' => 'БАД', 'image' => 'supplements.png', 'background' => 'bg-lilac-cloud'],
+        ['name' => 'Про- и Пребиотики', 'image' => 'pro-prebiotics.png', 'background' => 'bg-peach-blush'],
+        ['name' => 'Грибы', 'image' => 'mushrooms.png', 'background' => 'bg-pale-cream'],
+        ['name' => 'Специи', 'image' => 'spices.png', 'background' => 'bg-mint-whisper'],
+        ['name' => 'Полезные сладости', 'image' => 'healthy-sweets.png', 'background' => 'bg-ice-blue'],
+        ['name' => 'Бакалея', 'image' => 'groceries.png', 'background' => 'bg-lavender-mist'],
+        ['name' => 'Средства', 'image' => 'care-products.png', 'background' => 'bg-lilac-cloud'],
+    ];
+@endphp
+
+<section class="section-category home-content-section">
     <div class="container">
         <div class="sect-head type-2 mb-30 wow fadeInUp">
-            <h4 class="s-title text-primary">Featured Categories</h4>
-            <div class="group-btn-slider">
-                <div class="tf-sw-nav style-3 nav-prev-swiper">
-                    <i class="icon icon-caret-left"></i>
-                </div>
-                <div class="tf-sw-nav style-3 nav-next-swiper">
-                    <i class="icon icon-caret-right"></i>
-                </div>
-            </div>
+            <h4 class="s-title text-primary">Наш каталог</h4>
+            <a href="#" class="tf-btn-line pb-0">Все категории</a>
         </div>
-        <div dir="ltr" class="swiper tf-swiper wow fadeInUp" data-preview="6" data-tablet="4" data-mobile-sm="3"
-            data-mobile="2" data-space="10" data-pagination="2" data-pagination-sm="3" data-pagination-md="4"
-            data-pagination-lg="6">
-            <div class="swiper-wrapper">
-                <div class="swiper-slide">
-                    <a href="#" class="category-v01 hover-img style-2 bg-peach-blush">
-                        <div class="cate-image img-style">
-                            <img loading="lazy" width="140" height="140"
-                                src="{{ asset('assets/images/category/cate-1.png') }}" alt="Vegetables">
-                        </div>
-                        <div class="cate-info">
-                            <h5 class="info_name text-primary link-underline">Vegetables</h5>
-                            <p class="info_quanity text-caption-01">12 Products</p>
-                        </div>
-                    </a>
-                </div>
-                <div class="swiper-slide">
-                    <a href="#" class="category-v01 hover-img style-2 bg-pale-cream">
-                        <div class="cate-image img-style">
-                            <img loading="lazy" width="140" height="140"
-                                src="{{ asset('assets/images/category/cate-2.png') }}" alt="Fruits">
-                        </div>
-                        <div class="cate-info">
-                            <h5 class="info_name text-primary link-underline">Fruits</h5>
-                            <p class="info_quanity text-caption-01">12 Products</p>
-                        </div>
-                    </a>
-                </div>
-                <div class="swiper-slide">
-                    <a href="#" class="category-v01 hover-img style-2 bg-mint-whisper">
-                        <div class="cate-image img-style">
-                            <img loading="lazy" width="140" height="140"
-                                src="{{ asset('assets/images/category/cate-3.png') }}" alt="Eggs">
-                        </div>
-                        <div class="cate-info">
-                            <h5 class="info_name text-primary link-underline">Eggs</h5>
-                            <p class="info_quanity text-caption-01">12 Products</p>
-                        </div>
-                    </a>
-                </div>
-                <div class="swiper-slide">
-                    <a href="#" class="category-v01 hover-img style-2 bg-ice-blue">
-                        <div class="cate-image img-style">
-                            <img loading="lazy" width="140" height="140"
-                                src="{{ asset('assets/images/category/cate-4.png') }}" alt="Dairy">
-                        </div>
-                        <div class="cate-info">
-                            <h5 class="info_name text-primary link-underline">Dairy</h5>
-                            <p class="info_quanity text-caption-01">12 Products</p>
-                        </div>
-                    </a>
-                </div>
-                <div class="swiper-slide">
-                    <a href="#" class="category-v01 hover-img style-2 bg-lavender-mist">
-                        <div class="cate-image img-style">
-                            <img loading="lazy" width="140" height="140"
-                                src="{{ asset('assets/images/category/cate-5.png') }}" alt="Grains">
-                        </div>
-                        <div class="cate-info">
-                            <h5 class="info_name text-primary link-underline">Grains</h5>
-                            <p class="info_quanity text-caption-01">12 Products</p>
-                        </div>
-                    </a>
-                </div>
-                <div class="swiper-slide">
-                    <a href="#" class="category-v01 hover-img style-2 bg-lilac-cloud">
-                        <div class="cate-image img-style">
-                            <img loading="lazy" width="140" height="140"
-                                src="{{ asset('assets/images/category/cate-6.png') }}" alt="Juices">
-                        </div>
-                        <div class="cate-info">
-                            <h5 class="info_name text-primary link-underline">Juices</h5>
-                            <p class="info_quanity text-caption-01">12 Products</p>
-                        </div>
-                    </a>
-                </div>
-                <div class="swiper-slide">
-                    <a href="#" class="category-v01 hover-img style-2 bg-peach-blush">
-                        <div class="cate-image img-style">
-                            <img loading="lazy" width="140" height="140"
-                                src="{{ asset('assets/images/category/cate-1.png') }}" alt="Vegetables">
-                        </div>
-                        <div class="cate-info">
-                            <h5 class="info_name text-primary link-underline">Vegetables</h5>
-                            <p class="info_quanity text-caption-01">12 Products</p>
-                        </div>
-                    </a>
-                </div>
-            </div>
+        <div class="featured-categories-grid wow fadeInUp">
+            @foreach ($categories as $category)
+                <a href="#" class="category-v01 hover-img style-2 {{ $category['background'] }}">
+                    <div class="cate-image img-style">
+                        <img loading="lazy" width="120" height="120"
+                            src="{{ asset('assets/images/category/' . $category['image']) }}"
+                            alt="{{ $category['name'] }}">
+                    </div>
+                    <div class="cate-info">
+                        <h5 class="info_name text-primary link-underline">{{ $category['name'] }}</h5>
+                        <p class="info_quanity text-caption-01">12 товаров</p>
+                    </div>
+                </a>
+            @endforeach
         </div>
     </div>
 </section>

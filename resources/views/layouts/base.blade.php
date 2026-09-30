@@ -286,6 +286,9 @@
         </div>
     </div>
     <!-- /Shoping Cart -->
+
+    @include('partials.quick-view')
+
     <!-- Wishlist -->
     <div class="offcanvas offcanvas-end canvas-wishlist" id="wishList">
         <div class="canvas-header">

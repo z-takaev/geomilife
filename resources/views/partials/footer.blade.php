@@ -60,12 +60,31 @@
                                 <a href="#"
                                     class="link infor-email font-main text-decoration-underline">themesflat@gmail.com</a>
                                 <ul class="social-list">
-                                    <li><a href="#" class="link"><i class="icon icon-FacebookLogo"></i></a></li>
-                                    <li><a href="#" class="link"><i class="icon icon-XLogo"></i></a></li>
-                                    <li><a href="#" class="link"><i class="icon icon-TiktokLogo"></i></a></li>
-                                    <li><a href="#" class="link"><i class="icon icon-InstagramLogo"></i></a>
+                                    <li>
+                                        <a href="#" class="link" aria-label="Instagram">
+                                            <i class="social-icon social-icon--instagram" aria-hidden="true"></i>
+                                        </a>
                                     </li>
-                                    <li><a href="#" class="link"><i class="icon icon-YoutubeLogo"></i></a></li>
+                                    <li>
+                                        <a href="#" class="link" aria-label="YouTube">
+                                            <i class="social-icon social-icon--youtube" aria-hidden="true"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" class="link" aria-label="VK">
+                                            <i class="social-icon social-icon--vk" aria-hidden="true"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" class="link" aria-label="Telegram">
+                                            <i class="social-icon social-icon--telegram" aria-hidden="true"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" class="link" aria-label="WhatsApp">
+                                            <i class="social-icon social-icon--whatsapp" aria-hidden="true"></i>
+                                        </a>
+                                    </li>
                                 </ul>
                             </div>
                         </div>
