@@ -18,17 +18,17 @@
             <div class="topbar-right d-none d-sm-flex">
                 <ul class="tf-list">
                     <li class="d-none d-md-flex">
-                        <a href="tel:3156666688" class="info link-primary">
+                        <a href="tel:+79888731020" class="info link-primary">
                             <i class="icon icon-phone-call fs-24"></i>
-                            315-666-6688
+                            +7-9888-731-020
                         </a>
                     </li>
                     <li class="br-line type-vertical d-none d-md-flex"></li>
                     <li>
-                        <p class="info">
+                        <a href="mailto:geomilife@bk.ru" class="info link-primary">
                             <i class="icon icon-EnvelopeSimple fs-24"></i>
-                            Пн–Сб: 7:00–19:00
-                        </p>
+                            geomilife@bk.ru
+                        </a>
                     </li>
                 </ul>
             </div>

@@ -1,5 +1,5 @@
 <!-- Benefits -->
-<section class="home-content-section home-benefits">
+<section id="advantages" class="home-content-section home-benefits">
     <div class="container">
         <div class="swiper tf-swiper" data-preview="5" data-tablet="3" data-mobile-sm="2" data-mobile="1"
             data-space-lg="24" data-space-md="20" data-space="15" data-pagination="1" data-pagination-sm="2"

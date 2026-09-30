@@ -1,5 +1,5 @@
 <!-- Latest Blog -->
-<section class="home-content-section">
+<section id="blog" class="home-content-section">
     <div class="container">
         <div class="sect-head text-center wow fadeInUp">
             <h2 class="s-title text-primary mb-16 text-center">Latest Blog</h2>

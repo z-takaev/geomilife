@@ -944,7 +944,7 @@ h6,
 }
 
 .gap-8 {
-    gap: 8px;
+    gap: 14px;
 }
 
 .gap-10 {
@@ -11574,6 +11574,9 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
  ------------------------------------------------------------------------------ */
 /*--------- Abstracts variable ---------- */
 .tf-footer {
+    margin: 30px;
+    overflow: hidden;
+    border-radius: 20px;
     background-color: var(--primary);
 }
 .tf-footer .footer-inner-wrap {
@@ -11609,6 +11612,8 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
 }
 .footer-inner .title {
     margin-bottom: 8px;
+    font-size: 18px;
+    line-height: 26px;
 }
 .footer-inner .sub-title {
     margin-bottom: 16px;
@@ -11618,10 +11623,10 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
         justify-content: space-between;
     }
     .footer-inner .inner-left {
-        max-width: 410px;
+        max-width: 320px;
     }
     .footer-inner .inner-center {
-        max-width: 335px;
+        max-width: 440px;
     }
     .footer-inner .inner-right {
         max-width: 272px;
@@ -11765,10 +11770,72 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
     mask-image: url('../images/social/whatsapp.svg');
 }
 
-.footer-bottom .text-copy {
+.footer-copyright {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
     padding-top: 16px;
     padding-bottom: 16px;
     text-align: center;
+}
+
+.footer-copyright p {
+    font-size: 16px;
+}
+
+.footer-developer {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.footer-developer img {
+    width: 23px;
+    height: 23px;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.footer-developer:hover img,
+.footer-developer:focus-visible img {
+    opacity: 1;
+}
+
+.footer-developer-tooltip {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    z-index: 5;
+    padding: 7px 10px;
+    border-radius: 6px;
+    background-color: var(--white);
+    color: var(--primary);
+    font-size: 12px;
+    line-height: 18px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, 4px);
+    transition:
+        opacity 0.2s ease,
+        transform 0.2s ease,
+        visibility 0.2s ease;
+    pointer-events: none;
+}
+
+.footer-developer:hover .footer-developer-tooltip,
+.footer-developer:focus-visible .footer-developer-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+}
+
+.footer-developer:focus-visible {
+    outline: 2px solid var(--secondary);
+    outline-offset: 3px;
 }
 
 @media (max-width: 575px) {

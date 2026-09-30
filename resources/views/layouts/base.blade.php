@@ -68,11 +68,11 @@
                 <a href="#" class="text-caption-01 text-primary mb-8">
                     101 E 129th St, Chicago, New York
                 </a>
-                <a href="#" class="h5 fw-medium text-primary mb-12">
-                    1-555-678-8888
+                <a href="tel:+79888731020" class="h5 fw-medium text-primary mb-12">
+                    +7-9888-731-020
                 </a>
-                <a href="mailto:themesflat@gmail.com" class="text-caption-01 text-primary mb-20">
-                    themesflat@gmail.com
+                <a href="mailto:geomilife@bk.ru" class="text-caption-01 text-primary mb-20">
+                    geomilife@bk.ru
                 </a>
                 <ul class="social-list d-flex align-items-center gap-24">
                     <li>
