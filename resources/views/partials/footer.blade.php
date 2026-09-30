@@ -9,18 +9,11 @@
                             src="{{ asset('assets/images/logo/logo-white.svg') }}" alt="">
                     </a>
                     <h5 class="title text-white font-main">
-                        Subscribe For All The Top News!
+                        Footer title
                     </h5>
                     <p class="sub-title text-caption-01 text-white">
-                        Sign up for updates on our latest news and events.
+                        Footer some description text
                     </p>
-                    <form class="form-subcribe">
-                        <input class="style-2" name="email" type="email" placeholder="Enter your email address"
-                            required>
-                        <button type="submit" class="btn-submit">
-                            <i class="icon icon-attached"></i>
-                        </button>
-                    </form>
                 </div>
                 <div class="inner-center">
                     <div class="footer-col-block">
