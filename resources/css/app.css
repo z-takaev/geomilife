@@ -1,9 +1,24 @@
 @import 'tailwindcss';
 
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('/assets/fonts/Montserrat-VariableFont_wght.ttf') format('truetype-variations');
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    font-style: italic;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('/assets/fonts/Montserrat-Italic-VariableFont_wght.ttf') format('truetype-variations');
+}
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Montserrat', sans-serif;
 }
