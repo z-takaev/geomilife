@@ -11,4 +11,5 @@
     @include('home.partials.banner-triple')
     @include('home.partials.special-offers')
     @include('home.partials.latest-blog')
+    @include('home.partials.company-story')
 @endsection

@@ -3,16 +3,19 @@
     <div class="container">
         <div class="home-banner-grid home-banner-grid--three">
             <a href="#" class="home-banner-link">
-                <img loading="lazy" width="820" height="820" src="{{ asset('assets/images/section/banner-3.jpg') }}"
-                    alt="Fresh organic deals">
+                <img loading="lazy" width="1254" height="1254"
+                    src="{{ asset('assets/images/section/promo-honey.jpg') }}"
+                    alt="Мёд и продукты пчеловодства — сила природы в каждой ложке">
             </a>
             <a href="#" class="home-banner-link">
-                <img loading="lazy" width="732" height="732" src="{{ asset('assets/images/section/banner-6.jpg') }}"
-                    alt="Organic farm products">
+                <img loading="lazy" width="1254" height="1254"
+                    src="{{ asset('assets/images/section/promo-healthy-sweets.jpg') }}"
+                    alt="Полезные натуральные сладости">
             </a>
             <a href="#" class="home-banner-link">
-                <img loading="lazy" width="732" height="732" src="{{ asset('assets/images/section/banner-7.jpg') }}"
-                    alt="Sustainable farming">
+                <img loading="lazy" width="1254" height="1254"
+                    src="{{ asset('assets/images/section/promo-daily-health.jpg') }}"
+                    alt="БАДы, травы и суперфуды для здоровья каждый день">
             </a>
         </div>
     </div>

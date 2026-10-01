@@ -1767,7 +1767,7 @@ header.header-sticky .header-inner {
 }
 .catalog-link .text {
     gap: 12px;
-    padding: 14px 22px;
+    padding: 12px 20px;
     border-radius: 12px;
     background-color: var(--primary);
     box-shadow: 0 6px 16px rgba(11, 87, 85, 0.18);
@@ -11968,21 +11968,18 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
     display: block;
     overflow: hidden;
     border-radius: 20px;
+    background-color: var(--surface);
 }
 
 .home-banner-link img {
+    display: block;
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    transition: transform 0.4s ease;
-}
-
-.home-banner-link:hover img {
-    transform: scale(1.03);
+    object-fit: contain;
 }
 
 .home-banner-link--wide img {
-    aspect-ratio: 1290 / 400;
+    height: 300px;
 }
 
 .home-banner-grid--two .home-banner-link img {
@@ -11993,6 +11990,249 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
     aspect-ratio: 1;
 }
 
+.home-offers-section {
+    padding-top: 90px;
+    padding-bottom: 90px;
+    background-color: var(--surface);
+}
+
+.home-offers-all {
+    margin-top: 50px;
+}
+
+.home-offers-all-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 52px;
+    padding: 12px 24px;
+    border: 1px solid var(--primary);
+    border-radius: 999px;
+    background-color: var(--primary);
+    color: var(--white);
+    font-size: 16px;
+    font-weight: 500;
+    transition:
+        background-color 0.25s ease,
+        color 0.25s ease,
+        transform 0.25s ease;
+}
+
+.home-offers-all-link .icon {
+    font-size: 18px;
+    transition: transform 0.25s ease;
+}
+
+.home-offers-all-link:hover {
+    background-color: transparent;
+    color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.home-offers-all-link:hover .icon {
+    transform: translateX(4px);
+}
+
+.home-offer-card {
+    height: 100%;
+    transition: transform 0.3s ease;
+}
+
+.home-offer-card:hover {
+    transform: translateY(-4px);
+}
+
+.article-blog.style-2.home-offer-card .entry-image {
+    aspect-ratio: 380 / 253;
+}
+
+.home-offer-card .entry-content {
+    flex: 1;
+}
+
+.home-offer-card .entry_title {
+    font-size: 24px;
+    line-height: 1.3;
+}
+
+.home-offer-description {
+    margin-top: 14px;
+    color: var(--text-2);
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.home-offer-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 18px;
+    color: var(--primary);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.home-offer-link .icon {
+    font-size: 18px;
+    transition: transform 0.25s ease;
+}
+
+.home-offer-link:hover .icon {
+    transform: translateX(4px);
+}
+
+.home-story-card {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    align-items: stretch;
+    overflow: hidden;
+    border-radius: 28px;
+    background: var(--primary);
+}
+
+.home-story-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: clamp(36px, 5vw, 72px);
+}
+
+.home-story-eyebrow {
+    margin-bottom: 18px;
+    color: var(--secondary);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.home-story-title {
+    max-width: 560px;
+    margin-bottom: 24px;
+    color: var(--white);
+    font-size: clamp(34px, 4vw, 58px);
+    line-height: 1.08;
+}
+
+.home-story-text {
+    max-width: 600px;
+    margin-bottom: 14px;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+.home-story-button {
+    gap: 10px;
+    margin-top: 20px;
+    border-color: var(--secondary);
+    background: var(--secondary);
+    color: var(--primary);
+}
+
+.home-story-button .icon {
+    font-size: 18px;
+}
+
+.home-story-media {
+    min-height: 560px;
+}
+
+.home-story-media::after {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    content: '';
+    background: linear-gradient(180deg, transparent 55%, rgba(5, 48, 47, 0.58) 100%);
+    pointer-events: none;
+}
+
+.home-story-media .video-thumb,
+.home-story-media .video-thumb img {
+    height: 100%;
+    border-radius: 0;
+}
+
+.home-story-media .video-thumb img {
+    transition: transform 0.7s ease;
+}
+
+.home-story-card:hover .home-story-media .video-thumb img {
+    transform: scale(1.025);
+}
+
+.home-story-media .btn-view-video {
+    z-index: 2;
+    border: 0;
+    box-shadow: 0 16px 40px rgba(5, 48, 47, 0.24);
+}
+
+.home-story-location {
+    position: absolute;
+    z-index: 2;
+    right: 28px;
+    bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--white);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.home-video-modal .modal-dialog {
+    max-width: 1040px;
+    padding: 16px;
+}
+
+.home-video-modal .modal-content {
+    overflow: hidden;
+    border: 0;
+    border-radius: 20px;
+    background: #061f1f;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+}
+
+.home-video-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 16px 20px;
+}
+
+.home-video-modal-title {
+    color: var(--white);
+    font-size: 20px;
+    line-height: 1.3;
+}
+
+.home-video-modal-close {
+    display: flex;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--white);
+    font-size: 16px;
+    transition: background-color 0.25s ease;
+}
+
+.home-video-modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.home-video-modal iframe {
+    border: 0;
+}
+
 @media (max-width: 767px) {
     .featured-categories-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -12001,6 +12241,48 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
     .home-banner-grid--two,
     .home-banner-grid--three {
         grid-template-columns: 1fr;
+    }
+
+    .home-offers-section {
+        padding-top: 60px;
+        padding-bottom: 60px;
+    }
+
+    .home-story-card {
+        grid-template-columns: 1fr;
+        border-radius: 20px;
+    }
+
+    .home-story-content {
+        padding: 36px 24px 40px;
+    }
+
+    .home-story-title {
+        font-size: 34px;
+    }
+
+    .home-story-media {
+        min-height: 360px;
+    }
+
+    .home-story-location {
+        right: 18px;
+        bottom: 16px;
+    }
+
+    .home-video-modal .modal-dialog {
+        padding: 8px;
+        margin: 0;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    .home-story-card {
+        grid-template-columns: 1fr;
+    }
+
+    .home-story-media {
+        min-height: 480px;
     }
 }
 

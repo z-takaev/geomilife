@@ -3,12 +3,14 @@
     <div class="container">
         <div class="home-banner-grid home-banner-grid--two">
             <a href="#" class="home-banner-link">
-                <img loading="lazy" width="1275" height="615"
-                    src="{{ asset('assets/images/section/banner-2.jpg') }}" alt="Organic produce offer">
+                <img loading="lazy" width="1818" height="795"
+                    src="{{ asset('assets/images/section/promo-cold-pressed-oils.jpg') }}"
+                    alt="Масла холодного отжима — максимум пользы в каждой капле">
             </a>
             <a href="#" class="home-banner-link">
-                <img loading="lazy" width="1935" height="900"
-                    src="{{ asset('assets/images/section/banner-9.jpg') }}" alt="Fresh products offer">
+                <img loading="lazy" width="1818" height="795"
+                    src="{{ asset('assets/images/section/promo-urbech.jpg') }}"
+                    alt="Натуральный урбеч только из орехов и семян">
             </a>
         </div>
     </div>
