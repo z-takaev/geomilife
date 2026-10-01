@@ -411,16 +411,55 @@
             let $this = $(this);
             let icon = $this.find('.icon');
             let tooltip = $this.find('.tooltip');
+            let addText = $this.data('tooltip-add') || 'Add to Wishlist';
+            let removeText = $this.data('tooltip-remove') || 'Remove Wishlist';
 
             $this.toggleClass('addwishlist');
 
             if ($this.hasClass('addwishlist')) {
                 icon.removeClass('icon-heart-stroke').addClass('icon-heart');
-                tooltip.text('Remove Wishlist');
+                tooltip.text(removeText);
+                $this.find('button').attr('aria-label', removeText);
             } else {
                 icon.removeClass('icon-heart').addClass('icon-heart-stroke');
-                tooltip.text('Add to Wishlist');
+                tooltip.text(addText);
+                $this.find('button').attr('aria-label', addText);
             }
+        });
+    };
+
+    /* Product Card Controls
+    -------------------------------------------------------------------------*/
+    var productCardControls = function () {
+        $('.product-card-order').on('click', '.product-card-weight', function () {
+            $(this)
+                .addClass('is-active')
+                .attr('aria-pressed', 'true')
+                .siblings()
+                .removeClass('is-active')
+                .attr('aria-pressed', 'false');
+        });
+
+        $('.product-card-order').on(
+            'click',
+            '.product-card-quantity__minus, .product-card-quantity__plus',
+            function () {
+                var $input = $(this).siblings('.product-card-quantity__input');
+                var quantity = parseInt($input.val(), 10) || 1;
+
+                if ($(this).hasClass('product-card-quantity__plus')) {
+                    quantity += 1;
+                } else {
+                    quantity = Math.max(1, quantity - 1);
+                }
+
+                $input.val(quantity);
+            },
+        );
+
+        $('.product-card-quantity__input').on('change', function () {
+            var quantity = parseInt($(this).val(), 10) || 1;
+            $(this).val(Math.max(1, quantity));
         });
     };
 
@@ -1077,6 +1116,7 @@
         totalPriceVariant();
         handleFooter();
         addWishList();
+        productCardControls();
         handleSidebarFilter();
         estimateShipping();
         textCopy();
