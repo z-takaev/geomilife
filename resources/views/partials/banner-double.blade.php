@@ -5,12 +5,12 @@
             <a href="#" class="home-banner-link">
                 <img loading="lazy" width="1818" height="795"
                     src="{{ asset('assets/images/section/promo-cold-pressed-oils.jpg') }}"
-                    alt="Масла холодного отжима — максимум пользы в каждой капле">
+                    alt="{{ __('Масла холодного отжима — максимум пользы в каждой капле') }}">
             </a>
             <a href="#" class="home-banner-link">
                 <img loading="lazy" width="1818" height="795"
                     src="{{ asset('assets/images/section/promo-urbech.jpg') }}"
-                    alt="Натуральный урбеч только из орехов и семян">
+                    alt="{{ __('Натуральный урбеч только из орехов и семян') }}">
             </a>
         </div>
     </div>

@@ -5,35 +5,37 @@
     'badge' => null,
     'badgeVariant' => 'default',
     'oldPrice' => null,
-    'weights' => ['250 г', '500 г', '750 г', '1 кг'],
+    'weights' => [__('250 г'), __('500 г'), __('750 г'), __('1 кг')],
 ])
 
 <div class="swiper-slide">
     <article class="card-product home-product-card">
         <div class="card-product_wrapper home-product-card__media">
             <a href="#" class="product-img" aria-label="{{ $name }}">
-                <img class="img-product" width="300" height="300"
-                    src="{{ asset('assets/images/product/' . $image) }}" alt="{{ $name }}">
+                <img class="img-product" width="300" height="300" src="{{ asset('assets/images/product/' . $image) }}"
+                    alt="{{ $name }}">
             </a>
 
             @if ($badge !== null)
-                <ul class="list-badge" aria-label="Метки товара">
+                <ul class="list-badge" aria-label="{{ __('Метки товара') }}">
                     <li class="product-card-badge product-card-badge--{{ $badgeVariant }}">{{ $badge }}</li>
                 </ul>
             @endif
 
             <ul class="product-action_list">
-                <li class="wishlist" data-tooltip-add="В избранное" data-tooltip-remove="Убрать из избранного">
-                    <button type="button" class="hover-tooltip tooltip-left box-icon" aria-label="Добавить в избранное">
+                <li class="wishlist" data-tooltip-add="{{ __('В избранное') }}"
+                    data-tooltip-remove="{{ __('Убрать из избранного') }}">
+                    <button type="button" class="hover-tooltip tooltip-left box-icon"
+                        aria-label="{{ __('Добавить в избранное') }}">
                         <span class="icon icon-heart-stroke" aria-hidden="true"></span>
-                        <span class="tooltip">В избранное</span>
+                        <span class="tooltip">{{ __('В избранное') }}</span>
                     </button>
                 </li>
                 <li>
                     <button type="button" data-bs-toggle="offcanvas" data-bs-target="#quickView"
-                        class="hover-tooltip tooltip-left box-icon" aria-label="Быстрый просмотр">
+                        class="hover-tooltip tooltip-left box-icon" aria-label="{{ __('Быстрый просмотр') }}">
                         <span class="icon icon-eye" aria-hidden="true"></span>
-                        <span class="tooltip">Быстрый просмотр</span>
+                        <span class="tooltip">{{ __('Быстрый просмотр') }}</span>
                     </button>
                 </li>
             </ul>
@@ -45,7 +47,7 @@
             </a>
 
             <div class="product-card-order">
-                <div class="product-card-weights" role="group" aria-label="Выберите фасовку">
+                <div class="product-card-weights" role="group" aria-label="{{ __('Выберите фасовку') }}">
                     @foreach ($weights as $weight)
                         <button type="button" class="product-card-weight{{ $loop->first ? ' is-active' : '' }}"
                             aria-pressed="{{ $loop->first ? 'true' : 'false' }}">
@@ -62,22 +64,22 @@
                 </div>
 
                 <div class="product-card-purchase">
-                    <div class="product-card-quantity" aria-label="Количество товара">
+                    <div class="product-card-quantity" aria-label="{{ __('Количество товара') }}">
                         <button type="button" class="product-card-quantity__button product-card-quantity__minus"
-                            aria-label="Уменьшить количество">
+                            aria-label="{{ __('Уменьшить количество') }}">
                             <span class="icon icon-minus" aria-hidden="true"></span>
                         </button>
                         <input class="product-card-quantity__input" type="number" name="quantity" value="1"
-                            min="1" step="1" inputmode="numeric" aria-label="Количество">
+                            min="1" step="1" inputmode="numeric" aria-label="{{ __('Количество') }}">
                         <button type="button" class="product-card-quantity__button product-card-quantity__plus"
-                            aria-label="Увеличить количество">
+                            aria-label="{{ __('Увеличить количество') }}">
                             <span class="icon icon-plus" aria-hidden="true"></span>
                         </button>
                     </div>
 
                     <button type="button" class="product-card-buy" data-bs-toggle="offcanvas"
                         data-bs-target="#shoppingCart">
-                        Купить
+                        {{ __('Купить') }}
                     </button>
                 </div>
             </div>

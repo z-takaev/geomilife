@@ -5,20 +5,20 @@
             data-effect="fade" data-delay="3000">
             <div class="swiper-wrapper">
                 <div class="swiper-slide home-hero-slide home-hero-slide--opening">
-                    <a href="#catalog" class="slider-wrap d-block" aria-label="Смотреть каталог GeoMiLife">
+                    <a href="#catalog" class="slider-wrap d-block" aria-label="{{ __('Смотреть каталог GeoMiLife') }}">
                         <div class="sld_image">
                             <img loading="lazy" width="1920" height="720"
                                 src="{{ asset('assets/images/slider/hero-opening.jpg') }}"
-                                alt="Открытое производство сыродавленных масел GeoMiLife в Северной Осетии">
+                                alt="{{ __('Открытое производство сыродавленных масел GeoMiLife в Северной Осетии') }}">
                         </div>
                     </a>
                 </div>
                 <div class="swiper-slide home-hero-slide home-hero-slide--promo">
-                    <a href="#catalog" class="slider-wrap d-block" aria-label="Выбрать масла GeoMiLife">
+                    <a href="#catalog" class="slider-wrap d-block" aria-label="{{ __('Выбрать масла GeoMiLife') }}">
                         <div class="sld_image">
                             <img loading="lazy" width="1920" height="720"
                                 src="{{ asset('assets/images/slider/hero-oils-promo.jpg') }}"
-                                alt="Набор сыродавленных масел GeoMiLife холодного отжима">
+                                alt="{{ __('Набор сыродавленных масел GeoMiLife холодного отжима') }}">
                         </div>
                     </a>
                 </div>
