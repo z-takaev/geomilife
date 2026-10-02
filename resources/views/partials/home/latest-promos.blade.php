@@ -9,84 +9,12 @@
         </div>
         <div class="home-offers-scroll">
             <div class="home-offers-list">
-                <div class="home-offers-item">
-                    <div class="article-blog style-2 home-offer-card hover-img4 wow fadeInUp">
-                        <a href="#" class="entry-image img-style4">
-                            <img loading="lazy" width="410" height="273"
-                                src="{{ asset('assets/images/blog/blog-5.jpg') }}"
-                                alt="{{ __('Набор натуральных продуктов') }}">
-                        </a>
-                        <div class="entry-content gap-0">
-                            <div class="entry_meta">
-                                <p class="date cl-text-2">{{ __('До 15 октября') }}</p>
-                            </div>
-                            <h5 class="entry_title">
-                                <a href="#" class="text-primary font-sora">
-                                    {{ __('Соберите полезный набор со скидкой 15%') }}
-                                </a>
-                            </h5>
-                            <p class="home-offer-description">
-                                {{ __('Выберите любимые масла, урбеч и мёд — скидка применится к набору автоматически.') }}
-                            </p>
-                            <a href="#" class="home-offer-link">
-                                {{ __('Смотреть') }}
-                                <i class="icon icon-arrow-right" aria-hidden="true"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="home-offers-item">
-                    <div class="article-blog style-2 home-offer-card hover-img4 wow fadeInUp">
-                        <a href="#" class="entry-image img-style4">
-                            <img loading="lazy" width="410" height="273"
-                                src="{{ asset('assets/images/blog/blog-6.jpg') }}"
-                                alt="{{ __('Натуральные продукты GeoMiLife') }}">
-                        </a>
-                        <div class="entry-content gap-0">
-                            <div class="entry_meta">
-                                <p class="date cl-text-2">{{ __('До 20 октября') }}</p>
-                            </div>
-                            <h5 class="entry_title">
-                                <a href="#" class="text-primary font-sora">
-                                    {{ __('Второе сыродавленное масло дешевле на 20%') }}
-                                </a>
-                            </h5>
-                            <p class="home-offer-description">
-                                {{ __('Добавьте в корзину любые две бутылки масла и получите скидку на вторую позицию.') }}
-                            </p>
-                            <a href="#" class="home-offer-link">
-                                {{ __('Смотреть') }}
-                                <i class="icon icon-arrow-right" aria-hidden="true"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="home-offers-item">
-                    <div class="article-blog style-2 home-offer-card hover-img4 wow fadeInUp">
-                        <a href="#" class="entry-image img-style4">
-                            <img loading="lazy" width="410" height="273"
-                                src="{{ asset('assets/images/blog/blog-12.jpg') }}"
-                                alt="{{ __('Подарок к заказу GeoMiLife') }}">
-                        </a>
-                        <div class="entry-content gap-0">
-                            <div class="entry_meta">
-                                <p class="date cl-text-2">{{ __('Весь октябрь') }}</p>
-                            </div>
-                            <h5 class="entry_title">
-                                <a href="#" class="text-primary font-sora">
-                                    {{ __('Полезный подарок к заказу от 3 000 ₽') }}
-                                </a>
-                            </h5>
-                            <p class="home-offer-description">
-                                {{ __('Оформите заказ на сумму от 3 000 ₽ и получите натуральный комплимент от GeoMiLife.') }}
-                            </p>
-                            <a href="#" class="home-offer-link">
-                                {{ __('Смотреть') }}
-                                <i class="icon icon-arrow-right" aria-hidden="true"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
+                <x-promotion-card image="blog-5.jpg" :image-alt="__('Набор натуральных продуктов')" :date="__('До 15 октября')" :title="__('Соберите полезный набор со скидкой 15%')"
+                    :description="__('Выберите любимые масла, урбеч и мёд — скидка применится к набору автоматически.')" />
+                <x-promotion-card image="blog-6.jpg" :image-alt="__('Натуральные продукты GeoMiLife')" :date="__('До 20 октября')" :title="__('Второе сыродавленное масло дешевле на 20%')"
+                    :description="__('Добавьте в корзину любые две бутылки масла и получите скидку на вторую позицию.')" />
+                <x-promotion-card image="blog-12.jpg" :image-alt="__('Подарок к заказу GeoMiLife')" :date="__('Весь октябрь')" :title="__('Полезный подарок к заказу от 3 000 ₽')"
+                    :description="__('Оформите заказ на сумму от 3 000 ₽ и получите натуральный комплимент от GeoMiLife.')" />
             </div>
         </div>
         <div class="home-offers-all text-center wow fadeInUp">
