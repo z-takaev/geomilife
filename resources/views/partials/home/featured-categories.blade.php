@@ -20,7 +20,10 @@
     <div class="container">
         <div class="sect-head type-2 mb-30 wow fadeInUp">
             <h4 class="s-title text-primary">{{ __('Наш каталог') }}</h4>
-            <a href="#" class="tf-btn-line pb-0">{{ __('Все категории') }}</a>
+            <a href="#" class="tf-btn-line pb-0">
+                <span class="d-none d-sm-inline">{{ __('Все категории') }}</span>
+                <span class="d-sm-none">{{ __('Все') }}</span>
+            </a>
         </div>
         <div class="featured-categories-grid wow fadeInUp">
             @foreach ($categories as $category)

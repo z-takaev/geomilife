@@ -386,6 +386,7 @@
         function handleAccordion() {
             if (window.matchMedia('only screen and (max-width: 575px)').matches) {
                 if (!$('.footer-heading-mobile').data('accordion-initialized')) {
+                    $('.inner-right .footer-col-block').addClass('open').find('.tf-collapse-content').show();
                     footerAccordion();
                     $('.footer-heading-mobile').data('accordion-initialized', true);
                 }

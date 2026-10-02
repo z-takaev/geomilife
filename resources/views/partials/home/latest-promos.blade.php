@@ -7,11 +7,9 @@
                 {{ __('Больше пользы по приятной цене — выбирайте специальные предложения GeoMiLife.') }}
             </p>
         </div>
-        <div class="swiper tf-swiper" data-preview="3" data-tablet="3" data-mobile-sm="2" data-mobile="1" data-space-lg="30"
-            data-space-md="15" data-space="10" data-pagination="1" data-pagination-sm="2" data-pagination-md="3"
-            data-pagination-lg="3">
-            <div class="swiper-wrapper">
-                <div class="swiper-slide">
+        <div class="home-offers-scroll">
+            <div class="home-offers-list">
+                <div class="home-offers-item">
                     <div class="article-blog style-2 home-offer-card hover-img4 wow fadeInUp">
                         <a href="#" class="entry-image img-style4">
                             <img loading="lazy" width="410" height="273"
@@ -37,7 +35,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="swiper-slide">
+                <div class="home-offers-item">
                     <div class="article-blog style-2 home-offer-card hover-img4 wow fadeInUp">
                         <a href="#" class="entry-image img-style4">
                             <img loading="lazy" width="410" height="273"
@@ -63,7 +61,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="swiper-slide">
+                <div class="home-offers-item">
                     <div class="article-blog style-2 home-offer-card hover-img4 wow fadeInUp">
                         <a href="#" class="entry-image img-style4">
                             <img loading="lazy" width="410" height="273"
@@ -90,7 +88,6 @@
                     </div>
                 </div>
             </div>
-            <div class="sw-dot-default style-small tf-sw-pagination d-xl-none"></div>
         </div>
         <div class="home-offers-all text-center wow fadeInUp">
             <a href="#" class="home-offers-all-link">

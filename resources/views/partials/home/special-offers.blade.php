@@ -62,11 +62,14 @@
     <div class="container">
         <div class="sect-head type-2 mb-30 wow fadeInUp">
             <h4 class="s-title text-primary">{{ $title }}</h4>
-            <a href="#" class="tf-btn-line pb-0">{{ __('Все товары') }}</a>
+            <a href="#" class="tf-btn-line pb-0">
+                <span class="d-none d-sm-inline">{{ __('Все товары') }}</span>
+                <span class="d-sm-none">{{ __('Все') }}</span>
+            </a>
         </div>
-        <div class="swiper tf-swiper wow fadeInUp" data-preview="5" data-laptop="5" data-tablet="3" data-mobile-sm="2"
-            data-mobile="2" data-space-lg="16" data-space-md="10" data-space="10" data-auto="true" data-delay="4000"
-            data-loop="true">
+        <div class="swiper tf-swiper home-products-slider wow fadeInUp" data-preview="5" data-laptop="5" data-tablet="3"
+            data-mobile-sm="2" data-mobile="auto" data-space-lg="16" data-space-md="10" data-space="10" data-auto="true"
+            data-delay="4000" data-loop="true">
             <div class="swiper-wrapper">
                 @foreach ($productOrder as $productIndex)
                     @php($product = $products[$productIndex])

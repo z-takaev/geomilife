@@ -53,7 +53,7 @@
                     </div>
                 </div>
                 <div class="inner-right">
-                    <div id="contacts" class="footer-col-block">
+                    <div id="contacts" class="footer-col-block open">
                         <p class="footer-heading footer-heading-mobile text-caption-02">
                             {{ __('Контакты') }}
                         </p>

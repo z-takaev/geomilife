@@ -7,18 +7,26 @@
                 <div class="swiper-slide home-hero-slide home-hero-slide--opening">
                     <a href="#catalog" class="slider-wrap d-block" aria-label="{{ __('Смотреть каталог GeoMiLife') }}">
                         <div class="sld_image">
-                            <img loading="lazy" width="1920" height="720"
-                                src="{{ asset('assets/images/slider/hero-opening.jpg') }}"
-                                alt="{{ __('Открытое производство сыродавленных масел GeoMiLife в Северной Осетии') }}">
+                            <picture>
+                                <source media="(max-width: 575px)" width="1448" height="1086"
+                                    srcset="{{ asset('assets/images/slider/hero-opening-mobile.webp') }}">
+                                <img loading="lazy" width="1920" height="720"
+                                    src="{{ asset('assets/images/slider/hero-opening.jpg') }}"
+                                    alt="{{ __('Открытое производство сыродавленных масел GeoMiLife в Северной Осетии') }}">
+                            </picture>
                         </div>
                     </a>
                 </div>
                 <div class="swiper-slide home-hero-slide home-hero-slide--promo">
                     <a href="#catalog" class="slider-wrap d-block" aria-label="{{ __('Выбрать масла GeoMiLife') }}">
                         <div class="sld_image">
-                            <img loading="lazy" width="1920" height="720"
-                                src="{{ asset('assets/images/slider/hero-oils-promo.jpg') }}"
-                                alt="{{ __('Набор сыродавленных масел GeoMiLife холодного отжима') }}">
+                            <picture>
+                                <source media="(max-width: 575px)" width="1448" height="1086"
+                                    srcset="{{ asset('assets/images/slider/hero-oils-promo-mobile.webp') }}">
+                                <img loading="lazy" width="1920" height="720"
+                                    src="{{ asset('assets/images/slider/hero-oils-promo.jpg') }}"
+                                    alt="{{ __('Набор сыродавленных масел GeoMiLife холодного отжима') }}">
+                            </picture>
                         </div>
                     </a>
                 </div>

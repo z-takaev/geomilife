@@ -82,7 +82,7 @@ $(window).on('load', function () {
                 ],
             },
             breakpoints: {
-                575: {
+                576: {
                     slidesPerView: mobileSm,
                     spaceBetween: spacing,
                     slidesPerGroup: perGroupSm,
