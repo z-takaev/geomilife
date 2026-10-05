@@ -6,7 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Promo extends Model
+class News extends Model
 {
     protected $fillable = [
         'title',
@@ -14,8 +14,6 @@ class Promo extends Model
         'excerpt',
         'content',
         'published_at',
-        'start_at',
-        'end_at',
         'is_active',
     ];
 
@@ -28,8 +26,6 @@ class Promo extends Model
     {
         return [
             'published_at' => 'date',
-            'start_at' => 'date',
-            'end_at' => 'date',
             'is_active' => 'boolean',
         ];
     }

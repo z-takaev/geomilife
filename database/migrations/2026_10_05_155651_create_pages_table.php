@@ -10,24 +10,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('promos', function (Blueprint $table): void {
+        Schema::create('pages', function (Blueprint $table): void {
             $table->id();
+            $table->string('key', 100)->unique();
             $table->string('title');
             $table->string('slug')->unique();
-            $table->text('excerpt')->nullable();
             $table->text('content')->default('');
-            $table->timestamp('published_at');
-            $table->timestamp('start_at');
-            $table->timestamp('end_at');
-            $table->boolean('is_active')->default(false);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
-
-            $table->index(['is_active', 'published_at', 'id'], 'promos_active_published_idx');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('promos');
+        Schema::dropIfExists('pages');
     }
 };

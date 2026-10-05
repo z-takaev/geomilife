@@ -6,16 +6,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Promo extends Model
+class Page extends Model
 {
     protected $fillable = [
+        'key',
         'title',
         'slug',
-        'excerpt',
         'content',
-        'published_at',
-        'start_at',
-        'end_at',
         'is_active',
     ];
 
@@ -27,9 +24,6 @@ class Promo extends Model
     protected function casts(): array
     {
         return [
-            'published_at' => 'date',
-            'start_at' => 'date',
-            'end_at' => 'date',
             'is_active' => 'boolean',
         ];
     }
