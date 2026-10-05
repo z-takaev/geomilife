@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+use App\Models\FilamentUser;
 use App\Models\User;
 
 return [
@@ -38,6 +41,11 @@ return [
     */
 
     'guards' => [
+        'filament' => [
+            'driver' => 'session',
+            'provider' => 'filament_users',
+        ],
+
         'web' => [
             'driver' => 'session',
             'provider' => 'users',
@@ -62,6 +70,11 @@ return [
     */
 
     'providers' => [
+        'filament_users' => [
+            'driver' => 'eloquent',
+            'model' => FilamentUser::class,
+        ],
+
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', User::class),
