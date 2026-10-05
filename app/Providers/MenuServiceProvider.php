@@ -16,6 +16,10 @@ final class MenuServiceProvider extends ServiceProvider
         View::composer('partials.navigation', function (ViewInstance $view): void {
             $view->with('items', $this->header());
         });
+
+        View::composer('partials.footer-navigation', function (ViewInstance $view): void {
+            $view->with('columns', $this->footer());
+        });
     }
 
     /**
@@ -41,6 +45,31 @@ final class MenuServiceProvider extends ServiceProvider
                     MenuItem::make('Our Services 3'),
                     MenuItem::make('Services Details'),
                 ]),
+            ]),
+        ];
+    }
+
+    /**
+     * @return list<MenuItem>
+     */
+    private function footer(): array
+    {
+        return [
+            MenuItem::make('Разделы')->children([
+                MenuItem::make('Главная'),
+                MenuItem::make('Каталог'),
+                MenuItem::make('Преимущества'),
+                MenuItem::make('Акции'),
+                MenuItem::make('Полезные статьи'),
+                MenuItem::make('Контакты'),
+            ]),
+            MenuItem::make('Информация')->children([
+                MenuItem::make('О компании'),
+                MenuItem::make('Доставка и оплата'),
+                MenuItem::make('Гарантия качества'),
+                MenuItem::make('Связаться с нами'),
+                MenuItem::make('Позвонить нам'),
+                MenuItem::make('Написать на почту'),
             ]),
         ];
     }

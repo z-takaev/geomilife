@@ -15,43 +15,9 @@
                         {{ __('Сыродавленные масла, урбеч и полезные продукты собственного производства с доставкой по России.') }}
                     </p>
                 </div>
-                <div class="inner-center">
-                    <div class="footer-col-block">
-                        <p class="footer-heading footer-heading-mobile text-caption-02">
-                            {{ __('Разделы') }}
-                        </p>
-                        <div class="tf-collapse-content">
-                            <ul class="footer-menu-list">
-                                <li><a href="{{ url('/') }}" class="link">{{ __('Главная') }}</a></li>
-                                <li><a href="{{ url('/#catalog') }}" class="link">{{ __('Каталог') }}</a></li>
-                                <li><a href="{{ url('/#advantages') }}" class="link">{{ __('Преимущества') }}</a>
-                                </li>
-                                <li><a href="{{ url('/#promotions') }}" class="link">{{ __('Акции') }}</a></li>
-                                <li><a href="{{ url('/#blog') }}" class="link">{{ __('Полезные статьи') }}</a></li>
-                                <li><a href="{{ url('/#contacts') }}" class="link">{{ __('Контакты') }}</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="footer-col-block">
-                        <p class="footer-heading footer-heading-mobile text-caption-02">
-                            {{ __('Информация') }}
-                        </p>
-                        <div class="tf-collapse-content">
-                            <ul class="footer-menu-list">
-                                <li><a href="{{ url('/#about') }}" class="link">{{ __('О компании') }}</a></li>
-                                <li><a href="{{ url('/#advantages') }}"
-                                        class="link">{{ __('Доставка и оплата') }}</a></li>
-                                <li><a href="{{ url('/#advantages') }}"
-                                        class="link">{{ __('Гарантия качества') }}</a></li>
-                                <li><a href="{{ url('/#contacts') }}" class="link">{{ __('Связаться с нами') }}</a>
-                                </li>
-                                <li><a href="tel:+79888731020" class="link">{{ __('Позвонить нам') }}</a></li>
-                                <li><a href="mailto:geomilife@bk.ru" class="link">{{ __('Написать на почту') }}</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+
+                @include('partials.footer-navigation')
+
                 <div class="inner-right">
                     <div id="contacts" class="footer-col-block open">
                         <p class="footer-heading footer-heading-mobile text-caption-02">
