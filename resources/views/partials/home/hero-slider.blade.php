@@ -1,47 +1,43 @@
-<!-- Slide Show -->
-<div class="container home-hero-slider-wrap">
-    <div class="tf-slideshow home-hero-slider tf-btn-swiper-main hover-sw-nav">
-        <div dir="ltr" class="swiper tf-swiper sw-slide-show slider_effect_fade" data-auto="true" data-loop="true"
-            data-effect="fade" data-delay="3000">
-            <div class="swiper-wrapper">
-                <div class="swiper-slide home-hero-slide home-hero-slide--opening">
-                    <a href="#catalog" class="slider-wrap d-block" aria-label="{{ __('Смотреть каталог GeoMiLife') }}">
-                        <div class="sld_image">
-                            <picture>
-                                <source media="(max-width: 575px)" width="1448" height="1086"
-                                    srcset="{{ asset('assets/images/slider/hero-opening-mobile.webp') }}">
-                                <img loading="lazy" width="1920" height="720"
-                                    src="{{ asset('assets/images/slider/hero-opening.jpg') }}"
-                                    alt="{{ __('Открытое производство сыродавленных масел GeoMiLife в Северной Осетии') }}">
-                            </picture>
+@if ($slides->isNotEmpty())
+    <div class="container home-hero-slider-wrap">
+        <div class="tf-slideshow home-hero-slider tf-btn-swiper-main hover-sw-nav">
+            <div dir="ltr" class="swiper tf-swiper sw-slide-show slider_effect_fade"
+                data-auto="{{ $slides->count() > 1 ? 'true' : 'false' }}"
+                data-loop="{{ $slides->count() > 1 ? 'true' : 'false' }}" data-effect="fade" data-delay="3000">
+                <div class="swiper-wrapper">
+                    @foreach ($slides as $slide)
+                        <div class="swiper-slide home-hero-slide">
+                            <a href="{{ $slide->link_url ?: 'javascript:void(0)' }}" class="slider-wrap d-block"
+                                @if ($slide->link_url && $slide->open_in_new_tab) target="_blank" rel="noopener noreferrer" @endif>
+                                <div class="sld_image">
+                                    <picture>
+                                        <source media="(max-width: 575px)"
+                                            srcset="{{ $slide->getFirstMediaUrl('mobile_image') }}">
+                                        <img loading="{{ $loop->first ? 'eager' : 'lazy' }}"
+                                            @if ($loop->first) fetchpriority="high" @endif
+                                            src="{{ $slide->getFirstMediaUrl('desktop_image') }}"
+                                            alt="{{ __('Слайд :number', ['number' => $loop->iteration]) }}">
+                                    </picture>
+                                </div>
+                            </a>
                         </div>
-                    </a>
+                    @endforeach
                 </div>
-                <div class="swiper-slide home-hero-slide home-hero-slide--promo">
-                    <a href="#catalog" class="slider-wrap d-block" aria-label="{{ __('Выбрать масла GeoMiLife') }}">
-                        <div class="sld_image">
-                            <picture>
-                                <source media="(max-width: 575px)" width="1448" height="1086"
-                                    srcset="{{ asset('assets/images/slider/hero-oils-promo-mobile.webp') }}">
-                                <img loading="lazy" width="1920" height="720"
-                                    src="{{ asset('assets/images/slider/hero-oils-promo.jpg') }}"
-                                    alt="{{ __('Набор сыродавленных масел GeoMiLife холодного отжима') }}">
-                            </picture>
-                        </div>
-                    </a>
-                </div>
+                @if ($slides->count() > 1)
+                    <div class="sw-dot-default style-white tf-sw-pagination"></div>
+                @endif
             </div>
-            <div class="sw-dot-default style-white tf-sw-pagination"></div>
-        </div>
 
-        <div class="group-btn">
-            <div class="tf-sw-nav style-2 nav-prev-swiper">
-                <i class="icon icon-caret-left"></i>
-            </div>
-            <div class="tf-sw-nav style-2 nav-next-swiper">
-                <i class="icon icon-caret-right"></i>
-            </div>
+            @if ($slides->count() > 1)
+                <div class="group-btn">
+                    <div class="tf-sw-nav style-2 nav-prev-swiper">
+                        <i class="icon icon-caret-left"></i>
+                    </div>
+                    <div class="tf-sw-nav style-2 nav-next-swiper">
+                        <i class="icon icon-caret-right"></i>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
-</div>
-<!-- /Slide Show -->
+@endif

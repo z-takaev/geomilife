@@ -10,4 +10,8 @@ use Filament\Resources\Pages\CreateRecord;
 final class CreateHomeSlide extends CreateRecord
 {
     protected static string $resource = HomeSlideResource::class;
+
+    protected static ?string $title = 'Создание слайда';
+
+    protected ?bool $hasDatabaseTransactions = true;
 }

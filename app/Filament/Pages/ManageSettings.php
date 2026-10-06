@@ -52,31 +52,18 @@ final class ManageSettings extends Page
                                 ->mask('+7-9999-999-999')
                                 ->placeholder('+7-9888-731-020')
                                 ->required()
-                                ->regex('/^\+7-\d{4}-\d{3}-\d{3}$/')
-                                ->validationMessages([
-                                    'required' => 'Укажите телефон.',
-                                    'regex' => 'Введите телефон в формате +7-9888-731-020.',
-                                ]),
+                                ->regex('/^\+7-\d{4}-\d{3}-\d{3}$/'),
                             TextInput::make('email')
                                 ->label('Email')
                                 ->email()
                                 ->required()
-                                ->maxLength(255)
-                                ->validationMessages([
-                                    'required' => 'Укажите email.',
-                                    'email' => 'Введите корректный email.',
-                                    'max' => 'Email не должен превышать 255 символов.',
-                                ]),
+                                ->maxLength(255),
                             Textarea::make('address')
                                 ->label('Адрес')
                                 ->required()
                                 ->maxLength(1000)
                                 ->rows(3)
-                                ->columnSpanFull()
-                                ->validationMessages([
-                                    'required' => 'Укажите адрес.',
-                                    'max' => 'Адрес не должен превышать 1000 символов.',
-                                ]),
+                                ->columnSpanFull(),
                         ])
                         ->columns(2),
                 ])

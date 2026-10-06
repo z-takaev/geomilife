@@ -24,6 +24,12 @@ final class HomeSlideResource extends Resource
 
     protected static ?string $navigationLabel = 'Слайды главной';
 
+    protected static ?string $modelLabel = 'слайд';
+
+    protected static ?string $pluralModelLabel = 'Слайды главной';
+
+    protected static bool $hasTitleCaseModelLabel = false;
+
     public static function form(Schema $schema): Schema
     {
         return HomeSlideForm::configure($schema);
