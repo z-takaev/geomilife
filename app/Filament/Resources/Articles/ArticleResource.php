@@ -24,6 +24,12 @@ final class ArticleResource extends Resource
 
     protected static ?string $navigationLabel = 'Статьи';
 
+    protected static ?string $modelLabel = 'статью';
+
+    protected static ?string $pluralModelLabel = 'Статьи';
+
+    protected static bool $hasTitleCaseModelLabel = false;
+
     public static function form(Schema $schema): Schema
     {
         return ArticleForm::configure($schema);

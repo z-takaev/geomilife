@@ -12,6 +12,10 @@ final class EditArticle extends EditRecord
 {
     protected static string $resource = ArticleResource::class;
 
+    protected static ?string $title = 'Редактирование статьи';
+
+    protected ?bool $hasDatabaseTransactions = true;
+
     protected function getHeaderActions(): array
     {
         return [

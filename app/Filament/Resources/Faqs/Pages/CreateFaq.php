@@ -10,4 +10,6 @@ use Filament\Resources\Pages\CreateRecord;
 final class CreateFaq extends CreateRecord
 {
     protected static string $resource = FaqResource::class;
+
+    protected static ?string $title = 'Создание вопроса';
 }

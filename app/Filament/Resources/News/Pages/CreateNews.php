@@ -10,4 +10,8 @@ use Filament\Resources\Pages\CreateRecord;
 final class CreateNews extends CreateRecord
 {
     protected static string $resource = NewsResource::class;
+
+    protected static ?string $title = 'Создание новости';
+
+    protected ?bool $hasDatabaseTransactions = true;
 }

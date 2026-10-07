@@ -24,6 +24,12 @@ final class PromoResource extends Resource
 
     protected static ?string $navigationLabel = 'Акции';
 
+    protected static ?string $modelLabel = 'акцию';
+
+    protected static ?string $pluralModelLabel = 'Акции';
+
+    protected static bool $hasTitleCaseModelLabel = false;
+
     public static function form(Schema $schema): Schema
     {
         return PromoForm::configure($schema);

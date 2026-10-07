@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Pages\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 final class PagesTable
@@ -15,18 +16,33 @@ final class PagesTable
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('title')
+                    ->label('Заголовок')
+                    ->sortable(),
+                TextColumn::make('key')
+                    ->label('Системный ключ'),
+                TextColumn::make('slug')
+                    ->label('ЧПУ'),
+                IconColumn::make('is_active')
+                    ->label('Активна')
+                    ->boolean()
+                    ->sortable(),
+                TextColumn::make('updated_at')
+                    ->label('Обновлена')
+                    ->dateTime('d.m.Y H:i')
+                    ->sortable(),
             ])
             ->filters([
-                //
+                TernaryFilter::make('is_active')
+                    ->label('Активность')
+                    ->placeholder('Все страницы')
+                    ->trueLabel('Активные')
+                    ->falseLabel('Неактивные'),
             ])
+            ->defaultSort('title')
+            ->emptyStateHeading('Страницы не найдены')
             ->recordActions([
                 EditAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
             ]);
     }
 }

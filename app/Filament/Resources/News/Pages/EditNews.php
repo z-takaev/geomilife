@@ -12,6 +12,10 @@ final class EditNews extends EditRecord
 {
     protected static string $resource = NewsResource::class;
 
+    protected static ?string $title = 'Редактирование новости';
+
+    protected ?bool $hasDatabaseTransactions = true;
+
     protected function getHeaderActions(): array
     {
         return [

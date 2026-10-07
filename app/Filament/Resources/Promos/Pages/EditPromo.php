@@ -12,6 +12,10 @@ final class EditPromo extends EditRecord
 {
     protected static string $resource = PromoResource::class;
 
+    protected static ?string $title = 'Редактирование акции';
+
+    protected ?bool $hasDatabaseTransactions = true;
+
     protected function getHeaderActions(): array
     {
         return [

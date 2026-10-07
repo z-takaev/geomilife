@@ -28,9 +28,6 @@ final class HomeSlidesTable
                     ->collection('mobile_image')
                     ->imageWidth(80)
                     ->imageHeight(60),
-                TextColumn::make('sort_order')
-                    ->label('Порядок')
-                    ->sortable(),
                 IconColumn::make('is_active')
                     ->label('Активен')
                     ->boolean()
@@ -47,6 +44,7 @@ final class HomeSlidesTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('sort_order')
+            ->reorderable('sort_order')
             ->emptyStateHeading('Слайды не найдены')
             ->filters([
                 TernaryFilter::make('is_active')

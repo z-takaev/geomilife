@@ -24,6 +24,12 @@ final class FaqResource extends Resource
 
     protected static ?string $navigationLabel = 'Частые вопросы';
 
+    protected static ?string $modelLabel = 'вопрос';
+
+    protected static ?string $pluralModelLabel = 'Частые вопросы';
+
+    protected static bool $hasTitleCaseModelLabel = false;
+
     public static function form(Schema $schema): Schema
     {
         return FaqForm::configure($schema);

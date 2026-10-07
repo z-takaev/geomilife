@@ -13,7 +13,7 @@ return new class extends Migration
         Schema::create('faqs', function (Blueprint $table): void {
             $table->id();
             $table->text('question');
-            $table->text('answer');
+            $table->text('answer')->nullable();
             $table->integer('sort_order')->default(0);
             $table->boolean('is_active')->default(false);
             $table->timestamps();

@@ -12,6 +12,8 @@ final class EditFaq extends EditRecord
 {
     protected static string $resource = FaqResource::class;
 
+    protected static ?string $title = 'Редактирование вопроса';
+
     protected function getHeaderActions(): array
     {
         return [

@@ -34,21 +34,14 @@ final class HomeSlideForm
                         ]),
                     ])
                     ->columnSpanFull(),
-                TextInput::make('sort_order')
-                    ->label('Порядок сортировки')
-                    ->helperText('От 0 до 999. Слайды с меньшим значением идут первыми.')
-                    ->required()
-                    ->integer()
-                    ->minValue(0)
-                    ->maxValue(999)
-                    ->default(0),
                 Toggle::make('open_in_new_tab')
                     ->label('Открывать ссылку в новой вкладке')
                     ->rules(['required'])
                     ->columnSpanFull(),
                 Toggle::make('is_active')
                     ->label('Активен')
-                    ->rules(['required']),
+                    ->rules(['required'])
+                    ->columnSpanFull(),
             ]);
     }
 

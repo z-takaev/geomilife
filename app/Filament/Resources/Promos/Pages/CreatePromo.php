@@ -10,4 +10,8 @@ use Filament\Resources\Pages\CreateRecord;
 final class CreatePromo extends CreateRecord
 {
     protected static string $resource = PromoResource::class;
+
+    protected static ?string $title = 'Создание акции';
+
+    protected ?bool $hasDatabaseTransactions = true;
 }

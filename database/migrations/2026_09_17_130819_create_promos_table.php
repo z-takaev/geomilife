@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('title');
             $table->string('slug')->unique();
             $table->text('excerpt')->nullable();
-            $table->text('content')->default('');
+            $table->text('content')->nullable();
             $table->timestamp('published_at');
             $table->timestamp('start_at');
             $table->timestamp('end_at');

@@ -10,4 +10,8 @@ use Filament\Resources\Pages\CreateRecord;
 final class CreateArticle extends CreateRecord
 {
     protected static string $resource = ArticleResource::class;
+
+    protected static ?string $title = 'Создание статьи';
+
+    protected ?bool $hasDatabaseTransactions = true;
 }

@@ -24,6 +24,12 @@ final class NewsResource extends Resource
 
     protected static ?string $navigationLabel = 'Новости';
 
+    protected static ?string $modelLabel = 'новость';
+
+    protected static ?string $pluralModelLabel = 'Новости';
+
+    protected static bool $hasTitleCaseModelLabel = false;
+
     public static function form(Schema $schema): Schema
     {
         return NewsForm::configure($schema);
