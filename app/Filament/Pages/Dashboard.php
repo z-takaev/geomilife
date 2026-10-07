@@ -16,6 +16,8 @@ final class Dashboard extends BaseDashboard
 {
     use HasFiltersForm;
 
+    protected static ?int $navigationSort = 1;
+
     public function filtersForm(Schema $schema): Schema
     {
         return $schema->components([

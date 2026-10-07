@@ -22,6 +22,8 @@ final class FaqResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedQuestionMarkCircle;
 
+    protected static ?int $navigationSort = 6;
+
     protected static ?string $navigationLabel = 'Частые вопросы';
 
     protected static ?string $modelLabel = 'вопрос';

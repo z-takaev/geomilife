@@ -1,18 +1,28 @@
 <!-- Footer -->
+@php
+    $settings = settings();
+    $footerTitle = $settings?->footer_title ?: 'Натуральные продукты GeoMiLife';
+    $footerDescription =
+        $settings?->footer_description ?:
+        'Сыродавленные масла, урбеч и полезные продукты собственного производства с доставкой по России.';
+    $address = $settings?->address ?: 'ул. Тамаева 35, Владикавказ';
+    $phone = $settings?->phone ?: '+7-9888-731-020';
+    $email = $settings?->email ?: 'geomilife@bk.ru';
+@endphp
+
 <footer class="tf-footer">
     <div class="footer-inner-wrap">
         <div class="container">
             <div class="footer-inner">
                 <div id="about" class="inner-left">
                     <a href="{{ url('/') }}" class="logo-site">
-                        <img loading="lazy" width="207" height="48"
-                            src="{{ asset('assets/images/logo/logo-white.svg') }}" alt="">
+                        <img loading="lazy" src="{{ asset('assets/images/logo/logo-white.svg') }}" alt="">
                     </a>
                     <h5 class="title text-white font-main">
-                        {{ __('Натуральные продукты GeoMiLife') }}
+                        {{ __($footerTitle) }}
                     </h5>
                     <p class="sub-title text-caption-01 text-white">
-                        {{ __('Сыродавленные масла, урбеч и полезные продукты собственного производства с доставкой по России.') }}
+                        {{ __($footerDescription) }}
                     </p>
                 </div>
 
@@ -26,35 +36,40 @@
                         <div class="tf-collapse-content">
                             <div class="footer-info">
                                 <span class="infor-address font-main text-white">
-                                    {{ __('ул. Тамаева 35, Владикавказ') }}
+                                    {{ __($address) }}
                                 </span>
-                                <a href="tel:+79888731020"
-                                    class="link infor-phone font-main">{{ __('+7-9888-731-020') }}</a>
-                                <a href="mailto:geomilife@bk.ru"
-                                    class="link infor-email font-main text-decoration-underline">{{ __('geomilife@bk.ru') }}</a>
+                                <a href="tel:{{ preg_replace('/[^\d+]/', '', $phone) }}"
+                                    class="link infor-phone font-main">{{ __($phone) }}</a>
+                                <a href="mailto:{{ $email }}"
+                                    class="link infor-email font-main text-decoration-underline">{{ __($email) }}</a>
                                 <ul class="social-list">
                                     <li>
-                                        <a href="#" class="link" aria-label="{{ __('Instagram') }}">
+                                        <a href="{{ $settings?->instagram_url ?: '#' }}" class="link"
+                                            aria-label="{{ __('Instagram') }}">
                                             <i class="social-icon social-icon--instagram" aria-hidden="true"></i>
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="#" class="link" aria-label="{{ __('YouTube') }}">
+                                        <a href="{{ $settings?->youtube_url ?: '#' }}" class="link"
+                                            aria-label="{{ __('YouTube') }}">
                                             <i class="social-icon social-icon--youtube" aria-hidden="true"></i>
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="#" class="link" aria-label="{{ __('VK') }}">
+                                        <a href="{{ $settings?->vk_url ?: '#' }}" class="link"
+                                            aria-label="{{ __('VK') }}">
                                             <i class="social-icon social-icon--vk" aria-hidden="true"></i>
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="#" class="link" aria-label="{{ __('Telegram') }}">
+                                        <a href="{{ $settings?->telegram_url ?: '#' }}" class="link"
+                                            aria-label="{{ __('Telegram') }}">
                                             <i class="social-icon social-icon--telegram" aria-hidden="true"></i>
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="#" class="link" aria-label="{{ __('WhatsApp') }}">
+                                        <a href="{{ $settings?->whatsapp_url ?: '#' }}" class="link"
+                                            aria-label="{{ __('WhatsApp') }}">
                                             <i class="social-icon social-icon--whatsapp" aria-hidden="true"></i>
                                         </a>
                                     </li>
@@ -74,8 +89,8 @@
                     {{ __('«Geomilife» 2026 - производитель масла') }}
                 </p>
                 <a class="footer-developer" href="#" aria-label="{{ __('Разработано в: Web-Chip') }}">
-                    <img loading="lazy" width="20" height="20"
-                        src="{{ asset('assets/images/logo/web-chip.webp') }}" alt="{{ __('Логотип Web-Chip') }}">
+                    <img loading="lazy" src="{{ asset('assets/images/logo/web-chip.webp') }}"
+                        alt="{{ __('Логотип Web-Chip') }}">
                     <span class="footer-developer-tooltip" role="tooltip">{{ __('Разработано в: Web-Chip') }}</span>
                 </a>
             </div>

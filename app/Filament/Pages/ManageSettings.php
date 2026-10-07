@@ -6,6 +6,7 @@ namespace App\Filament\Pages;
 
 use App\Models\Setting;
 use Filament\Actions\Action;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -22,6 +23,8 @@ use Filament\Support\Icons\Heroicon;
 final class ManageSettings extends Page
 {
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
+
+    protected static ?int $navigationSort = 8;
 
     protected static ?string $navigationLabel = 'Настройки';
 
@@ -64,6 +67,95 @@ final class ManageSettings extends Page
                                 ->maxLength(1000)
                                 ->rows(3)
                                 ->columnSpanFull(),
+                        ])
+                        ->columns(2),
+                    Section::make('Футер')
+                        ->schema([
+                            TextInput::make('footer_title')
+                                ->label('Заголовок')
+                                ->maxLength(255),
+                            Textarea::make('footer_description')
+                                ->label('Описание')
+                                ->maxLength(2000)
+                                ->rows(4)
+                                ->columnSpanFull(),
+                            TextInput::make('instagram_url')
+                                ->label('Instagram')
+                                ->url()
+                                ->maxLength(2048),
+                            TextInput::make('youtube_url')
+                                ->label('YouTube')
+                                ->url()
+                                ->maxLength(2048),
+                            TextInput::make('vk_url')
+                                ->label('VK')
+                                ->url()
+                                ->maxLength(2048),
+                            TextInput::make('telegram_url')
+                                ->label('Telegram')
+                                ->url()
+                                ->maxLength(2048),
+                            TextInput::make('whatsapp_url')
+                                ->label('WhatsApp')
+                                ->url()
+                                ->maxLength(2048),
+                        ])
+                        ->columns(2),
+                    Section::make('Наша история')
+                        ->schema([
+                            TextInput::make('story_title')
+                                ->label('Заголовок')
+                                ->maxLength(255),
+                            TextInput::make('story_video_url')
+                                ->label('Ссылка на видео')
+                                ->url()
+                                ->maxLength(2048),
+                            Textarea::make('story_description')
+                                ->label('Описание')
+                                ->maxLength(5000)
+                                ->rows(6)
+                                ->columnSpanFull(),
+                            FileUpload::make('story_image')
+                                ->label('Изображение')
+                                ->image()
+                                ->directory('settings/story')
+                                ->maxSize(5120)
+                                ->columnSpanFull(),
+                        ])
+                        ->columns(2),
+                    Section::make('Баннеры')
+                        ->schema([
+                            FileUpload::make('banner_wide_image')
+                                ->label('Широкий баннер')
+                                ->image()
+                                ->directory('settings/banners')
+                                ->maxSize(5120)
+                                ->columnSpanFull(),
+                            FileUpload::make('banner_double_first_image')
+                                ->label('Двойной баннер — первое изображение')
+                                ->image()
+                                ->directory('settings/banners')
+                                ->maxSize(5120),
+                            FileUpload::make('banner_double_second_image')
+                                ->label('Двойной баннер — второе изображение')
+                                ->image()
+                                ->directory('settings/banners')
+                                ->maxSize(5120),
+                            FileUpload::make('banner_triple_first_image')
+                                ->label('Тройной баннер — первое изображение')
+                                ->image()
+                                ->directory('settings/banners')
+                                ->maxSize(5120),
+                            FileUpload::make('banner_triple_second_image')
+                                ->label('Тройной баннер — второе изображение')
+                                ->image()
+                                ->directory('settings/banners')
+                                ->maxSize(5120),
+                            FileUpload::make('banner_triple_third_image')
+                                ->label('Тройной баннер — третье изображение')
+                                ->image()
+                                ->directory('settings/banners')
+                                ->maxSize(5120),
                         ])
                         ->columns(2),
                 ])

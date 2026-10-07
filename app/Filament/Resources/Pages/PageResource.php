@@ -22,6 +22,8 @@ final class PageResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBookOpen;
 
+    protected static ?int $navigationSort = 7;
+
     protected static ?string $navigationLabel = 'Страницы';
 
     protected static ?string $modelLabel = 'страницу';

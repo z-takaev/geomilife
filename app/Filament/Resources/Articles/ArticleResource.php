@@ -22,6 +22,8 @@ final class ArticleResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
 
+    protected static ?int $navigationSort = 5;
+
     protected static ?string $navigationLabel = 'Статьи';
 
     protected static ?string $modelLabel = 'статью';
