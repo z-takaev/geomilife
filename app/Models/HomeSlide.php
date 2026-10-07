@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Concerns\HasSortOrder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 final class HomeSlide extends Model implements HasMedia
 {
-    use HasSortOrder, InteractsWithMedia;
+    use HasFactory, HasSortOrder, InteractsWithMedia;
 
     protected $fillable = [
         'link_url',

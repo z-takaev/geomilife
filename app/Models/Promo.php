@@ -8,6 +8,7 @@ use App\Models\Concerns\GeneratesSlug;
 use Filament\Forms\Components\RichEditor\FileAttachmentProviders\SpatieMediaLibraryFileAttachmentProvider;
 use Filament\Forms\Components\RichEditor\Models\Concerns\InteractsWithRichContent;
 use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
@@ -16,7 +17,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 final class Promo extends Model implements HasMedia, HasRichContent
 {
-    use GeneratesSlug, InteractsWithMedia, InteractsWithRichContent;
+    use GeneratesSlug, HasFactory, InteractsWithMedia, InteractsWithRichContent;
 
     protected $fillable = [
         'title',

@@ -8,13 +8,14 @@ use App\Models\Concerns\HasSortOrder;
 use Filament\Forms\Components\RichEditor\FileAttachmentProviders\SpatieMediaLibraryFileAttachmentProvider;
 use Filament\Forms\Components\RichEditor\Models\Concerns\InteractsWithRichContent;
 use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 final class Faq extends Model implements HasMedia, HasRichContent
 {
-    use HasSortOrder, InteractsWithMedia, InteractsWithRichContent;
+    use HasFactory, HasSortOrder, InteractsWithMedia, InteractsWithRichContent;
 
     protected $fillable = [
         'question',

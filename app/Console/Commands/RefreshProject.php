@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Services\UploadedImageCleaner;
 use Illuminate\Console\Command;
 
 final class RefreshProject extends Command
@@ -12,7 +13,7 @@ final class RefreshProject extends Command
 
     protected $description = 'Пересоздать базу данных и заполнить начальные данные';
 
-    public function handle(): int
+    public function handle(UploadedImageCleaner $uploadedImageCleaner): int
     {
         if (! $this->option('force') && ! $this->confirm('Все данные в базе будут удалены. Продолжить?')) {
             $this->components->warn('Обновление проекта отменено.');
@@ -25,6 +26,8 @@ final class RefreshProject extends Command
         if ($this->call('optimize:clear') !== self::SUCCESS) {
             return self::FAILURE;
         }
+
+        $uploadedImageCleaner->clean();
 
         if ($this->call('migrate:fresh', ['--seed' => true, '--force' => true]) !== self::SUCCESS) {
             return self::FAILURE;
