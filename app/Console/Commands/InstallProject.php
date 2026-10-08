@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Services\UploadedImageCleaner;
+use App\Actions\Images\CleanUploadedImagesAction;
 use Illuminate\Console\Command;
 
 final class InstallProject extends Command
@@ -13,7 +13,7 @@ final class InstallProject extends Command
 
     protected $description = 'Установить проект и заполнить начальные данные';
 
-    public function handle(UploadedImageCleaner $uploadedImageCleaner): int
+    public function handle(CleanUploadedImagesAction $cleanUploadedImages): int
     {
         $this->components->info('Установка проекта...');
 
@@ -21,7 +21,11 @@ final class InstallProject extends Command
             return self::FAILURE;
         }
 
-        $uploadedImageCleaner->clean();
+        if ($this->call('key:generate', ['--force' => true]) !== self::SUCCESS) {
+            return self::FAILURE;
+        }
+
+        $cleanUploadedImages->run();
 
         if ($this->call('migrate', ['--seed' => true, '--force' => true]) !== self::SUCCESS) {
             return self::FAILURE;

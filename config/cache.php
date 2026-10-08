@@ -1,6 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
+use App\Models\HomeSlide;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
+use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 return [
 
@@ -131,6 +137,11 @@ return [
     |
     */
 
-    'serializable_classes' => false,
+    'serializable_classes' => [
+        Collection::class,
+        HomeSlide::class,
+        Media::class,
+        MediaCollection::class,
+    ],
 
 ];

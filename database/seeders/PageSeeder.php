@@ -11,7 +11,9 @@ final class PageSeeder extends Seeder
 {
     public function run(): void
     {
-        $pages = [
+        $now = now();
+
+        Page::query()->insertOrIgnore([
             [
                 'key' => 'confidentiality',
                 'title' => 'Конфиденциальность',
@@ -27,18 +29,6 @@ final class PageSeeder extends Seeder
                 'title' => 'Доставка и оплата',
                 'slug' => 'dostavka-i-oplata',
             ],
-        ];
-
-        foreach ($pages as $page) {
-            Page::query()->firstOrCreate(
-                ['key' => $page['key']],
-                [
-                    'title' => $page['title'],
-                    'slug' => $page['slug'],
-                    'content' => null,
-                    'is_active' => true,
-                ],
-            );
-        }
+        ]);
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Navigation;
+namespace App\Menu;
 
 final class MenuItem
 {

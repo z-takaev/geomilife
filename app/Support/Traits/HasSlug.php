@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Models\Concerns;
+namespace App\Support\Traits;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-trait GeneratesSlug
+trait HasSlug
 {
-    protected static function bootGeneratesSlug(): void
+    protected static function bootHasSlug(): void
     {
         static::saving(static function (Model $model): void {
             if (filled($model->getAttribute('slug'))) {

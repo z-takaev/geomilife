@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Models\Concerns\HasSortOrder;
+use App\Support\Traits\HasSortOrder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 final class HomeSlide extends Model implements HasMedia
 {
     use HasFactory, HasSortOrder, InteractsWithMedia;
+
+    private const string CACHE_KEY = 'home_slides';
 
     protected $fillable = [
         'link_url',
@@ -28,6 +32,33 @@ final class HomeSlide extends Model implements HasMedia
             'sort_order' => 'integer',
             'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * @return Collection<int, self>
+     */
+    public static function cached(): Collection
+    {
+        return Cache::remember(
+            self::CACHE_KEY,
+            now()->addHours(2),
+            static fn (): Collection => self::query()
+                ->where('is_active', true)
+                ->with('media')
+                ->orderBy('sort_order')
+                ->get(),
+        );
+    }
+
+    protected static function booted(): void
+    {
+        self::saved(static function (): void {
+            Cache::forget(self::CACHE_KEY);
+        });
+
+        self::deleted(static function (): void {
+            Cache::forget(self::CACHE_KEY);
+        });
     }
 
     public function registerMediaCollections(): void

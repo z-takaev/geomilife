@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Actions\Images;
 
 use Illuminate\Filesystem\Filesystem;
 use RuntimeException;
 
-final class UploadedImageCleaner
+final class CleanUploadedImagesAction
 {
     public function __construct(private readonly Filesystem $filesystem) {}
 
-    public function clean(): void
+    public function run(): void
     {
         $publicStoragePath = storage_path('app/public');
 

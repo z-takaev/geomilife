@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Actions\Images;
 
 use Closure;
 use Imagick;
@@ -11,12 +11,12 @@ use Spatie\Image\Enums\ImageDriver;
 use Spatie\Image\Image;
 use Spatie\TemporaryDirectory\TemporaryDirectory;
 
-final class ImageProcessor
+final class ProcessImageAction
 {
     /**
      * @param  Closure(Image): mixed|null  $processImage
      */
-    public function convert(string $contents, ?Closure $processImage = null): string
+    public function run(string $contents, ?Closure $processImage = null): string
     {
         $directory = TemporaryDirectory::make(storage_path('app/private/image-processing'));
         $encodedImage = new Imagick;

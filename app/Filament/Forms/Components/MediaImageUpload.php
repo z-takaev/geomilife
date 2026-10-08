@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Forms\Components;
 
-use App\Services\ImageProcessor;
+use App\Actions\Images\ProcessImageAction;
 use Closure;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Illuminate\Database\Eloquent\Model;
@@ -41,7 +41,7 @@ final class MediaImageUpload extends SpatieMediaLibraryFileUpload
 
         $this->saveUploadedFileUsing(static function (MediaImageUpload $component, TemporaryUploadedFile $file, Model $record): string {
             try {
-                $contents = app(ImageProcessor::class)->convert($file->get(), $component->imageProcessing);
+                $contents = app(ProcessImageAction::class)->run($file->get(), $component->imageProcessing);
             } catch (ImagickException|InvalidArgumentException|CouldNotLoadImage $exception) {
                 report($exception);
 

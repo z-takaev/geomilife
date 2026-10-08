@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Actions\Images\ProcessImageAction;
 use App\Models\HomeSlide;
-use App\Services\ImageProcessor;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -72,7 +72,7 @@ final class HomeSlideFactory extends Factory
         }
 
         $homeSlide
-            ->addMediaFromString(app(ImageProcessor::class)->convert($imageContents))
+            ->addMediaFromString(app(ProcessImageAction::class)->run($imageContents))
             ->usingName(pathinfo($imagePath, PATHINFO_FILENAME))
             ->usingFileName(Str::uuid().'.webp')
             ->toMediaCollection($collection);

@@ -11,15 +11,8 @@ final class HomeController extends Controller
 {
     public function __invoke(): View
     {
-        $slides = HomeSlide::query()
-            ->where('is_active', true)
-            ->with('media')
-            ->orderBy('sort_order')
-            ->orderBy('id')
-            ->get()
-            ->filter(static fn (HomeSlide $slide): bool => $slide->hasMedia('desktop_image') && $slide->hasMedia('mobile_image'))
-            ->values();
+        $slides = HomeSlide::cached();
 
-        return view('home.index', ['slides' => $slides]);
+        return view('home.index', compact('slides'));
     }
 }
