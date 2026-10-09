@@ -11,5 +11,5 @@ final class EditPage extends EditRecord
 {
     protected static string $resource = PageResource::class;
 
-    protected static ?string $title = 'Редактирование страницы';
+    protected static ?string $title = 'Редактирование целевой страницы';
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Support\Media\ImageMimeTypes;
 use App\Support\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -38,7 +39,7 @@ final class Category extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('image')
-            ->acceptsMimeTypes(['image/webp'])
+            ->acceptsMimeTypes(ImageMimeTypes::ALLOWED)
             ->singleFile();
     }
 

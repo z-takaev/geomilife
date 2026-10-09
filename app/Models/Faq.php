@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Support\Media\ImageMimeTypes;
 use App\Support\Traits\HasSortOrder;
 use Filament\Forms\Components\RichEditor\FileAttachmentProviders\SpatieMediaLibraryFileAttachmentProvider;
 use Filament\Forms\Components\RichEditor\Models\Concerns\InteractsWithRichContent;
@@ -35,7 +36,7 @@ final class Faq extends Model implements HasMedia, HasRichContent
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('answer')
-            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+            ->acceptsMimeTypes(ImageMimeTypes::ALLOWED);
     }
 
     public function setUpRichContent(): void

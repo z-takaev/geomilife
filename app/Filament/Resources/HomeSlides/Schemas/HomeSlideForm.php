@@ -36,11 +36,9 @@ final class HomeSlideForm
                     ->columnSpanFull(),
                 Toggle::make('open_in_new_tab')
                     ->label('Открывать ссылку в новой вкладке')
-                    ->rules(['required'])
                     ->columnSpanFull(),
                 Toggle::make('is_active')
                     ->label('Активен')
-                    ->rules(['required'])
                     ->columnSpanFull(),
             ]);
     }

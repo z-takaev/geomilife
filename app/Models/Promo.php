@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Support\Media\ImageMimeTypes;
 use App\Support\Traits\HasSlug;
 use Filament\Forms\Components\RichEditor\FileAttachmentProviders\SpatieMediaLibraryFileAttachmentProvider;
 use Filament\Forms\Components\RichEditor\Models\Concerns\InteractsWithRichContent;
@@ -24,7 +25,6 @@ final class Promo extends Model implements HasMedia, HasRichContent
         'slug',
         'excerpt',
         'content',
-        'published_at',
         'start_at',
         'end_at',
         'is_active',
@@ -38,11 +38,11 @@ final class Promo extends Model implements HasMedia, HasRichContent
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('image')
-            ->acceptsMimeTypes(['image/webp'])
+            ->acceptsMimeTypes(ImageMimeTypes::ALLOWED)
             ->singleFile();
 
         $this->addMediaCollection('content')
-            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+            ->acceptsMimeTypes(ImageMimeTypes::ALLOWED);
     }
 
     public function registerMediaConversions(?Media $media = null): void
@@ -63,7 +63,6 @@ final class Promo extends Model implements HasMedia, HasRichContent
     protected function casts(): array
     {
         return [
-            'published_at' => 'date',
             'start_at' => 'date',
             'end_at' => 'date',
             'is_active' => 'boolean',

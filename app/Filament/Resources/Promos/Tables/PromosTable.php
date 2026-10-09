@@ -41,11 +41,6 @@ final class PromosTable
                     ->label('Активна')
                     ->boolean()
                     ->sortable(),
-                TextColumn::make('published_at')
-                    ->label('Опубликована')
-                    ->date('d.m.Y')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
                     ->label('Обновлена')
                     ->dateTime('d.m.Y H:i')

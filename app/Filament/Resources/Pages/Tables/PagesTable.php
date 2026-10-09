@@ -19,8 +19,6 @@ final class PagesTable
                 TextColumn::make('title')
                     ->label('Заголовок')
                     ->sortable(),
-                TextColumn::make('key')
-                    ->label('Системный ключ'),
                 TextColumn::make('slug')
                     ->label('ЧПУ'),
                 IconColumn::make('is_active')
@@ -40,7 +38,7 @@ final class PagesTable
                     ->falseLabel('Неактивные'),
             ])
             ->defaultSort('title')
-            ->emptyStateHeading('Страницы не найдены')
+            ->emptyStateHeading('Целевые страницы не найдены')
             ->recordActions([
                 EditAction::make(),
             ]);

@@ -24,8 +24,6 @@ final class CategoryResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleGroup;
 
-    protected static ?int $navigationSort = 1;
-
     protected static ?string $navigationLabel = 'Категории';
 
     protected static ?string $modelLabel = 'категорию';

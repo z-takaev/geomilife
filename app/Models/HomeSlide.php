@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Support\Media\ImageMimeTypes;
 use App\Support\Traits\HasSortOrder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -65,7 +66,7 @@ final class HomeSlide extends Model implements HasMedia
     {
         foreach (['desktop_image', 'mobile_image'] as $collection) {
             $this->addMediaCollection($collection)
-                ->acceptsMimeTypes(['image/webp'])
+                ->acceptsMimeTypes(ImageMimeTypes::ALLOWED)
                 ->singleFile();
         }
     }

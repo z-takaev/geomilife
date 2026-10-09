@@ -22,8 +22,6 @@ final class ArticleResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
 
-    protected static ?int $navigationSort = 5;
-
     protected static ?string $navigationLabel = 'Статьи';
 
     protected static ?string $modelLabel = 'статью';
@@ -40,13 +38,6 @@ final class ArticleResource extends Resource
     public static function table(Table $table): Table
     {
         return ArticlesTable::configure($table);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
     }
 
     public static function getPages(): array

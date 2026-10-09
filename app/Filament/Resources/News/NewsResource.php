@@ -22,8 +22,6 @@ final class NewsResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedNewspaper;
 
-    protected static ?int $navigationSort = 4;
-
     protected static ?string $navigationLabel = 'Новости';
 
     protected static ?string $modelLabel = 'новость';
@@ -40,13 +38,6 @@ final class NewsResource extends Resource
     public static function table(Table $table): Table
     {
         return NewsTable::configure($table);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
     }
 
     public static function getPages(): array

@@ -4,7 +4,22 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Filament\Pages\Dashboard;
+use App\Filament\Pages\ManageSettings;
+use App\Filament\Resources\Articles\ArticleResource;
+use App\Filament\Resources\Categories\CategoryResource;
+use App\Filament\Resources\Cities\CityResource;
+use App\Filament\Resources\Faqs\FaqResource;
+use App\Filament\Resources\HomeSlides\HomeSlideResource;
+use App\Filament\Resources\News\NewsResource;
+use App\Filament\Resources\Orders\OrderResource;
+use App\Filament\Resources\Pages\PageResource;
+use App\Filament\Resources\Products\ProductResource;
+use App\Filament\Resources\Promos\PromoResource;
+use App\Filament\Resources\Users\UserResource;
 use App\Menu\MenuItem;
+use Filament\Navigation\NavigationBuilder;
+use Filament\Navigation\NavigationGroup;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\View as ViewInstance;
@@ -20,6 +35,37 @@ final class MenuServiceProvider extends ServiceProvider
         View::composer('partials.footer-navigation', function (ViewInstance $view): void {
             $view->with('columns', $this->footer());
         });
+    }
+
+    public static function filamentNavigation(NavigationBuilder $builder): NavigationBuilder
+    {
+        return $builder->groups([
+            NavigationGroup::make()
+                ->items([
+                    ...Dashboard::getNavigationItems(),
+                    ...OrderResource::getNavigationItems(),
+                ]),
+            NavigationGroup::make('Продукция')
+                ->items([
+                    ...CategoryResource::getNavigationItems(),
+                    ...ProductResource::getNavigationItems(),
+                ]),
+            NavigationGroup::make('Контент')
+                ->items([
+                    ...HomeSlideResource::getNavigationItems(),
+                    ...PromoResource::getNavigationItems(),
+                    ...NewsResource::getNavigationItems(),
+                    ...ArticleResource::getNavigationItems(),
+                    ...FaqResource::getNavigationItems(),
+                    ...PageResource::getNavigationItems(),
+                ]),
+            NavigationGroup::make()
+                ->items([
+                    ...UserResource::getNavigationItems(),
+                    ...CityResource::getNavigationItems(),
+                    ...ManageSettings::getNavigationItems(),
+                ]),
+        ]);
     }
 
     /**

@@ -22,8 +22,6 @@ final class PromoResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedGift;
 
-    protected static ?int $navigationSort = 3;
-
     protected static ?string $navigationLabel = 'Акции';
 
     protected static ?string $modelLabel = 'акцию';
@@ -40,13 +38,6 @@ final class PromoResource extends Resource
     public static function table(Table $table): Table
     {
         return PromosTable::configure($table);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
     }
 
     public static function getPages(): array

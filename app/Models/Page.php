@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Support\Media\ImageMimeTypes;
 use Filament\Forms\Components\RichEditor\FileAttachmentProviders\SpatieMediaLibraryFileAttachmentProvider;
 use Filament\Forms\Components\RichEditor\Models\Concerns\InteractsWithRichContent;
 use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
@@ -31,7 +32,7 @@ final class Page extends Model implements HasMedia, HasRichContent
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('content')
-            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+            ->acceptsMimeTypes(ImageMimeTypes::ALLOWED);
     }
 
     public function setUpRichContent(): void

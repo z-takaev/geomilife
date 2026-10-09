@@ -22,13 +22,11 @@ final class PageResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBookOpen;
 
-    protected static ?int $navigationSort = 7;
+    protected static ?string $navigationLabel = 'Целевые страницы';
 
-    protected static ?string $navigationLabel = 'Страницы';
+    protected static ?string $modelLabel = 'целевую страницу';
 
-    protected static ?string $modelLabel = 'страницу';
-
-    protected static ?string $pluralModelLabel = 'Страницы';
+    protected static ?string $pluralModelLabel = 'Целевые страницы';
 
     protected static bool $hasTitleCaseModelLabel = false;
 
@@ -55,13 +53,6 @@ final class PageResource extends Resource
     public static function table(Table $table): Table
     {
         return PagesTable::configure($table);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
     }
 
     public static function getPages(): array

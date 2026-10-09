@@ -22,13 +22,11 @@ final class FaqResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedQuestionMarkCircle;
 
-    protected static ?int $navigationSort = 6;
-
-    protected static ?string $navigationLabel = 'Частые вопросы';
+    protected static ?string $navigationLabel = 'Вопрос-ответ';
 
     protected static ?string $modelLabel = 'вопрос';
 
-    protected static ?string $pluralModelLabel = 'Частые вопросы';
+    protected static ?string $pluralModelLabel = 'Вопрос-ответ';
 
     protected static bool $hasTitleCaseModelLabel = false;
 
@@ -40,13 +38,6 @@ final class FaqResource extends Resource
     public static function table(Table $table): Table
     {
         return FaqsTable::configure($table);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
     }
 
     public static function getPages(): array

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Faqs\Schemas;
 
+use App\Support\Media\ImageMimeTypes;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -22,7 +23,7 @@ final class FaqForm
                 RichEditor::make('answer')
                     ->label('Ответ')
                     ->required()
-                    ->fileAttachmentsAcceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                    ->fileAttachmentsAcceptedFileTypes(ImageMimeTypes::ALLOWED)
                     ->preventFileAttachmentPathTampering()
                     ->resizableImages()
                     ->columnSpanFull(),

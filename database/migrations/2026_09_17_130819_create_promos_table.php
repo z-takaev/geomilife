@@ -16,13 +16,12 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->text('excerpt')->nullable();
             $table->text('content')->nullable();
-            $table->timestamp('published_at');
             $table->timestamp('start_at');
             $table->timestamp('end_at');
             $table->boolean('is_active')->default(false);
             $table->timestamps();
 
-            $table->index(['is_active', 'published_at', 'id'], 'promos_active_published_idx');
+            $table->index(['is_active', 'start_at', 'id'], 'promos_active_start_idx');
         });
     }
 

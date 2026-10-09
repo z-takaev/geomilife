@@ -22,13 +22,11 @@ final class HomeSlideResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPhoto;
 
-    protected static ?int $navigationSort = 2;
-
-    protected static ?string $navigationLabel = 'Слайды главной';
+    protected static ?string $navigationLabel = 'Главный слайдер';
 
     protected static ?string $modelLabel = 'слайд';
 
-    protected static ?string $pluralModelLabel = 'Слайды главной';
+    protected static ?string $pluralModelLabel = 'Главный слайдер';
 
     protected static bool $hasTitleCaseModelLabel = false;
 
@@ -40,13 +38,6 @@ final class HomeSlideResource extends Resource
     public static function table(Table $table): Table
     {
         return HomeSlidesTable::configure($table);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
     }
 
     public static function getPages(): array

@@ -36,7 +36,6 @@ final class PromoFactory extends Factory
             'slug' => fake()->unique()->slug(5),
             'excerpt' => $faker->paragraph(),
             'content' => '<p>'.$faker->paragraph().'</p><p>'.$faker->paragraph().'</p>',
-            'published_at' => fake()->dateTimeBetween('-1 year', $startAt),
             'start_at' => $startAt,
             'end_at' => fake()->dateTimeBetween($startAt, '+6 months'),
             'is_active' => true,
