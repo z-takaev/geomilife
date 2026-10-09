@@ -24,7 +24,7 @@ final class FaqFactory extends Factory
         return [
             'question' => rtrim($faker->sentence(), '.').'?',
             'answer' => '<p>'.$faker->paragraph().'</p>',
-            'sort_order' => fake()->numberBetween(1, 1000),
+            'order' => fake()->numberBetween(1, 1000),
             'is_active' => true,
         ];
     }

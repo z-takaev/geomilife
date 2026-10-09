@@ -14,7 +14,7 @@ return new class extends Migration
             $table->id();
             $table->text('link_url')->nullable();
             $table->boolean('open_in_new_tab')->default(false);
-            $table->integer('sort_order')->default(0);
+            $table->integer('order')->default(0);
             $table->boolean('is_active')->default(false);
             $table->timestamps();
         });

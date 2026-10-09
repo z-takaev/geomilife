@@ -43,8 +43,8 @@ final class HomeSlidesTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->defaultSort('sort_order')
-            ->reorderable('sort_order')
+            ->defaultSort('order')
+            ->reorderable('order')
             ->emptyStateHeading('Слайды не найдены')
             ->filters([
                 TernaryFilter::make('is_active')

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Support\Media\ImageMimeTypes;
-use App\Support\Traits\HasSortOrder;
+use App\Support\Traits\HasOrder;
 use Filament\Forms\Components\RichEditor\FileAttachmentProviders\SpatieMediaLibraryFileAttachmentProvider;
 use Filament\Forms\Components\RichEditor\Models\Concerns\InteractsWithRichContent;
 use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
@@ -16,19 +16,19 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 final class Faq extends Model implements HasMedia, HasRichContent
 {
-    use HasFactory, HasSortOrder, InteractsWithMedia, InteractsWithRichContent;
+    use HasFactory, HasOrder, InteractsWithMedia, InteractsWithRichContent;
 
     protected $fillable = [
         'question',
         'answer',
-        'sort_order',
+        'order',
         'is_active',
     ];
 
     protected function casts(): array
     {
         return [
-            'sort_order' => 'integer',
+            'order' => 'integer',
             'is_active' => 'boolean',
         ];
     }

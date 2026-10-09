@@ -6,18 +6,18 @@ namespace App\Support\Traits;
 
 use Illuminate\Database\Eloquent\Model;
 
-trait HasSortOrder
+trait HasOrder
 {
-    protected static function bootHasSortOrder(): void
+    protected static function bootHasOrder(): void
     {
         static::creating(static function (Model $model): void {
-            if ($model->getAttribute('sort_order') !== null) {
+            if ($model->getAttribute('order') !== null) {
                 return;
             }
 
             $model->setAttribute(
-                'sort_order',
-                ((int) $model->newQuery()->max('sort_order')) + 1,
+                'order',
+                ((int) $model->newQuery()->max('order')) + 1,
             );
         });
     }

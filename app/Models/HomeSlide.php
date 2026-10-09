@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Support\Media\ImageMimeTypes;
-use App\Support\Traits\HasSortOrder;
+use App\Support\Traits\HasOrder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,14 +15,14 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 final class HomeSlide extends Model implements HasMedia
 {
-    use HasFactory, HasSortOrder, InteractsWithMedia;
+    use HasFactory, HasOrder, InteractsWithMedia;
 
     private const string CACHE_KEY = 'home_slides';
 
     protected $fillable = [
         'link_url',
         'open_in_new_tab',
-        'sort_order',
+        'order',
         'is_active',
     ];
 
@@ -30,7 +30,7 @@ final class HomeSlide extends Model implements HasMedia
     {
         return [
             'open_in_new_tab' => 'boolean',
-            'sort_order' => 'integer',
+            'order' => 'integer',
             'is_active' => 'boolean',
         ];
     }
@@ -46,7 +46,7 @@ final class HomeSlide extends Model implements HasMedia
             static fn (): Collection => self::query()
                 ->where('is_active', true)
                 ->with('media')
-                ->orderBy('sort_order')
+                ->orderBy('order')
                 ->get(),
         );
     }

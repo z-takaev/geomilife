@@ -16,9 +16,9 @@ final class ProductAttributeValue extends Model
 
     protected $fillable = [
         'product_id',
-        'attribute_id',
+        'product_attribute_id',
         'value',
-        'position',
+        'order',
     ];
 
     public function product(): BelongsTo
@@ -26,15 +26,15 @@ final class ProductAttributeValue extends Model
         return $this->belongsTo(Product::class);
     }
 
-    public function attribute(): BelongsTo
+    public function productAttribute(): BelongsTo
     {
-        return $this->belongsTo(Attribute::class);
+        return $this->belongsTo(ProductAttribute::class);
     }
 
     protected function casts(): array
     {
         return [
-            'position' => 'integer',
+            'order' => 'integer',
         ];
     }
 }

@@ -37,8 +37,8 @@ final class FaqsTable
                     ->trueLabel('Активные')
                     ->falseLabel('Неактивные'),
             ])
-            ->defaultSort('sort_order')
-            ->reorderable('sort_order')
+            ->defaultSort('order')
+            ->reorderable('order')
             ->emptyStateHeading('Вопросы не найдены')
             ->recordActions([
                 EditAction::make(),

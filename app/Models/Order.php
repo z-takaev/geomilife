@@ -18,7 +18,7 @@ final class Order extends Model
         'number',
         'status',
         'payment_status',
-        'delivery_method_id',
+        'delivery_method',
         'delivery_price',
         'total',
         'customer_name',
@@ -31,11 +31,6 @@ final class Order extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function deliveryMethod(): BelongsTo
-    {
-        return $this->belongsTo(DeliveryMethod::class);
     }
 
     public function items(): HasMany

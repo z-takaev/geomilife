@@ -58,7 +58,7 @@ final class HomeSlideFactory extends Factory
         return [
             'link_url' => fake()->optional()->url(),
             'open_in_new_tab' => fake()->boolean(20),
-            'sort_order' => fake()->numberBetween(1, 1000),
+            'order' => fake()->numberBetween(1, 1000),
             'is_active' => true,
         ];
     }

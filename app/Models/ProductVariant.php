@@ -16,22 +16,16 @@ final class ProductVariant extends Model
     protected $fillable = [
         'product_id',
         'name',
-        'unit_id',
+        'unit',
         'value',
         'price',
         'old_price',
-        'position',
         'is_active',
     ];
 
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
-    }
-
-    public function unit(): BelongsTo
-    {
-        return $this->belongsTo(Unit::class);
     }
 
     public function cartItems(): HasMany
@@ -45,7 +39,6 @@ final class ProductVariant extends Model
             'value' => 'decimal:3',
             'price' => 'decimal:2',
             'old_price' => 'decimal:2',
-            'position' => 'integer',
             'is_active' => 'boolean',
         ];
     }

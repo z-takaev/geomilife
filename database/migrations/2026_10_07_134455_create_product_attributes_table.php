@@ -10,15 +10,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('units', function (Blueprint $table): void {
+        Schema::create('product_attributes', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
-            $table->string('short_name');
+            $table->string('slug')->unique();
+            $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('units');
+        Schema::dropIfExists('product_attributes');
     }
 };

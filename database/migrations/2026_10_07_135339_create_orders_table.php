@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('number')->unique();
             $table->string('status');
             $table->string('payment_status');
-            $table->foreignId('delivery_method_id')->constrained()->restrictOnDelete();
+            $table->string('delivery_method');
             $table->decimal('delivery_price', 12, 2);
             $table->decimal('total', 12, 2);
             $table->string('customer_name');
