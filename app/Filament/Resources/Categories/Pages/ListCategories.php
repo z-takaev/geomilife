@@ -6,16 +6,21 @@ namespace App\Filament\Resources\Categories\Pages;
 
 use App\Filament\Resources\Categories\CategoryResource;
 use Filament\Actions\CreateAction;
-use Filament\Resources\Pages\ListRecords;
+use Openplain\FilamentTreeView\Resources\Pages\TreePage;
 
-final class ListCategories extends ListRecords
+final class ListCategories extends TreePage
 {
     protected static string $resource = CategoryResource::class;
+
+    protected function authorizeAccess(): void
+    {
+        abort_unless(CategoryResource::canViewAny(), 403);
+    }
 
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()->url(CategoryResource::getUrl('create')),
         ];
     }
 }

@@ -12,14 +12,14 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('parent_id')->nullable()->constrained('categories')->nullOnDelete();
             $table->string('name');
             $table->string('slug')->unique();
-            $table->integer('position')->default(0);
             $table->boolean('is_active')->default(false);
+            $table->foreignId('parent_id')->nullable()->constrained('categories')->nullOnDelete();
+            $table->integer('order')->default(0);
             $table->timestamps();
 
-            $table->index(['parent_id', 'is_active', 'position']);
+            $table->index(['parent_id', 'is_active', 'order']);
         });
     }
 

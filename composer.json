@@ -13,6 +13,7 @@
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0",
         "livewire/livewire": "^4.4",
+        "openplain/filament-tree-view": "^0.5.6",
         "spatie/image": "^3.9",
         "spatie/laravel-medialibrary": "^11.23",
         "spatie/temporary-directory": "^2.4"

@@ -19,6 +19,7 @@ final class DatabaseSeeder extends Seeder
             SettingSeeder::class,
             FilamentUserSeeder::class,
             PageSeeder::class,
+            CategorySeeder::class,
         ]);
 
         if ($this->container->environment('local')) {

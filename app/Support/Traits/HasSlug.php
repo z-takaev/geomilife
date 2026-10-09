@@ -22,7 +22,7 @@ trait HasSlug
 
     private function generateUniqueSlug(): string
     {
-        $baseSlug = Str::slug((string) $this->getAttribute('title'));
+        $baseSlug = Str::slug((string) $this->getAttribute($this->getSlugSourceAttribute()));
         $baseSlug = $baseSlug !== '' ? $baseSlug : Str::lower(Str::random(8));
 
         $existingSlugs = $this->newQuery()
@@ -46,5 +46,10 @@ trait HasSlug
                 return $slug;
             }
         }
+    }
+
+    protected function getSlugSourceAttribute(): string
+    {
+        return 'title';
     }
 }

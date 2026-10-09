@@ -4,42 +4,54 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Support\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Openplain\FilamentTreeView\Concerns\HasTreeStructure;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-final class Category extends Model
+final class Category extends Model implements HasMedia
 {
-    use HasFactory;
+    use HasFactory, HasSlug, HasTreeStructure, InteractsWithMedia;
 
     protected $fillable = [
         'parent_id',
         'name',
         'slug',
-        'position',
+        'order',
         'is_active',
     ];
-
-    public function parent(): BelongsTo
-    {
-        return $this->belongsTo(self::class, 'parent_id');
-    }
-
-    public function children(): HasMany
-    {
-        return $this->hasMany(self::class, 'parent_id');
-    }
 
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
     }
 
+    public function canBeDeleted(): bool
+    {
+        return ! ($this->children_exists ?? $this->children()->exists())
+            && ! ($this->products_exists ?? $this->products()->exists());
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('image')
+            ->acceptsMimeTypes(['image/webp'])
+            ->singleFile();
+    }
+
+    protected function getSlugSourceAttribute(): string
+    {
+        return 'name';
+    }
+
     protected function casts(): array
     {
         return [
-            'position' => 'integer',
+            'parent_id' => 'integer',
+            'order' => 'integer',
             'is_active' => 'boolean',
         ];
     }
