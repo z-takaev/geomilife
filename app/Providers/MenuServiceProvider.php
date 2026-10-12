@@ -78,7 +78,7 @@ final class MenuServiceProvider extends ServiceProvider
             MenuItem::make('Акции'),
             MenuItem::make('Доставка и оплата'),
             MenuItem::make('О компании'),
-            MenuItem::make('Контакты'),
+            MenuItem::make('Контакты')->url(route('contacts.index')),
             MenuItem::make('Еще')->children([
                 MenuItem::make('About Us'),
                 MenuItem::make('Pricing Plans'),
@@ -107,7 +107,7 @@ final class MenuServiceProvider extends ServiceProvider
                 MenuItem::make('Преимущества'),
                 MenuItem::make('Акции'),
                 MenuItem::make('Полезные статьи'),
-                MenuItem::make('Контакты'),
+                MenuItem::make('Контакты')->url(route('contacts.index')),
             ]),
             MenuItem::make('Информация')->children([
                 MenuItem::make('О компании'),

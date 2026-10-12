@@ -6126,6 +6126,108 @@ select.select-2 {
     }
 }
 
+.contacts-heading {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 28px;
+}
+.contacts-info-column {
+    padding-right: 40px;
+}
+.contacts-info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+.contacts-info-card {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px;
+    border-radius: 16px;
+    background: var(--surface);
+}
+.contacts-info-card--wide {
+    grid-column: 1 / -1;
+}
+.contacts-info-card--social {
+    align-items: center;
+}
+.contacts-info-card__icon {
+    display: flex;
+    width: 46px;
+    height: 46px;
+    flex: 0 0 46px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--secondary);
+    color: var(--primary);
+    font-size: 23px;
+}
+.contacts-info-card__label {
+    margin-bottom: 5px;
+    color: var(--text-2);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 20px;
+}
+.contacts-info-card__value {
+    overflow-wrap: anywhere;
+    color: var(--primary);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 24px;
+}
+.contacts-socials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.contacts-socials__link {
+    display: flex;
+    width: 36px;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--white);
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease;
+}
+.contacts-socials__link:hover {
+    border-color: var(--secondary);
+    background: var(--secondary);
+}
+.contacts-map {
+    height: 400px;
+    margin-top: 30px;
+    overflow: hidden;
+    border-radius: 20px;
+    background: var(--surface);
+}
+.contacts-map iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+@media (max-width: 991px) {
+    .contacts-info-column {
+        padding-right: calc(var(--bs-gutter-x) * 0.5);
+    }
+}
+@media (max-width: 575px) {
+    .contacts-info-grid {
+        grid-template-columns: 1fr;
+    }
+    .contacts-info-card--wide {
+        grid-column: auto;
+    }
+}
+
 .section-service-provide-2 .tab-pane {
     display: grid;
     gap: 100px;
