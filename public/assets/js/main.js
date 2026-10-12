@@ -1038,6 +1038,30 @@
         });
     };
 
+    var contentGalleryPopup = function () {
+        const galleries = $('.content-gallery');
+
+        if (!galleries.length || typeof $.fn.magnificPopup !== 'function') {
+            return;
+        }
+
+        galleries.each(function () {
+            $(this).magnificPopup({
+                delegate: 'a',
+                type: 'image',
+                gallery: {
+                    enabled: true,
+                    preload: [0, 2],
+                },
+                image: {
+                    titleSrc: function (item) {
+                        return item.el.find('img').attr('alt');
+                    },
+                },
+            });
+        });
+    };
+
     /* Indicator Item
 -------------------------------------------------------------------------*/
     var indicatorItem = () => {
@@ -1177,6 +1201,7 @@
         rateClick();
         quickViewDetail();
         videoPopup();
+        contentGalleryPopup();
         indicatorItem();
         privacy();
         goTop();

@@ -1,10 +1,16 @@
-@props(['date', 'description', 'image', 'imageAlt', 'title', 'url' => '#'])
+@props(['archive' => false, 'date', 'description', 'image', 'imageAlt', 'title', 'url' => '#'])
 
-<div {{ $attributes->class(['home-offers-item']) }}>
+@php
+    $imageUrl =
+        str_starts_with($image, '/') || str_starts_with($image, 'http')
+            ? $image
+            : asset('assets/images/blog/' . $image);
+@endphp
+
+<div {{ $attributes->class(['home-offers-item', 'archive-promotion-card' => $archive]) }}>
     <article class="article-blog style-2 home-offer-card hover-img4 wow fadeInUp">
         <a href="{{ $url }}" class="entry-image img-style4">
-            <img loading="lazy" width="410" height="273" src="{{ asset('assets/images/blog/' . $image) }}"
-                alt="{{ $imageAlt }}">
+            <img loading="lazy" src="{{ $imageUrl }}" alt="{{ $imageAlt }}">
         </a>
         <div class="entry-content gap-0">
             <div class="entry_meta">
