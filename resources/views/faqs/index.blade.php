@@ -38,7 +38,7 @@
                                         <div id="{{ $collapseId }}" class="collapse{{ $loop->first ? ' show' : '' }}"
                                             data-bs-parent="#faq-accordion">
                                             <div class="accordion-body">
-                                                {!! $faq->renderRichContent('answer') !!}
+                                                {{ $faq->answer }}
                                             </div>
                                         </div>
                                     </div>

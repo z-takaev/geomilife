@@ -4,20 +4,6 @@
 @section('description', __('Контактная информация GeoMiLife и форма обратной связи.'))
 
 @section('content')
-    @php
-        $settings = settings();
-        $address = $settings?->address ?: 'ул. Тамаева, 35, Владикавказ';
-        $phone = $settings?->phone ?: '+7-9888-731-020';
-        $email = $settings?->email ?: 'geomilife@bk.ru';
-        $socialLinks = [
-            ['label' => __('Instagram'), 'url' => $settings?->instagram_url, 'icon' => 'instagram'],
-            ['label' => __('YouTube'), 'url' => $settings?->youtube_url, 'icon' => 'youtube'],
-            ['label' => __('VK'), 'url' => $settings?->vk_url, 'icon' => 'vk'],
-            ['label' => __('Telegram'), 'url' => $settings?->telegram_url, 'icon' => 'telegram'],
-            ['label' => __('WhatsApp'), 'url' => $settings?->whatsapp_url, 'icon' => 'whatsapp'],
-        ];
-    @endphp
-
     <section class="s-page-title inner-page-title">
         <div class="container">
             <x-breadcrumbs :items="[['label' => __('Главная'), 'url' => route('home')], ['label' => __('Контакты')]]" />
@@ -41,9 +27,9 @@
                             </span>
                             <div>
                                 <p class="contacts-info-card__label">{{ __('Телефон') }}</p>
-                                <a href="tel:{{ preg_replace('/[^\d+]/', '', $phone) }}"
+                                <a href="tel:{{ preg_replace('/[^\d+]/', '', settings()?->phone) }}"
                                     class="contacts-info-card__value link">
-                                    {{ __($phone) }}
+                                    {{ __(settings()?->phone) }}
                                 </a>
                             </div>
                         </div>
@@ -54,29 +40,70 @@
                             </span>
                             <div>
                                 <p class="contacts-info-card__label">{{ __('Электронная почта') }}</p>
-                                <a href="mailto:{{ $email }}" class="contacts-info-card__value link">
-                                    {{ __($email) }}
+                                <a href="mailto:{{ settings()?->email }}" class="contacts-info-card__value link">
+                                    {{ __(settings()?->email) }}
                                 </a>
                             </div>
                         </div>
 
-                        <div class="contacts-info-card contacts-info-card--social">
-                            <div>
-                                <p class="contacts-info-card__label">{{ __('Социальные сети') }}</p>
-                                <ul class="contacts-socials">
-                                    @foreach ($socialLinks as $socialLink)
-                                        <li>
-                                            <a href="{{ $socialLink['url'] ?: '#' }}" class="contacts-socials__link"
-                                                aria-label="{{ $socialLink['label'] }}" target="_blank"
-                                                rel="noopener noreferrer">
-                                                <i class="social-icon social-icon--{{ $socialLink['icon'] }}"
-                                                    aria-hidden="true"></i>
-                                            </a>
-                                        </li>
-                                    @endforeach
-                                </ul>
+                        @if (settings()?->instagram_url ||
+                                settings()?->youtube_url ||
+                                settings()?->vk_url ||
+                                settings()?->telegram_url ||
+                                settings()?->whatsapp_url)
+                            <div class="contacts-info-card contacts-info-card--social">
+                                <div>
+                                    <p class="contacts-info-card__label">{{ __('Социальные сети') }}</p>
+                                    <ul class="contacts-socials">
+                                        @if (settings()?->instagram_url)
+                                            <li>
+                                                <a href="{{ settings()?->instagram_url }}" class="contacts-socials__link"
+                                                    aria-label="{{ __('Instagram') }}" target="_blank"
+                                                    rel="noopener noreferrer">
+                                                    <i class="social-icon social-icon--instagram" aria-hidden="true"></i>
+                                                </a>
+                                            </li>
+                                        @endif
+                                        @if (settings()?->youtube_url)
+                                            <li>
+                                                <a href="{{ settings()?->youtube_url }}" class="contacts-socials__link"
+                                                    aria-label="{{ __('YouTube') }}" target="_blank"
+                                                    rel="noopener noreferrer">
+                                                    <i class="social-icon social-icon--youtube" aria-hidden="true"></i>
+                                                </a>
+                                            </li>
+                                        @endif
+                                        @if (settings()?->vk_url)
+                                            <li>
+                                                <a href="{{ settings()?->vk_url }}" class="contacts-socials__link"
+                                                    aria-label="{{ __('VK') }}" target="_blank"
+                                                    rel="noopener noreferrer">
+                                                    <i class="social-icon social-icon--vk" aria-hidden="true"></i>
+                                                </a>
+                                            </li>
+                                        @endif
+                                        @if (settings()?->telegram_url)
+                                            <li>
+                                                <a href="{{ settings()?->telegram_url }}" class="contacts-socials__link"
+                                                    aria-label="{{ __('Telegram') }}" target="_blank"
+                                                    rel="noopener noreferrer">
+                                                    <i class="social-icon social-icon--telegram" aria-hidden="true"></i>
+                                                </a>
+                                            </li>
+                                        @endif
+                                        @if (settings()?->whatsapp_url)
+                                            <li>
+                                                <a href="{{ settings()?->whatsapp_url }}" class="contacts-socials__link"
+                                                    aria-label="{{ __('WhatsApp') }}" target="_blank"
+                                                    rel="noopener noreferrer">
+                                                    <i class="social-icon social-icon--whatsapp" aria-hidden="true"></i>
+                                                </a>
+                                            </li>
+                                        @endif
+                                    </ul>
+                                </div>
                             </div>
-                        </div>
+                        @endif
 
                         <div class="contacts-info-card contacts-info-card--wide">
                             <span class="contacts-info-card__icon" aria-hidden="true">
@@ -84,7 +111,7 @@
                             </span>
                             <div>
                                 <p class="contacts-info-card__label">{{ __('Адрес') }}</p>
-                                <p class="contacts-info-card__value">{{ __($address) }}</p>
+                                <p class="contacts-info-card__value">{{ __(settings()?->address) }}</p>
                             </div>
                         </div>
 
@@ -94,7 +121,7 @@
                             </span>
                             <div>
                                 <p class="contacts-info-card__label">{{ __('Режим работы') }}</p>
-                                <p class="contacts-info-card__value">{{ __('Пн–Пт: 09:00–18:00, Сб–Вс: выходной') }}</p>
+                                <p class="contacts-info-card__value">{!! nl2br(e(__(settings()?->working_hours))) !!}</p>
                             </div>
                         </div>
 

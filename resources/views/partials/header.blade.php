@@ -18,47 +18,62 @@
             <div class="topbar-center">
                 <ul class="tf-list">
                     <li>
-                        <a href="tel:+79888731020" class="info link-primary">
+                        <a href="tel:{{ preg_replace('/[^\d+]/', '', settings()?->phone) }}" class="info link-primary">
                             <i class="icon icon-phone-call fs-24"></i>
-                            {{ __('+7-9888-731-020') }}
+                            {{ __(settings()?->phone) }}
                         </a>
                     </li>
                     <li class="br-line type-vertical"></li>
                     <li>
-                        <a href="mailto:geomilife@bk.ru" class="info link-primary">
+                        <a href="mailto:{{ settings()?->email }}" class="info link-primary">
                             <i class="icon icon-EnvelopeSimple fs-24"></i>
-                            {{ __('geomilife@bk.ru') }}
+                            {{ __(settings()?->email) }}
                         </a>
                     </li>
                 </ul>
             </div>
             <div class="topbar-right">
                 <ul class="topbar-social-list">
-                    <li>
-                        <a href="#" class="link" aria-label="{{ __('Инстаграм') }}">
-                            <i class="social-icon social-icon--instagram" aria-hidden="true"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="link" aria-label="{{ __('Ютуб') }}">
-                            <i class="social-icon social-icon--youtube" aria-hidden="true"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="link" aria-label="{{ __('ВКонтакте') }}">
-                            <i class="social-icon social-icon--vk" aria-hidden="true"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="link" aria-label="{{ __('Телеграм') }}">
-                            <i class="social-icon social-icon--telegram" aria-hidden="true"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="link" aria-label="{{ __('Ватсап') }}">
-                            <i class="social-icon social-icon--whatsapp" aria-hidden="true"></i>
-                        </a>
-                    </li>
+                    @if (settings()?->instagram_url)
+                        <li>
+                            <a href="{{ settings()?->instagram_url }}" class="link"
+                                aria-label="{{ __('Инстаграм') }}" target="_blank" rel="noopener noreferrer">
+                                <i class="social-icon social-icon--instagram" aria-hidden="true"></i>
+                            </a>
+                        </li>
+                    @endif
+                    @if (settings()?->youtube_url)
+                        <li>
+                            <a href="{{ settings()?->youtube_url }}" class="link" aria-label="{{ __('Ютуб') }}"
+                                target="_blank" rel="noopener noreferrer">
+                                <i class="social-icon social-icon--youtube" aria-hidden="true"></i>
+                            </a>
+                        </li>
+                    @endif
+                    @if (settings()?->vk_url)
+                        <li>
+                            <a href="{{ settings()?->vk_url }}" class="link" aria-label="{{ __('ВКонтакте') }}"
+                                target="_blank" rel="noopener noreferrer">
+                                <i class="social-icon social-icon--vk" aria-hidden="true"></i>
+                            </a>
+                        </li>
+                    @endif
+                    @if (settings()?->telegram_url)
+                        <li>
+                            <a href="{{ settings()?->telegram_url }}" class="link" aria-label="{{ __('Телеграм') }}"
+                                target="_blank" rel="noopener noreferrer">
+                                <i class="social-icon social-icon--telegram" aria-hidden="true"></i>
+                            </a>
+                        </li>
+                    @endif
+                    @if (settings()?->whatsapp_url)
+                        <li>
+                            <a href="{{ settings()?->whatsapp_url }}" class="link" aria-label="{{ __('Ватсап') }}"
+                                target="_blank" rel="noopener noreferrer">
+                                <i class="social-icon social-icon--whatsapp" aria-hidden="true"></i>
+                            </a>
+                        </li>
+                    @endif
                 </ul>
             </div>
         </div>

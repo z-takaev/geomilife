@@ -4,21 +4,15 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Support\Media\ImageMimeTypes;
 use App\Support\Traits\HasOrder;
-use Filament\Forms\Components\RichEditor\FileAttachmentProviders\SpatieMediaLibraryFileAttachmentProvider;
-use Filament\Forms\Components\RichEditor\Models\Concerns\InteractsWithRichContent;
-use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
-use Spatie\MediaLibrary\HasMedia;
-use Spatie\MediaLibrary\InteractsWithMedia;
 
-final class Faq extends Model implements HasMedia, HasRichContent
+final class Faq extends Model
 {
-    use HasFactory, HasOrder, InteractsWithMedia, InteractsWithRichContent;
+    use HasFactory, HasOrder;
 
     private const string CACHE_KEY = 'faqs';
 

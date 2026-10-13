@@ -6,12 +6,15 @@ namespace App\Models;
 
 use App\Support\Media\ImageMimeTypes;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 final class Setting extends Model implements HasMedia
 {
     use InteractsWithMedia;
+
+    private const string CACHE_KEY = 'site_setting';
 
     /**
      * @var list<string>
@@ -33,6 +36,7 @@ final class Setting extends Model implements HasMedia
         'phone',
         'email',
         'address',
+        'working_hours',
         'footer_title',
         'footer_description',
         'instagram_url',
@@ -44,6 +48,28 @@ final class Setting extends Model implements HasMedia
         'story_description',
         'story_video_url',
     ];
+
+    public static function cached(): ?self
+    {
+        return Cache::remember(
+            self::CACHE_KEY,
+            now()->addHours(2),
+            static fn (): ?self => self::query()
+                ->with('media')
+                ->first(),
+        );
+    }
+
+    protected static function booted(): void
+    {
+        self::saved(static function (): void {
+            Cache::forget(self::CACHE_KEY);
+        });
+
+        self::deleted(static function (): void {
+            Cache::forget(self::CACHE_KEY);
+        });
+    }
 
     public function registerMediaCollections(): void
     {

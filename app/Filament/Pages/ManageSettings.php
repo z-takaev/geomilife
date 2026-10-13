@@ -69,6 +69,12 @@ final class ManageSettings extends Page
                                         ->maxLength(1000)
                                         ->rows(3)
                                         ->columnSpanFull(),
+                                    Textarea::make('working_hours')
+                                        ->label('Режим работы')
+                                        ->required()
+                                        ->maxLength(1000)
+                                        ->rows(3)
+                                        ->columnSpanFull(),
                                 ])
                                 ->columns(2),
                             Tab::make('Футер')
