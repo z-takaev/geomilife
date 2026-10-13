@@ -9,16 +9,14 @@
         </div>
         <div class="home-offers-scroll">
             <div class="home-offers-list">
-                <x-promotion-card image="blog-5.jpg" :image-alt="__('Набор натуральных продуктов')" :date="__('До 15 октября')" :title="__('Соберите полезный набор со скидкой 15%')"
-                    :description="__('Выберите любимые масла, урбеч и мёд — скидка применится к набору автоматически.')" />
-                <x-promotion-card image="blog-6.jpg" :image-alt="__('Натуральные продукты GeoMiLife')" :date="__('До 20 октября')" :title="__('Второе сыродавленное масло дешевле на 20%')"
-                    :description="__('Добавьте в корзину любые две бутылки масла и получите скидку на вторую позицию.')" />
-                <x-promotion-card image="blog-12.jpg" :image-alt="__('Подарок к заказу GeoMiLife')" :date="__('Весь октябрь')" :title="__('Полезный подарок к заказу от 3 000 ₽')"
-                    :description="__('Оформите заказ на сумму от 3 000 ₽ и получите натуральный комплимент от GeoMiLife.')" />
+                @foreach ($promos as $promo)
+                    <x-promotion-card :date="__('До :date', ['date' => $promo->end_at->translatedFormat('j F Y')])" :description="$promo->excerpt ?? ''" :image="$promo->getFirstMediaUrl('image', 'card')" :image-alt="$promo->title"
+                        :title="$promo->title" :url="route('promos.show', $promo)" />
+                @endforeach
             </div>
         </div>
         <div class="home-offers-all text-center wow fadeInUp">
-            <a href="#" class="home-offers-all-link">
+            <a href="{{ route('promos.index') }}" class="home-offers-all-link">
                 {{ __('Смотреть все акции') }}
                 <i class="icon icon-arrow-right" aria-hidden="true"></i>
             </a>

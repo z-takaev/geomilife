@@ -11,8 +11,10 @@ use App\Support\Traits\InteractsWithSeoMetadata;
 use Filament\Forms\Components\RichEditor\FileAttachmentProviders\SpatieMediaLibraryFileAttachmentProvider;
 use Filament\Forms\Components\RichEditor\Models\Concerns\InteractsWithRichContent;
 use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -21,6 +23,8 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 final class Promo extends Model implements HasMedia, HasRichContent, Seoable
 {
     use HasFactory, HasSlug, InteractsWithMedia, InteractsWithRichContent, InteractsWithSeoMetadata;
+
+    private const string CACHE_KEY = 'latest_promos';
 
     protected $fillable = [
         'title',
@@ -35,6 +39,35 @@ final class Promo extends Model implements HasMedia, HasRichContent, Seoable
     public function getRouteKeyName(): string
     {
         return 'slug';
+    }
+
+    /**
+     * @return Collection<int, self>
+     */
+    public static function cached(): Collection
+    {
+        return Cache::remember(
+            self::CACHE_KEY,
+            now()->addHours(2),
+            static fn (): Collection => self::query()
+                ->where('is_active', true)
+                ->with('media')
+                ->latest('start_at')
+                ->latest('id')
+                ->limit(3)
+                ->get(),
+        );
+    }
+
+    protected static function booted(): void
+    {
+        self::saved(static function (): void {
+            Cache::forget(self::CACHE_KEY);
+        });
+
+        self::deleted(static function (): void {
+            Cache::forget(self::CACHE_KEY);
+        });
     }
 
     public function registerMediaCollections(): void
