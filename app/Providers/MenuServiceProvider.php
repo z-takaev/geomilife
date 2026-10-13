@@ -76,20 +76,13 @@ final class MenuServiceProvider extends ServiceProvider
         return [
             MenuItem::make('Каталог')->isCatalog()->children($this->catalog()),
             MenuItem::make('Акции'),
-            MenuItem::make('Доставка и оплата'),
+            MenuItem::make('Доставка и оплата')->url(route('pages.show', 'dostavka-i-oplata')),
             MenuItem::make('О компании'),
             MenuItem::make('Контакты')->url(route('contacts.index')),
             MenuItem::make('Еще')->children([
-                MenuItem::make('About Us'),
-                MenuItem::make('Pricing Plans'),
-                MenuItem::make('Contact Us'),
-                MenuItem::make('FAQs'),
-                MenuItem::make('Privacy Policy'),
+                MenuItem::make('Вопрос-ответ')->url(route('faqs.index')),
                 MenuItem::make('Our Services')->children([
                     MenuItem::make('Our Services 1'),
-                    MenuItem::make('Our Services 2'),
-                    MenuItem::make('Our Services 3'),
-                    MenuItem::make('Services Details'),
                 ]),
             ]),
         ];
@@ -111,7 +104,7 @@ final class MenuServiceProvider extends ServiceProvider
             ]),
             MenuItem::make('Информация')->children([
                 MenuItem::make('О компании'),
-                MenuItem::make('Доставка и оплата'),
+                MenuItem::make('Доставка и оплата')->url(route('pages.show', 'dostavka-i-oplata')),
                 MenuItem::make('Гарантия качества'),
                 MenuItem::make('Связаться с нами'),
                 MenuItem::make('Позвонить нам'),
