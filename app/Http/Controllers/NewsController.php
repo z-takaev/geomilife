@@ -11,11 +11,20 @@ final class NewsController extends Controller
 {
     public function index(): View
     {
-        return view('news.index');
+        $newsItems = News::query()
+            ->with('media')
+            ->where('is_active', true)
+            ->latest('published_at')
+            ->latest('id')
+            ->paginate((int) config('pagination.per_page.news'));
+
+        return view('news.index', compact('newsItems'));
     }
 
     public function show(News $news): View
     {
+        abort_unless($news->is_active, 404);
+
         return view('news.show', compact('news'));
     }
 }

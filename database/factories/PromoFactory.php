@@ -44,12 +44,6 @@ final class PromoFactory extends Factory
 
     private function imagePath(): string
     {
-        $fileName = fake()->randomElement([
-            'promo-daily-health-mobile.webp',
-            'promo-healthy-sweets-mobile.webp',
-            'promo-honey-mobile.webp',
-        ]);
-
-        return base_path('tests/Fixtures/images/Promo/'.$fileName);
+        return base_path('tests/Fixtures/images/Promo/promo-example.webp');
     }
 }

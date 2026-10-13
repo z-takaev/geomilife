@@ -42,12 +42,6 @@ final class NewsFactory extends Factory
 
     private function imagePath(): string
     {
-        $fileName = fake()->randomElement([
-            'promo-cold-pressed-oils-mobile.webp',
-            'promo-natural-ossetia-mobile.webp',
-            'promo-urbech-mobile.webp',
-        ]);
-
-        return base_path('tests/Fixtures/images/News/'.$fileName);
+        return base_path('tests/Fixtures/images/News/news-example.webp');
     }
 }

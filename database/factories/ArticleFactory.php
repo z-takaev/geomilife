@@ -42,12 +42,6 @@ final class ArticleFactory extends Factory
 
     private function imagePath(): string
     {
-        $fileName = fake()->randomElement([
-            'promo-daily-health-landscape.webp',
-            'promo-healthy-sweets-landscape.webp',
-            'promo-honey-landscape.webp',
-        ]);
-
-        return base_path('tests/Fixtures/images/Article/'.$fileName);
+        return base_path('tests/Fixtures/images/Article/article-example.webp');
     }
 }

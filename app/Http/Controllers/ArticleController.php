@@ -11,11 +11,20 @@ final class ArticleController extends Controller
 {
     public function index(): View
     {
-        return view('articles.index');
+        $articles = Article::query()
+            ->with('media')
+            ->where('is_active', true)
+            ->latest('published_at')
+            ->latest('id')
+            ->paginate((int) config('pagination.per_page.articles'));
+
+        return view('articles.index', compact('articles'));
     }
 
     public function show(Article $article): View
     {
+        abort_unless($article->is_active, 404);
+
         return view('articles.show', compact('article'));
     }
 }

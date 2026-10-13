@@ -15,6 +15,8 @@ Route::get('/', HomeController::class)->name('home');
 
 Route::get('/contacts', ContactController::class)->name('contacts.index');
 
+Route::get('/faqs', [FaqController::class, 'index'])->name('faqs.index');
+
 Route::get('/pages/{page}', [PageController::class, 'show'])->name('pages.show');
 
 Route::controller(NewsController::class)->prefix('news')->name('news.')->group(function (): void {
@@ -31,5 +33,3 @@ Route::controller(PromoController::class)->prefix('promos')->name('promos.')->gr
     Route::get('/', 'index')->name('index');
     Route::get('/{promo}', 'show')->name('show');
 });
-
-Route::get('/faqs', [FaqController::class, 'index'])->name('faqs.index');
