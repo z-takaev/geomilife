@@ -15,19 +15,48 @@
                     </select>
                 </div>
             </div>
-            <div class="topbar-right d-none d-sm-flex">
+            <div class="topbar-center">
                 <ul class="tf-list">
-                    <li class="d-none d-md-flex">
+                    <li>
                         <a href="tel:+79888731020" class="info link-primary">
                             <i class="icon icon-phone-call fs-24"></i>
                             {{ __('+7-9888-731-020') }}
                         </a>
                     </li>
-                    <li class="br-line type-vertical d-none d-md-flex"></li>
+                    <li class="br-line type-vertical"></li>
                     <li>
                         <a href="mailto:geomilife@bk.ru" class="info link-primary">
                             <i class="icon icon-EnvelopeSimple fs-24"></i>
                             {{ __('geomilife@bk.ru') }}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="topbar-right">
+                <ul class="topbar-social-list">
+                    <li>
+                        <a href="#" class="link" aria-label="{{ __('Инстаграм') }}">
+                            <i class="social-icon social-icon--instagram" aria-hidden="true"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="link" aria-label="{{ __('Ютуб') }}">
+                            <i class="social-icon social-icon--youtube" aria-hidden="true"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="link" aria-label="{{ __('ВКонтакте') }}">
+                            <i class="social-icon social-icon--vk" aria-hidden="true"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="link" aria-label="{{ __('Телеграм') }}">
+                            <i class="social-icon social-icon--telegram" aria-hidden="true"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="link" aria-label="{{ __('Ватсап') }}">
+                            <i class="social-icon social-icon--whatsapp" aria-hidden="true"></i>
                         </a>
                     </li>
                 </ul>
@@ -47,8 +76,8 @@
             </div>
             <div class="header-left">
                 <a href="{{ url('/') }}" class="logo-site">
-                    <img loading="lazy" width="207" height="48"
-                        src="{{ asset('assets/images/logo/logo-default.svg') }}" alt="{{ __('Логотип GeoMiLife') }}">
+                    <img loading="lazy" src="{{ asset('assets/images/logo/logo-default.svg') }}"
+                        alt="{{ __('Логотип GeoMiLife') }}">
                 </a>
                 @include('partials.navigation')
             </div>
@@ -56,8 +85,8 @@
                 <div class="box-nav-icon">
                     <ul class="nav-icon-list">
                         <li>
-                            <a href="#canvasSearch" data-bs-toggle="offcanvas"
-                                class="nav-icon-item text-primary link d-none d-md-flex">
+                            <a href="#canvasSearch" data-bs-toggle="offcanvas" class="nav-icon-item text-primary link"
+                                aria-label="{{ __('Открыть поиск') }}">
                                 <i class="icon icon-magnifying-glass"></i>
                             </a>
                         </li>

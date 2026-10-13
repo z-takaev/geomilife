@@ -90,25 +90,33 @@
             var total = 0;
 
             $('.list-file-delete .mini-product-cart').each(function () {
-                var priceText = $(this).find('.tf-mini-card-price').text().replace('$', '').replace(',', '').trim();
+                var priceText = $(this)
+                    .find('.tf-mini-card-price')
+                    .text()
+                    .replace(/[^0-9.,]/g, '')
+                    .replace(',', '.');
                 var price = parseFloat(priceText);
                 if (!isNaN(price)) {
                     total += price;
                 }
             });
 
-            var formatted = total.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+            var formatted = `${total.toLocaleString('ru-RU')} ₽`;
             $('.tf-totals-total-value').text(formatted);
         }
 
         function updatePriceEach() {
             $('.each-prd').each(function () {
-                var priceText = $(this).find('.each-price').text().replace('$', '').replace(',', '').trim();
+                var priceText = $(this)
+                    .find('.each-price')
+                    .text()
+                    .replace(/[^0-9.,]/g, '')
+                    .replace(',', '.');
                 var price = parseFloat(priceText);
                 var quantity = parseInt($(this).find('.quantity-product').val(), 10);
                 if (!isNaN(price) && !isNaN(quantity)) {
                     var subtotal = price * quantity;
-                    var formatted = subtotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+                    var formatted = `${subtotal.toLocaleString('ru-RU')} ₽`;
                     $(this).find('.each-subtotal-price').text(formatted);
                 }
             });
@@ -118,7 +126,11 @@
             var total = 0;
 
             $('.each-list-prd .each-prd').each(function () {
-                var priceText = $(this).find('.each-subtotal-price').text().replace('$', '').replace(',', '').trim();
+                var priceText = $(this)
+                    .find('.each-subtotal-price')
+                    .text()
+                    .replace(/[^0-9.,]/g, '')
+                    .replace(',', '.');
                 var price = parseFloat(priceText);
                 var quantity = parseInt($(this).find('.quantity-product').val(), 10);
 
@@ -127,7 +139,7 @@
                 }
             });
 
-            var formatted = total.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+            var formatted = `${total.toLocaleString('ru-RU')} ₽`;
             $('.each-total-price').text(formatted);
         }
 
@@ -326,7 +338,12 @@
             var priceEl = productItem.find('.price-on-sale');
             var quantityInput = productItem.find('.quantity-product');
             if (!priceEl.data('price')) {
-                var initialPrice = parseFloat(priceEl.text().replace('$', '').replace(/,/g, ''));
+                var initialPrice = parseFloat(
+                    priceEl
+                        .text()
+                        .replace(/[^0-9.,]/g, '')
+                        .replace(',', '.'),
+                );
                 priceEl.data('price', initialPrice);
             }
             productItem.find('.unit-btn').on('click', function () {
@@ -335,7 +352,7 @@
                 quantityInput.val(1);
                 productItem
                     .find('.price-on-sale')
-                    .text(`$${newPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}`)
+                    .text(`${newPrice.toLocaleString('ru-RU')} ₽`)
                     .data('price', newPrice);
                 updateTotalPrice(newPrice, productItem);
             });
@@ -358,7 +375,7 @@
                 var currentPrice = price || parseFloat(scope.find('.price-on-sale').data('price'));
                 var quantity = parseInt(scope.find('.quantity-product').val(), 10);
                 var totalPrice = currentPrice * quantity;
-                scope.find('.price-add').text(`$${totalPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}`);
+                scope.find('.price-add').text(`${totalPrice.toLocaleString('ru-RU')} ₽`);
             }
             updateTotalPrice(null, productItem);
         });
@@ -955,10 +972,10 @@
 
                 const unitPrice = parseFloat($priceOnSale.text().replace(/[^0-9.]/g, ''));
 
-                const total = (unitPrice * qty).toFixed(2);
+                const total = unitPrice * qty;
 
                 $quantityInput.val(qty);
-                $priceAdd.text(`$${total}`);
+                $priceAdd.text(`${total.toLocaleString('ru-RU')} ₽`);
             }
 
             $btnMinus.on('click', function (e) {

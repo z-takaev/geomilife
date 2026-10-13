@@ -1,7 +1,7 @@
 <!-- Wishlist -->
 <div class="offcanvas offcanvas-end canvas-wishlist" id="wishList">
     <div class="canvas-header">
-        <h5 class="title-pop text-primary">{{ __('Wish List') }}</h5>
+        <h5 class="title-pop text-primary">{{ __('Избранное') }}</h5>
         <span class="icon-close-popup" data-bs-dismiss="offcanvas">
             <i class="icon icon-close"></i>
         </span>
@@ -11,69 +11,69 @@
             <li class="mini-product-cart file-delete">
                 <div class="prd-wrap">
                     <div class="prd_image">
-                        <img loading="lazy" width="100" height="100"
-                            src="{{ asset('assets/images/product/product-12.jpg') }}" alt="{{ __('Image') }}">
+                        <img loading="lazy" src="{{ asset('assets/images/product/product-12.jpg') }}"
+                            alt="{{ __('Масло чёрного тмина') }}">
                     </div>
                     <a href="product-single-1.html" class="prd_name link-underline text-primary fw-medium">
-                        {{ __('Smackn’ Grapes Tomates - 1KG') }}
+                        {{ __('Масло чёрного тмина, 250 мл') }}
                     </a>
                 </div>
                 <div class="prd-action">
                     <a href="#" class="tf-btn-line style-min p-0 remove">
                         <span class="text-caption-01">
-                            {{ __('Remove') }}
+                            {{ __('Удалить') }}
                         </span>
                     </a>
                     <div class="quantity-price text-primary fw-medium">
                         <span>1</span>
-                        <span>{{ __('x') }}</span>
-                        <span>$3.99</span>
+                        <span>{{ __('×') }}</span>
+                        <span>{{ __('890 ₽') }}</span>
                     </div>
                 </div>
             </li>
             <li class="mini-product-cart file-delete">
                 <div class="prd-wrap">
                     <div class="prd_image">
-                        <img loading="lazy" width="100" height="100"
-                            src="{{ asset('assets/images/product/product-11.jpg') }}" alt="{{ __('Image') }}">
+                        <img loading="lazy" src="{{ asset('assets/images/product/product-11.jpg') }}"
+                            alt="{{ __('Урбеч из грецкого ореха') }}">
                     </div>
                     <a href="product-single-1.html" class="prd_name link-underline text-primary fw-medium">
-                        {{ __('Range Large Brown Eggs, 18 Count') }}
+                        {{ __('Урбеч из грецкого ореха, 400 г') }}
                     </a>
                 </div>
                 <div class="prd-action">
                     <a href="#" class="tf-btn-line style-min p-0 remove">
                         <span class="text-caption-01">
-                            {{ __('Remove') }}
+                            {{ __('Удалить') }}
                         </span>
                     </a>
                     <div class="quantity-price text-primary fw-medium">
                         <span>1</span>
-                        <span>{{ __('x') }}</span>
-                        <span>$3.99</span>
+                        <span>{{ __('×') }}</span>
+                        <span>{{ __('1 250 ₽') }}</span>
                     </div>
                 </div>
             </li>
             <li class="mini-product-cart file-delete">
                 <div class="prd-wrap">
                     <div class="prd_image">
-                        <img loading="lazy" width="100" height="100"
-                            src="{{ asset('assets/images/product/product-17.jpg') }}" alt="{{ __('Image') }}">
+                        <img loading="lazy" src="{{ asset('assets/images/product/product-17.jpg') }}"
+                            alt="{{ __('Горный мёд') }}">
                     </div>
                     <a href="product-single-1.html" class="prd_name link-underline text-primary fw-medium">
-                        {{ __('Earthbound Farm Organic Baby Spinach - 250GR') }}
+                        {{ __('Горный мёд, 500 г') }}
                     </a>
                 </div>
                 <div class="prd-action">
                     <a href="#" class="tf-btn-line style-min p-0 remove">
                         <span class="text-caption-01">
-                            {{ __('Remove') }}
+                            {{ __('Удалить') }}
                         </span>
                     </a>
                     <div class="quantity-price text-primary fw-medium">
                         <span>1</span>
-                        <span>{{ __('x') }}</span>
-                        <span>$3.99</span>
+                        <span>{{ __('×') }}</span>
+                        <span>{{ __('470 ₽') }}</span>
                     </div>
                 </div>
             </li>
@@ -82,10 +82,10 @@
     <div class="canvas-footer">
         <div class="d-flex flex-column align-items-center gap-16 text-center">
             <a href="https://tforvana.vercel.app/wishlist.html" class="tf-btn animate-btn w-100">
-                {{ __('View All Wish List') }}
+                {{ __('Посмотреть всё избранное') }}
             </a>
             <a href="{{ url('/') }}" class="tf-btn-line p-0">
-                {{ __('Or continue shopping') }}
+                {{ __('Продолжить покупки') }}
             </a>
         </div>
     </div>

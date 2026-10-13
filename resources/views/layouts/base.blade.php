@@ -44,13 +44,13 @@
     </main>
 
     @include('partials.mobile-menu')
-    @include('partials.forgot-password')
+    @include('partials.wishlist')
     @include('partials.shopping-cart')
     @include('partials.quick-view')
-    @include('partials.wishlist')
-    @include('partials.register')
-    @include('partials.login')
     @include('partials.search')
+    @include('partials.login')
+    @include('partials.register')
+    @include('partials.forgot-password')
 
     <!-- Javascript -->
     <script src="{{ asset('assets/js/bootstrap.min.js') }}"></script>
