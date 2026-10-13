@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Models\Faq;
 use App\Models\HomeSlide;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
@@ -139,6 +140,7 @@ return [
 
     'serializable_classes' => [
         Collection::class,
+        Faq::class,
         HomeSlide::class,
         Media::class,
         MediaCollection::class,

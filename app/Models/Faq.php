@@ -9,14 +9,18 @@ use App\Support\Traits\HasOrder;
 use Filament\Forms\Components\RichEditor\FileAttachmentProviders\SpatieMediaLibraryFileAttachmentProvider;
 use Filament\Forms\Components\RichEditor\Models\Concerns\InteractsWithRichContent;
 use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 final class Faq extends Model implements HasMedia, HasRichContent
 {
     use HasFactory, HasOrder, InteractsWithMedia, InteractsWithRichContent;
+
+    private const string CACHE_KEY = 'faqs';
 
     protected $fillable = [
         'question',
@@ -33,16 +37,29 @@ final class Faq extends Model implements HasMedia, HasRichContent
         ];
     }
 
-    public function registerMediaCollections(): void
+    /**
+     * @return Collection<int, self>
+     */
+    public static function cached(): Collection
     {
-        $this->addMediaCollection('answer')
-            ->acceptsMimeTypes(ImageMimeTypes::ALLOWED);
+        return Cache::remember(
+            self::CACHE_KEY,
+            now()->addHours(2),
+            static fn (): Collection => self::query()
+                ->where('is_active', true)
+                ->orderBy('order')
+                ->get(),
+        );
     }
 
-    public function setUpRichContent(): void
+    protected static function booted(): void
     {
-        $this->registerRichContent('answer')
-            ->fileAttachmentsVisibility('public')
-            ->fileAttachmentProvider(SpatieMediaLibraryFileAttachmentProvider::make());
+        self::saved(static function (): void {
+            Cache::forget(self::CACHE_KEY);
+        });
+
+        self::deleted(static function (): void {
+            Cache::forget(self::CACHE_KEY);
+        });
     }
 }

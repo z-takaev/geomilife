@@ -4,101 +4,6 @@
 @section('description', __('Ответы на частые вопросы о продукции GeoMiLife, оформлении заказа, оплате и доставке.'))
 
 @section('content')
-    @php
-        $faqGroups = [
-            [
-                'id' => 'orders',
-                'title' => __('Заказ и оплата'),
-                'items' => [
-                    [
-                        'question' => __('Как оформить заказ?'),
-                        'answer' => __(
-                            'Добавьте нужные товары в корзину, перейдите к оформлению заказа и заполните контактные данные. После подтверждения мы сообщим вам детали доставки.',
-                        ),
-                    ],
-                    [
-                        'question' => __('Какие способы оплаты доступны?'),
-                        'answer' => __(
-                            'Вы сможете выбрать удобный способ оплаты при оформлении заказа. Доступные варианты будут показаны на соответствующем шаге.',
-                        ),
-                    ],
-                    [
-                        'question' => __('Можно ли изменить заказ после оформления?'),
-                        'answer' => __(
-                            'Если заказ ещё не передан в доставку, свяжитесь с нами — мы постараемся изменить состав или контактные данные.',
-                        ),
-                    ],
-                    [
-                        'question' => __('Как узнать статус заказа?'),
-                        'answer' => __(
-                            'После оформления мы отправим подтверждение и будем сообщать об изменениях статуса по указанным контактным данным.',
-                        ),
-                    ],
-                ],
-            ],
-            [
-                'id' => 'delivery',
-                'title' => __('Доставка'),
-                'items' => [
-                    [
-                        'question' => __('В какие города вы доставляете?'),
-                        'answer' => __(
-                            'Мы доставляем заказы по России. Точная доступность и сроки зависят от населённого пункта и выбранного способа доставки.',
-                        ),
-                    ],
-                    [
-                        'question' => __('Сколько времени занимает доставка?'),
-                        'answer' => __(
-                            'Срок доставки рассчитывается при оформлении заказа и зависит от региона. После отправки заказа вы получите информацию для отслеживания.',
-                        ),
-                    ],
-                    [
-                        'question' => __('Как упаковывается продукция?'),
-                        'answer' => __(
-                            'Мы подбираем упаковку с учётом особенностей каждого продукта, чтобы сохранить качество товара во время перевозки.',
-                        ),
-                    ],
-                    [
-                        'question' => __('Что делать, если товар повредился при доставке?'),
-                        'answer' => __(
-                            'Сфотографируйте упаковку и товар сразу после получения, затем свяжитесь с нами. Мы рассмотрим обращение и предложим решение.',
-                        ),
-                    ],
-                ],
-            ],
-            [
-                'id' => 'products',
-                'title' => __('Продукция'),
-                'items' => [
-                    [
-                        'question' => __('Где производится продукция GeoMiLife?'),
-                        'answer' => __(
-                            'Основу ассортимента составляют натуральные продукты из Северной Осетии, изготовленные с вниманием к качеству сырья и рецептуре.',
-                        ),
-                    ],
-                    [
-                        'question' => __('Где посмотреть состав продукта?'),
-                        'answer' => __(
-                            'Состав, пищевая ценность и рекомендации по хранению будут указаны в карточке каждого товара.',
-                        ),
-                    ],
-                    [
-                        'question' => __('Как правильно хранить продукцию?'),
-                        'answer' => __(
-                            'Условия и сроки хранения зависят от конкретного товара. Следуйте информации на упаковке и в карточке продукта.',
-                        ),
-                    ],
-                    [
-                        'question' => __('Как выбрать подходящий продукт?'),
-                        'answer' => __(
-                            'Изучите описание и состав в карточке товара. Если останутся вопросы, отправьте их через форму на этой странице.',
-                        ),
-                    ],
-                ],
-            ],
-        ];
-    @endphp
-
     <section class="s-page-title inner-page-title">
         <div class="container">
             <x-breadcrumbs :items="[['label' => __('Главная'), 'url' => route('home')], ['label' => __('Вопросы и ответы')]]" />
@@ -111,40 +16,35 @@
             <div class="row gy-30">
                 <div class="col-lg-8">
                     <ul class="faq-list">
-                        @foreach ($faqGroups as $group)
-                            <li class="faq-item">
-                                <h2 class="faq_title h4 text-primary">{{ $group['title'] }}</h2>
+                        <li class="faq-item">
+                            <div class="faq_wrap" id="faq-accordion">
+                                @foreach ($faqs as $faq)
+                                    @php
+                                        $collapseId = "faq-{$faq->getKey()}";
+                                    @endphp
 
-                                <div class="faq_wrap" id="faq-{{ $group['id'] }}">
-                                    @foreach ($group['items'] as $item)
-                                        @php
-                                            $collapseId = "faq-{$group['id']}-{$loop->iteration}";
-                                            $isOpen = $loop->parent->first && $loop->first;
-                                        @endphp
+                                    <div class="accordion-faq">
+                                        <button type="button"
+                                            class="accordion-action{{ $loop->first ? '' : ' collapsed' }} w-100 text-start"
+                                            data-bs-target="#{{ $collapseId }}" data-bs-toggle="collapse"
+                                            aria-expanded="{{ $loop->first ? 'true' : 'false' }}"
+                                            aria-controls="{{ $collapseId }}">
+                                            <span class="text lh-28">{{ $faq->question }}</span>
+                                            <span class="ic-ar" aria-hidden="true">
+                                                <i class="icon-caret-down"></i>
+                                            </span>
+                                        </button>
 
-                                        <div class="accordion-faq">
-                                            <button type="button"
-                                                class="accordion-action{{ $isOpen ? '' : ' collapsed' }} w-100 text-start"
-                                                data-bs-target="#{{ $collapseId }}" data-bs-toggle="collapse"
-                                                aria-expanded="{{ $isOpen ? 'true' : 'false' }}"
-                                                aria-controls="{{ $collapseId }}">
-                                                <span class="text lh-28">{{ $item['question'] }}</span>
-                                                <span class="ic-ar" aria-hidden="true">
-                                                    <i class="icon-caret-down"></i>
-                                                </span>
-                                            </button>
-
-                                            <div id="{{ $collapseId }}" class="collapse{{ $isOpen ? ' show' : '' }}"
-                                                data-bs-parent="#faq-{{ $group['id'] }}">
-                                                <div class="accordion-body">
-                                                    <p>{{ $item['answer'] }}</p>
-                                                </div>
+                                        <div id="{{ $collapseId }}" class="collapse{{ $loop->first ? ' show' : '' }}"
+                                            data-bs-parent="#faq-accordion">
+                                            <div class="accordion-body">
+                                                {!! $faq->renderRichContent('answer') !!}
                                             </div>
                                         </div>
-                                    @endforeach
-                                </div>
-                            </li>
-                        @endforeach
+                                    </div>
+                                @endforeach
+                            </div>
+                        </li>
                     </ul>
                 </div>
 
