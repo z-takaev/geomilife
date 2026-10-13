@@ -1,8 +1,5 @@
 @extends('layouts.base')
 
-@section('title', $promo->title)
-@section('description', $promo->excerpt ?? __('Специальное предложение на натуральные продукты GeoMiLife.'))
-
 @section('content')
     <section class="s-page-title inner-page-title">
         <div class="container">

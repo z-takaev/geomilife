@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Pages\Schemas;
 
 use App\Filament\Forms\Components\SlugField;
+use App\Filament\Resources\SeoMetadata\Schemas\SeoMetadataForm;
 use App\Support\Media\ImageMimeTypes;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TextInput;
@@ -37,6 +38,7 @@ final class PageForm
                 Toggle::make('is_active')
                     ->label('Активна')
                     ->columnSpanFull(),
+                SeoMetadataForm::relationshipSection(),
             ]);
     }
 }

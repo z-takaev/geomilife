@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Promos\Schemas;
 
 use App\Filament\Forms\Components\MediaImageUpload;
 use App\Filament\Forms\Components\SlugField;
+use App\Filament\Resources\SeoMetadata\Schemas\SeoMetadataForm;
 use App\Support\Media\ImageMimeTypes;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\RichEditor;
@@ -60,6 +61,7 @@ final class PromoForm
                 Toggle::make('is_active')
                     ->label('Активна')
                     ->columnSpanFull(),
+                SeoMetadataForm::relationshipSection(),
             ]);
     }
 }

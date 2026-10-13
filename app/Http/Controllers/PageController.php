@@ -5,14 +5,23 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Page;
+use App\Services\Seo\SeoService;
 use Illuminate\Contracts\View\View;
 
 final class PageController extends Controller
 {
+    public function __construct(private readonly SeoService $seoService) {}
+
     public function show(Page $page): View
     {
         abort_unless($page->is_active, 404);
 
-        return view('pages.show', compact('page'));
+        $seo = $this->seoService->forModel(
+            seoable: $page,
+            fallbackTitle: $page->title,
+            fallbackDescription: __('Страница «:title» сайта GeoMiLife.', ['title' => $page->title]),
+        );
+
+        return view('pages.show', compact('page', 'seo'));
     }
 }

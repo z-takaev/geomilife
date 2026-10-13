@@ -3,9 +3,9 @@
 
 <head>
     <meta charset="utf-8">
-    <title>@yield('title', config('app.name', __('Geomilife')))</title>
+    <title>{{ $seo->title ?? config('app.name', __('Geomilife')) }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="description" content="@yield('description', '')">
+    <meta name="description" content="{{ $seo->description ?? '' }}">
 
     <!-- font -->
     <link rel="stylesheet" href="{{ asset('assets/fonts/fonts.css') }}">

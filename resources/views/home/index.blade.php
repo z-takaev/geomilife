@@ -1,8 +1,5 @@
 @extends('layouts.base')
 
-@section('title', __('GeoMiLife — натуральные продукты из Северной Осетии'))
-@section('description', __('Натуральные продукты GeoMiLife с доставкой по России.'))
-
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/swiper-bundle.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/magnific-popup.min.css') }}">

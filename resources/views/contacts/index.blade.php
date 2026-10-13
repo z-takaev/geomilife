@@ -1,8 +1,5 @@
 @extends('layouts.base')
 
-@section('title', __('Контакты'))
-@section('description', __('Контактная информация GeoMiLife и форма обратной связи.'))
-
 @section('content')
     <section class="s-page-title inner-page-title">
         <div class="container">

@@ -1,8 +1,5 @@
 @extends('layouts.base')
 
-@section('title', __('Статьи'))
-@section('description', __('Полезные статьи о натуральных продуктах, питании и здоровых привычках.'))
-
 @section('content')
     <section class="s-page-title inner-page-title">
         <div class="container">

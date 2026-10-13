@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Contracts\Seoable;
 use App\Support\Media\ImageMimeTypes;
 use App\Support\Traits\HasSlug;
+use App\Support\Traits\InteractsWithSeoMetadata;
 use Filament\Forms\Components\RichEditor\FileAttachmentProviders\SpatieMediaLibraryFileAttachmentProvider;
 use Filament\Forms\Components\RichEditor\Models\Concerns\InteractsWithRichContent;
 use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
@@ -16,9 +18,9 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-final class Promo extends Model implements HasMedia, HasRichContent
+final class Promo extends Model implements HasMedia, HasRichContent, Seoable
 {
-    use HasFactory, HasSlug, InteractsWithMedia, InteractsWithRichContent;
+    use HasFactory, HasSlug, InteractsWithMedia, InteractsWithRichContent, InteractsWithSeoMetadata;
 
     protected $fillable = [
         'title',

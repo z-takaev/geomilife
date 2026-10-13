@@ -1,8 +1,5 @@
 @extends('layouts.base')
 
-@section('title', $page->title)
-@section('description', __('Страница «:title» сайта GeoMiLife.', ['title' => $page->title]))
-
 @section('content')
     <section class="s-page-title inner-page-title">
         <div class="container">

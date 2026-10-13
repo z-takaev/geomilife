@@ -1,0 +1,44 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Enums\SeoRoute;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('seo_metadata', function (Blueprint $table): void {
+            $table->id();
+            $table->nullableMorphs('seoable');
+            $table->string('route_name')->nullable()->unique();
+            $table->string('title')->nullable();
+            $table->text('description')->nullable();
+            $table->timestamps();
+
+            $table->unique(['seoable_type', 'seoable_id']);
+        });
+
+        $timestamp = now();
+
+        DB::table('seo_metadata')->insert(array_map(
+            static fn (SeoRoute $route): array => [
+                'route_name' => $route->value,
+                'title' => $route->title(),
+                'description' => $route->description(),
+                'created_at' => $timestamp,
+                'updated_at' => $timestamp,
+            ],
+            SeoRoute::cases(),
+        ));
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('seo_metadata');
+    }
+};
