@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Actions\Images\ProcessImageAction;
 use App\Models\Category;
+use App\Support\Media\FixtureImages;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Spatie\Image\Enums\Fit;
 use Spatie\Image\Image;
@@ -37,16 +36,12 @@ final class CategorySeeder extends Seeder
                 ['name' => $data['name'], 'order' => $index + 1, 'is_active' => true],
             );
 
-            $contents = app(ProcessImageAction::class)->run(
-                File::get(base_path('tests/Fixtures/images/Category/'.$data['image'])),
-                static fn (Image $image): Image => $image->fit(Fit::Fill, 120, 120),
+            app(FixtureImages::class)->attach(
+                model: $category,
+                file: 'Category/'.$data['image'],
+                name: $data['name'],
+                processImage: static fn (Image $image): Image => $image->fit(Fit::Fill, 120, 120),
             );
-
-            $category->clearMediaCollection('image');
-            $category->addMediaFromString($contents)
-                ->usingFileName(pathinfo($data['image'], PATHINFO_FILENAME).'.webp')
-                ->usingName($data['name'])
-                ->toMediaCollection('image');
         }
     }
 }

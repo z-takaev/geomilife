@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Models\Article;
+use App\Support\Media\FixtureImages;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -52,9 +53,7 @@ final class ArticleFactory extends Factory
     public function configure(): static
     {
         return $this->afterCreating(function (Article $article): void {
-            $article
-                ->copyMedia($this->imagePath())
-                ->toMediaCollection('image');
+            app(FixtureImages::class)->attachRandom($article, 'Article');
         });
     }
 
@@ -76,10 +75,5 @@ final class ArticleFactory extends Factory
             'published_at' => now()->subDays($article['published_days_ago']),
             'is_active' => true,
         ];
-    }
-
-    private function imagePath(): string
-    {
-        return base_path('tests/Fixtures/images/Article/article-example.webp');
     }
 }

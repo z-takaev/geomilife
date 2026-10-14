@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Actions\Images\ProcessImageAction;
 use App\Models\HomeSlide;
+use App\Support\Media\FixtureImages;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
-use RuntimeException;
 
 /**
  * @extends Factory<HomeSlide>
@@ -38,16 +36,16 @@ final class HomeSlideFactory extends Factory
         return $this->afterCreating(function (HomeSlide $homeSlide): void {
             $slide = self::SLIDES[$homeSlide->order - 1];
 
-            $this->addImage(
-                $homeSlide,
-                base_path('tests/Fixtures/images/HomeSlide/desktop/'.$slide['desktop']),
-                'desktop_image',
+            app(FixtureImages::class)->attach(
+                model: $homeSlide,
+                file: 'HomeSlide/desktop/'.$slide['desktop'],
+                collection: 'desktop_image',
             );
 
-            $this->addImage(
-                $homeSlide,
-                base_path('tests/Fixtures/images/HomeSlide/mobile/'.$slide['mobile']),
-                'mobile_image',
+            app(FixtureImages::class)->attach(
+                model: $homeSlide,
+                file: 'HomeSlide/mobile/'.$slide['mobile'],
+                collection: 'mobile_image',
             );
         });
     }
@@ -68,20 +66,5 @@ final class HomeSlideFactory extends Factory
             'order' => $slide['order'],
             'is_active' => true,
         ];
-    }
-
-    private function addImage(HomeSlide $homeSlide, string $imagePath, string $collection): void
-    {
-        $imageContents = file_get_contents($imagePath);
-
-        if ($imageContents === false) {
-            throw new RuntimeException("Не удалось прочитать изображение {$imagePath}.");
-        }
-
-        $homeSlide
-            ->addMediaFromString(app(ProcessImageAction::class)->run($imageContents))
-            ->usingName(pathinfo($imagePath, PATHINFO_FILENAME))
-            ->usingFileName(Str::uuid().'.webp')
-            ->toMediaCollection($collection);
     }
 }

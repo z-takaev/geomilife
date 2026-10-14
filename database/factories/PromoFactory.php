@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Models\Promo;
+use App\Support\Media\FixtureImages;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -57,9 +58,7 @@ final class PromoFactory extends Factory
     public function configure(): static
     {
         return $this->afterCreating(function (Promo $promo): void {
-            $promo
-                ->copyMedia($this->imagePath())
-                ->toMediaCollection('image');
+            app(FixtureImages::class)->attachRandom($promo, 'Promo');
         });
     }
 
@@ -83,10 +82,5 @@ final class PromoFactory extends Factory
             'end_at' => $startAt->copy()->addDays($promo['duration_days']),
             'is_active' => true,
         ];
-    }
-
-    private function imagePath(): string
-    {
-        return base_path('tests/Fixtures/images/Promo/promo-example.webp');
     }
 }

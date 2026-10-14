@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Actions\Images\ProcessImageAction;
 use App\Models\Setting;
+use App\Support\Media\FixtureImages;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\File;
 
 final class SettingSeeder extends Seeder
 {
@@ -50,14 +49,10 @@ final class SettingSeeder extends Seeder
 
     private function addImage(Setting $setting, string $collection, string $fileName): void
     {
-        $contents = app(ProcessImageAction::class)->run(
-            File::get(base_path('tests/Fixtures/images/Setting/'.$fileName)),
+        app(FixtureImages::class)->attach(
+            model: $setting,
+            file: 'Setting/'.$fileName,
+            collection: $collection,
         );
-
-        $setting->clearMediaCollection($collection);
-        $setting->addMediaFromString($contents)
-            ->usingName(pathinfo($fileName, PATHINFO_FILENAME))
-            ->usingFileName(pathinfo($fileName, PATHINFO_FILENAME).'.webp')
-            ->toMediaCollection($collection);
     }
 }
