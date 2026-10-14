@@ -9,6 +9,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PromoController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
@@ -19,6 +20,8 @@ Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/contacts', ContactController::class)->name('contacts.index');
 
 Route::get('/faqs', [FaqController::class, 'index'])->name('faqs.index');
+
+Route::get('/reviews', ReviewController::class)->name('reviews.index');
 
 Route::get('/pages/{page}', [PageController::class, 'show'])->name('pages.show');
 

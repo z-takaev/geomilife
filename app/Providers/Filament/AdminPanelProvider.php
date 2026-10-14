@@ -16,6 +16,7 @@ use App\Filament\Resources\Orders\OrderResource;
 use App\Filament\Resources\Pages\PageResource;
 use App\Filament\Resources\Products\ProductResource;
 use App\Filament\Resources\Promos\PromoResource;
+use App\Filament\Resources\Reviews\ReviewResource;
 use App\Filament\Resources\Seo\SeoResource;
 use App\Filament\Resources\Users\UserResource;
 use Filament\Http\Middleware\Authenticate;
@@ -97,6 +98,7 @@ final class AdminPanelProvider extends PanelProvider
                     ...PromoResource::getNavigationItems(),
                     ...NewsResource::getNavigationItems(),
                     ...ArticleResource::getNavigationItems(),
+                    ...ReviewResource::getNavigationItems(),
                     ...FaqResource::getNavigationItems(),
                     ...PageResource::getNavigationItems(),
                 ]),

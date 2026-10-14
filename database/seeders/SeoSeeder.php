@@ -15,6 +15,7 @@ final class SeoSeeder extends Seeder
             'home',
             'contacts.index',
             'faqs.index',
+            'reviews.index',
             'news.index',
             'articles.index',
             'promos.index',

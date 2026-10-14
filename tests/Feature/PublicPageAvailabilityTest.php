@@ -14,6 +14,7 @@ it('открывает публичную страницу', function (string $r
     'главная' => 'home',
     'контакты' => 'contacts.index',
     'вопросы и ответы' => 'faqs.index',
+    'отзывы' => 'reviews.index',
     'список новостей' => 'news.index',
     'список статей' => 'articles.index',
     'список акций' => 'promos.index',

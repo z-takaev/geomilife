@@ -18,6 +18,7 @@ final class SitemapController extends Controller
             ['location' => route('home'), 'lastModified' => null],
             ['location' => route('contacts.index'), 'lastModified' => null],
             ['location' => route('faqs.index'), 'lastModified' => null],
+            ['location' => route('reviews.index'), 'lastModified' => null],
             ['location' => route('news.index'), 'lastModified' => null],
             ['location' => route('articles.index'), 'lastModified' => null],
             ['location' => route('promos.index'), 'lastModified' => null],
