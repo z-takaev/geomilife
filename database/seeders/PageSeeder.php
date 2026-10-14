@@ -13,19 +13,39 @@ final class PageSeeder extends Seeder
     {
         Page::query()->upsert([
             [
-                'key' => 'confidentiality',
-                'title' => 'Конфиденциальность',
-                'slug' => 'konfidentsialnost',
-            ],
-            [
-                'key' => 'policy',
-                'title' => 'Политика',
-                'slug' => 'politika',
+                'key' => 'production',
+                'title' => 'Наше производство',
+                'slug' => 'production',
             ],
             [
                 'key' => 'delivery_payment',
                 'title' => 'Доставка и оплата',
-                'slug' => 'dostavka-i-oplata',
+                'slug' => 'delivery',
+            ],
+            [
+                'key' => 'return_exchange',
+                'title' => 'Возврат и обмен',
+                'slug' => 'returns',
+            ],
+            [
+                'key' => 'about',
+                'title' => 'О нас',
+                'slug' => 'about',
+            ],
+            [
+                'key' => 'confidentiality',
+                'title' => 'Политика конфиденциальности',
+                'slug' => 'policy',
+            ],
+            [
+                'key' => 'policy',
+                'title' => 'Пользовательское соглашение',
+                'slug' => 'terms',
+            ],
+            [
+                'key' => 'quality_control',
+                'title' => 'Контроль качества',
+                'slug' => 'quality-control',
             ],
         ], ['key'], ['title', 'slug']);
     }
