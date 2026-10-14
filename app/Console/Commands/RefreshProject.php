@@ -33,10 +33,6 @@ final class RefreshProject extends Command
             return self::FAILURE;
         }
 
-        if ($this->call('storage:link', ['--force' => true]) !== self::SUCCESS) {
-            return self::FAILURE;
-        }
-
         $this->components->info('Проект обновлён.');
 
         return self::SUCCESS;
