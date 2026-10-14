@@ -11,9 +11,7 @@ final class PageSeeder extends Seeder
 {
     public function run(): void
     {
-        $now = now();
-
-        Page::query()->insertOrIgnore([
+        Page::query()->upsert([
             [
                 'key' => 'confidentiality',
                 'title' => 'Конфиденциальность',
@@ -29,6 +27,6 @@ final class PageSeeder extends Seeder
                 'title' => 'Доставка и оплата',
                 'slug' => 'dostavka-i-oplata',
             ],
-        ]);
+        ], ['key'], ['title', 'slug']);
     }
 }

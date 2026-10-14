@@ -9,6 +9,7 @@ use App\Models\News;
 use App\Models\Page;
 use App\Models\Promo;
 use App\Observers\SeoableObserver;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 
 final class AppServiceProvider extends ServiceProvider
@@ -20,6 +21,8 @@ final class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Paginator::useBootstrapFive();
+
         Article::observe(SeoableObserver::class);
         News::observe(SeoableObserver::class);
         Page::observe(SeoableObserver::class);

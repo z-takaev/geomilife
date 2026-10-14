@@ -32,20 +32,17 @@ final class CategorySeeder extends Seeder
         ];
 
         foreach ($categories as $index => $data) {
-            $category = Category::query()->firstOrCreate(
+            $category = Category::query()->updateOrCreate(
                 ['slug' => Str::slug($data['name'])],
                 ['name' => $data['name'], 'order' => $index + 1, 'is_active' => true],
             );
-
-            if ($category->hasMedia('image')) {
-                continue;
-            }
 
             $contents = app(ProcessImageAction::class)->run(
                 File::get(base_path('tests/Fixtures/images/Category/'.$data['image'])),
                 static fn (Image $image): Image => $image->fit(Fit::Fill, 120, 120),
             );
 
+            $category->clearMediaCollection('image');
             $category->addMediaFromString($contents)
                 ->usingFileName(pathinfo($data['image'], PATHINFO_FILENAME).'.webp')
                 ->usingName($data['name'])

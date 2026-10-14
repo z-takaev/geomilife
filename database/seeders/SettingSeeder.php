@@ -8,7 +8,6 @@ use App\Actions\Images\ProcessImageAction;
 use App\Models\Setting;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 
 final class SettingSeeder extends Seeder
 {
@@ -27,29 +26,22 @@ final class SettingSeeder extends Seeder
 
     public function run(): void
     {
-        $setting = Setting::query()->firstOrNew();
-
-        $setting->fill([
-            'phone' => $setting->phone ?? '+7-9888-731-020',
-            'email' => $setting->email ?? 'geomilife@bk.ru',
-            'address' => $setting->address ?? 'ул. Тамаева 35, Владикавказ',
-            'working_hours' => $setting->working_hours ?? 'Пн–Пт: 09:00–18:00, Сб–Вс: выходной',
-            'instagram_url' => $setting->instagram_url ?? 'https://www.instagram.com/geomilife/',
-            'youtube_url' => $setting->youtube_url ?? 'https://www.youtube.com/@geomilife8532',
-            'vk_url' => $setting->vk_url ?? 'https://vk.ru/geomilifee',
-            'telegram_url' => $setting->telegram_url ?? 'https://t.me/+79888731020',
-            'whatsapp_url' => $setting->whatsapp_url ?? 'https://wa.me/79888731020',
-            'footer_title' => $setting->footer_title ?? 'Натуральные продукты GeoMiLife',
-            'footer_description' => $setting->footer_description
-                ?? 'Сыродавленные масла, урбеч и полезные продукты собственного производства с доставкой по России.',
-            'story_title' => $setting->story_title ?? 'Из сердца Осетии — с заботой о вашем здоровье',
-            'story_description' => $setting->story_description
-                ?? "GeoMiLife выросла из простой идеи: создавать натуральные продукты, в составе которых мы уверены сами. Мы бережно отбираем сырьё, производим масла холодного отжима небольшими партиями и контролируем каждый этап — от семени до готовой бутылки.\n\nПосмотрите короткое видео о людях, принципах и месте, с которых начинается каждый наш продукт.",
-            'story_video_url' => $setting->story_video_url
-                ?? 'https://vkvideo.ru/video_ext.php?oid=-139157852&id=456239750&hash=d79c769f2d5d3f53&hd=3&autoplay=1&js_api=1',
+        $setting = Setting::query()->updateOrCreate([], [
+            'phone' => '+7-9888-731-020',
+            'email' => 'geomilife@bk.ru',
+            'address' => 'ул. Тамаева 35, Владикавказ',
+            'working_hours' => 'Пн–Пт: 09:00–18:00, Сб–Вс: выходной',
+            'instagram_url' => 'https://www.instagram.com/geomilife/',
+            'youtube_url' => 'https://www.youtube.com/@geomilife8532',
+            'vk_url' => 'https://vk.ru/geomilifee',
+            'telegram_url' => 'https://t.me/+79888731020',
+            'whatsapp_url' => 'https://wa.me/79888731020',
+            'footer_title' => 'Натуральные продукты GeoMiLife',
+            'footer_description' => 'Сыродавленные масла, урбеч и полезные продукты собственного производства с доставкой по России.',
+            'story_title' => 'Из сердца Осетии — с заботой о вашем здоровье',
+            'story_description' => "GeoMiLife выросла из простой идеи: создавать натуральные продукты, в составе которых мы уверены сами. Мы бережно отбираем сырьё, производим масла холодного отжима небольшими партиями и контролируем каждый этап — от семени до готовой бутылки.\n\nПосмотрите короткое видео о людях, принципах и месте, с которых начинается каждый наш продукт.",
+            'story_video_url' => 'https://vkvideo.ru/video_ext.php?oid=-139157852&id=456239750&hash=d79c769f2d5d3f53&hd=3&autoplay=1&js_api=1',
         ]);
-
-        $setting->save();
 
         foreach (self::IMAGES as $collection => $fileName) {
             $this->addImage($setting, $collection, $fileName);
@@ -58,21 +50,11 @@ final class SettingSeeder extends Seeder
 
     private function addImage(Setting $setting, string $collection, string $fileName): void
     {
-        $media = $setting->getFirstMedia($collection);
-
-        if ($media !== null) {
-            if (! filled($media->uuid)) {
-                $media->uuid = (string) Str::uuid();
-                $media->save();
-            }
-
-            return;
-        }
-
         $contents = app(ProcessImageAction::class)->run(
             File::get(base_path('tests/Fixtures/images/Setting/'.$fileName)),
         );
 
+        $setting->clearMediaCollection($collection);
         $setting->addMediaFromString($contents)
             ->usingName(pathinfo($fileName, PATHINFO_FILENAME))
             ->usingFileName(pathinfo($fileName, PATHINFO_FILENAME).'.webp')

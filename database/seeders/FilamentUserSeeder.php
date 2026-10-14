@@ -15,10 +15,10 @@ final class FilamentUserSeeder extends Seeder
 
     public function run(): void
     {
-        FilamentUser::query()->firstOrCreate([
+        FilamentUser::query()->updateOrCreate([
             'email' => 'admin@admin.ru',
         ], [
-            'name' => 'Admin',
+            'name' => 'Администратор',
             'password' => Hash::make('admin@admin.ru'),
         ]);
     }

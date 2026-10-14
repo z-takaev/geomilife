@@ -20,7 +20,6 @@ final class DatabaseSeeder extends Seeder
             SettingSeeder::class,
             PageSeeder::class,
             CategorySeeder::class,
-            SeoMetadataSeeder::class,
         ]);
 
         if ($this->container->environment('local')) {
