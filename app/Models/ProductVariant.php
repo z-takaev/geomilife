@@ -16,10 +16,12 @@ final class ProductVariant extends Model
     protected $fillable = [
         'product_id',
         'name',
+        'sku',
         'unit',
         'value',
         'price',
-        'old_price',
+        'discount_percent',
+        'status',
         'is_active',
     ];
 
@@ -38,7 +40,7 @@ final class ProductVariant extends Model
         return [
             'value' => 'decimal:3',
             'price' => 'decimal:2',
-            'old_price' => 'decimal:2',
+            'discount_percent' => 'integer',
             'is_active' => 'boolean',
         ];
     }

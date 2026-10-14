@@ -18,8 +18,6 @@ final class Product extends Model
         'name',
         'slug',
         'description',
-        'sku',
-        'status',
         'is_new',
         'is_hit',
         'is_active',

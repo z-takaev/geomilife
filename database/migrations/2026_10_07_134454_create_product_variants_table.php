@@ -14,10 +14,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->string('name');
+            $table->string('sku')->unique();
             $table->string('unit');
             $table->decimal('value', 12, 3);
             $table->decimal('price', 12, 2);
-            $table->decimal('old_price', 12, 2)->nullable();
+            $table->unsignedTinyInteger('discount_percent')->nullable();
+            $table->string('status');
             $table->boolean('is_active')->default(false);
             $table->timestamps();
 
