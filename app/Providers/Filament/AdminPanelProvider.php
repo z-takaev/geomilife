@@ -51,6 +51,7 @@ final class AdminPanelProvider extends PanelProvider
             ])
             ->brandLogo(asset('assets/images/logo/logo-default.svg'))
             ->darkModeBrandLogo(asset('assets/images/logo/logo-white.svg'))
+            ->brandLogoHeight('1.8rem')
             ->unsavedChangesAlerts()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

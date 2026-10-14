@@ -20,6 +20,8 @@ final class ArticleResource extends Resource
 {
     protected static ?string $model = Article::class;
 
+    protected static ?string $recordTitleAttribute = 'title';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
 
     protected static ?string $navigationLabel = 'Статьи';

@@ -20,6 +20,8 @@ final class NewsResource extends Resource
 {
     protected static ?string $model = News::class;
 
+    protected static ?string $recordTitleAttribute = 'title';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedNewspaper;
 
     protected static ?string $navigationLabel = 'Новости';

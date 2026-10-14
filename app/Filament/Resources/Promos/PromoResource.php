@@ -20,6 +20,8 @@ final class PromoResource extends Resource
 {
     protected static ?string $model = Promo::class;
 
+    protected static ?string $recordTitleAttribute = 'title';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedGift;
 
     protected static ?string $navigationLabel = 'Акции';
