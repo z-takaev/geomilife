@@ -27,6 +27,8 @@ use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
+use Illuminate\Contracts\View\View;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -47,10 +49,17 @@ final class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->brandLogo(asset('assets/images/logo/logo-default.svg'))
+            ->darkModeBrandLogo(asset('assets/images/logo/logo-white.svg'))
+            ->unsavedChangesAlerts()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->navigation(fn (NavigationBuilder $builder): NavigationBuilder => $this->navigation($builder))
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
+            ->renderHook(
+                PanelsRenderHook::USER_MENU_BEFORE,
+                fn (): View => view('filament.components.visit-site-button'),
+            )
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -73,6 +82,7 @@ final class AdminPanelProvider extends PanelProvider
             NavigationGroup::make()
                 ->items([
                     ...Dashboard::getNavigationItems(),
+                    ...UserResource::getNavigationItems(),
                     ...OrderResource::getNavigationItems(),
                 ]),
             NavigationGroup::make('Продукция')
@@ -89,9 +99,8 @@ final class AdminPanelProvider extends PanelProvider
                     ...FaqResource::getNavigationItems(),
                     ...PageResource::getNavigationItems(),
                 ]),
-            NavigationGroup::make()
+            NavigationGroup::make('Настройки')
                 ->items([
-                    ...UserResource::getNavigationItems(),
                     ...CityResource::getNavigationItems(),
                     ...SeoResource::getNavigationItems(),
                     ...ManageSettings::getNavigationItems(),
