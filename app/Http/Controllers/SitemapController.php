@@ -56,7 +56,7 @@ final class SitemapController extends Controller
         );
 
         return response()
-            ->view('sitemap', compact('urls'))
+            ->view('sitemap.index', compact('urls'))
             ->header('Content-Type', 'application/xml; charset=UTF-8');
     }
 }

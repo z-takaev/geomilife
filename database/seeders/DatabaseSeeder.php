@@ -16,8 +16,8 @@ final class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            SettingSeeder::class,
             FilamentUserSeeder::class,
+            SettingSeeder::class,
             PageSeeder::class,
             CategorySeeder::class,
             SeoMetadataSeeder::class,
@@ -25,7 +25,7 @@ final class DatabaseSeeder extends Seeder
 
         if ($this->container->environment('local')) {
             HomeSlide::factory()->count(2)->create();
-            Faq::factory()->count(5)->create();
+            Faq::factory()->count(10)->create();
             Article::factory()->count(5)->create();
             News::factory()->count(5)->create();
             Promo::factory()->count(5)->create();

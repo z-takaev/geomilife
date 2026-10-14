@@ -19,8 +19,8 @@ final class NewsController extends Controller
             ->with('media')
             ->where('is_active', true)
             ->latest('published_at')
-            ->latest('id')
-            ->paginate((int) config('pagination.per_page.news'));
+            ->paginate(config('pagination.per_page.news'));
+
         $seo = $this->seoService->forRoute(SeoRoute::News);
 
         return view('news.index', compact('newsItems', 'seo'));

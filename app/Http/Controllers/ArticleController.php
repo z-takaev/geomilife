@@ -19,8 +19,7 @@ final class ArticleController extends Controller
             ->with('media')
             ->where('is_active', true)
             ->latest('published_at')
-            ->latest('id')
-            ->paginate((int) config('pagination.per_page.articles'));
+            ->paginate(config('pagination.per_page.articles'));
         $seo = $this->seoService->forRoute(SeoRoute::Articles);
 
         return view('articles.index', compact('articles', 'seo'));

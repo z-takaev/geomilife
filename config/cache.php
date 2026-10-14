@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Faq;
 use App\Models\HomeSlide;
+use App\Models\Promo;
 use App\Models\Setting;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
@@ -143,6 +144,7 @@ return [
         Collection::class,
         Faq::class,
         HomeSlide::class,
+        Promo::class,
         Setting::class,
         Media::class,
         MediaCollection::class,

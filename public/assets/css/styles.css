@@ -12525,10 +12525,14 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
 }
 
 .home-offer-description {
+    display: -webkit-box;
+    overflow: hidden;
     margin-top: 14px;
     color: var(--text-2);
     font-size: 16px;
     line-height: 1.6;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
 }
 
 .home-offer-link {

@@ -19,8 +19,8 @@ final class PromoController extends Controller
             ->with('media')
             ->where('is_active', true)
             ->latest('start_at')
-            ->latest('id')
-            ->paginate((int) config('pagination.per_page.promos'));
+            ->paginate(config('pagination.per_page.promos'));
+
         $seo = $this->seoService->forRoute(SeoRoute::Promos);
 
         return view('promos.index', compact('promos', 'seo'));

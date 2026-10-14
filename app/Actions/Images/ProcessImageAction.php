@@ -36,7 +36,6 @@ final class ProcessImageAction
             $image = Image::useImageDriver(ImageDriver::Imagick)->loadFile($sourcePath);
             $processImage?->__invoke($image);
 
-            // PNG передаёт результат обработки кодировщику без промежуточного сжатия с потерями.
             $encodedImage->readImageBlob(base64_decode($image->base64('png', false), true));
             $encodedImage->transformImageColorspace(Imagick::COLORSPACE_SRGB);
             $encodedImage->stripImage();
