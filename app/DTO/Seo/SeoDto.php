@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\DTO\Seo;
 
-final readonly class SeoData
+final readonly class SeoDto
 {
     public function __construct(
         public string $title,
-        public string $description,
+        public ?string $description,
     ) {}
 }

@@ -6,7 +6,7 @@ namespace App\Models;
 
 use App\Contracts\Seoable;
 use App\Support\Media\ImageMimeTypes;
-use App\Support\Traits\InteractsWithSeoMetadata;
+use App\Support\Traits\WithSeo;
 use Filament\Forms\Components\RichEditor\FileAttachmentProviders\SpatieMediaLibraryFileAttachmentProvider;
 use Filament\Forms\Components\RichEditor\Models\Concerns\InteractsWithRichContent;
 use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
@@ -16,7 +16,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 final class Page extends Model implements HasMedia, HasRichContent, Seoable
 {
-    use InteractsWithMedia, InteractsWithRichContent, InteractsWithSeoMetadata;
+    use InteractsWithMedia, InteractsWithRichContent, WithSeo;
 
     protected $fillable = [
         'key',

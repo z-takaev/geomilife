@@ -8,5 +8,5 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 interface Seoable
 {
-    public function seoMetadata(): MorphOne;
+    public function seo(): MorphOne;
 }

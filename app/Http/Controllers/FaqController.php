@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Enums\SeoRoute;
 use App\Models\Faq;
 use App\Services\Seo\SeoService;
 use Illuminate\Contracts\View\View;
@@ -16,7 +15,10 @@ final class FaqController extends Controller
     public function index(): View
     {
         $faqs = Faq::cached();
-        $seo = $this->seoService->forRoute(SeoRoute::Faqs);
+        $seo = $this->seoService->forRoute(
+            routeName: 'faqs.index',
+            fallbackTitle: __('Вопросы и ответы'),
+        );
 
         return view('faqs.index', compact('faqs', 'seo'));
     }

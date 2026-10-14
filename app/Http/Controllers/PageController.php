@@ -19,7 +19,6 @@ final class PageController extends Controller
         $seo = $this->seoService->forModel(
             seoable: $page,
             fallbackTitle: $page->title,
-            fallbackDescription: __('Страница «:title» сайта GeoMiLife.', ['title' => $page->title]),
         );
 
         return view('pages.show', compact('page', 'seo'));

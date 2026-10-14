@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Filament\Resources\SeoMetadata;
+namespace App\Filament\Resources\Seo;
 
-use App\Filament\Resources\SeoMetadata\Pages\EditSeoMetadata;
-use App\Filament\Resources\SeoMetadata\Pages\ListSeoMetadata;
-use App\Filament\Resources\SeoMetadata\Schemas\SeoMetadataForm;
-use App\Filament\Resources\SeoMetadata\Tables\SeoMetadataTable;
-use App\Models\SeoMetadata;
+use App\Filament\Resources\Seo\Pages\EditSeo;
+use App\Filament\Resources\Seo\Pages\ListSeo;
+use App\Filament\Resources\Seo\Schemas\SeoForm;
+use App\Filament\Resources\Seo\Tables\SeoTable;
+use App\Models\Seo;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -17,9 +17,11 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-final class SeoMetadataResource extends Resource
+final class SeoResource extends Resource
 {
-    protected static ?string $model = SeoMetadata::class;
+    protected static ?string $model = Seo::class;
+
+    protected static ?string $slug = 'seo';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMagnifyingGlass;
 
@@ -48,12 +50,12 @@ final class SeoMetadataResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return SeoMetadataForm::configure($schema);
+        return SeoForm::configure($schema);
     }
 
     public static function table(Table $table): Table
     {
-        return SeoMetadataTable::configure($table);
+        return SeoTable::configure($table);
     }
 
     public static function getEloquentQuery(): Builder
@@ -65,8 +67,8 @@ final class SeoMetadataResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListSeoMetadata::route('/'),
-            'edit' => EditSeoMetadata::route('/{record}/edit'),
+            'index' => ListSeo::route('/'),
+            'edit' => EditSeo::route('/{record}/edit'),
         ];
     }
 }

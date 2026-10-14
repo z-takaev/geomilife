@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Enums\SeoRoute;
 use App\Models\HomeSlide;
 use App\Models\Promo;
 use App\Services\Seo\SeoService;
@@ -18,7 +17,10 @@ final class HomeController extends Controller
     {
         $slides = HomeSlide::cached();
         $promos = Promo::cached();
-        $seo = $this->seoService->forRoute(SeoRoute::Home);
+        $seo = $this->seoService->forRoute(
+            routeName: 'home',
+            fallbackTitle: __('GeoMiLife — натуральные продукты из Северной Осетии'),
+        );
 
         return view('home.index', compact('slides', 'promos', 'seo'));
     }

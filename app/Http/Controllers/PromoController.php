@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Enums\SeoRoute;
 use App\Models\Promo;
 use App\Services\Seo\SeoService;
 use Illuminate\Contracts\View\View;
@@ -21,7 +20,10 @@ final class PromoController extends Controller
             ->latest('start_at')
             ->paginate(config('pagination.per_page.promos'));
 
-        $seo = $this->seoService->forRoute(SeoRoute::Promos);
+        $seo = $this->seoService->forRoute(
+            routeName: 'promos.index',
+            fallbackTitle: __('Акции'),
+        );
 
         return view('promos.index', compact('promos', 'seo'));
     }
@@ -33,7 +35,6 @@ final class PromoController extends Controller
         $seo = $this->seoService->forModel(
             seoable: $promo,
             fallbackTitle: $promo->title,
-            fallbackDescription: $promo->excerpt ?? __('Специальное предложение на натуральные продукты GeoMiLife.'),
         );
 
         return view('promos.show', compact('promo', 'seo'));

@@ -5,35 +5,32 @@ declare(strict_types=1);
 namespace App\Services\Seo;
 
 use App\Contracts\Seoable;
-use App\DTO\Seo\SeoData;
-use App\Enums\SeoRoute;
-use App\Models\SeoMetadata;
+use App\DTO\Seo\SeoDto;
+use App\Models\Seo;
 
 final class SeoService
 {
-    public function forModel(Seoable $seoable, string $fallbackTitle, string $fallbackDescription): SeoData
+    public function forModel(Seoable $seoable, string $fallbackTitle): SeoDto
     {
         return $this->resolve(
-            metadata: $seoable->seoMetadata()->first(),
+            seo: $seoable->seo()->first(),
             fallbackTitle: $fallbackTitle,
-            fallbackDescription: $fallbackDescription,
         );
     }
 
-    public function forRoute(SeoRoute $route): SeoData
+    public function forRoute(string $routeName, string $fallbackTitle): SeoDto
     {
         return $this->resolve(
-            metadata: SeoMetadata::query()->where('route_name', $route->value)->first(),
-            fallbackTitle: $route->title(),
-            fallbackDescription: $route->description(),
+            seo: Seo::query()->where('route_name', $routeName)->first(),
+            fallbackTitle: $fallbackTitle,
         );
     }
 
-    private function resolve(?SeoMetadata $metadata, string $fallbackTitle, string $fallbackDescription): SeoData
+    private function resolve(?Seo $seo, string $fallbackTitle): SeoDto
     {
-        return new SeoData(
-            title: filled($metadata?->title) ? trim($metadata->title) : $fallbackTitle,
-            description: filled($metadata?->description) ? trim($metadata->description) : $fallbackDescription,
+        return new SeoDto(
+            title: filled($seo?->title) ? trim($seo->title) : $fallbackTitle,
+            description: filled($seo?->description) ? trim($seo->description) : null,
         );
     }
 }

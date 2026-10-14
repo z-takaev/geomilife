@@ -7,7 +7,7 @@ namespace App\Models;
 use App\Contracts\Seoable;
 use App\Support\Media\ImageMimeTypes;
 use App\Support\Traits\HasSlug;
-use App\Support\Traits\InteractsWithSeoMetadata;
+use App\Support\Traits\WithSeo;
 use Filament\Forms\Components\RichEditor\FileAttachmentProviders\SpatieMediaLibraryFileAttachmentProvider;
 use Filament\Forms\Components\RichEditor\Models\Concerns\InteractsWithRichContent;
 use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
@@ -20,7 +20,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 final class News extends Model implements HasMedia, HasRichContent, Seoable
 {
-    use HasFactory, HasSlug, InteractsWithMedia, InteractsWithRichContent, InteractsWithSeoMetadata;
+    use HasFactory, HasSlug, InteractsWithMedia, InteractsWithRichContent, WithSeo;
 
     protected $fillable = [
         'title',

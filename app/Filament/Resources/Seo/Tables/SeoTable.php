@@ -2,23 +2,24 @@
 
 declare(strict_types=1);
 
-namespace App\Filament\Resources\SeoMetadata\Tables;
+namespace App\Filament\Resources\Seo\Tables;
 
-use App\Enums\SeoRoute;
+use App\Models\Seo;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
-final class SeoMetadataTable
+final class SeoTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('route_name')
+                TextColumn::make('path')
                     ->label('Страница')
-                    ->formatStateUsing(static fn (string $state): string => SeoRoute::tryFrom($state)?->label() ?? $state)
-                    ->sortable(),
+                    ->url(static fn (Seo $record): ?string => $record->url)
+                    ->openUrlInNewTab()
+                    ->placeholder('Страница недоступна'),
                 TextColumn::make('title')
                     ->label('SEO-заголовок')
                     ->searchable(),

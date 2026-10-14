@@ -6,7 +6,7 @@ namespace App\Filament\Resources\News\Schemas;
 
 use App\Filament\Forms\Components\MediaImageUpload;
 use App\Filament\Forms\Components\SlugField;
-use App\Filament\Resources\SeoMetadata\Schemas\SeoMetadataForm;
+use App\Filament\Resources\Seo\Schemas\SeoForm;
 use App\Support\Media\ImageMimeTypes;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\RichEditor;
@@ -57,7 +57,7 @@ final class NewsForm
                 Toggle::make('is_active')
                     ->label('Активна')
                     ->columnSpanFull(),
-                SeoMetadataForm::relationshipSection(),
+                SeoForm::relationshipSection(),
             ]);
     }
 }

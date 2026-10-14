@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Enums\SeoRoute;
 use App\Models\Article;
 use App\Services\Seo\SeoService;
 use Illuminate\Contracts\View\View;
@@ -20,7 +19,11 @@ final class ArticleController extends Controller
             ->where('is_active', true)
             ->latest('published_at')
             ->paginate(config('pagination.per_page.articles'));
-        $seo = $this->seoService->forRoute(SeoRoute::Articles);
+
+        $seo = $this->seoService->forRoute(
+            routeName: 'articles.index',
+            fallbackTitle: __('Статьи'),
+        );
 
         return view('articles.index', compact('articles', 'seo'));
     }
@@ -32,7 +35,6 @@ final class ArticleController extends Controller
         $seo = $this->seoService->forModel(
             seoable: $article,
             fallbackTitle: $article->title,
-            fallbackDescription: $article->excerpt ?? __('Полезная статья о натуральных продуктах GeoMiLife.'),
         );
 
         return view('articles.show', compact('article', 'seo'));

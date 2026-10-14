@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Enums\SeoRoute;
 use App\Models\News;
 use App\Services\Seo\SeoService;
 use Illuminate\Contracts\View\View;
@@ -21,7 +20,10 @@ final class NewsController extends Controller
             ->latest('published_at')
             ->paginate(config('pagination.per_page.news'));
 
-        $seo = $this->seoService->forRoute(SeoRoute::News);
+        $seo = $this->seoService->forRoute(
+            routeName: 'news.index',
+            fallbackTitle: __('Новости'),
+        );
 
         return view('news.index', compact('newsItems', 'seo'));
     }
@@ -33,7 +35,6 @@ final class NewsController extends Controller
         $seo = $this->seoService->forModel(
             seoable: $news,
             fallbackTitle: $news->title,
-            fallbackDescription: $news->excerpt ?? __('Новости производства натуральных продуктов GeoMiLife.'),
         );
 
         return view('news.show', compact('news', 'seo'));
