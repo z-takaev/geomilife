@@ -18,6 +18,13 @@ final class CartItem extends Model
         'quantity',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'quantity' => 'integer',
+        ];
+    }
+
     public function cart(): BelongsTo
     {
         return $this->belongsTo(Cart::class);
@@ -26,12 +33,5 @@ final class CartItem extends Model
     public function productVariant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class);
-    }
-
-    protected function casts(): array
-    {
-        return [
-            'quantity' => 'integer',
-        ];
     }
 }

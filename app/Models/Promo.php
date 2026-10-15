@@ -36,6 +36,26 @@ final class Promo extends Model implements HasMedia, HasRichContent, Seoable
         'is_active',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'start_at' => 'date',
+            'end_at' => 'date',
+            'is_active' => 'boolean',
+        ];
+    }
+
+    protected static function booted(): void
+    {
+        self::saved(static function (): void {
+            Cache::forget(self::CACHE_KEY);
+        });
+
+        self::deleted(static function (): void {
+            Cache::forget(self::CACHE_KEY);
+        });
+    }
+
     public function getRouteKeyName(): string
     {
         return 'slug';
@@ -57,17 +77,6 @@ final class Promo extends Model implements HasMedia, HasRichContent, Seoable
                 ->limit(3)
                 ->get(),
         );
-    }
-
-    protected static function booted(): void
-    {
-        self::saved(static function (): void {
-            Cache::forget(self::CACHE_KEY);
-        });
-
-        self::deleted(static function (): void {
-            Cache::forget(self::CACHE_KEY);
-        });
     }
 
     public function registerMediaCollections(): void
@@ -93,14 +102,5 @@ final class Promo extends Model implements HasMedia, HasRichContent, Seoable
         $this->registerRichContent('content')
             ->fileAttachmentsVisibility('public')
             ->fileAttachmentProvider(SpatieMediaLibraryFileAttachmentProvider::make());
-    }
-
-    protected function casts(): array
-    {
-        return [
-            'start_at' => 'date',
-            'end_at' => 'date',
-            'is_active' => 'boolean',
-        ];
     }
 }

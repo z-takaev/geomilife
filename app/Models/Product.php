@@ -33,6 +33,31 @@ final class Product extends Model implements HasMedia, Seoable
         'is_active',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'is_new' => 'boolean',
+            'is_hit' => 'boolean',
+            'is_active' => 'boolean',
+        ];
+    }
+
+    protected static function booted(): void
+    {
+        self::saved(static function (): void {
+            app(CategoryRepository::class)->forget();
+        });
+
+        self::deleted(static function (): void {
+            app(CategoryRepository::class)->forget();
+        });
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
@@ -77,11 +102,6 @@ final class Product extends Model implements HasMedia, Seoable
             );
     }
 
-    public function getRouteKeyName(): string
-    {
-        return 'slug';
-    }
-
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('image')
@@ -103,25 +123,5 @@ final class Product extends Model implements HasMedia, Seoable
     protected function getSlugSourceAttribute(): string
     {
         return 'name';
-    }
-
-    protected static function booted(): void
-    {
-        self::saved(static function (): void {
-            app(CategoryRepository::class)->forget();
-        });
-
-        self::deleted(static function (): void {
-            app(CategoryRepository::class)->forget();
-        });
-    }
-
-    protected function casts(): array
-    {
-        return [
-            'is_new' => 'boolean',
-            'is_hit' => 'boolean',
-            'is_active' => 'boolean',
-        ];
     }
 }

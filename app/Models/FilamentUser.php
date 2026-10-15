@@ -30,11 +30,6 @@ final class FilamentUser extends Authenticatable implements FilamentUserContract
         'remember_token',
     ];
 
-    public function canAccessPanel(Panel $panel): bool
-    {
-        return $panel->getId() === 'admin';
-    }
-
     /**
      * @return array<string, string>
      */
@@ -43,5 +38,10 @@ final class FilamentUser extends Authenticatable implements FilamentUserContract
         return [
             'password' => 'hashed',
         ];
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $panel->getId() === 'admin';
     }
 }

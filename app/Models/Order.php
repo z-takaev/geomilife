@@ -28,6 +28,15 @@ final class Order extends Model
         'comment',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'delivery_price' => 'decimal:2',
+            'total' => 'decimal:2',
+            'delivery_address' => 'array',
+        ];
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -41,14 +50,5 @@ final class Order extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
-    }
-
-    protected function casts(): array
-    {
-        return [
-            'delivery_price' => 'decimal:2',
-            'total' => 'decimal:2',
-            'delivery_address' => 'array',
-        ];
     }
 }

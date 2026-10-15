@@ -28,6 +28,19 @@ final class ProductVariant extends Model
         'order',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'value' => 'decimal:3',
+            'price' => 'decimal:2',
+            'discount_percent' => 'integer',
+            'status' => ProductAvailability::class,
+            'unit' => ProductUnit::class,
+            'is_active' => 'boolean',
+            'order' => 'integer',
+        ];
+    }
+
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
@@ -48,18 +61,5 @@ final class ProductVariant extends Model
         $value = rtrim(rtrim($this->value, '0'), '.');
 
         return sprintf('%s %s', $value === '' ? '0' : $value, $this->unit->getLabel());
-    }
-
-    protected function casts(): array
-    {
-        return [
-            'value' => 'decimal:3',
-            'price' => 'decimal:2',
-            'discount_percent' => 'integer',
-            'status' => ProductAvailability::class,
-            'unit' => ProductUnit::class,
-            'is_active' => 'boolean',
-            'order' => 'integer',
-        ];
     }
 }

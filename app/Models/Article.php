@@ -31,6 +31,14 @@ final class Article extends Model implements HasMedia, HasRichContent, Seoable
         'is_active',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'published_at' => 'date',
+            'is_active' => 'boolean',
+        ];
+    }
+
     public function getRouteKeyName(): string
     {
         return 'slug';
@@ -59,13 +67,5 @@ final class Article extends Model implements HasMedia, HasRichContent, Seoable
         $this->registerRichContent('content')
             ->fileAttachmentsVisibility('public')
             ->fileAttachmentProvider(SpatieMediaLibraryFileAttachmentProvider::make());
-    }
-
-    protected function casts(): array
-    {
-        return [
-            'published_at' => 'date',
-            'is_active' => 'boolean',
-        ];
     }
 }

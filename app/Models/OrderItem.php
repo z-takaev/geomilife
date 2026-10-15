@@ -26,11 +26,6 @@ final class OrderItem extends Model
         'total',
     ];
 
-    public function order(): BelongsTo
-    {
-        return $this->belongsTo(Order::class);
-    }
-
     protected function casts(): array
     {
         return [
@@ -38,5 +33,10 @@ final class OrderItem extends Model
             'quantity' => 'integer',
             'total' => 'decimal:2',
         ];
+    }
+
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class);
     }
 }

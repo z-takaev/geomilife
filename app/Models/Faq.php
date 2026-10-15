@@ -31,6 +31,17 @@ final class Faq extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        self::saved(static function (): void {
+            Cache::forget(self::CACHE_KEY);
+        });
+
+        self::deleted(static function (): void {
+            Cache::forget(self::CACHE_KEY);
+        });
+    }
+
     /**
      * @return Collection<int, self>
      */
@@ -44,16 +55,5 @@ final class Faq extends Model
                 ->orderBy('order')
                 ->get(),
         );
-    }
-
-    protected static function booted(): void
-    {
-        self::saved(static function (): void {
-            Cache::forget(self::CACHE_KEY);
-        });
-
-        self::deleted(static function (): void {
-            Cache::forget(self::CACHE_KEY);
-        });
     }
 }

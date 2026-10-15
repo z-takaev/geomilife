@@ -25,6 +25,13 @@ final class Address extends Model
         'is_default',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'is_default' => 'boolean',
+        ];
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -33,12 +40,5 @@ final class Address extends Model
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
-    }
-
-    protected function casts(): array
-    {
-        return [
-            'is_default' => 'boolean',
-        ];
     }
 }

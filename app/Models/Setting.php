@@ -16,8 +16,6 @@ final class Setting extends Model implements HasMedia
 {
     use InteractsWithMedia;
 
-    private const string CACHE_KEY = 'site_setting';
-
     /**
      * @var list<string>
      */
@@ -30,6 +28,8 @@ final class Setting extends Model implements HasMedia
         'banner_triple_second_image',
         'banner_triple_third_image',
     ];
+
+    private const string CACHE_KEY = 'site_setting';
 
     /**
      * @var list<string>
@@ -50,6 +50,17 @@ final class Setting extends Model implements HasMedia
         'story_description',
         'story_video_url',
     ];
+
+    protected static function booted(): void
+    {
+        self::saved(static function (): void {
+            Cache::forget(self::CACHE_KEY);
+        });
+
+        self::deleted(static function (): void {
+            Cache::forget(self::CACHE_KEY);
+        });
+    }
 
     public static function cached(): ?self
     {
@@ -87,17 +98,6 @@ final class Setting extends Model implements HasMedia
             'muted' => 0,
             'js_api' => 1,
         ]);
-    }
-
-    protected static function booted(): void
-    {
-        self::saved(static function (): void {
-            Cache::forget(self::CACHE_KEY);
-        });
-
-        self::deleted(static function (): void {
-            Cache::forget(self::CACHE_KEY);
-        });
     }
 
     public function registerMediaCollections(): void

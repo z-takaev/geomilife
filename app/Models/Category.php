@@ -27,6 +27,26 @@ final class Category extends Model implements HasMedia
         'is_active',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'parent_id' => 'integer',
+            'order' => 'integer',
+            'is_active' => 'boolean',
+        ];
+    }
+
+    protected static function booted(): void
+    {
+        self::saved(static function (): void {
+            app(CategoryRepository::class)->forget();
+        });
+
+        self::deleted(static function (): void {
+            app(CategoryRepository::class)->forget();
+        });
+    }
+
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
@@ -58,27 +78,5 @@ final class Category extends Model implements HasMedia
     protected function getSlugSourceAttribute(): string
     {
         return 'name';
-    }
-
-
-
-    protected static function booted(): void
-    {
-        self::saved(static function (): void {
-            app(CategoryRepository::class)->forget();
-        });
-
-        self::deleted(static function (): void {
-            app(CategoryRepository::class)->forget();
-        });
-    }
-
-    protected function casts(): array
-    {
-        return [
-            'parent_id' => 'integer',
-            'order' => 'integer',
-            'is_active' => 'boolean',
-        ];
     }
 }

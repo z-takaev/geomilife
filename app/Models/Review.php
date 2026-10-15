@@ -30,6 +30,17 @@ final class Review extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        self::saved(static function (): void {
+            Cache::forget(self::CACHE_KEY);
+        });
+
+        self::deleted(static function (): void {
+            Cache::forget(self::CACHE_KEY);
+        });
+    }
+
     /**
      * @return Collection<int, self>
      */
@@ -50,16 +61,5 @@ final class Review extends Model
         );
 
         return self::hydrate($reviews);
-    }
-
-    protected static function booted(): void
-    {
-        self::saved(static function (): void {
-            Cache::forget(self::CACHE_KEY);
-        });
-
-        self::deleted(static function (): void {
-            Cache::forget(self::CACHE_KEY);
-        });
     }
 }

@@ -21,16 +21,16 @@ final class Payment extends Model
         'payload',
     ];
 
-    public function order(): BelongsTo
-    {
-        return $this->belongsTo(Order::class);
-    }
-
     protected function casts(): array
     {
         return [
             'amount' => 'decimal:2',
             'payload' => 'array',
         ];
+    }
+
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class);
     }
 }

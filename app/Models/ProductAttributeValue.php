@@ -21,6 +21,13 @@ final class ProductAttributeValue extends Model
         'order',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'order' => 'integer',
+        ];
+    }
+
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
@@ -29,12 +36,5 @@ final class ProductAttributeValue extends Model
     public function productAttribute(): BelongsTo
     {
         return $this->belongsTo(ProductAttribute::class);
-    }
-
-    protected function casts(): array
-    {
-        return [
-            'order' => 'integer',
-        ];
     }
 }

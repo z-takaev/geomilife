@@ -33,6 +33,18 @@ final class User extends Authenticatable
         'remember_token',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'birth_date' => 'date',
+            'email_verified_at' => 'datetime',
+            'phone_verified_at' => 'datetime',
+            'is_blocked' => 'boolean',
+            'telegram_notifications_enabled' => 'boolean',
+            'password' => 'hashed',
+        ];
+    }
+
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
@@ -56,17 +68,5 @@ final class User extends Authenticatable
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
-    }
-
-    protected function casts(): array
-    {
-        return [
-            'birth_date' => 'date',
-            'email_verified_at' => 'datetime',
-            'phone_verified_at' => 'datetime',
-            'is_blocked' => 'boolean',
-            'telegram_notifications_enabled' => 'boolean',
-            'password' => 'hashed',
-        ];
     }
 }
