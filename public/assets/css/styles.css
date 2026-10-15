@@ -12565,6 +12565,73 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
     min-width: 0;
 }
 
+.home-reviews-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 30px;
+}
+
+.home-review-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 310px;
+    padding: 32px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background-color: var(--surface);
+    animation-delay: var(--review-delay);
+    transition:
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        transform 0.25s ease;
+}
+
+.home-review-card:hover {
+    border-color: rgba(5, 48, 47, 0.24);
+    box-shadow: 0 16px 40px rgba(5, 48, 47, 0.08);
+    transform: translateY(-4px);
+}
+
+.home-review-quote {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 22px;
+    border-radius: 50%;
+    background-color: var(--secondary);
+    color: var(--primary);
+    font-family: Georgia, serif;
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 66px;
+    text-align: center;
+}
+
+.home-review-text {
+    margin-bottom: 28px;
+    color: var(--primary);
+    font-size: 17px;
+    line-height: 1.65;
+}
+
+.home-review-footer {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+}
+
+.home-review-author {
+    margin-bottom: 5px;
+    color: var(--primary);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.home-review-date {
+    color: var(--text-2);
+    font-size: 13px;
+    line-height: 20px;
+}
+
 @media (max-width: 991px) {
     .home-offers-scroll {
         overflow-x: auto;
@@ -12602,6 +12669,15 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
         flex: 0 0 min(340px, calc(100vw - 75px));
         width: min(340px, calc(100vw - 75px));
         scroll-snap-align: start;
+    }
+
+    .home-reviews-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 15px;
+    }
+
+    .home-review-card:last-child:nth-child(odd) {
+        grid-column: 1 / -1;
     }
 }
 
@@ -12755,6 +12831,19 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
     .home-offers-section {
         padding-top: 50px;
         padding-bottom: 50px;
+    }
+
+    .home-reviews-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .home-review-card {
+        min-height: 280px;
+        padding: 26px 22px;
+    }
+
+    .home-review-card:last-child:nth-child(odd) {
+        grid-column: auto;
     }
 }
 

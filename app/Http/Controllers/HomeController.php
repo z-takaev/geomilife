@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\HomeSlide;
 use App\Models\Promo;
+use App\Models\Review;
 use App\Services\Seo\SeoService;
 use Illuminate\Contracts\View\View;
 
@@ -17,11 +18,12 @@ final class HomeController extends Controller
     {
         $slides = HomeSlide::cached();
         $promos = Promo::cached();
+        $reviews = Review::cached();
         $seo = $this->seoService->forRoute(
             routeName: 'home',
             fallbackTitle: __('GeoMiLife — натуральные продукты из Северной Осетии'),
         );
 
-        return view('home.index', compact('slides', 'promos', 'seo'));
+        return view('home.index', compact('slides', 'promos', 'reviews', 'seo'));
     }
 }

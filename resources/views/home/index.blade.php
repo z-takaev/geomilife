@@ -32,5 +32,6 @@
         'productOrder' => [2, 5, 4, 0, 3, 1],
     ])
     @include('partials.home.latest-promos')
+    @include('partials.home.reviews')
     @include('partials.home.company-story')
 @endsection
