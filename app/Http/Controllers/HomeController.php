@@ -26,9 +26,11 @@ final class HomeController extends Controller
         $promos = Promo::cached();
         $reviews = Review::cached();
         $featuredCategories = $this->categoryRepository->getFeatured();
-        $hitProducts = $this->productRepository->getHits();
-        $newProducts = $this->productRepository->getNewProducts();
-        $discountedProducts = $this->productRepository->getDiscountedProducts();
+        [
+            'hitProducts' => $hitProducts,
+            'newProducts' => $newProducts,
+            'discountedProducts' => $discountedProducts,
+        ] = $this->productRepository->getHomeProducts();
         $seo = $this->seoService->forRoute(
             routeName: 'home',
             fallbackTitle: config('app.name'),

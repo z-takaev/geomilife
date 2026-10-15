@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\Seoable;
+use App\Repositories\Categories\CategoryRepository;
 use App\Support\Media\ImageMimeTypes;
 use App\Support\Traits\HasSlug;
 use App\Support\Traits\WithSeo;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -51,6 +53,30 @@ final class Product extends Model implements HasMedia, Seoable
         return $this->hasMany(Favorite::class);
     }
 
+    public function scopeActive(Builder $query): void
+    {
+        $query->where('is_active', true);
+    }
+
+    public function scopeAvailable(Builder $query): void
+    {
+        $query
+            ->active()
+            ->whereHas('variants', static fn (Builder $query): Builder => $query->active());
+    }
+
+    public function scopeDiscounted(Builder $query): void
+    {
+        $query
+            ->active()
+            ->whereHas(
+                'variants',
+                static fn (Builder $query): Builder => $query
+                    ->active()
+                    ->where('discount_percent', '>', 0),
+            );
+    }
+
     public function getRouteKeyName(): string
     {
         return 'slug';
@@ -77,6 +103,17 @@ final class Product extends Model implements HasMedia, Seoable
     protected function getSlugSourceAttribute(): string
     {
         return 'name';
+    }
+
+    protected static function booted(): void
+    {
+        self::saved(static function (): void {
+            app(CategoryRepository::class)->forget();
+        });
+
+        self::deleted(static function (): void {
+            app(CategoryRepository::class)->forget();
+        });
     }
 
     protected function casts(): array

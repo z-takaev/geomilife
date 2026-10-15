@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Repositories\Categories\CategoryRepository;
 use App\Support\Media\ImageMimeTypes;
 use App\Support\Traits\HasSlug;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -30,6 +32,16 @@ final class Category extends Model implements HasMedia
         return $this->hasMany(Product::class);
     }
 
+    public function activeProducts(): HasMany
+    {
+        return $this->products()->active();
+    }
+
+    public function scopeActive(Builder $query): void
+    {
+        $query->where('is_active', true);
+    }
+
     public function canBeDeleted(): bool
     {
         return ! ($this->children_exists ?? $this->children()->exists())
@@ -46,6 +58,19 @@ final class Category extends Model implements HasMedia
     protected function getSlugSourceAttribute(): string
     {
         return 'name';
+    }
+
+
+
+    protected static function booted(): void
+    {
+        self::saved(static function (): void {
+            app(CategoryRepository::class)->forget();
+        });
+
+        self::deleted(static function (): void {
+            app(CategoryRepository::class)->forget();
+        });
     }
 
     protected function casts(): array

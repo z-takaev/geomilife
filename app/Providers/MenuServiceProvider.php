@@ -74,7 +74,7 @@ final class MenuServiceProvider extends ServiceProvider
      */
     private function catalog(CategoryRepository $categoryRepository): array
     {
-        return $categoryRepository->getActiveTree()
+        return $categoryRepository->getActiveCatalog()
             ->map(fn (Category $category): MenuItem => $this->categoryMenuItem($category))
             ->all();
     }
