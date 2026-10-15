@@ -37,6 +37,13 @@ final class ProductVariant extends Model
         return $this->hasMany(CartItem::class);
     }
 
+    public function label(): string
+    {
+        $value = rtrim(rtrim($this->value, '0'), '.');
+
+        return sprintf('%s %s', $value === '' ? '0' : $value, $this->unit->getLabel());
+    }
+
     protected function casts(): array
     {
         return [

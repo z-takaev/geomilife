@@ -1,24 +1,41 @@
-@props([
-    'image',
-    'price',
-    'name',
-    'badge' => null,
-    'badgeVariant' => 'default',
-    'oldPrice' => null,
-    'weights' => [__('250 г'), __('500 г'), __('750 г'), __('1 кг')],
-])
+@props(['product'])
+
+@php
+    $discountPercent = $product->variants->max('discount_percent');
+    $imageUrl = $product->getFirstMediaUrl('image', 'card');
+    $selectedVariant = $product->variants->first();
+    $oldPrice = $selectedVariant?->discount_percent === null ? null : (float) $selectedVariant->price;
+    $price =
+        $oldPrice === null
+            ? (float) $selectedVariant->price
+            : ($oldPrice * (100 - $selectedVariant->discount_percent)) / 100;
+    $formatPrice = static fn(float $value): string => number_format($value, 0, '', ' ');
+@endphp
 
 <div class="swiper-slide">
     <article class="card-product home-product-card">
         <div class="card-product_wrapper home-product-card__media">
-            <a href="#" class="product-img" aria-label="{{ $name }}">
-                <img class="img-product" width="300" height="300" src="{{ asset('assets/images/product/' . $image) }}"
-                    alt="{{ $name }}">
+            <a href="#" class="product-img" aria-label="{{ $product->name }}">
+                @if ($imageUrl !== '')
+                    <img class="img-product" src="{{ $imageUrl }}" alt="{{ $product->name }}">
+                @else
+                    <span class="home-product-card__image-placeholder">{{ __('Изображение отсутствует') }}</span>
+                @endif
             </a>
 
-            @if ($badge !== null)
+            @if ($discountPercent !== null || $product->is_new || $product->is_hit)
                 <ul class="list-badge" aria-label="{{ __('Метки товара') }}">
-                    <li class="product-card-badge product-card-badge--{{ $badgeVariant }}">{{ $badge }}</li>
+                    @if ($discountPercent !== null)
+                        <li class="product-card-badge product-card-badge--sale">
+                            {{ __('Скидка :percent%', ['percent' => $discountPercent]) }}
+                        </li>
+                    @endif
+                    @if ($product->is_new)
+                        <li class="product-card-badge product-card-badge--new">{{ __('Новинка') }}</li>
+                    @endif
+                    @if ($product->is_hit)
+                        <li class="product-card-badge product-card-badge--hit">{{ __('Хит') }}</li>
+                    @endif
                 </ul>
             @endif
 
@@ -43,23 +60,23 @@
 
         <div class="card-product_info home-product-card__info">
             <a href="#" class="name-product home-product-card__name link-underline text-primary">
-                {{ $name }}
+                {{ $product->name }}
             </a>
 
             <div class="product-card-order">
-                <div class="product-card-weights" role="group" aria-label="{{ __('Выберите фасовку') }}">
-                    @foreach ($weights as $weight)
+                <div class="product-card-weights" role="group" aria-label="{{ __('Выберите вариацию') }}">
+                    @foreach ($product->variants as $variant)
                         <button type="button" class="product-card-weight{{ $loop->first ? ' is-active' : '' }}"
                             aria-pressed="{{ $loop->first ? 'true' : 'false' }}">
-                            {{ $weight }}
+                            {{ $variant->label() }}
                         </button>
                     @endforeach
                 </div>
 
                 <div class="price-wrap home-product-card__price">
-                    <span class="price-new text-primary">{{ $price }} ₽</span>
+                    <span class="price-new text-primary">{{ $formatPrice($price) }} ₽</span>
                     @if ($oldPrice !== null)
-                        <span class="price-old">{{ $oldPrice }} ₽</span>
+                        <span class="price-old">{{ $formatPrice($oldPrice) }} ₽</span>
                     @endif
                 </div>
 

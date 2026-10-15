@@ -12956,6 +12956,8 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
     top: 10px;
     left: 10px;
     z-index: 6;
+    align-items: flex-start;
+    flex-direction: column;
 }
 
 .product-card-badge {
@@ -13000,6 +13002,17 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
 
 .home-product-card .product-action_list .icon {
     font-size: 18px;
+}
+
+.home-product-card__image-placeholder {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-3);
+    font-size: 13px;
+    text-align: center;
 }
 
 .home-product-card__info {

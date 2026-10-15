@@ -80,8 +80,8 @@ final class ProductFactory extends Factory
             'name' => $name,
             'slug' => Str::slug($name),
             'description' => fake()->realText(300),
-            'is_new' => fake()->boolean(),
-            'is_hit' => fake()->boolean(),
+            'is_new' => fake()->boolean(85),
+            'is_hit' => fake()->boolean(85),
             'is_active' => fake()->boolean(85),
         ];
     }

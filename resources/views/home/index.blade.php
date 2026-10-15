@@ -19,17 +19,17 @@
     @include('partials.banner-wide')
     @include('partials.home.special-offers', [
         'title' => __('Хиты продаж'),
-        'productOrder' => [0, 2, 1, 4, 3, 5],
+        'products' => $hitProducts,
     ])
     @include('partials.banner-double')
     @include('partials.home.special-offers', [
         'title' => __('Новинки'),
-        'productOrder' => [3, 1, 4, 0, 5, 2],
+        'products' => $newProducts,
     ])
     @include('partials.banner-triple')
     @include('partials.home.special-offers', [
         'title' => __('Товары со скидкой'),
-        'productOrder' => [2, 5, 4, 0, 3, 1],
+        'products' => $discountedProducts,
     ])
     @include('partials.home.latest-promos')
     @include('partials.home.reviews')
