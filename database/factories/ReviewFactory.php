@@ -20,7 +20,7 @@ final class ReviewFactory extends Factory
     public function definition(): array
     {
         return [
-            'author_name' => fake()->name(),
+            'author_name' => fake()->firstName(),
             'text' => fake()->realText(300),
             'reviewed_at' => fake()->dateTimeBetween('-1 year'),
             'is_active' => true,

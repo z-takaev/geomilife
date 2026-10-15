@@ -116,6 +116,7 @@ final class ManageSettings extends Page
                                         ->maxLength(255),
                                     TextInput::make('story_video_url')
                                         ->label('Ссылка на видео')
+                                        ->helperText('Можно указать прямую ссылку VK Видео, например: https://vkvideo.ru/video-130698013_456241587')
                                         ->url()
                                         ->maxLength(2048),
                                     Textarea::make('story_description')

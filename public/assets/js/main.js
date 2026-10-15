@@ -1003,53 +1003,53 @@
     -------------------------------------------------------------------------*/
     var videoPopup = function () {
         const videoLinks = $('.popup-video');
+        const videoFrame = document.getElementById('home-story-video-frame');
 
-        if (!videoLinks.length || typeof $.fn.magnificPopup !== 'function') {
+        if (!videoLinks.length || !videoFrame || typeof $.fn.magnificPopup !== 'function') {
             return;
         }
 
+        let videoPlayer = null;
+        let isPopupOpen = false;
+
+        const initializeVideoPlayer = function () {
+            if (typeof window.VK?.VideoPlayer !== 'function') {
+                return;
+            }
+
+            videoPlayer?.destroy();
+            videoPlayer = window.VK.VideoPlayer(videoFrame);
+        };
+
+        const playVideo = function () {
+            videoPlayer?.setVolume(1);
+            videoPlayer?.unmute();
+            videoPlayer?.play();
+        };
+
+        videoFrame.addEventListener('load', function () {
+            initializeVideoPlayer();
+
+            if (isPopupOpen) {
+                playVideo();
+            }
+        });
+
+        initializeVideoPlayer();
+
         videoLinks.magnificPopup({
-            type: 'iframe',
+            type: 'inline',
             mainClass: 'home-story-video-popup',
             preloader: false,
-            iframe: {
-                markup: `<div class="mfp-iframe-scaler">
-                    <div class="mfp-close"></div>
-                    <iframe class="mfp-iframe" title="" allow="autoplay; encrypted-media; fullscreen; picture-in-picture; screen-wake-lock" allowfullscreen></iframe>
-                </div>`,
-            },
             callbacks: {
                 open: function () {
-                    const videoTitle = this.currItem.el.attr('data-video-title');
-                    const videoFrame = this.content.find('iframe').attr('title', videoTitle);
-
-                    if (!videoFrame.length || typeof window.VK?.VideoPlayer !== 'function') {
-                        return;
-                    }
-
-                    const popup = this;
-
-                    this.vkVideoFrame = videoFrame;
-                    videoFrame.one('load.vkVideo', function () {
-                        if (!popup.isOpen) {
-                            return;
-                        }
-
-                        const videoPlayer = window.VK.VideoPlayer(this);
-
-                        popup.vkVideoPlayer = videoPlayer;
-                        videoPlayer.on('inited', function () {
-                            videoPlayer.setVolume(1);
-                            videoPlayer.unmute();
-                            videoPlayer.play();
-                        });
-                    });
+                    isPopupOpen = true;
+                    initializeVideoPlayer();
+                    playVideo();
                 },
                 close: function () {
-                    this.vkVideoFrame?.off('.vkVideo');
-                    this.vkVideoPlayer?.destroy();
-                    this.vkVideoFrame = null;
-                    this.vkVideoPlayer = null;
+                    isPopupOpen = false;
+                    videoPlayer?.pause();
                 },
             },
         });

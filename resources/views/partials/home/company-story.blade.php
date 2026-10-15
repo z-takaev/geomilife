@@ -1,4 +1,8 @@
 <!-- Company Story -->
+@php
+    $storyVideoUrl = settings()?->storyVideoEmbedUrl();
+@endphp
+
 <section id="company-story" class="home-content-section home-story">
     <div class="container">
         <div class="home-story-card wow fadeInUp">
@@ -12,9 +16,8 @@
                         {!! nl2br(e(__(settings()?->story_description))) !!}
                     </p>
                 @endif
-                @if (settings()?->story_video_url)
-                    <a href="{{ settings()?->story_video_url }}" class="tf-btn home-story-button popup-video"
-                        data-video-title="{{ __('История GeoMiLife на VK Видео') }}">
+                @if ($storyVideoUrl)
+                    <a href="#home-story-video-popup" class="tf-btn home-story-button popup-video">
                         <i class="icon icon-Play" aria-hidden="true"></i>
                         {{ __('Смотреть нашу историю') }}
                     </a>
@@ -28,9 +31,8 @@
                             alt="{{ __('Бережное выращивание натуральных продуктов') }}">
                     </div>
                 @endif
-                @if (settings()?->story_video_url)
-                    <a href="{{ settings()?->story_video_url }}" class="btn-view-video popup-video"
-                        data-video-title="{{ __('История GeoMiLife на VK Видео') }}"
+                @if ($storyVideoUrl)
+                    <a href="#home-story-video-popup" class="btn-view-video popup-video"
                         aria-label="{{ __('Смотреть видео о GeoMiLife') }}">
                         <i class="icon icon-Play" aria-hidden="true"></i>
                     </a>
@@ -39,4 +41,15 @@
         </div>
     </div>
 </section>
+
+@if ($storyVideoUrl)
+    <div id="home-story-video-popup" class="home-story-video-dialog mfp-hide">
+        <div class="home-story-video-frame">
+            <iframe id="home-story-video-frame" src="{{ $storyVideoUrl }}"
+                title="{{ __('История GeoMiLife на VK Видео') }}"
+                allow="autoplay; encrypted-media; fullscreen; picture-in-picture; screen-wake-lock"
+                allowfullscreen></iframe>
+        </div>
+    </div>
+@endif
 <!-- /Company Story -->

@@ -62,6 +62,33 @@ final class Setting extends Model implements HasMedia
         );
     }
 
+    public function storyVideoEmbedUrl(): ?string
+    {
+        if (! $this->story_video_url) {
+            return null;
+        }
+
+        $matches = [];
+        $isDirectVkVideoUrl = preg_match(
+            '~^https?://(?:www\.)?(?:vkvideo\.ru|vk\.com)/video(?<owner>-?\d+)_(?<video>\d+)(?:[/?#].*)?$~i',
+            $this->story_video_url,
+            $matches,
+        );
+
+        if ($isDirectVkVideoUrl !== 1) {
+            return $this->story_video_url;
+        }
+
+        return 'https://vkvideo.ru/video_ext.php?'.http_build_query([
+            'oid' => $matches['owner'],
+            'id' => $matches['video'],
+            'hd' => 3,
+            'autoplay' => 0,
+            'muted' => 0,
+            'js_api' => 1,
+        ]);
+    }
+
     protected static function booted(): void
     {
         self::saved(static function (): void {

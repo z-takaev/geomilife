@@ -1,7 +1,7 @@
 @props(['product'])
 
 @php
-    $discountPercent = $product->variants->max('discount_percent');
+    $hasDiscount = $product->variants->max('discount_percent') !== null;
     $imageUrl = $product->getFirstMediaUrl('image', 'card');
     $selectedVariant = $product->variants->first();
     $oldPrice = $selectedVariant?->discount_percent === null ? null : (float) $selectedVariant->price;
@@ -23,12 +23,10 @@
                 @endif
             </a>
 
-            @if ($discountPercent !== null || $product->is_new || $product->is_hit)
+            @if ($hasDiscount || $product->is_new || $product->is_hit)
                 <ul class="list-badge" aria-label="{{ __('Метки товара') }}">
-                    @if ($discountPercent !== null)
-                        <li class="product-card-badge product-card-badge--sale">
-                            {{ __('Скидка :percent%', ['percent' => $discountPercent]) }}
-                        </li>
+                    @if ($hasDiscount)
+                        <li class="product-card-badge product-card-badge--sale">{{ __('Скидка') }}</li>
                     @endif
                     @if ($product->is_new)
                         <li class="product-card-badge product-card-badge--new">{{ __('Новинка') }}</li>
