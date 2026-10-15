@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Models\Article;
 use App\Models\News;
 use App\Models\Page;
+use App\Models\Product;
 use App\Models\Promo;
 use Illuminate\Http\Response;
 
@@ -22,6 +23,8 @@ final class SitemapController extends Controller
             ['location' => route('news.index'), 'lastModified' => null],
             ['location' => route('articles.index'), 'lastModified' => null],
             ['location' => route('promos.index'), 'lastModified' => null],
+            ['location' => route('catalog.index'), 'lastModified' => null],
+            ['location' => route('checkout.index'), 'lastModified' => null],
         ])->concat(
             Page::query()
                 ->where('is_active', true)
@@ -45,6 +48,14 @@ final class SitemapController extends Controller
                 ->map(static fn (Article $article): array => [
                     'location' => route('articles.show', $article),
                     'lastModified' => $article->updated_at,
+                ]),
+        )->concat(
+            Product::query()
+                ->where('is_active', true)
+                ->get(['slug', 'updated_at'])
+                ->map(static fn (Product $product): array => [
+                    'location' => route('products.show', $product),
+                    'lastModified' => $product->updated_at,
                 ]),
         )->concat(
             Promo::query()
