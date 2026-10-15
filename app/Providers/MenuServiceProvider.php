@@ -5,16 +5,18 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Menu\MenuItem;
+use App\Models\Category;
+use App\Repositories\Categories\CategoryRepository;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\View as ViewInstance;
 
 final class MenuServiceProvider extends ServiceProvider
 {
-    public function boot(): void
+    public function boot(CategoryRepository $categoryRepository): void
     {
-        View::composer('partials.navigation', function (ViewInstance $view): void {
-            $view->with('items', $this->header());
+        View::composer('partials.navigation', function (ViewInstance $view) use ($categoryRepository): void {
+            $view->with('items', $this->header($categoryRepository));
         });
 
         View::composer('partials.footer-navigation', function (ViewInstance $view): void {
@@ -25,10 +27,10 @@ final class MenuServiceProvider extends ServiceProvider
     /**
      * @return list<MenuItem>
      */
-    private function header(): array
+    private function header(CategoryRepository $categoryRepository): array
     {
         return [
-            MenuItem::make('Каталог')->isCatalog()->children($this->catalog()),
+            MenuItem::make('Каталог')->isCatalog()->children($this->catalog($categoryRepository)),
             MenuItem::make('Акции'),
             MenuItem::make('Доставка и оплата')->url(route('pages.show', 'delivery')),
             MenuItem::make('О нас')->url(route('pages.show', 'about')),
@@ -70,19 +72,19 @@ final class MenuServiceProvider extends ServiceProvider
     /**
      * @return list<MenuItem>
      */
-    private function catalog(): array
+    private function catalog(CategoryRepository $categoryRepository): array
     {
-        return [
-            MenuItem::make('Homepage 1'),
-            MenuItem::make('Homepage 2'),
-            MenuItem::make('Homepage 3'),
-            MenuItem::make('Homepage 4'),
-            MenuItem::make('Our Services')->children([
-                MenuItem::make('Our Services 1'),
-                MenuItem::make('Our Services 2'),
-                MenuItem::make('Our Services 3'),
-                MenuItem::make('Services Details'),
-            ]),
-        ];
+        return $categoryRepository->getActiveTree()
+            ->map(fn (Category $category): MenuItem => $this->categoryMenuItem($category))
+            ->all();
+    }
+
+    private function categoryMenuItem(Category $category): MenuItem
+    {
+        return MenuItem::make($category->name)->children(
+            $category->children
+                ->map(fn (Category $child): MenuItem => $this->categoryMenuItem($child))
+                ->all(),
+        );
     }
 }

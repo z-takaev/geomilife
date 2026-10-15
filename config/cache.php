@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Models\Category;
 use App\Models\Faq;
 use App\Models\HomeSlide;
 use App\Models\Promo;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
 use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Staudenmeir\LaravelAdjacencyList\Eloquent\Collection as AdjacencyListCollection;
 
 return [
 
@@ -142,6 +144,8 @@ return [
 
     'serializable_classes' => [
         Collection::class,
+        AdjacencyListCollection::class,
+        Category::class,
         Faq::class,
         HomeSlide::class,
         Promo::class,

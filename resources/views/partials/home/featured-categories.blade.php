@@ -1,18 +1,18 @@
 <!-- Featured Categories -->
 @php
-    $categories = [
-        ['name' => __('Масла'), 'image' => 'oils.png', 'background' => 'bg-peach-blush'],
-        ['name' => __('Мёд и продукты пчеловодства'), 'image' => 'honey-products.png', 'background' => 'bg-pale-cream'],
-        ['name' => __('Жмых / мука'), 'image' => 'oil-cake-flour.png', 'background' => 'bg-mint-whisper'],
-        ['name' => __('Семена'), 'image' => 'seeds.png', 'background' => 'bg-ice-blue'],
-        ['name' => __('Урбеч'), 'image' => 'urbech.png', 'background' => 'bg-lavender-mist'],
-        ['name' => __('БАД'), 'image' => 'supplements.png', 'background' => 'bg-lilac-cloud'],
-        ['name' => __('Про- и Пребиотики'), 'image' => 'pro-prebiotics.png', 'background' => 'bg-pale-cream'],
-        ['name' => __('Грибы'), 'image' => 'mushrooms.png', 'background' => 'bg-mint-whisper'],
-        ['name' => __('Специи'), 'image' => 'spices.png', 'background' => 'bg-ice-blue'],
-        ['name' => __('Полезные сладости'), 'image' => 'healthy-sweets.png', 'background' => 'bg-lavender-mist'],
-        ['name' => __('Бакалея'), 'image' => 'groceries.png', 'background' => 'bg-lilac-cloud'],
-        ['name' => __('Средства'), 'image' => 'care-products.png', 'background' => 'bg-peach-blush'],
+    $backgrounds = [
+        'bg-peach-blush',
+        'bg-pale-cream',
+        'bg-mint-whisper',
+        'bg-ice-blue',
+        'bg-lavender-mist',
+        'bg-lilac-cloud',
+        'bg-pale-cream',
+        'bg-mint-whisper',
+        'bg-ice-blue',
+        'bg-lavender-mist',
+        'bg-lilac-cloud',
+        'bg-peach-blush',
     ];
 @endphp
 
@@ -26,8 +26,16 @@
             </a>
         </div>
         <div class="featured-categories-grid wow fadeInUp">
-            @foreach ($categories as $category)
-                <x-category-card :background="$category['background']" :image="$category['image']" :name="$category['name']" />
+            @foreach ($featuredCategories as $category)
+                @php
+                    $productsCount =
+                        $category->active_products_count + $category->children->sum('active_products_count');
+                @endphp
+                <x-category-card :background="$backgrounds[$loop->index]" :image="$category->getFirstMediaUrl('image')" :name="$category->name" :product-count="trans_choice(
+                    '{0} Нет товаров|{1} :count товар|[2,4] :count товара|[5,*] :count товаров',
+                    $productsCount,
+                    ['count' => $productsCount],
+                )" />
             @endforeach
         </div>
     </div>
