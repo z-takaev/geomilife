@@ -13,7 +13,6 @@ return new class extends Migration
         Schema::create('product_variants', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
-            $table->string('name');
             $table->string('sku')->unique();
             $table->string('unit');
             $table->decimal('value', 12, 3);
@@ -21,9 +20,10 @@ return new class extends Migration
             $table->unsignedTinyInteger('discount_percent')->nullable();
             $table->string('status');
             $table->boolean('is_active')->default(false);
+            $table->integer('order')->default(0);
             $table->timestamps();
 
-            $table->index(['product_id', 'is_active']);
+            $table->index(['product_id', 'is_active', 'order']);
         });
     }
 

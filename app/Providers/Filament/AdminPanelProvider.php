@@ -14,6 +14,7 @@ use App\Filament\Resources\HomeSlides\HomeSlideResource;
 use App\Filament\Resources\News\NewsResource;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Filament\Resources\Pages\PageResource;
+use App\Filament\Resources\ProductAttributes\ProductAttributeResource;
 use App\Filament\Resources\Products\ProductResource;
 use App\Filament\Resources\Promos\PromoResource;
 use App\Filament\Resources\Reviews\ReviewResource;
@@ -91,6 +92,7 @@ final class AdminPanelProvider extends PanelProvider
                 ->items([
                     ...CategoryResource::getNavigationItems(),
                     ...ProductResource::getNavigationItems(),
+                    ...ProductAttributeResource::getNavigationItems(),
                 ]),
             NavigationGroup::make('Контент')
                 ->items([

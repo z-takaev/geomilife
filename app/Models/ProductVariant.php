@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\ProductAvailability;
+use App\Enums\ProductUnit;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,7 +17,6 @@ final class ProductVariant extends Model
 
     protected $fillable = [
         'product_id',
-        'name',
         'sku',
         'unit',
         'value',
@@ -23,6 +24,7 @@ final class ProductVariant extends Model
         'discount_percent',
         'status',
         'is_active',
+        'order',
     ];
 
     public function product(): BelongsTo
@@ -41,7 +43,10 @@ final class ProductVariant extends Model
             'value' => 'decimal:3',
             'price' => 'decimal:2',
             'discount_percent' => 'integer',
+            'status' => ProductAvailability::class,
+            'unit' => ProductUnit::class,
             'is_active' => 'boolean',
+            'order' => 'integer',
         ];
     }
 }

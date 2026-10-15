@@ -4,14 +4,22 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Contracts\Seoable;
+use App\Support\Media\ImageMimeTypes;
+use App\Support\Traits\HasSlug;
+use App\Support\Traits\WithSeo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Image\Enums\Fit;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-final class Product extends Model
+final class Product extends Model implements HasMedia, Seoable
 {
-    use HasFactory;
+    use HasFactory, HasSlug, InteractsWithMedia, WithSeo;
 
     protected $fillable = [
         'category_id',
@@ -30,7 +38,7 @@ final class Product extends Model
 
     public function variants(): HasMany
     {
-        return $this->hasMany(ProductVariant::class);
+        return $this->hasMany(ProductVariant::class)->orderBy('order');
     }
 
     public function attributeValues(): HasMany
@@ -41,6 +49,34 @@ final class Product extends Model
     public function favorites(): HasMany
     {
         return $this->hasMany(Favorite::class);
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('image')
+            ->acceptsMimeTypes(ImageMimeTypes::ALLOWED)
+            ->singleFile();
+
+        $this->addMediaCollection('gallery')
+            ->acceptsMimeTypes(ImageMimeTypes::ALLOWED);
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('card')
+            ->fit(Fit::Fill, 600, 600)
+            ->performOnCollections('image')
+            ->nonQueued();
+    }
+
+    protected function getSlugSourceAttribute(): string
+    {
+        return 'name';
     }
 
     protected function casts(): array
