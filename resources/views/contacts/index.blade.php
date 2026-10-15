@@ -51,10 +51,10 @@
                             <div class="contacts-info-card contacts-info-card--social">
                                 <div>
                                     <p class="contacts-info-card__label">{{ __('Социальные сети') }}</p>
-                                    <ul class="contacts-socials">
+                                    <ul class="social-links">
                                         @if (settings()?->instagram_url)
                                             <li>
-                                                <a href="{{ settings()?->instagram_url }}" class="contacts-socials__link"
+                                                <a href="{{ settings()?->instagram_url }}" class="social-links__link"
                                                     aria-label="{{ __('Instagram') }}" target="_blank"
                                                     rel="noopener noreferrer">
                                                     <i class="social-icon social-icon--instagram" aria-hidden="true"></i>
@@ -63,7 +63,7 @@
                                         @endif
                                         @if (settings()?->youtube_url)
                                             <li>
-                                                <a href="{{ settings()?->youtube_url }}" class="contacts-socials__link"
+                                                <a href="{{ settings()?->youtube_url }}" class="social-links__link"
                                                     aria-label="{{ __('YouTube') }}" target="_blank"
                                                     rel="noopener noreferrer">
                                                     <i class="social-icon social-icon--youtube" aria-hidden="true"></i>
@@ -72,7 +72,7 @@
                                         @endif
                                         @if (settings()?->vk_url)
                                             <li>
-                                                <a href="{{ settings()?->vk_url }}" class="contacts-socials__link"
+                                                <a href="{{ settings()?->vk_url }}" class="social-links__link"
                                                     aria-label="{{ __('VK') }}" target="_blank"
                                                     rel="noopener noreferrer">
                                                     <i class="social-icon social-icon--vk" aria-hidden="true"></i>
@@ -81,7 +81,7 @@
                                         @endif
                                         @if (settings()?->telegram_url)
                                             <li>
-                                                <a href="{{ settings()?->telegram_url }}" class="contacts-socials__link"
+                                                <a href="{{ settings()?->telegram_url }}" class="social-links__link"
                                                     aria-label="{{ __('Telegram') }}" target="_blank"
                                                     rel="noopener noreferrer">
                                                     <i class="social-icon social-icon--telegram" aria-hidden="true"></i>
@@ -90,7 +90,7 @@
                                         @endif
                                         @if (settings()?->whatsapp_url)
                                             <li>
-                                                <a href="{{ settings()?->whatsapp_url }}" class="contacts-socials__link"
+                                                <a href="{{ settings()?->whatsapp_url }}" class="social-links__link"
                                                     aria-label="{{ __('WhatsApp') }}" target="_blank"
                                                     rel="noopener noreferrer">
                                                     <i class="social-icon social-icon--whatsapp" aria-hidden="true"></i>

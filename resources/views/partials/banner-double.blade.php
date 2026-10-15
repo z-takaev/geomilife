@@ -18,9 +18,14 @@
             <div class="home-banner-grid home-banner-grid--two">
                 @foreach ($banners as $banner)
                     @if (settings()?->hasMedia($banner['collection']))
-                        <a href="#" class="home-banner-link">
-                            <img loading="lazy" src="{{ settings()?->getFirstMediaUrl($banner['collection']) }}"
-                                alt="{{ __($banner['alt']) }}">
+                        <a href="#" class="home-banner-link home-banner-link--double">
+                            <picture>
+                                <source media="(max-width: 767px)"
+                                    srcset="{{ settings()?->getFirstMediaUrl($banner['collection'], 'banner_double_mobile') }}">
+                                <img loading="lazy"
+                                    src="{{ settings()?->getFirstMediaUrl($banner['collection'], 'banner_double') }}"
+                                    alt="{{ __($banner['alt']) }}">
+                            </picture>
                         </a>
                     @endif
                 @endforeach

@@ -28,10 +28,6 @@
                             alt="{{ __('Бережное выращивание натуральных продуктов') }}">
                     </div>
                 @endif
-                <div class="home-story-location">
-                    <i class="icon icon-MapPin" aria-hidden="true"></i>
-                    {{ __('Северная Осетия') }}
-                </div>
                 @if (settings()?->story_video_url)
                     <a href="{{ settings()?->story_video_url }}" class="btn-view-video popup-video"
                         data-video-title="{{ __('История GeoMiLife на VK Видео') }}"

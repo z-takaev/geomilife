@@ -24,9 +24,14 @@
             <div class="home-banner-grid home-banner-grid--three">
                 @foreach ($banners as $banner)
                     @if (settings()?->hasMedia($banner['collection']))
-                        <a href="#" class="home-banner-link">
-                            <img loading="lazy" src="{{ settings()?->getFirstMediaUrl($banner['collection']) }}"
-                                alt="{{ __($banner['alt']) }}">
+                        <a href="#" class="home-banner-link home-banner-link--triple">
+                            <picture>
+                                <source media="(max-width: 767px)"
+                                    srcset="{{ settings()?->getFirstMediaUrl($banner['collection'], 'banner_triple_mobile') }}">
+                                <img loading="lazy"
+                                    src="{{ settings()?->getFirstMediaUrl($banner['collection'], 'banner_triple') }}"
+                                    alt="{{ __($banner['alt']) }}">
+                            </picture>
                         </a>
                     @endif
                 @endforeach

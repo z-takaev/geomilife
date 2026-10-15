@@ -21,7 +21,7 @@ final class HomeController extends Controller
         $reviews = Review::cached();
         $seo = $this->seoService->forRoute(
             routeName: 'home',
-            fallbackTitle: __('GeoMiLife — натуральные продукты из Северной Осетии'),
+            fallbackTitle: config('app.name'),
         );
 
         return view('home.index', compact('slides', 'promos', 'reviews', 'seo'));

@@ -10,7 +10,6 @@
                         <div class="ic-wrap">
                             <i class="icon icon-Plant"></i>
                         </div>
-                        <div class="br-line"></div>
                         <div class="benefit-infor">
                             <h4 class="benefit_name text-primary">{{ __('Натуральные продукты') }}</h4>
                             <p class="benefit_sub">{{ __('Мёд, масла, орехи и травы') }}</p>
@@ -22,7 +21,6 @@
                         <div class="ic-wrap">
                             <i class="icon icon-farmer"></i>
                         </div>
-                        <div class="br-line"></div>
                         <div class="benefit-infor">
                             <h4 class="benefit_name text-primary">{{ __('Своё производство') }}</h4>
                             <p class="benefit_sub">{{ __('Знаем состав и контролируем каждый этап') }}</p>
@@ -34,7 +32,6 @@
                         <div class="ic-wrap">
                             <i class="icon icon-Truck"></i>
                         </div>
-                        <div class="br-line"></div>
                         <div class="benefit-infor">
                             <h4 class="benefit_name text-primary">{{ __('Доставка СДЭК') }}</h4>
                             <p class="benefit_sub">{{ __('Отправляем заказы по всей России') }}</p>
@@ -46,7 +43,6 @@
                         <div class="ic-wrap">
                             <i class="icon icon-Invoice"></i>
                         </div>
-                        <div class="br-line"></div>
                         <div class="benefit-infor">
                             <h4 class="benefit_name text-primary">{{ __('Оплата картой') }}</h4>
                             <p class="benefit_sub">{{ __('Безопасная оплата через Т-Банк') }}</p>
@@ -58,7 +54,6 @@
                         <div class="ic-wrap">
                             <i class="icon icon-Certificate"></i>
                         </div>
-                        <div class="br-line"></div>
                         <div class="benefit-infor">
                             <h4 class="benefit_name text-primary">{{ __('Документы о качестве') }}</h4>
                             <p class="benefit_sub">{{ __('Все сертификаты доступны на сайте') }}</p>

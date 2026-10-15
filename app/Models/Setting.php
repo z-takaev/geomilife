@@ -7,8 +7,10 @@ namespace App\Models;
 use App\Support\Media\ImageMimeTypes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 final class Setting extends Model implements HasMedia
 {
@@ -78,5 +80,46 @@ final class Setting extends Model implements HasMedia
                 ->acceptsMimeTypes(ImageMimeTypes::ALLOWED)
                 ->singleFile();
         }
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('banner_wide')
+            ->fit(Fit::Crop, 1290, 200)
+            ->performOnCollections('banner_wide_image')
+            ->nonQueued();
+
+        $this->addMediaConversion('banner_wide_mobile')
+            ->fit(Fit::Crop, 750, 116)
+            ->performOnCollections('banner_wide_image')
+            ->nonQueued();
+
+        $this->addMediaConversion('banner_double')
+            ->fit(Fit::Crop, 635, 180)
+            ->performOnCollections('banner_double_first_image', 'banner_double_second_image')
+            ->nonQueued();
+
+        $this->addMediaConversion('banner_double_mobile')
+            ->fit(Fit::Crop, 750, 212)
+            ->performOnCollections('banner_double_first_image', 'banner_double_second_image')
+            ->nonQueued();
+
+        $this->addMediaConversion('banner_triple')
+            ->fit(Fit::Crop, 417, 200)
+            ->performOnCollections(
+                'banner_triple_first_image',
+                'banner_triple_second_image',
+                'banner_triple_third_image',
+            )
+            ->nonQueued();
+
+        $this->addMediaConversion('banner_triple_mobile')
+            ->fit(Fit::Crop, 750, 360)
+            ->performOnCollections(
+                'banner_triple_first_image',
+                'banner_triple_second_image',
+                'banner_triple_third_image',
+            )
+            ->nonQueued();
     }
 }
