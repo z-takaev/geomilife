@@ -1875,6 +1875,47 @@ header.header-sticky .header-inner {
     top: -5.75px;
     right: -8px;
 }
+.account-menu__toggle {
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+.account-menu__dropdown {
+    right: 0 !important;
+    left: auto !important;
+    min-width: 200px;
+    margin-top: 16px !important;
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(11, 87, 85, 0.14);
+}
+.account-menu__dropdown li {
+    width: 100%;
+}
+.account-menu__item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 8px;
+    color: var(--text);
+    background: transparent;
+    font-size: 15px;
+    line-height: 24px;
+}
+.account-menu__item .icon {
+    flex-shrink: 0;
+    color: var(--primary);
+    font-size: 20px;
+}
+.account-menu__item:hover,
+.account-menu__item:focus {
+    color: var(--primary);
+    background-color: var(--surface);
+}
 @media (max-width: 1199px) {
     .nav-icon-item {
         font-size: 20px;

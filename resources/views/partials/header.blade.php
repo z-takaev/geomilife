@@ -106,9 +106,38 @@
                             </a>
                         </li>
                         <li>
-                            <a href="#login" data-bs-toggle="modal" class="nav-icon-item text-primary link">
+                            <a href="#login" data-bs-toggle="modal" class="nav-icon-item text-primary link"
+                                aria-label="{{ __('Войти') }}">
                                 <i class="icon icon-user"></i>
                             </a>
+                        </li>
+                        <li class="dropdown account-menu">
+                            <button id="accountMenu" type="button"
+                                class="nav-icon-item text-primary link account-menu__toggle" data-bs-toggle="dropdown"
+                                aria-expanded="false" aria-label="{{ __('Открыть меню пользователя') }}">
+                                <i class="icon icon-user"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end account-menu__dropdown"
+                                aria-labelledby="accountMenu">
+                                <li>
+                                    <a href="{{ route('profile.show') }}" class="dropdown-item account-menu__item">
+                                        <i class="icon icon-UserCircle" aria-hidden="true"></i>
+                                        <span>{{ __('Профиль') }}</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('orders.index') }}" class="dropdown-item account-menu__item">
+                                        <i class="icon icon-package" aria-hidden="true"></i>
+                                        <span>{{ __('Заказы') }}</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <button type="button" class="dropdown-item account-menu__item">
+                                        <i class="icon icon-arrow-right" aria-hidden="true"></i>
+                                        <span>{{ __('Выход') }}</span>
+                                    </button>
+                                </li>
+                            </ul>
                         </li>
                         <li class="d-none d-sm-block">
                             <a href="#wishList" data-bs-toggle="offcanvas" class="nav-icon-item text-primary link">
