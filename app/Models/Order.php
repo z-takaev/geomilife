@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Support\Values\Money;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -31,8 +32,8 @@ final class Order extends Model
     protected function casts(): array
     {
         return [
-            'delivery_price' => 'decimal:2',
-            'total' => 'decimal:2',
+            'delivery_price' => Money::class,
+            'total' => Money::class,
             'delivery_address' => 'array',
         ];
     }

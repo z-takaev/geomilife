@@ -12,6 +12,7 @@ use App\Filament\Resources\Seo\Schemas\SeoForm;
 use App\Models\Category;
 use App\Models\ProductAttribute;
 use App\Models\ProductVariant;
+use App\Support\Values\Money;
 use Closure;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -124,9 +125,9 @@ final class ProductForm
                                                     ->live(),
                                                 TextInput::make('price')
                                                     ->label('Цена')
-                                                    ->numeric()
-                                                    ->minValue(0.01)
-                                                    ->step(0.01)
+                                                    ->formatStateUsing(static fn (mixed $state): mixed => $state instanceof Money ? $state->toRubles() : $state)
+                                                    ->integer()
+                                                    ->minValue(1)
                                                     ->suffix('₽')
                                                     ->required()
                                                     ->live(onBlur: true),
@@ -238,9 +239,13 @@ final class ProductForm
         $unit = $unitState instanceof ProductUnit
             ? $unitState->getLabel()
             : ProductUnit::tryFrom(is_string($unitState) ? $unitState : '')?->getLabel();
-        $price = filled($state['price'] ?? null)
-            ? number_format((float) $state['price'], 2, ',', ' ').' ₽'
-            : null;
+        $priceState = $state['price'] ?? null;
+        $money = match (true) {
+            $priceState instanceof Money => $priceState,
+            is_int($priceState), is_string($priceState) => Money::tryFromRubles($priceState),
+            default => null,
+        };
+        $price = $money?->format();
 
         return collect([$value !== null && $unit !== null ? "{$value} {$unit}" : null, $price])
             ->filter()

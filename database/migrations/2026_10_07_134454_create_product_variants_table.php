@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('sku')->unique();
             $table->string('unit');
             $table->decimal('value', 12, 3);
-            $table->decimal('price', 12, 2);
+            $table->unsignedBigInteger('price');
             $table->unsignedTinyInteger('discount_percent')->nullable();
             $table->string('status');
             $table->boolean('is_active')->default(false);

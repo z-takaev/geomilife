@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('status');
             $table->string('payment_status');
             $table->string('delivery_method');
-            $table->decimal('delivery_price', 12, 2);
-            $table->decimal('total', 12, 2);
+            $table->unsignedBigInteger('delivery_price');
+            $table->unsignedBigInteger('total');
             $table->string('customer_name');
             $table->string('customer_phone');
             $table->string('customer_email');

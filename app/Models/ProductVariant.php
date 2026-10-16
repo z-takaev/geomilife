@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\ProductAvailability;
 use App\Enums\ProductUnit;
+use App\Support\Values\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -32,7 +33,7 @@ final class ProductVariant extends Model
     {
         return [
             'value' => 'decimal:3',
-            'price' => 'decimal:2',
+            'price' => Money::class,
             'discount_percent' => 'integer',
             'status' => ProductAvailability::class,
             'unit' => ProductUnit::class,
@@ -61,5 +62,22 @@ final class ProductVariant extends Model
         $value = rtrim(rtrim($this->value, '0'), '.');
 
         return sprintf('%s %s', $value === '' ? '0' : $value, $this->unit->getLabel());
+    }
+
+    public function hasDiscount(): bool
+    {
+        return $this->discount_percent !== null;
+    }
+
+    public function currentPrice(): Money
+    {
+        return $this->hasDiscount()
+            ? $this->price->discountedBy($this->discount_percent)
+            : $this->price;
+    }
+
+    public function oldPrice(): ?Money
+    {
+        return $this->hasDiscount() ? $this->price : null;
     }
 }

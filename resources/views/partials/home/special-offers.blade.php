@@ -11,7 +11,8 @@
             </div>
             <x-product-carousel class="home-products-slider wow fadeInUp">
                 @foreach ($products as $product)
-                    <x-product-card :product="$product" />
+                    <livewire:product-card :product="$product"
+                        :wire:key="'product-card-'.$sectionKey.'-'.$product->getKey()" />
                 @endforeach
             </x-product-carousel>
         </div>

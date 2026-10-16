@@ -18,9 +18,9 @@ return new class extends Migration
             $table->string('product_name');
             $table->string('variant_name');
             $table->string('sku');
-            $table->decimal('price', 12, 2);
+            $table->unsignedBigInteger('price');
             $table->integer('quantity');
-            $table->decimal('total', 12, 2);
+            $table->unsignedBigInteger('total');
         });
     }
 

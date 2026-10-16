@@ -111,7 +111,7 @@
                                 <i class="icon icon-user"></i>
                             </a>
                         </li>
-                        <li class="dropdown account-menu">
+                        {{-- <li class="dropdown account-menu">
                             <button id="accountMenu" type="button"
                                 class="nav-icon-item text-primary link account-menu__toggle" data-bs-toggle="dropdown"
                                 aria-expanded="false" aria-label="{{ __('Открыть меню пользователя') }}">
@@ -138,7 +138,7 @@
                                     </button>
                                 </li>
                             </ul>
-                        </li>
+                        </li> --}}
                         <li class="d-none d-sm-block">
                             <a href="#wishList" data-bs-toggle="offcanvas" class="nav-icon-item text-primary link">
                                 <i class="icon icon-heart-stroke"></i>

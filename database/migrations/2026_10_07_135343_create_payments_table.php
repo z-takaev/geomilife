@@ -15,7 +15,7 @@ return new class extends Migration
             $table->foreignId('order_id')->constrained()->cascadeOnDelete();
             $table->string('provider');
             $table->string('transaction_id');
-            $table->decimal('amount', 12, 2);
+            $table->unsignedBigInteger('amount');
             $table->string('status');
             $table->json('payload')->nullable();
             $table->timestamps();

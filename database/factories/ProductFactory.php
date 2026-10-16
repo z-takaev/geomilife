@@ -9,6 +9,7 @@ use App\Enums\ProductUnit;
 use App\Models\Category;
 use App\Models\Product;
 use App\Support\Media\FixtureImages;
+use App\Support\Values\Money;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 use Spatie\Image\Enums\Fit;
@@ -54,7 +55,7 @@ final class ProductFactory extends Factory
                         ProductUnit::PIECE => fake()->numberBetween(1, 12),
                         ProductUnit::GRAM, ProductUnit::MILLILITER => fake()->numberBetween(1, 20) * 50,
                     },
-                    'price' => fake()->randomFloat(2, 100, 5000),
+                    'price' => Money::fromRubles(fake()->numberBetween(100, 5_000)),
                     'discount_percent' => fake()->optional(0.3)->numberBetween(1, 99),
                     'status' => fake()->randomElement(ProductAvailability::cases()),
                     'is_active' => fake()->boolean(85),

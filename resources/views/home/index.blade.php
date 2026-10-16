@@ -18,16 +18,19 @@
     @include('partials.home.featured-categories')
     @include('partials.banner-wide')
     @include('partials.home.special-offers', [
+        'sectionKey' => 'hits',
         'title' => __('Хиты продаж'),
         'products' => $hitProducts,
     ])
     @include('partials.banner-double')
     @include('partials.home.special-offers', [
+        'sectionKey' => 'new',
         'title' => __('Новинки'),
         'products' => $newProducts,
     ])
     @include('partials.banner-triple')
     @include('partials.home.special-offers', [
+        'sectionKey' => 'discounted',
         'title' => __('Товары со скидкой'),
         'products' => $discountedProducts,
     ])

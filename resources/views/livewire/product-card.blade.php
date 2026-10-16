@@ -1,17 +1,3 @@
-@props(['product'])
-
-@php
-    $hasDiscount = $product->variants->max('discount_percent') !== null;
-    $imageUrl = $product->getFirstMediaUrl('image', 'card');
-    $selectedVariant = $product->variants->first();
-    $oldPrice = $selectedVariant?->discount_percent === null ? null : (float) $selectedVariant->price;
-    $price =
-        $oldPrice === null
-            ? (float) $selectedVariant->price
-            : ($oldPrice * (100 - $selectedVariant->discount_percent)) / 100;
-    $formatPrice = static fn(float $value): string => number_format($value, 0, '', ' ');
-@endphp
-
 <div class="swiper-slide">
     <article class="card-product home-product-card">
         <div class="card-product_wrapper home-product-card__media">
@@ -72,9 +58,9 @@
                 </div>
 
                 <div class="price-wrap home-product-card__price">
-                    <span class="price-new text-primary">{{ $formatPrice($price) }} ₽</span>
+                    <span class="price-new text-primary">{{ $price->format() }}</span>
                     @if ($oldPrice !== null)
-                        <span class="price-old">{{ $formatPrice($oldPrice) }} ₽</span>
+                        <span class="price-old">{{ $oldPrice->format() }}</span>
                     @endif
                 </div>
 
