@@ -6,6 +6,8 @@ use App\Models\Category;
 use App\Models\Faq;
 use App\Models\HomeSlide;
 use App\Models\Promo;
+use App\Models\Review;
+use App\Models\Seo;
 use App\Models\Setting;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
@@ -149,6 +151,8 @@ return [
         Faq::class,
         HomeSlide::class,
         Promo::class,
+        Review::class,
+        Seo::class,
         Setting::class,
         Media::class,
         MediaCollection::class,

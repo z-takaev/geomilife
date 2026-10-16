@@ -21,7 +21,7 @@ final class SeoService
     public function forRoute(string $routeName, string $fallbackTitle): SeoDto
     {
         return $this->resolve(
-            seo: Seo::query()->where('route_name', $routeName)->first(),
+            seo: Seo::cachedRoutes()->get($routeName),
             fallbackTitle: $fallbackTitle,
         );
     }

@@ -46,20 +46,16 @@ final class Review extends Model
      */
     public static function cached(): Collection
     {
-        $reviews = Cache::remember(
+        return Cache::remember(
             self::CACHE_KEY,
             now()->addHours(2),
-            static fn (): array => self::query()
+            static fn (): Collection => self::query()
                 ->select(['id', 'author_name', 'text', 'reviewed_at'])
                 ->where('is_active', true)
                 ->latest('reviewed_at')
                 ->latest('id')
                 ->limit(3)
-                ->get()
-                ->map(static fn (self $review): array => $review->getAttributes())
-                ->all(),
+                ->get(),
         );
-
-        return self::hydrate($reviews);
     }
 }
