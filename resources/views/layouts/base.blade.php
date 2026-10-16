@@ -15,6 +15,7 @@
     <!-- css -->
     <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/styles.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/theme.css') }}">
     @stack('styles')
 
     <!-- Favicon and Touch Icons  -->
