@@ -19,6 +19,8 @@ final class DatabaseSeeder extends Seeder
     {
         $this->call([
             FilamentUserSeeder::class,
+            CitySeeder::class,
+            UserSeeder::class,
             SettingSeeder::class,
             SeoSeeder::class,
             PageSeeder::class,
