@@ -53,7 +53,7 @@ final class ProductRepository
             ->with([
                 'variants' => function (HasMany $query): void {
                     $query
-                        ->select(['id', 'product_id', 'unit', 'value', 'price', 'discount_percent'])
+                        ->select(['id', 'product_id', 'unit', 'value', 'price', 'discount_percent', 'status'])
                         ->active();
                 },
                 'media' => function (MorphMany $query): void {

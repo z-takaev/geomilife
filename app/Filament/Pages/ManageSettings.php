@@ -129,12 +129,18 @@ final class ManageSettings extends Page
                                 ->columns(2),
                             Tab::make('Баннеры')
                                 ->schema([
-                                    self::imageUpload('banner_wide_image', 'Широкий баннер', columnSpanFull: true),
-                                    self::imageUpload('banner_double_first_image', 'Двойной баннер — первое изображение'),
-                                    self::imageUpload('banner_double_second_image', 'Двойной баннер — второе изображение'),
-                                    self::imageUpload('banner_triple_first_image', 'Тройной баннер — первое изображение'),
-                                    self::imageUpload('banner_triple_second_image', 'Тройной баннер — второе изображение'),
-                                    self::imageUpload('banner_triple_third_image', 'Тройной баннер — третье изображение'),
+                                    self::imageUpload('banner_wide_image', 'Широкий баннер', 'Рекомендуемый размер: 1290 × 200.', columnSpanFull: true),
+                                    self::imageUpload('banner_wide_mobile_image', 'Широкий баннер — мобильное изображение', 'Рекомендуемый размер: 750 × 360.', columnSpanFull: true),
+                                    self::imageUpload('banner_double_first_image', 'Двойной баннер — первое изображение', 'Рекомендуемый размер: 635 × 180.'),
+                                    self::imageUpload('banner_double_first_mobile_image', 'Двойной баннер — первое мобильное изображение', 'Рекомендуемый размер: 750 × 360.'),
+                                    self::imageUpload('banner_double_second_image', 'Двойной баннер — второе изображение', 'Рекомендуемый размер: 635 × 180.'),
+                                    self::imageUpload('banner_double_second_mobile_image', 'Двойной баннер — второе мобильное изображение', 'Рекомендуемый размер: 750 × 360.'),
+                                    self::imageUpload('banner_triple_first_image', 'Тройной баннер — первое изображение', 'Рекомендуемый размер: 417 × 200.'),
+                                    self::imageUpload('banner_triple_first_mobile_image', 'Тройной баннер — первое мобильное изображение', 'Рекомендуемый размер: 750 × 360.'),
+                                    self::imageUpload('banner_triple_second_image', 'Тройной баннер — второе изображение', 'Рекомендуемый размер: 417 × 200.'),
+                                    self::imageUpload('banner_triple_second_mobile_image', 'Тройной баннер — второе мобильное изображение', 'Рекомендуемый размер: 750 × 360.'),
+                                    self::imageUpload('banner_triple_third_image', 'Тройной баннер — третье изображение', 'Рекомендуемый размер: 417 × 200.'),
+                                    self::imageUpload('banner_triple_third_mobile_image', 'Тройной баннер — третье мобильное изображение', 'Рекомендуемый размер: 750 × 360.'),
                                 ])
                                 ->columns(2),
                         ])
@@ -170,15 +176,25 @@ final class ManageSettings extends Page
             ->send();
     }
 
-    private static function imageUpload(string $collection, string $label, bool $columnSpanFull = false): MediaImageUpload
-    {
+    private static function imageUpload(
+        string $collection,
+        string $label,
+        ?string $recommendation = null,
+        bool $columnSpanFull = false,
+    ): MediaImageUpload {
+        $helperText = 'Статичное JPEG, PNG или WebP до 5 МБ.';
+
+        if ($recommendation !== null) {
+            $helperText .= ' '.$recommendation;
+        }
+
         $upload = MediaImageUpload::make($collection)
             ->label($label)
             ->collection($collection)
             ->maxFiles(1)
             ->maxSize(5120)
             ->processImage(static fn (Image $image): Image => $image)
-            ->helperText('Статичное JPEG, PNG или WebP до 5 МБ. Параметры обработки будут настроены позже.');
+            ->helperText($helperText);
 
         if ($columnSpanFull) {
             $upload->columnSpanFull();

@@ -1,5 +1,8 @@
 <div class="swiper-slide">
-    <article class="card-product home-product-card">
+    <article @class([
+        'card-product home-product-card',
+        'is-disabled' => $isUnavailable,
+    ])>
         <div class="card-product_wrapper home-product-card__media">
             <a href="#" class="product-img" aria-label="{{ $product->name }}">
                 @if ($imageUrl !== '')
@@ -51,7 +54,7 @@
                 <div class="product-card-weights" role="group" aria-label="{{ __('Выберите вариацию') }}">
                     @foreach ($product->variants as $variant)
                         <button type="button" class="product-card-weight{{ $loop->first ? ' is-active' : '' }}"
-                            aria-pressed="{{ $loop->first ? 'true' : 'false' }}">
+                            aria-pressed="{{ $loop->first ? 'true' : 'false' }}" @disabled($isUnavailable)>
                             {{ $variant->label() }}
                         </button>
                     @endforeach
@@ -64,25 +67,35 @@
                     @endif
                 </div>
 
-                <div class="product-card-purchase">
-                    <div class="product-card-quantity" aria-label="{{ __('Количество товара') }}">
-                        <button type="button" class="product-card-quantity__button product-card-quantity__minus"
-                            aria-label="{{ __('Уменьшить количество') }}">
-                            <span class="icon icon-minus" aria-hidden="true"></span>
-                        </button>
-                        <input class="product-card-quantity__input" type="number" name="quantity" value="1"
-                            min="1" step="1" inputmode="numeric" aria-label="{{ __('Количество') }}">
-                        <button type="button" class="product-card-quantity__button product-card-quantity__plus"
-                            aria-label="{{ __('Увеличить количество') }}">
-                            <span class="icon icon-plus" aria-hidden="true"></span>
+                @if ($isInStock)
+                    <div class="product-card-purchase">
+                        <div class="product-card-quantity" aria-label="{{ __('Количество товара') }}">
+                            <button type="button" class="product-card-quantity__button product-card-quantity__minus"
+                                aria-label="{{ __('Уменьшить количество') }}">
+                                <span class="icon icon-minus" aria-hidden="true"></span>
+                            </button>
+                            <input class="product-card-quantity__input" type="number" name="quantity" value="1"
+                                min="1" step="1" inputmode="numeric" aria-label="{{ __('Количество') }}">
+                            <button type="button" class="product-card-quantity__button product-card-quantity__plus"
+                                aria-label="{{ __('Увеличить количество') }}">
+                                <span class="icon icon-plus" aria-hidden="true"></span>
+                            </button>
+                        </div>
+
+                        <button type="button" class="product-card-buy" data-bs-toggle="offcanvas"
+                            data-bs-target="#shoppingCart">
+                            {{ __('Купить') }}
                         </button>
                     </div>
-
-                    <button type="button" class="product-card-buy" data-bs-toggle="offcanvas"
-                        data-bs-target="#shoppingCart">
-                        {{ __('Купить') }}
-                    </button>
-                </div>
+                @else
+                    <div @class([
+                        'product-card-availability',
+                        'is-preorder' => !$isUnavailable,
+                        'is-unavailable' => $isUnavailable,
+                    ])>
+                        {{ __($availabilityLabel) }}
+                    </div>
+                @endif
             </div>
         </div>
     </article>

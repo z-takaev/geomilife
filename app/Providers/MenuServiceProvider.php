@@ -59,7 +59,6 @@ final class MenuServiceProvider extends ServiceProvider
                 MenuItem::make('Статьи')->url(route('articles.index')),
                 MenuItem::make('Новости')->url(route('news.index')),
                 MenuItem::make('Отзывы')->url(route('reviews.index')),
-                MenuItem::make('Вопросы и ответы')->url(route('faqs.index')),
                 MenuItem::make('Контакты')->url(route('contacts.index')),
             ]),
             MenuItem::make('Информация')->children([
@@ -68,8 +67,7 @@ final class MenuServiceProvider extends ServiceProvider
                 MenuItem::make('Контроль качества')->url(route('pages.show', 'quality-control')),
                 MenuItem::make('Доставка и оплата')->url(route('pages.show', 'delivery')),
                 MenuItem::make('Возврат и обмен')->url(route('pages.show', 'returns')),
-                MenuItem::make('Пользовательское соглашение')->url(route('pages.show', 'terms')),
-                MenuItem::make('Политика конфиденциальности')->url(route('pages.show', 'policy')),
+                MenuItem::make('Вопросы и ответы')->url(route('faqs.index')),
             ]),
         ];
     }

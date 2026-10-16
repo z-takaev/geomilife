@@ -22,11 +22,17 @@ final class Setting extends Model implements HasMedia
     public const array IMAGE_COLLECTIONS = [
         'story_image',
         'banner_wide_image',
+        'banner_wide_mobile_image',
         'banner_double_first_image',
+        'banner_double_first_mobile_image',
         'banner_double_second_image',
+        'banner_double_second_mobile_image',
         'banner_triple_first_image',
+        'banner_triple_first_mobile_image',
         'banner_triple_second_image',
+        'banner_triple_second_mobile_image',
         'banner_triple_third_image',
+        'banner_triple_third_mobile_image',
     ];
 
     private const string CACHE_KEY = 'site_setting';
@@ -116,18 +122,8 @@ final class Setting extends Model implements HasMedia
             ->performOnCollections('banner_wide_image')
             ->nonQueued();
 
-        $this->addMediaConversion('banner_wide_mobile')
-            ->fit(Fit::Crop, 750, 116)
-            ->performOnCollections('banner_wide_image')
-            ->nonQueued();
-
         $this->addMediaConversion('banner_double')
             ->fit(Fit::Crop, 635, 180)
-            ->performOnCollections('banner_double_first_image', 'banner_double_second_image')
-            ->nonQueued();
-
-        $this->addMediaConversion('banner_double_mobile')
-            ->fit(Fit::Crop, 750, 212)
             ->performOnCollections('banner_double_first_image', 'banner_double_second_image')
             ->nonQueued();
 
@@ -140,12 +136,15 @@ final class Setting extends Model implements HasMedia
             )
             ->nonQueued();
 
-        $this->addMediaConversion('banner_triple_mobile')
+        $this->addMediaConversion('banner_mobile')
             ->fit(Fit::Crop, 750, 360)
             ->performOnCollections(
-                'banner_triple_first_image',
-                'banner_triple_second_image',
-                'banner_triple_third_image',
+                'banner_wide_mobile_image',
+                'banner_double_first_mobile_image',
+                'banner_double_second_mobile_image',
+                'banner_triple_first_mobile_image',
+                'banner_triple_second_mobile_image',
+                'banner_triple_third_mobile_image',
             )
             ->nonQueued();
     }

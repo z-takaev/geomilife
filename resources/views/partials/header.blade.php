@@ -1,5 +1,5 @@
 <!-- Top Bar-->
-<div class="tf-topbar style-2 d-none d-md-block">
+<div class="tf-topbar style-2">
     <div class="container">
         <div class="topbar-inner">
             <div class="topbar-left ">
@@ -19,20 +19,20 @@
                 <ul class="tf-list">
                     <li>
                         <a href="tel:{{ preg_replace('/[^\d+]/', '', settings()?->phone) }}" class="info link-primary">
-                            <i class="icon icon-phone-call fs-24"></i>
+                            <i class="icon icon-phone-call"></i>
                             {{ __(settings()?->phone) }}
                         </a>
                     </li>
-                    <li class="br-line type-vertical"></li>
-                    <li>
+                    <li class="br-line type-vertical d-none d-md-block"></li>
+                    <li class="d-none d-md-block">
                         <a href="mailto:{{ settings()?->email }}" class="info link-primary">
-                            <i class="icon icon-EnvelopeSimple fs-24"></i>
+                            <i class="icon icon-EnvelopeSimple"></i>
                             {{ __(settings()?->email) }}
                         </a>
                     </li>
                 </ul>
             </div>
-            <div class="topbar-right">
+            <div class="topbar-right d-none d-md-flex">
                 <ul class="topbar-social-list social-links">
                     @if (settings()?->instagram_url)
                         <li>
@@ -139,7 +139,7 @@
                                 </li>
                             </ul>
                         </li> --}}
-                        <li class="d-none d-sm-block">
+                        <li>
                             <a href="#wishList" data-bs-toggle="offcanvas" class="nav-icon-item text-primary link">
                                 <i class="icon icon-heart-stroke"></i>
                             </a>

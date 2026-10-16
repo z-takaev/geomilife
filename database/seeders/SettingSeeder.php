@@ -16,11 +16,17 @@ final class SettingSeeder extends Seeder
     private const array IMAGES = [
         'story_image' => 'company-story.jpg',
         'banner_wide_image' => 'promo-natural-ossetia.jpg',
+        'banner_wide_mobile_image' => 'promo-natural-ossetia-mobile.jpg',
         'banner_double_first_image' => 'promo-cold-pressed-oils.jpg',
+        'banner_double_first_mobile_image' => 'promo-cold-pressed-oils-mobile.jpg',
         'banner_double_second_image' => 'promo-urbech.jpg',
+        'banner_double_second_mobile_image' => 'promo-urbech-mobile.jpg',
         'banner_triple_first_image' => 'promo-honey-landscape.webp',
+        'banner_triple_first_mobile_image' => 'promo-honey-mobile.jpg',
         'banner_triple_second_image' => 'promo-healthy-sweets-landscape.webp',
+        'banner_triple_second_mobile_image' => 'promo-healthy-sweets-mobile.jpg',
         'banner_triple_third_image' => 'promo-daily-health-landscape.webp',
+        'banner_triple_third_mobile_image' => 'promo-daily-health-mobile.jpg',
     ];
 
     public function run(): void

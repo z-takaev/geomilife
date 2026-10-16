@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use App\Enums\ProductAvailability;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Contracts\View\View;
@@ -23,8 +24,11 @@ final class ProductCard extends Component
         $selectedVariant = $this->selectedVariant();
 
         return view('livewire.product-card', [
+            'availabilityLabel' => $selectedVariant->status->getLabel(),
             'hasDiscount' => $this->hasDiscount(),
             'imageUrl' => $this->imageUrl(),
+            'isInStock' => $selectedVariant->status === ProductAvailability::IN_STOCK,
+            'isUnavailable' => $selectedVariant->status === ProductAvailability::UNAVAILABLE,
             'oldPrice' => $selectedVariant->oldPrice(),
             'price' => $selectedVariant->currentPrice(),
         ]);

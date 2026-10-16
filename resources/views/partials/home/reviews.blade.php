@@ -2,7 +2,10 @@
     <section class="home-content-section home-reviews">
         <div class="container">
             <div class="sect-head type-2 mb-30 wow fadeInUp">
-                <h2 class="s-title text-primary">{{ __('Отзывы клиентов') }}</h2>
+                <h2 class="s-title text-primary">
+                    <span class="d-none d-sm-inline">{{ __('Отзывы клиентов') }}</span>
+                    <span class="d-sm-none">{{ __('Отзывы') }}</span>
+                </h2>
                 <a href="{{ route('reviews.index') }}" class="tf-btn-line pb-0">
                     <span class="d-none d-sm-inline">{{ __('Все отзывы') }}</span>
                     <span class="d-sm-none">{{ __('Все') }}</span>

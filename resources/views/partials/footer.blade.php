@@ -87,15 +87,31 @@
     <div class="footer-bottom">
         <div class="container">
             <div class="br-line ver-abs top-0 bg-white_10"></div>
-            <div class="footer-copyright">
-                <p class="text-caption-01 fw-medium text-white">
-                    {{ __('«Geomilife» 2026 - производитель масла') }}
-                </p>
-                <a class="footer-developer" href="#" aria-label="{{ __('Разработано в: Web-Chip') }}">
-                    <img loading="lazy" src="{{ asset('assets/images/logo/web-chip.webp') }}"
-                        alt="{{ __('Логотип Web-Chip') }}">
-                    <span class="footer-developer-tooltip" role="tooltip">{{ __('Разработано в: Web-Chip') }}</span>
-                </a>
+            <div class="footer-bottom-content">
+                <div class="footer-copyright">
+                    <p class="text-caption-01 fw-medium text-white">
+                        {{ __('«Geomilife» 2026 - производитель масла') }}
+                    </p>
+                    <a class="footer-developer" href="https://web-chip.ru" target="_blank"
+                        aria-label="{{ __('Разработано в: Web-Chip') }}">
+                        <img loading="lazy" src="{{ asset('assets/images/logo/web-chip.webp') }}"
+                            alt="{{ __('Логотип Web-Chip') }}">
+                        <span class="footer-developer-tooltip"
+                            role="tooltip">{{ __('Разработано в: Web-Chip') }}</span>
+                    </a>
+                </div>
+                <ul class="footer-legal-links">
+                    <li>
+                        <a href="{{ route('pages.show', 'terms') }}" class="link">
+                            {{ __('Пользовательское соглашение') }}
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('pages.show', 'policy') }}" class="link">
+                            {{ __('Политика конфиденциальности') }}
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
