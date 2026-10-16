@@ -31,15 +31,18 @@ final class MenuServiceProvider extends ServiceProvider
     {
         return [
             MenuItem::make('Каталог')->isCatalog()->children($this->catalog($categoryRepository)),
-            MenuItem::make('Акции'),
+            MenuItem::make('Акции')->url(route('promos.index')),
             MenuItem::make('Доставка и оплата')->url(route('pages.show', 'delivery')),
             MenuItem::make('О нас')->url(route('pages.show', 'about')),
             MenuItem::make('Контакты')->url(route('contacts.index')),
             MenuItem::make('Еще')->children([
-                MenuItem::make('Вопрос-ответ')->url(route('faqs.index')),
-                MenuItem::make('Our Services')->children([
-                    MenuItem::make('Our Services 1'),
-                ]),
+                MenuItem::make('Вопросы и ответы')->url(route('faqs.index')),
+                MenuItem::make('Статьи')->url(route('articles.index')),
+                MenuItem::make('Новости')->url(route('news.index')),
+                MenuItem::make('Отзывы')->url(route('reviews.index')),
+                MenuItem::make('Наше производство')->url(route('pages.show', 'production')),
+                MenuItem::make('Контроль качества')->url(route('pages.show', 'quality-control')),
+                MenuItem::make('Возврат и обмен')->url(route('pages.show', 'returns')),
             ]),
         ];
     }
@@ -51,20 +54,22 @@ final class MenuServiceProvider extends ServiceProvider
     {
         return [
             MenuItem::make('Разделы')->children([
-                MenuItem::make('Главная'),
-                MenuItem::make('Каталог'),
-                MenuItem::make('Преимущества'),
-                MenuItem::make('Акции'),
-                MenuItem::make('Полезные статьи'),
+                MenuItem::make('Каталог')->url(route('catalog.index')),
+                MenuItem::make('Акции')->url(route('promos.index')),
+                MenuItem::make('Статьи')->url(route('articles.index')),
+                MenuItem::make('Новости')->url(route('news.index')),
+                MenuItem::make('Отзывы')->url(route('reviews.index')),
+                MenuItem::make('Вопросы и ответы')->url(route('faqs.index')),
                 MenuItem::make('Контакты')->url(route('contacts.index')),
             ]),
             MenuItem::make('Информация')->children([
                 MenuItem::make('О нас')->url(route('pages.show', 'about')),
+                MenuItem::make('Наше производство')->url(route('pages.show', 'production')),
+                MenuItem::make('Контроль качества')->url(route('pages.show', 'quality-control')),
                 MenuItem::make('Доставка и оплата')->url(route('pages.show', 'delivery')),
-                MenuItem::make('Гарантия качества'),
-                MenuItem::make('Связаться с нами'),
-                MenuItem::make('Позвонить нам'),
-                MenuItem::make('Написать на почту'),
+                MenuItem::make('Возврат и обмен')->url(route('pages.show', 'returns')),
+                MenuItem::make('Пользовательское соглашение')->url(route('pages.show', 'terms')),
+                MenuItem::make('Политика конфиденциальности')->url(route('pages.show', 'policy')),
             ]),
         ];
     }
