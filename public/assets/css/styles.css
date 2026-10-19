@@ -14547,7 +14547,6 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
 }
 
 .product-card-availability__help .tooltip {
-    display: block;
     width: max-content;
     max-width: 220px;
     white-space: normal;
@@ -14756,7 +14755,7 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
     }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 575px) {
     .search-results-counts {
         flex-direction: column;
     }
