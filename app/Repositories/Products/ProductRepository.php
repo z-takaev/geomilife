@@ -71,7 +71,7 @@ final class ProductRepository
             ->values();
 
         $products = Product::query()
-            ->select(['id', 'name', 'is_new', 'is_hit'])
+            ->select(['id', 'name', 'slug', 'is_new', 'is_hit'])
             ->active()
             ->with([
                 'variants' => function (HasMany $query): void {
@@ -92,6 +92,31 @@ final class ProductRepository
             'newProducts' => $this->restoreProductOrder($newProductIds, $products),
             'discountedProducts' => $this->restoreProductOrder($discountedProductIds, $products),
         ];
+    }
+
+    /**
+     * @return Collection<int, Product>
+     */
+    public function getRecommendedProducts(Product $product, int $limit = 10): Collection
+    {
+        return Product::query()
+            ->select(['id', 'name', 'slug', 'is_new', 'is_hit'])
+            ->available()
+            ->with([
+                'variants' => function (HasMany $query): void {
+                    $query
+                        ->select(['id', 'product_id', 'unit', 'value', 'price', 'discount_percent', 'status'])
+                        ->active();
+                },
+                'media' => function (MorphMany $query): void {
+                    $query->where('collection_name', 'image');
+                },
+            ])
+            ->whereKeyNot($product->getKey())
+            ->orderByDesc('is_hit')
+            ->latest('id')
+            ->limit($limit)
+            ->get();
     }
 
     /**

@@ -4,7 +4,7 @@
         'is-disabled' => $isUnavailable,
     ])>
         <div class="card-product_wrapper home-product-card__media">
-            <a href="#" class="product-img" aria-label="{{ $product->name }}">
+            <a href="{{ route('products.show', $product) }}" class="product-img" aria-label="{{ $product->name }}">
                 @if ($imageUrl !== '')
                     <img class="img-product" src="{{ $imageUrl }}" alt="{{ $product->name }}">
                 @else
@@ -46,7 +46,8 @@
         </div>
 
         <div class="card-product_info home-product-card__info">
-            <a href="#" class="name-product home-product-card__name link-underline text-primary">
+            <a href="{{ route('products.show', $product) }}"
+                class="name-product home-product-card__name link-underline text-primary">
                 {{ $product->name }}
             </a>
 
