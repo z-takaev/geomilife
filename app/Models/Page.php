@@ -40,6 +40,9 @@ final class Page extends Model implements HasMedia, HasRichContent, Seoable
 
     public function registerMediaCollections(): void
     {
+        $this->addMediaCollection('images')
+            ->acceptsMimeTypes(ImageMimeTypes::ALLOWED);
+
         $this->addMediaCollection('content')
             ->acceptsMimeTypes(ImageMimeTypes::ALLOWED);
     }
