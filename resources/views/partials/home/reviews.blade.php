@@ -14,16 +14,7 @@
 
             <div class="home-reviews-grid">
                 @foreach ($reviews as $review)
-                    <article class="home-review-card wow fadeInUp" @style(['--review-delay: ' . ($loop->iteration - 1) * 0.1 . 's'])>
-                        <div class="home-review-quote" aria-hidden="true">“</div>
-                        <p class="home-review-text">{{ $review->text }}</p>
-                        <footer class="home-review-footer">
-                            <p class="home-review-author">{{ $review->author_name }}</p>
-                            <time class="home-review-date" datetime="{{ $review->reviewed_at->toDateString() }}">
-                                {{ $review->reviewed_at->translatedFormat('j F Y') }}
-                            </time>
-                        </footer>
-                    </article>
+                    <x-review-card :review="$review" :delay="($loop->iteration - 1) * 0.1" />
                 @endforeach
             </div>
         </div>

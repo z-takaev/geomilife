@@ -7,5 +7,6 @@ return [
         'articles' => 10,
         'news' => 10,
         'promos' => 15,
+        'reviews' => 10,
     ],
 ];

@@ -13121,6 +13121,15 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
     gap: 30px;
 }
 
+.reviews-archive-list {
+    display: grid;
+    gap: 24px;
+}
+
+.reviews-archive-list .home-review-card {
+    min-height: 0;
+}
+
 .home-review-card {
     display: flex;
     flex-direction: column;

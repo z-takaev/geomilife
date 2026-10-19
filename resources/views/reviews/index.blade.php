@@ -10,7 +10,19 @@
 
     <section class="flat-spacing">
         <div class="container">
-            <p>{{ __('Раздел находится в разработке.') }}</p>
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="reviews-archive-list">
+                        @forelse ($reviews as $review)
+                            <x-review-card :review="$review" :delay="($loop->iteration - 1) * 0.1" />
+                        @empty
+                            <p class="text-center">{{ __('Отзывы пока не добавлены.') }}</p>
+                        @endforelse
+                    </div>
+
+                    {{ $reviews->links() }}
+                </div>
+            </div>
         </div>
     </section>
 @endsection
