@@ -17,19 +17,18 @@
                     <span>{{ __('Фильтры') }}</span>
                 </button>
 
-                <p class="catalog-products-count">
-                    {{ trans_choice('{0} Товаров пока нет|{1} :count товар|[2,4] :count товара|[5,*] :count товаров', $products->total(), ['count' => $products->total()]) }}
-                </p>
-
                 <label class="catalog-sorting">
                     <span>{{ __('Сортировка') }}</span>
-                    <select name="sort" aria-label="{{ __('Сортировка товаров') }}">
-                        <option value="popular">{{ __('По популярности') }}</option>
-                        <option value="new">{{ __('По новизне') }}</option>
-                        <option value="price-asc">{{ __('Сначала дешевле') }}</option>
-                        <option value="price-desc">{{ __('Сначала дороже') }}</option>
-                        <option value="name">{{ __('По названию') }}</option>
-                    </select>
+                    <span class="catalog-sorting__control">
+                        <span class="icon icon-ArrowsLeftRight" aria-hidden="true"></span>
+                        <select name="sort" aria-label="{{ __('Сортировка товаров') }}">
+                            <option value="popular">{{ __('По популярности') }}</option>
+                            <option value="new">{{ __('По новизне') }}</option>
+                            <option value="price-asc">{{ __('Сначала дешевле') }}</option>
+                            <option value="price-desc">{{ __('Сначала дороже') }}</option>
+                            <option value="name">{{ __('По названию') }}</option>
+                        </select>
+                    </span>
                 </label>
             </div>
 

@@ -4,15 +4,12 @@
         <div class="catalog-filter-options catalog-filter-options--scroll">
             @foreach ($categories as $category)
                 @php
-                    $categoryProductsCount =
-                        $category->active_products_count + $category->children->sum('active_products_count');
                     $categoryInputId = $filterIdPrefix . '-category-' . $category->getKey();
                 @endphp
                 <label class="catalog-filter-option" for="{{ $categoryInputId }}">
                     <input id="{{ $categoryInputId }}" type="checkbox" name="categories[]"
                         value="{{ $category->getKey() }}">
                     <span>{{ $category->name }}</span>
-                    <small>{{ $categoryProductsCount }}</small>
                 </label>
             @endforeach
         </div>

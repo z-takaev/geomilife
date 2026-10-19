@@ -21,9 +21,9 @@
         <section class="section-404">
             <div class="banner-404 container">
                 <div class="banner-content">
-                    <p class="text-display text-primary font-sora">@yield('code')</p>
-                    <h1 class="title text-primary font-sora">@yield('heading')</h1>
-                    <p class="desc text-secondary">@yield('message')</p>
+                    <p class="text-display text-black font-sora">@yield('code')</p>
+                    <h1 class="title text-black font-sora">@yield('heading')</h1>
+                    <p class="desc text-black">@yield('message')</p>
                     <a href="{{ route('home') }}" class="tf-btn animate-btn">
                         {{ __('Вернуться на главную') }}
                     </a>

@@ -37,7 +37,7 @@
     <section class="section-product-single flat-spacing product-detail">
         <div class="container">
             <div class="row g-4 g-xl-5">
-                <div class="col-lg-6">
+                <div class="col-lg-4">
                     <div id="productGallery" class="carousel slide product-gallery" data-bs-interval="false">
                         <div class="carousel-inner product-gallery__main">
                             @foreach ($galleryImages as $image)
@@ -72,19 +72,25 @@
                     </div>
                 </div>
 
-                <div class="col-lg-6">
+                <div class="col-lg-8">
                     <div class="tf-product-info-wrap product-detail__info">
                         <div class="tf-product-info-heading">
                             <div class="product-info-meta">
-                                <p class="infor_cate fw-semibold text-uppercase">
-                                    {{ $product->category?->name ?? __('Натуральные продукты') }}
-                                </p>
+                                @if ($product->category !== null)
+                                    <a href="{{ route('catalog.index') }}"
+                                        class="infor_cate product-detail__category fw-semibold text-uppercase">
+                                        {{ $product->category->name }}
+                                    </a>
+                                @else
+                                    <span class="infor_cate fw-semibold text-uppercase">
+                                        {{ __('Натуральные продукты') }}
+                                    </span>
+                                @endif
                                 @if ($product->is_new)
-                                    <span class="product-detail__badge">{{ __('Новинка') }}</span>
+                                    <span class="product-card-badge product-card-badge--new">{{ __('Новинка') }}</span>
                                 @endif
                                 @if ($product->is_hit)
-                                    <span
-                                        class="product-detail__badge product-detail__badge--accent">{{ __('Хит') }}</span>
+                                    <span class="product-card-badge product-card-badge--hit">{{ __('Хит') }}</span>
                                 @endif
                             </div>
 
@@ -97,27 +103,14 @@
                                     @if ($selectedVariant->oldPrice() !== null)
                                         <span
                                             class="product-detail__old-price">{{ $selectedVariant->oldPrice()->format() }}</span>
-                                        <span class="product-detail__discount">
-                                            {{ __('−:percent%', ['percent' => $selectedVariant->discount_percent]) }}
-                                        </span>
                                     @endif
                                 </div>
                             @endif
-
-                            <p class="product-infor-desc">
-                                {{ $product->description ?: __('Натуральный продукт из отборного сырья. Бережное производство сохраняет природный вкус, аромат и полезные свойства.') }}
-                            </p>
                         </div>
 
                         @if ($product->variants->isNotEmpty())
-                            <div class="tf-product-variant">
+                            <div class="quickview-product-variant product-detail__variant">
                                 <div class="variant-picker-item variant-unit">
-                                    <div class="variant-picker-label">
-                                        <span>{{ __('Объём / вес:') }}</span>
-                                        <span class="variant-picker-label-value value-currentUnit fw-medium">
-                                            {{ $selectedVariant->label() }}
-                                        </span>
-                                    </div>
                                     <div class="variant-picker-values" role="group"
                                         aria-label="{{ __('Выберите объём или вес') }}">
                                         @foreach ($product->variants as $variant)
@@ -129,55 +122,34 @@
                                         @endforeach
                                     </div>
                                 </div>
-
-                                <div class="variant-quantity">
-                                    <div class="variant-picker-label">
-                                        <span>{{ __('Количество:') }}</span>
-                                    </div>
-                                    <div class="wg-quantity product-detail__quantity">
-                                        <button type="button" class="btn-quantity btn-decrease"
-                                            aria-label="{{ __('Уменьшить количество') }}">
-                                            <i class="icon icon-minus" aria-hidden="true"></i>
-                                        </button>
-                                        <input class="quantity-product" type="number" name="quantity" value="1"
-                                            min="1" inputmode="numeric" aria-label="{{ __('Количество') }}">
-                                        <button type="button" class="btn-quantity btn-increase"
-                                            aria-label="{{ __('Увеличить количество') }}">
-                                            <i class="icon icon-plus" aria-hidden="true"></i>
-                                        </button>
-                                    </div>
-                                </div>
                             </div>
                         @endif
 
-                        <div class="tf-product-total-btn">
+                        <div class="quickview-product-total-btn product-detail__actions">
                             <div class="group-btn">
-                                <button type="button" class="product-card-buy product-detail__buy w-100"
+                                <div class="wg-quantity quick-view-quantity">
+                                    <button type="button" class="btn-quantity minus-prd quick-view-quantity__button"
+                                        aria-label="{{ __('Уменьшить количество') }}">
+                                        <i class="icon icon-minus" aria-hidden="true"></i>
+                                    </button>
+                                    <input class="quantity-product quick-view-quantity__input" type="text" name="number"
+                                        value="1" inputmode="numeric" aria-label="{{ __('Количество') }}">
+                                    <button type="button" class="btn-quantity plus-prd quick-view-quantity__button"
+                                        aria-label="{{ __('Увеличить количество') }}">
+                                        <i class="icon icon-plus" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                                <button type="button" class="product-card-buy quick-view-buy w-100"
                                     data-bs-toggle="offcanvas" data-bs-target="#shoppingCart">
-                                    {{ __('Добавить в корзину') }}
+                                    {{ __('Купить') }}
                                 </button>
                                 <button type="button" class="tf-btn-icon hover-tooltip btn-add-wishlist"
                                     aria-label="{{ __('Добавить в избранное') }}">
-                                    <i class="icon icon-heart-stroke fs-24" aria-hidden="true"></i>
+                                    <i class="icon icon-heart-stroke" aria-hidden="true"></i>
                                     <span class="tooltip">{{ __('В избранное') }}</span>
                                 </button>
                             </div>
                         </div>
-
-                        <ul class="product-detail__benefits">
-                            <li>
-                                <i class="icon icon-Storefront" aria-hidden="true"></i>
-                                <span>{{ __('Самовывоз из магазина — бесплатно') }}</span>
-                            </li>
-                            <li>
-                                <i class="icon icon-Truck" aria-hidden="true"></i>
-                                <span>{{ __('Доставка курьером и транспортной компанией') }}</span>
-                            </li>
-                            <li>
-                                <i class="icon icon-arrow-clockwise" aria-hidden="true"></i>
-                                <span>{{ __('Возврат товара надлежащего качества в течение 14 дней') }}</span>
-                            </li>
-                        </ul>
 
                         <dl class="product-detail__meta">
                             <div>
@@ -191,7 +163,13 @@
                             </div>
                             <div>
                                 <dt>{{ __('Категория') }}</dt>
-                                <dd>{{ $product->category?->name ?? __('Не указана') }}</dd>
+                                <dd>
+                                    @if ($product->category !== null)
+                                        <a href="{{ route('catalog.index') }}">{{ $product->category->name }}</a>
+                                    @else
+                                        {{ __('Не указана') }}
+                                    @endif
+                                </dd>
                             </div>
                         </dl>
                     </div>
@@ -202,11 +180,22 @@
 
     <section class="product-description-section">
         <div class="container">
-            <div class="row g-4 g-lg-5">
-                <div class="col-lg-6">
-                    <div class="product-description-section__content">
-                        <p class="product-description-section__eyebrow">{{ __('О продукте') }}</p>
-                        <h2>{{ __('Подробное описание') }}</h2>
+            <div class="product-detail-tabs">
+                <nav class="product-detail-tabs__navigation" role="tablist" aria-label="{{ __('Информация о товаре') }}">
+                    <button class="active" id="product-description-tab" type="button" role="tab" data-bs-toggle="tab"
+                        data-bs-target="#product-description" aria-controls="product-description" aria-selected="true">
+                        {{ __('Описание') }}
+                    </button>
+                    <button id="product-characteristics-tab" type="button" role="tab" data-bs-toggle="tab"
+                        data-bs-target="#product-characteristics" aria-controls="product-characteristics"
+                        aria-selected="false">
+                        {{ __('Характеристики') }}
+                    </button>
+                </nav>
+
+                <div class="tab-content product-detail-tabs__content">
+                    <div class="tab-pane fade show active" id="product-description" role="tabpanel"
+                        aria-labelledby="product-description-tab" tabindex="0">
                         <p>
                             {{ $product->description ?: __('Продукт изготовлен из натурального сырья без искусственных ароматизаторов и усилителей вкуса. Подходит для ежедневного рациона и бережно упакован для сохранения свежести.') }}
                         </p>
@@ -214,11 +203,9 @@
                             {{ __('Храните продукт в сухом прохладном месте, защищённом от прямых солнечных лучей. После вскрытия упаковки соблюдайте рекомендации на этикетке.') }}
                         </p>
                     </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="product-characteristics">
-                        <p class="product-description-section__eyebrow">{{ __('Информация') }}</p>
-                        <h2>{{ __('Характеристики') }}</h2>
+
+                    <div class="tab-pane fade" id="product-characteristics" role="tabpanel"
+                        aria-labelledby="product-characteristics-tab" tabindex="0">
                         <dl class="product-characteristics__list">
                             @forelse ($product->attributeValues as $attributeValue)
                                 <div class="product-characteristics__item">

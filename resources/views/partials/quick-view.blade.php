@@ -55,7 +55,13 @@
         <div class="canvas-body ps-md-0 tf-quick-view">
             <div class="quickview-product-info">
                 <div class="product-info-meta">
-                    <p class="infor_cate fw-semibold cl-text-main">{{ __('МАСЛА') }}</p>
+                    <a href="{{ route('catalog.index') }}"
+                        class="infor_cate product-detail__category fw-semibold text-uppercase">
+                        {{ __('Масла') }}
+                    </a>
+                    <span class="product-card-badge product-card-badge--hit">{{ __('Хит') }}</span>
+                    <span class="product-card-badge product-card-badge--new">{{ __('Новинка') }}</span>
+                    <span class="product-card-badge product-card-badge--sale">{{ __('Скидка') }}</span>
                 </div>
                 <h3 class="product-infor-name text-black">
                     {{ __('Сыродавленное масло чёрного тмина') }}

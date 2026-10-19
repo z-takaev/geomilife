@@ -59,11 +59,18 @@
 }
 
 .checkout-login-note__link {
-    margin-left: 4px;
     color: var(--primary);
     font-weight: 600;
     text-decoration: underline;
     text-underline-offset: 3px;
+}
+
+.checkout-field__required {
+    color: var(--primary);
+}
+
+.checkout-field__required::before {
+    content: '*';
 }
 
 .checkout-customer-note {
@@ -354,6 +361,16 @@
     font-size: 14px;
 }
 
+.checkout-product__option.mini-product-weight {
+    padding: 4px 9px;
+    border-radius: 8px;
+    background-color: var(--secondary);
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 16px;
+}
+
 .checkout-summary {
     position: sticky;
     top: 24px;
@@ -415,6 +432,7 @@
     justify-content: space-between;
     align-items: baseline;
     gap: 16px;
+    border-top: 1px solid var(--line);
     padding: 22px 0;
     color: var(--text-black);
     font-size: 20px;

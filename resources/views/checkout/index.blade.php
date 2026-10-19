@@ -20,10 +20,9 @@
                             <div>
                                 <h5 class="checkout-login-note__title">{{ __('Получайте больше выгоды') }}</h5>
                                 <p class="checkout-login-note__text">
-                                    {{ __('Войдите в аккаунт, чтобы использовать персональные скидки и получать бонусы за заказ.') }}
                                     <a href="#login" class="checkout-login-note__link" data-bs-toggle="modal">
-                                        {{ __('Войти') }}
-                                    </a>
+                                        {{ __('Войдите в аккаунт') }}
+                                    </a>{{ __(', чтобы использовать персональные скидки и получать бонусы за заказ.') }}
                                 </p>
                             </div>
                         </div>
@@ -36,9 +35,62 @@
                         </div>
                     @endguest
 
+                    <section class="checkout-section" aria-labelledby="checkout-products-title">
+                        <div class="checkout-section__heading checkout-section__heading--products">
+                            <span class="checkout-section__number">{{ __('1') }}</span>
+                            <div>
+                                <h4 id="checkout-products-title" class="checkout-section__title">
+                                    {{ __('Товары в заказе') }}</h4>
+                                <p class="checkout-section__description">{{ __('3 товара') }}</p>
+                            </div>
+                        </div>
+
+                        <ul class="checkout-products">
+                            <li class="checkout-product">
+                                <a href="{{ route('catalog.index') }}" class="checkout-product__image">
+                                    <img src="{{ asset('assets/images/product/oil-product-card.png') }}"
+                                        alt="{{ __('Масло чёрного тмина') }}" loading="lazy">
+                                </a>
+                                <div class="checkout-product__details">
+                                    <a href="{{ route('catalog.index') }}"
+                                        class="checkout-product__name">{{ __('Масло чёрного тмина') }}</a>
+                                    <span class="checkout-product__option mini-product-weight">{{ __('250 мл') }}</span>
+                                    <span class="checkout-product__quantity">{{ __('1 шт.') }}</span>
+                                </div>
+                                <strong class="checkout-product__price">{{ __('890 ₽') }}</strong>
+                            </li>
+                            <li class="checkout-product">
+                                <a href="{{ route('catalog.index') }}" class="checkout-product__image">
+                                    <img src="{{ asset('assets/images/product/walnut-urbech-card.png') }}"
+                                        alt="{{ __('Урбеч из грецкого ореха') }}" loading="lazy">
+                                </a>
+                                <div class="checkout-product__details">
+                                    <a href="{{ route('catalog.index') }}"
+                                        class="checkout-product__name">{{ __('Урбеч из грецкого ореха') }}</a>
+                                    <span class="checkout-product__option mini-product-weight">{{ __('400 г') }}</span>
+                                    <span class="checkout-product__quantity">{{ __('1 шт.') }}</span>
+                                </div>
+                                <strong class="checkout-product__price">{{ __('1 250 ₽') }}</strong>
+                            </li>
+                            <li class="checkout-product">
+                                <a href="{{ route('catalog.index') }}" class="checkout-product__image">
+                                    <img src="{{ asset('assets/images/product/mountain-honey-card.png') }}"
+                                        alt="{{ __('Горный мёд') }}" loading="lazy">
+                                </a>
+                                <div class="checkout-product__details">
+                                    <a href="{{ route('catalog.index') }}"
+                                        class="checkout-product__name">{{ __('Горный мёд') }}</a>
+                                    <span class="checkout-product__option mini-product-weight">{{ __('500 г') }}</span>
+                                    <span class="checkout-product__quantity">{{ __('1 шт.') }}</span>
+                                </div>
+                                <strong class="checkout-product__price">{{ __('470 ₽') }}</strong>
+                            </li>
+                        </ul>
+                    </section>
+
                     <section class="checkout-section" aria-labelledby="checkout-contact-title">
                         <div class="checkout-section__heading">
-                            <span class="checkout-section__number">{{ __('1') }}</span>
+                            <span class="checkout-section__number">{{ __('2') }}</span>
                             <div>
                                 <h4 id="checkout-contact-title" class="checkout-section__title">{{ __('Получатель') }}</h4>
                                 <p class="checkout-section__description">{{ __('Укажите, с кем связаться по заказу') }}</p>
@@ -47,25 +99,29 @@
 
                         <div class="checkout-form-grid">
                             <fieldset class="checkout-field">
-                                <label for="checkout-first-name">{{ __('Имя') }} *</label>
+                                <label for="checkout-first-name">{{ __('Имя') }} <span class="checkout-field__required"
+                                        aria-hidden="true"></span></label>
                                 <input id="checkout-first-name" type="text" name="first_name"
                                     value="{{ old('first_name', $customer?->first_name) }}"
                                     placeholder="{{ __('Введите имя') }}" autocomplete="given-name" required>
                             </fieldset>
                             <fieldset class="checkout-field">
-                                <label for="checkout-last-name">{{ __('Фамилия') }} *</label>
+                                <label for="checkout-last-name">{{ __('Фамилия') }} <span class="checkout-field__required"
+                                        aria-hidden="true"></span></label>
                                 <input id="checkout-last-name" type="text" name="last_name"
                                     value="{{ old('last_name', $customer?->last_name) }}"
                                     placeholder="{{ __('Введите фамилию') }}" autocomplete="family-name" required>
                             </fieldset>
                             <fieldset class="checkout-field">
-                                <label for="checkout-phone">{{ __('Телефон') }} *</label>
+                                <label for="checkout-phone">{{ __('Телефон') }} <span class="checkout-field__required"
+                                        aria-hidden="true"></span></label>
                                 <input id="checkout-phone" type="tel" name="phone"
                                     value="{{ old('phone', $customer?->phone) }}"
                                     placeholder="{{ __('+7 (___) ___-__-__') }}" autocomplete="tel" required>
                             </fieldset>
                             <fieldset class="checkout-field">
-                                <label for="checkout-email">{{ __('Электронная почта') }} *</label>
+                                <label for="checkout-email">{{ __('Электронная почта') }} <span
+                                        class="checkout-field__required" aria-hidden="true"></span></label>
                                 <input id="checkout-email" type="email" name="email"
                                     value="{{ old('email', $customer?->email) }}"
                                     placeholder="{{ __('mail@example.ru') }}" autocomplete="email" required>
@@ -75,11 +131,12 @@
 
                     <section class="checkout-section" aria-labelledby="checkout-delivery-title">
                         <div class="checkout-section__heading">
-                            <span class="checkout-section__number">{{ __('2') }}</span>
+                            <span class="checkout-section__number">{{ __('3') }}</span>
                             <div>
                                 <h4 id="checkout-delivery-title" class="checkout-section__title">
                                     {{ __('Способ доставки') }}</h4>
-                                <p class="checkout-section__description">{{ __('Выберите удобный вариант получения') }}</p>
+                                <p class="checkout-section__description">{{ __('Выберите удобный вариант получения') }}
+                                </p>
                             </div>
                         </div>
 
@@ -132,19 +189,22 @@
                             </div>
                             <div class="checkout-form-grid">
                                 <fieldset class="checkout-field checkout-field--wide">
-                                    <label for="checkout-city">{{ __('Город') }} *</label>
+                                    <label for="checkout-city">{{ __('Город') }} <span class="checkout-field__required"
+                                            aria-hidden="true"></span></label>
                                     <input id="checkout-city" type="text" name="city"
                                         value="{{ old('city', $deliveryAddress?->city?->name ?? $customer?->city?->name) }}"
                                         placeholder="{{ __('Введите город') }}" autocomplete="address-level2" required>
                                 </fieldset>
                                 <fieldset class="checkout-field checkout-field--wide">
-                                    <label for="checkout-street">{{ __('Улица') }} *</label>
+                                    <label for="checkout-street">{{ __('Улица') }} <span
+                                            class="checkout-field__required" aria-hidden="true"></span></label>
                                     <input id="checkout-street" type="text" name="street"
                                         value="{{ old('street', $deliveryAddress?->street) }}"
                                         placeholder="{{ __('Введите улицу') }}" autocomplete="street-address" required>
                                 </fieldset>
                                 <fieldset class="checkout-field">
-                                    <label for="checkout-house">{{ __('Дом') }} *</label>
+                                    <label for="checkout-house">{{ __('Дом') }} <span
+                                            class="checkout-field__required" aria-hidden="true"></span></label>
                                     <input id="checkout-house" type="text" name="house"
                                         value="{{ old('house', $deliveryAddress?->house) }}"
                                         placeholder="{{ __('Дом') }}" required>
@@ -169,11 +229,16 @@
                                 </fieldset>
                             </div>
                         </div>
+
+                        <fieldset class="checkout-field checkout-field--comment">
+                            <label for="checkout-comment">{{ __('Комментарий к заказу') }}</label>
+                            <textarea id="checkout-comment" name="comment" placeholder="{{ __('Например, позвонить за час до доставки') }}">{{ old('comment') }}</textarea>
+                        </fieldset>
                     </section>
 
                     <section class="checkout-section" aria-labelledby="checkout-payment-title">
                         <div class="checkout-section__heading">
-                            <span class="checkout-section__number">{{ __('3') }}</span>
+                            <span class="checkout-section__number">{{ __('4') }}</span>
                             <div>
                                 <h4 id="checkout-payment-title" class="checkout-section__title">{{ __('Оплата') }}</h4>
                                 <p class="checkout-section__description">{{ __('Выберите способ оплаты заказа') }}</p>
@@ -198,64 +263,6 @@
                                 </span>
                             </label>
                         </div>
-
-                        <fieldset class="checkout-field checkout-field--comment">
-                            <label for="checkout-comment">{{ __('Комментарий к заказу') }}</label>
-                            <textarea id="checkout-comment" name="comment" placeholder="{{ __('Например, позвонить за час до доставки') }}">{{ old('comment') }}</textarea>
-                        </fieldset>
-                    </section>
-
-                    <section class="checkout-section" aria-labelledby="checkout-products-title">
-                        <div class="checkout-section__heading checkout-section__heading--products">
-                            <span class="checkout-section__number">{{ __('4') }}</span>
-                            <div>
-                                <h4 id="checkout-products-title" class="checkout-section__title">
-                                    {{ __('Товары в заказе') }}</h4>
-                                <p class="checkout-section__description">{{ __('3 товара') }}</p>
-                            </div>
-                        </div>
-
-                        <ul class="checkout-products">
-                            <li class="checkout-product">
-                                <a href="{{ route('catalog.index') }}" class="checkout-product__image">
-                                    <img src="{{ asset('assets/images/product/oil-product-card.png') }}"
-                                        alt="{{ __('Масло чёрного тмина') }}" loading="lazy">
-                                </a>
-                                <div class="checkout-product__details">
-                                    <a href="{{ route('catalog.index') }}"
-                                        class="checkout-product__name">{{ __('Масло чёрного тмина') }}</a>
-                                    <span class="checkout-product__option">{{ __('250 мл') }}</span>
-                                    <span class="checkout-product__quantity">{{ __('1 шт.') }}</span>
-                                </div>
-                                <strong class="checkout-product__price">{{ __('890 ₽') }}</strong>
-                            </li>
-                            <li class="checkout-product">
-                                <a href="{{ route('catalog.index') }}" class="checkout-product__image">
-                                    <img src="{{ asset('assets/images/product/walnut-urbech-card.png') }}"
-                                        alt="{{ __('Урбеч из грецкого ореха') }}" loading="lazy">
-                                </a>
-                                <div class="checkout-product__details">
-                                    <a href="{{ route('catalog.index') }}"
-                                        class="checkout-product__name">{{ __('Урбеч из грецкого ореха') }}</a>
-                                    <span class="checkout-product__option">{{ __('400 г') }}</span>
-                                    <span class="checkout-product__quantity">{{ __('1 шт.') }}</span>
-                                </div>
-                                <strong class="checkout-product__price">{{ __('1 250 ₽') }}</strong>
-                            </li>
-                            <li class="checkout-product">
-                                <a href="{{ route('catalog.index') }}" class="checkout-product__image">
-                                    <img src="{{ asset('assets/images/product/mountain-honey-card.png') }}"
-                                        alt="{{ __('Горный мёд') }}" loading="lazy">
-                                </a>
-                                <div class="checkout-product__details">
-                                    <a href="{{ route('catalog.index') }}"
-                                        class="checkout-product__name">{{ __('Горный мёд') }}</a>
-                                    <span class="checkout-product__option">{{ __('500 г') }}</span>
-                                    <span class="checkout-product__quantity">{{ __('1 шт.') }}</span>
-                                </div>
-                                <strong class="checkout-product__price">{{ __('470 ₽') }}</strong>
-                            </li>
-                        </ul>
                     </section>
                 </div>
 
@@ -277,15 +284,6 @@
                         </div>
                     </dl>
 
-                    <div class="checkout-promo">
-                        <label for="checkout-promo">{{ __('Промокод') }}</label>
-                        <div class="checkout-promo__control">
-                            <input id="checkout-promo" type="text" name="promo_code"
-                                placeholder="{{ __('Введите код') }}">
-                            <button type="button">{{ __('Применить') }}</button>
-                        </div>
-                    </div>
-
                     <div class="checkout-summary__total">
                         <span>{{ __('Итого') }}</span>
                         <strong>{{ __('2 410 ₽') }}</strong>
@@ -301,10 +299,6 @@
                     <button type="button" class="tf-btn animate-btn w-100 checkout-summary__submit">
                         {{ __('Оформить заказ') }}
                     </button>
-                    <p class="checkout-summary__caption">
-                        <i class="icon icon-check" aria-hidden="true"></i>
-                        {{ __('Оператор свяжется с вами для подтверждения') }}
-                    </p>
                 </aside>
             </form>
         </div>

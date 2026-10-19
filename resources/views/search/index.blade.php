@@ -10,28 +10,6 @@
 
     <section class="search-results-page flat-spacing">
         <div class="container">
-            <div class="search-results-summary">
-                <div>
-                    @if ($query !== '')
-                        <p class="search-results-summary__eyebrow">{{ __('По вашему запросу') }}</p>
-                        <h2 class="search-results-summary__query">&laquo;{{ $query }}&raquo;</h2>
-                    @else
-                        <h2 class="search-results-summary__query">{{ __('Все результаты') }}</h2>
-                    @endif
-                </div>
-
-                <dl class="search-results-counts">
-                    <div class="search-results-counts__item">
-                        <dt>{{ __('Категории') }}</dt>
-                        <dd>{{ $categories->count() }}</dd>
-                    </div>
-                    <div class="search-results-counts__item">
-                        <dt>{{ __('Товары') }}</dt>
-                        <dd>{{ $products->total() }}</dd>
-                    </div>
-                </dl>
-            </div>
-
             @if ($categories->isNotEmpty())
                 @php
                     $categoryBackgrounds = [
@@ -76,7 +54,7 @@
                 </div>
 
                 @if ($products->isNotEmpty())
-                    <div class="catalog-products-grid">
+                    <div class="catalog-products-grid search-products-grid">
                         @foreach ($products as $product)
                             <livewire:product-card :product="$product" :wire:key="'search-product-'.$product->getKey()" />
                         @endforeach
