@@ -24,7 +24,7 @@
                             <time class="content-detail-date" datetime="{{ $promo->end_at->toDateString() }}">
                                 {{ __('Акция действует до :date', ['date' => $promo->end_at->translatedFormat('j F Y')]) }}
                             </time>
-                            <h2 class="content-detail-title text-primary font-sora">{{ $promo->title }}</h2>
+                            <h2 class="content-detail-title cl-text-main font-sora">{{ $promo->title }}</h2>
                         </div>
                         <div class="content-detail-body">
                             {{ $promo->getRichContentAttribute('content') }}

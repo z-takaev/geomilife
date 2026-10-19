@@ -5,11 +5,11 @@
         @foreach ($items as $item)
             <li>
                 @if ($item['url'] ?? null)
-                    <a href="{{ $item['url'] }}" class="text-caption-01 link text-white">
+                    <a href="{{ $item['url'] }}" class="breadcrums__link text-caption-01 link">
                         {{ $item['label'] }}
                     </a>
                 @else
-                    <span class="text-caption-01 text-white-50" aria-current="page">
+                    <span class="breadcrums__current text-caption-01" aria-current="page">
                         {{ $item['label'] }}
                     </span>
                 @endif

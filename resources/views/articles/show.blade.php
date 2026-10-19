@@ -24,7 +24,7 @@
                             <time class="content-detail-date" datetime="{{ $article->published_at->toDateString() }}">
                                 {{ $article->published_at->translatedFormat('j F Y') }}
                             </time>
-                            <h2 class="content-detail-title text-primary font-sora">{{ $article->title }}</h2>
+                            <h2 class="content-detail-title cl-text-main font-sora">{{ $article->title }}</h2>
                         </div>
                         <div class="content-detail-body">
                             {{ $article->getRichContentAttribute('content') }}

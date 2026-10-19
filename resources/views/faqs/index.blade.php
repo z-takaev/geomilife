@@ -47,45 +47,7 @@
 
                 <div class="col-lg-4">
                     <div class="col-right_sidebar sticky-top">
-                        <form class="form-get faq-question-form">
-                            <h2 class="form-title h5 text-white text-center">
-                                {{ __('Задать вопрос') }}
-                            </h2>
-
-                            <div class="form-content">
-                                <fieldset class="tf-field">
-                                    <label for="faq-name" class="tf-lable text-primary">
-                                        {{ __('Имя') }}<span class="text-secondary">*</span>
-                                    </label>
-                                    <input type="text" id="faq-name" placeholder="{{ __('Введите ваше имя') }}"
-                                        autocomplete="name">
-                                </fieldset>
-
-                                <fieldset class="tf-field">
-                                    <label for="faq-email" class="tf-lable text-primary">
-                                        {{ __('Электронная почта') }}<span class="text-secondary">*</span>
-                                    </label>
-                                    <input type="email" id="faq-email"
-                                        placeholder="{{ __('Введите электронную почту') }}" autocomplete="email">
-                                </fieldset>
-
-                                <fieldset class="tf-field">
-                                    <label for="faq-message" class="tf-lable text-primary">
-                                        {{ __('Ваш вопрос') }}<span class="text-secondary">*</span>
-                                    </label>
-                                    <textarea id="faq-message" placeholder="{{ __('Напишите ваш вопрос') }}"></textarea>
-                                </fieldset>
-                            </div>
-
-                            <div class="btn-wrap">
-                                <button type="button" class="tf-btn-text-icon fw-semibold animate-btn animate-dark">
-                                    {{ __('Отправить вопрос') }}
-                                    <span class="ic-wrap" aria-hidden="true">
-                                        <i class="icon icon-ArrowUpRight"></i>
-                                    </span>
-                                </button>
-                            </div>
-                        </form>
+                        <livewire:question-form />
                     </div>
                 </div>
             </div>
