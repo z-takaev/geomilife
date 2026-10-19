@@ -5,7 +5,7 @@
             <div class="icon-close-popup" data-bs-dismiss="modal">
                 <i class="icon icon-close"></i>
             </div>
-            <h3 class="title-pop text-primary text-center">{{ __('Регистрация') }}</h3>
+            <h3 class="title-pop text-black text-center">{{ __('Регистрация') }}</h3>
             <form class="form-log">
                 <div class="form-content">
                     <fieldset class="tf-field">
@@ -35,7 +35,7 @@
                     <div class="check-bottom">
                         <div class="checkbox-wrap">
                             <input id="agree" type="checkbox" class="tf-check style-4 radius-3">
-                            <label for="agree" class="text-primary text-caption-01">
+                            <label for="agree" class="text-black text-caption-01">
                                 {{ __('Я принимаю') }}
                                 <a href="#"
                                     class="text-decoration-underline fw-medium text-primary link-2">{{ __('условия использования') }}</a>

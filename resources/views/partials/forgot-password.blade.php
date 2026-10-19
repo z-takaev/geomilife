@@ -5,7 +5,7 @@
             <div class="icon-close-popup" data-bs-dismiss="modal">
                 <i class="icon icon-close"></i>
             </div>
-            <h3 class="title-pop text-primary">{{ __('Восстановление пароля') }}</h3>
+            <h3 class="title-pop text-black">{{ __('Восстановление пароля') }}</h3>
             <p class="desc-pop">
                 {{ __('Введите электронную почту, указанную при регистрации. Мы отправим на неё ссылку для восстановления пароля.') }}
             </p>

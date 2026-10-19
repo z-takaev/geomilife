@@ -17,7 +17,7 @@
                 <p class="date cl-text-2">{{ $date }}</p>
             </div>
             <h5 class="entry_title">
-                <a href="{{ $url }}" class="text-primary font-sora">
+                <a href="{{ $url }}" class="font-sora">
                     {{ $title }}
                 </a>
             </h5>

@@ -93,7 +93,18 @@
                         'is-preorder' => !$isUnavailable,
                         'is-unavailable' => $isUnavailable,
                     ])>
-                        {{ __($availabilityLabel) }}
+                        <span>{{ __($availabilityLabel) }}</span>
+                        <button type="button" class="product-card-availability__help hover-tooltip"
+                            aria-label="{{ $isUnavailable ? __('Товар временно недоступен для заказа') : __('Товар доступен под заказ. Срок поставки уточнит менеджер') }}">
+                            <span class="icon icon-question" aria-hidden="true"></span>
+                            <span class="tooltip" role="tooltip">
+                                @if ($isUnavailable)
+                                    {{ __('Товар временно недоступен для заказа') }}
+                                @else
+                                    {{ __('Товар доступен под заказ. Срок поставки уточнит менеджер') }}
+                                @endif
+                            </span>
+                        </button>
                     </div>
                 @endif
             </div>

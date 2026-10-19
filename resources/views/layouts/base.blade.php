@@ -19,8 +19,8 @@
     @stack('styles')
 
     <!-- Favicon and Touch Icons  -->
-    <link rel="shortcut icon" href="{{ asset('assets/images/logo/favicon.svg') }}">
-    <link rel="apple-touch-icon-precomposed" href="{{ asset('assets/images/logo/favicon.svg') }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon-precomposed" href="{{ asset('favicon.ico') }}">
 </head>
 
 <body>

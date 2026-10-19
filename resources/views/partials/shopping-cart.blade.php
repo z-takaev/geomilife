@@ -2,7 +2,7 @@
 <div class="offcanvas offcanvas-end canvas-shop-cart" id="shoppingCart">
     <div class="canvas-wrapper">
         <div class="canvas-header">
-            <h5 class="title-pop text-primary">{{ __('Корзина') }}</h5>
+            <h5 class="title-pop text-black">{{ __('Корзина') }}</h5>
             <span class="icon-close-popup" data-bs-dismiss="offcanvas">
                 <i class="icon icon-close"></i>
             </span>
@@ -14,11 +14,12 @@
                         <li class="mini-product-cart file-delete">
                             <div class="prd-wrap">
                                 <div class="prd_image">
-                                    <img loading="lazy" src="{{ asset('assets/images/product/product-12.jpg') }}"
+                                    <img loading="lazy" src="{{ asset('assets/images/product/oil-product-card.png') }}"
                                         alt="{{ __('Масло чёрного тмина') }}">
                                 </div>
-                                <a href="product-single-1.html" class="prd_name link-underline text-primary fw-medium">
-                                    {{ __('Масло чёрного тмина, 250 мл') }}
+                                <a href="product-single-1.html" class="prd_name link-underline text-black fw-medium">
+                                    <span>{{ __('Масло чёрного тмина') }}</span>
+                                    <span class="mini-product-weight">{{ __('250 мл') }}</span>
                                 </a>
                             </div>
                             <div class="prd-action">
@@ -27,7 +28,7 @@
                                         {{ __('Удалить') }}
                                     </span>
                                 </a>
-                                <div class="quantity-price text-primary fw-medium">
+                                <div class="quantity-price text-black fw-medium">
                                     <span>1</span>
                                     <span>{{ __('×') }}</span>
                                     <span class="tf-mini-card-price">{{ __('890 ₽') }}</span>
@@ -37,11 +38,12 @@
                         <li class="mini-product-cart file-delete">
                             <div class="prd-wrap">
                                 <div class="prd_image">
-                                    <img loading="lazy" src="{{ asset('assets/images/product/product-11.jpg') }}"
+                                    <img loading="lazy" src="{{ asset('assets/images/product/oil-product-card.png') }}"
                                         alt="{{ __('Урбеч из грецкого ореха') }}">
                                 </div>
-                                <a href="product-single-1.html" class="prd_name link-underline text-primary fw-medium">
-                                    {{ __('Урбеч из грецкого ореха, 400 г') }}
+                                <a href="product-single-1.html" class="prd_name link-underline text-black fw-medium">
+                                    <span>{{ __('Урбеч из грецкого ореха') }}</span>
+                                    <span class="mini-product-weight">{{ __('400 г') }}</span>
                                 </a>
                             </div>
                             <div class="prd-action">
@@ -50,7 +52,7 @@
                                         {{ __('Удалить') }}
                                     </span>
                                 </a>
-                                <div class="quantity-price text-primary fw-medium">
+                                <div class="quantity-price text-black fw-medium">
                                     <span>1</span>
                                     <span>{{ __('×') }}</span>
                                     <span class="tf-mini-card-price">{{ __('1 250 ₽') }}</span>
@@ -60,11 +62,12 @@
                         <li class="mini-product-cart file-delete">
                             <div class="prd-wrap">
                                 <div class="prd_image">
-                                    <img loading="lazy" src="{{ asset('assets/images/product/product-17.jpg') }}"
+                                    <img loading="lazy" src="{{ asset('assets/images/product/oil-product-card.png') }}"
                                         alt="{{ __('Горный мёд') }}">
                                 </div>
-                                <a href="product-single-1.html" class="prd_name link-underline text-primary fw-medium">
-                                    {{ __('Горный мёд, 500 г') }}
+                                <a href="product-single-1.html" class="prd_name link-underline text-black fw-medium">
+                                    <span>{{ __('Горный мёд') }}</span>
+                                    <span class="mini-product-weight">{{ __('500 г') }}</span>
                                 </a>
                             </div>
                             <div class="prd-action">
@@ -73,7 +76,7 @@
                                         {{ __('Удалить') }}
                                     </span>
                                 </a>
-                                <div class="quantity-price text-primary fw-medium">
+                                <div class="quantity-price text-black fw-medium">
                                     <span>1</span>
                                     <span>{{ __('×') }}</span>
                                     <span class="tf-mini-card-price">{{ __('470 ₽') }}</span>
@@ -90,10 +93,7 @@
                 <h4 class="tf-totals-total-value">{{ __('2 610 ₽') }}</h4>
             </div>
             <div class="group-btn">
-                <a href="shopping-cart.html" class="tf-btn animate-btn w-100">
-                    {{ __('В корзину') }}
-                </a>
-                <a href="check-out.html" class="tf-btn style-stroke w-100">
+                <a href="check-out.html" class="tf-btn animate-btn w-100">
                     {{ __('Оформить заказ') }}
                 </a>
             </div>

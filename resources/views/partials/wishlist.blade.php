@@ -1,7 +1,7 @@
 <!-- Wishlist -->
 <div class="offcanvas offcanvas-end canvas-wishlist" id="wishList">
     <div class="canvas-header">
-        <h5 class="title-pop text-primary">{{ __('Избранное') }}</h5>
+        <h5 class="title-pop text-black">{{ __('Избранное') }}</h5>
         <span class="icon-close-popup" data-bs-dismiss="offcanvas">
             <i class="icon icon-close"></i>
         </span>
@@ -11,11 +11,12 @@
             <li class="mini-product-cart file-delete">
                 <div class="prd-wrap">
                     <div class="prd_image">
-                        <img loading="lazy" src="{{ asset('assets/images/product/product-12.jpg') }}"
+                        <img loading="lazy" src="{{ asset('assets/images/product/oil-product-card.png') }}"
                             alt="{{ __('Масло чёрного тмина') }}">
                     </div>
-                    <a href="product-single-1.html" class="prd_name link-underline text-primary fw-medium">
-                        {{ __('Масло чёрного тмина, 250 мл') }}
+                    <a href="product-single-1.html" class="prd_name link-underline text-black fw-medium">
+                        <span>{{ __('Масло чёрного тмина') }}</span>
+                        <span class="mini-product-weight">{{ __('250 мл') }}</span>
                     </a>
                 </div>
                 <div class="prd-action">
@@ -24,7 +25,7 @@
                             {{ __('Удалить') }}
                         </span>
                     </a>
-                    <div class="quantity-price text-primary fw-medium">
+                    <div class="quantity-price text-black fw-medium">
                         <span>1</span>
                         <span>{{ __('×') }}</span>
                         <span>{{ __('890 ₽') }}</span>
@@ -34,11 +35,12 @@
             <li class="mini-product-cart file-delete">
                 <div class="prd-wrap">
                     <div class="prd_image">
-                        <img loading="lazy" src="{{ asset('assets/images/product/product-11.jpg') }}"
+                        <img loading="lazy" src="{{ asset('assets/images/product/oil-product-card.png') }}"
                             alt="{{ __('Урбеч из грецкого ореха') }}">
                     </div>
-                    <a href="product-single-1.html" class="prd_name link-underline text-primary fw-medium">
-                        {{ __('Урбеч из грецкого ореха, 400 г') }}
+                    <a href="product-single-1.html" class="prd_name link-underline text-black fw-medium">
+                        <span>{{ __('Урбеч из грецкого ореха') }}</span>
+                        <span class="mini-product-weight">{{ __('400 г') }}</span>
                     </a>
                 </div>
                 <div class="prd-action">
@@ -47,7 +49,7 @@
                             {{ __('Удалить') }}
                         </span>
                     </a>
-                    <div class="quantity-price text-primary fw-medium">
+                    <div class="quantity-price text-black fw-medium">
                         <span>1</span>
                         <span>{{ __('×') }}</span>
                         <span>{{ __('1 250 ₽') }}</span>
@@ -57,11 +59,12 @@
             <li class="mini-product-cart file-delete">
                 <div class="prd-wrap">
                     <div class="prd_image">
-                        <img loading="lazy" src="{{ asset('assets/images/product/product-17.jpg') }}"
+                        <img loading="lazy" src="{{ asset('assets/images/product/oil-product-card.png') }}"
                             alt="{{ __('Горный мёд') }}">
                     </div>
-                    <a href="product-single-1.html" class="prd_name link-underline text-primary fw-medium">
-                        {{ __('Горный мёд, 500 г') }}
+                    <a href="product-single-1.html" class="prd_name link-underline text-black fw-medium">
+                        <span>{{ __('Горный мёд') }}</span>
+                        <span class="mini-product-weight">{{ __('500 г') }}</span>
                     </a>
                 </div>
                 <div class="prd-action">
@@ -70,7 +73,7 @@
                             {{ __('Удалить') }}
                         </span>
                     </a>
-                    <div class="quantity-price text-primary fw-medium">
+                    <div class="quantity-price text-black fw-medium">
                         <span>1</span>
                         <span>{{ __('×') }}</span>
                         <span>{{ __('470 ₽') }}</span>
@@ -81,9 +84,6 @@
     </div>
     <div class="canvas-footer">
         <div class="d-flex flex-column align-items-center gap-16 text-center">
-            <a href="https://tforvana.vercel.app/wishlist.html" class="tf-btn animate-btn w-100">
-                {{ __('Посмотреть всё избранное') }}
-            </a>
             <a href="{{ url('/') }}" class="tf-btn-line p-0">
                 {{ __('Продолжить покупки') }}
             </a>

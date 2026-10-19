@@ -35,6 +35,6 @@
         'products' => $discountedProducts,
     ])
     @include('partials.home.latest-promos')
-    @include('partials.home.reviews')
     @include('partials.home.company-story')
+    @include('partials.home.reviews')
 @endsection
