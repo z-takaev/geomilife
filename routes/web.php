@@ -15,6 +15,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PromoController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
@@ -23,6 +24,8 @@ Route::get('/', HomeController::class)->name('home');
 Route::get('/contacts', ContactController::class)->name('contacts.index');
 
 Route::get('/catalog', CatalogController::class)->name('catalog.index');
+
+Route::get('/search', SearchController::class)->name('search.index');
 
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 

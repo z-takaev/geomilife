@@ -24,6 +24,7 @@ final class SitemapController extends Controller
             ['location' => route('articles.index'), 'lastModified' => null],
             ['location' => route('promos.index'), 'lastModified' => null],
             ['location' => route('catalog.index'), 'lastModified' => null],
+            ['location' => route('search.index'), 'lastModified' => null],
             ['location' => route('checkout.index'), 'lastModified' => null],
         ])->concat(
             Page::query()

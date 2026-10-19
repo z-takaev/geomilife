@@ -20,6 +20,7 @@ final class SeoSeeder extends Seeder
             'articles.index',
             'promos.index',
             'catalog.index',
+            'search.index',
             'checkout.index',
             'profile.show',
             'orders.index',

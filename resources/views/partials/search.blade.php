@@ -4,11 +4,11 @@
         <div class="row">
             <div class="col-12 col-sm-8 offset-sm-2">
                 <div class="offcanvas-body">
-                    <form action="#" class="form-search">
+                    <form action="{{ route('search.index') }}" class="form-search" method="get">
                         <fieldset>
-                            <input type="text" placeholder="{{ __('Найти товар') }}" name="text" required="">
+                            <input type="search" placeholder="{{ __('Найти товар') }}" name="q" required>
                         </fieldset>
-                        <button type="submit" class="link-2">
+                        <button type="submit" class="link-2" aria-label="{{ __('Искать') }}">
                             <i class="icon icon-magnifying-glass"></i>
                         </button>
                     </form>

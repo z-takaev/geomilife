@@ -14501,4 +14501,123 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
     }
 }
 
+/*------------ Search results page ---------------- */
+.search-results-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    padding: 28px 32px;
+    border-radius: 18px;
+    background: var(--surface);
+}
+
+.search-results-summary__eyebrow {
+    margin-bottom: 6px;
+    color: var(--text-secondary);
+}
+
+.search-results-summary__query {
+    color: var(--text-black);
+    font-size: clamp(24px, 3vw, 34px);
+    line-height: 1.2;
+}
+
+.search-results-counts {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 12px;
+    margin: 0;
+}
+
+.search-results-counts__item {
+    display: grid;
+    min-width: 132px;
+    min-height: 90px;
+    align-content: center;
+    padding: 16px 20px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--white);
+}
+
+.search-results-counts__item dt {
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.search-results-counts__item dd {
+    margin: 4px 0 0;
+    color: var(--text-black);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.search-results-section {
+    margin-top: 56px;
+}
+
+.search-results-section__heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 26px;
+}
+
+.search-results-section__title {
+    color: var(--text-black);
+    font-size: clamp(24px, 3vw, 34px);
+}
+
+.search-results-section__count {
+    display: inline-flex;
+    min-width: 30px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 9px;
+    border-radius: 999px;
+    background: var(--primary);
+    color: var(--text-white);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.search-results-pagination {
+    margin-top: 44px;
+}
+
+@media (max-width: 767px) {
+    .search-results-summary {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 24px;
+    }
+
+    .search-results-counts {
+        width: 100%;
+    }
+
+    .search-results-counts__item {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .search-results-section {
+        margin-top: 44px;
+    }
+}
+
+@media (max-width: 420px) {
+    .search-results-counts {
+        flex-direction: column;
+    }
+
+    .search-results-counts__item {
+        min-height: 78px;
+    }
+}
+
 /*# sourceMappingURL=styles.css.map */
