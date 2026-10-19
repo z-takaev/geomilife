@@ -5,12 +5,35 @@ declare(strict_types=1);
 namespace App\Repositories\Products;
 
 use App\Models\Product;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Collection;
 
 final class ProductRepository
 {
+    /**
+     * @return LengthAwarePaginator<int, Product>
+     */
+    public function getCatalogProducts(int $perPage = 9): LengthAwarePaginator
+    {
+        return Product::query()
+            ->select(['id', 'name', 'slug', 'is_new', 'is_hit'])
+            ->available()
+            ->with([
+                'variants' => function (HasMany $query): void {
+                    $query
+                        ->select(['id', 'product_id', 'unit', 'value', 'price', 'discount_percent', 'status'])
+                        ->active();
+                },
+                'media' => function (MorphMany $query): void {
+                    $query->where('collection_name', 'image');
+                },
+            ])
+            ->latest('id')
+            ->paginate($perPage);
+    }
+
     /**
      * @return array{
      *     hitProducts: Collection<int, Product>,
