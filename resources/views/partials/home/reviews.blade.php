@@ -14,7 +14,7 @@
 
             <div class="home-reviews-grid">
                 @foreach ($reviews as $review)
-                    <x-review-card :review="$review" :delay="($loop->iteration - 1) * 0.1" />
+                    <x-review-card :review="$review" />
                 @endforeach
             </div>
         </div>

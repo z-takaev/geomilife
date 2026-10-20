@@ -1,4 +1,3 @@
-<!-- Login -->
 <div class="modal modalCentered fade modal-log" id="login">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -50,4 +49,3 @@
         </div>
     </div>
 </div>
-<!-- /Login -->

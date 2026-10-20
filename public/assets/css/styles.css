@@ -4327,7 +4327,6 @@ header.header-sticky .header-inner {
     justify-content: space-between;
     padding: 24px 24px 25px;
     position: relative;
-    text-transform: capitalize;
 }
 
 .canvas-body {
@@ -9791,7 +9790,6 @@ select.select-2 {
     text-wrap: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    text-transform: capitalize;
     gap: 12px;
     color: var(--primary);
 }
@@ -9825,7 +9823,6 @@ select.select-2 {
 }
 .tf-dropdown-sort .select-item {
     position: relative;
-    text-transform: capitalize;
     color: var(--text-black);
     padding: 0 15px;
     line-height: 30px;
@@ -9890,7 +9887,6 @@ select.select-2 {
     text-wrap: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    text-transform: capitalize;
     font-weight: 600;
     font-size: 18px;
     line-height: 24px;
@@ -10689,7 +10685,6 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
 .meta-filter-shop .remove-all-filters {
     display: flex;
     align-items: center;
-    text-transform: capitalize;
     gap: 8px;
     padding: 3px 15px;
     border-radius: 100px;
@@ -12356,7 +12351,6 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
 .box-order-summary .check-agree label a {
     font-weight: 600;
     text-decoration: underline;
-    text-transform: capitalize;
 }
 .box-order-summary .total-order {
     margin-bottom: 20px;
@@ -12912,7 +12906,7 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
 }
 .footer-info .infor-phone {
     font-weight: 600;
-    font-size: 32px;
+    font-size: 28px;
     line-height: 40px;
     margin-bottom: 12px;
 }
@@ -13903,7 +13897,6 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
     border: 1px solid var(--line);
     border-radius: 20px;
     background-color: var(--surface);
-    animation-delay: var(--review-delay);
     transition:
         border-color 0.25s ease,
         box-shadow 0.25s ease,

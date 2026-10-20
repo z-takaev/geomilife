@@ -1,15 +1,12 @@
-<!-- Double Banner -->
 @php
     $banners = [
         [
             'collection' => 'banner_double_first_image',
             'mobileCollection' => 'banner_double_first_mobile_image',
-            'alt' => 'Масла холодного отжима — максимум пользы в каждой капле',
         ],
         [
             'collection' => 'banner_double_second_image',
             'mobileCollection' => 'banner_double_second_mobile_image',
-            'alt' => 'Натуральный урбеч только из орехов и семян',
         ],
     ];
 @endphp
@@ -32,11 +29,10 @@
                             <picture>
                                 @if ($hasMobileImage)
                                     <source media="(max-width: 991px)"
-                                        srcset="{{ settings()?->getFirstMediaUrl($banner['mobileCollection'], 'banner_mobile') }}">
+                                        srcset="{{ settings()?->getFirstMediaUrl($banner['mobileCollection']) }}">
                                 @endif
-                                <img loading="lazy"
-                                    src="{{ settings()?->getFirstMediaUrl($banner['collection'], 'banner_double') }}"
-                                    alt="{{ __($banner['alt']) }}">
+                                <img loading="lazy" src="{{ settings()?->getFirstMediaUrl($banner['collection']) }}"
+                                    alt="">
                             </picture>
                         </a>
                     @endif
@@ -45,4 +41,3 @@
         </div>
     </section>
 @endif
-<!-- /Double Banner -->

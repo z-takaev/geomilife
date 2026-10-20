@@ -9,34 +9,20 @@
         <meta name="description" content="{{ $seo->description }}">
     @endif
 
-    <!-- font -->
     <link rel="stylesheet" href="{{ asset('assets/fonts/fonts.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/icon/icomoon/style.css') }}">
-    <!-- css -->
     <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/styles.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/theme.css') }}">
     @stack('styles')
 
-    <!-- Favicon and Touch Icons  -->
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <link rel="apple-touch-icon-precomposed" href="{{ asset('favicon.ico') }}">
 </head>
 
 <body>
-    <!-- Scroll Top -->
-    <button id="goTop">
-        <span class="border-progress"></span>
-        <span class="icon icon-caret-up"></span>
-    </button>
-
-    <!-- Preload -->
-    <div class="preload preload-container" id="preload">
-        <div class="preload-logo">
-            <div class="spinner"></div>
-        </div>
-    </div>
-    <!-- /Preload -->
+    @include('partials.go-top')
+    @include('partials.preload')
 
     <main id="wrapper">
         @include('partials.header')
@@ -51,11 +37,10 @@
     @include('partials.shopping-cart')
     @include('partials.quick-view')
     @include('partials.search')
-    @include('partials.login')
-    @include('partials.register')
-    @include('partials.forgot-password')
+    @include('partials.auth.login')
+    @include('partials.auth.register')
+    @include('partials.auth.forgot-password')
 
-    <!-- Javascript -->
     <script src="{{ asset('assets/js/bootstrap.min.js') }}"></script>
     <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
     <script src="{{ asset('assets/js/bootstrap-select.min.js') }}"></script>

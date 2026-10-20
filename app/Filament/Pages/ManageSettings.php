@@ -17,6 +17,7 @@ use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Spatie\Image\Enums\Fit;
 use Spatie\Image\Image;
 
 /**
@@ -54,10 +55,10 @@ final class ManageSettings extends Page
                                     TextInput::make('phone')
                                         ->label('Телефон')
                                         ->tel()
-                                        ->mask('+7-9999-999-999')
-                                        ->placeholder('+7-9888-731-020')
+                                        ->mask('+7 (999) 999-99-99')
+                                        ->placeholder('+7 (988) 375-75-55')
                                         ->required()
-                                        ->regex('/^\+7-\d{4}-\d{3}-\d{3}$/'),
+                                        ->regex('/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/'),
                                     TextInput::make('email')
                                         ->label('Email')
                                         ->email()
@@ -129,18 +130,18 @@ final class ManageSettings extends Page
                                 ->columns(2),
                             Tab::make('Баннеры')
                                 ->schema([
-                                    self::imageUpload('banner_wide_image', 'Широкий баннер', 'Рекомендуемый размер: 1290 × 200.', columnSpanFull: true),
-                                    self::imageUpload('banner_wide_mobile_image', 'Широкий баннер — мобильное изображение', 'Рекомендуемый размер: 750 × 360.', columnSpanFull: true),
-                                    self::imageUpload('banner_double_first_image', 'Двойной баннер — первое изображение', 'Рекомендуемый размер: 635 × 180.'),
-                                    self::imageUpload('banner_double_first_mobile_image', 'Двойной баннер — первое мобильное изображение', 'Рекомендуемый размер: 750 × 360.'),
-                                    self::imageUpload('banner_double_second_image', 'Двойной баннер — второе изображение', 'Рекомендуемый размер: 635 × 180.'),
-                                    self::imageUpload('banner_double_second_mobile_image', 'Двойной баннер — второе мобильное изображение', 'Рекомендуемый размер: 750 × 360.'),
-                                    self::imageUpload('banner_triple_first_image', 'Тройной баннер — первое изображение', 'Рекомендуемый размер: 417 × 200.'),
-                                    self::imageUpload('banner_triple_first_mobile_image', 'Тройной баннер — первое мобильное изображение', 'Рекомендуемый размер: 750 × 360.'),
-                                    self::imageUpload('banner_triple_second_image', 'Тройной баннер — второе изображение', 'Рекомендуемый размер: 417 × 200.'),
-                                    self::imageUpload('banner_triple_second_mobile_image', 'Тройной баннер — второе мобильное изображение', 'Рекомендуемый размер: 750 × 360.'),
-                                    self::imageUpload('banner_triple_third_image', 'Тройной баннер — третье изображение', 'Рекомендуемый размер: 417 × 200.'),
-                                    self::imageUpload('banner_triple_third_mobile_image', 'Тройной баннер — третье мобильное изображение', 'Рекомендуемый размер: 750 × 360.'),
+                                    self::bannerUpload('banner_wide_image', 'Широкий баннер', 1290, 200, columnSpanFull: true),
+                                    self::bannerUpload('banner_wide_mobile_image', 'Широкий баннер — мобильное изображение', 750, 360, columnSpanFull: true),
+                                    self::bannerUpload('banner_double_first_image', 'Двойной баннер — первое изображение', 635, 180),
+                                    self::bannerUpload('banner_double_first_mobile_image', 'Двойной баннер — первое мобильное изображение', 750, 360),
+                                    self::bannerUpload('banner_double_second_image', 'Двойной баннер — второе изображение', 635, 180),
+                                    self::bannerUpload('banner_double_second_mobile_image', 'Двойной баннер — второе мобильное изображение', 750, 360),
+                                    self::bannerUpload('banner_triple_first_image', 'Тройной баннер — первое изображение', 417, 200),
+                                    self::bannerUpload('banner_triple_first_mobile_image', 'Тройной баннер — первое мобильное изображение', 750, 360),
+                                    self::bannerUpload('banner_triple_second_image', 'Тройной баннер — второе изображение', 417, 200),
+                                    self::bannerUpload('banner_triple_second_mobile_image', 'Тройной баннер — второе мобильное изображение', 750, 360),
+                                    self::bannerUpload('banner_triple_third_image', 'Тройной баннер — третье изображение', 417, 200),
+                                    self::bannerUpload('banner_triple_third_mobile_image', 'Тройной баннер — третье мобильное изображение', 750, 360),
                                 ])
                                 ->columns(2),
                         ])
@@ -201,6 +202,25 @@ final class ManageSettings extends Page
         }
 
         return $upload;
+    }
+
+    private static function bannerUpload(
+        string $collection,
+        string $label,
+        int $width,
+        int $height,
+        bool $columnSpanFull = false,
+    ): MediaImageUpload {
+        $upload = self::imageUpload(
+            $collection,
+            $label,
+            "Результат: {$width} × {$height}. Изображение будет обрезано по центру. Исходник не сохраняется.",
+            $columnSpanFull,
+        );
+
+        return $upload->processImage(
+            static fn (Image $image): Image => $image->fit(Fit::Crop, $width, $height),
+        );
     }
 
     private function getRecord(): Setting

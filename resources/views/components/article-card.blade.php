@@ -1,8 +1,8 @@
-@props(['image', 'imageAlt', 'title', 'url' => '#'])
+@props(['image', 'title', 'url' => '#'])
 
 <article {{ $attributes->class(['article-list-item']) }}>
     <a href="{{ $url }}" class="article-list-thumbnail img-style4">
-        <img loading="lazy" src="{{ $image }}" alt="{{ $imageAlt }}">
+        <img loading="lazy" src="{{ $image }}" alt="{{ $title }}">
     </a>
     <div class="article-list-content">
         <h2 class="article-list-title h5">

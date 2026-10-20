@@ -1,4 +1,3 @@
-<!-- Latest Blog -->
 <section id="blog" class="home-content-section home-offers-section">
     <div class="container">
         <div class="sect-head text-center wow fadeInUp">
@@ -10,8 +9,8 @@
         <div class="home-offers-scroll">
             <div class="home-offers-list">
                 @foreach ($promos as $promo)
-                    <x-promotion-card :date="__('До :date', ['date' => $promo->end_at->translatedFormat('j F Y')])" :description="$promo->excerpt ?? ''" :image="$promo->getFirstMediaUrl('image', 'card')" :image-alt="$promo->title"
-                        :title="$promo->title" :url="route('promos.show', $promo)" />
+                    <x-promotion-card :date="__('До :date', ['date' => $promo->end_at->translatedFormat('j F Y')])" :description="$promo->excerpt ?? ''" :image="$promo->getFirstMediaUrl('image', 'card')" :title="$promo->title"
+                        :url="route('promos.show', $promo)" />
                 @endforeach
             </div>
         </div>
@@ -23,4 +22,3 @@
         </div>
     </div>
 </section>
-<!-- /Latest Blog -->

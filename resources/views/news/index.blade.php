@@ -14,8 +14,8 @@
                 <div class="col-lg-8">
                     <div class="news-archive-list">
                         @forelse ($newsItems as $news)
-                            <x-news-card :date="$news->published_at->translatedFormat('j F Y')" :description="$news->excerpt ?? ''" :image="$news->getFirstMediaUrl('image', 'card')" :image-alt="$news->title"
-                                :title="$news->title" :url="route('news.show', $news)" />
+                            <x-news-card :date="$news->published_at->translatedFormat('j F Y')" :description="$news->excerpt ?? ''" :image="$news->getFirstMediaUrl('image', 'card')" :title="$news->title"
+                                :url="route('news.show', $news)" />
                         @empty
                             <x-empty-state :title="__('Новости пока не добавлены.')" />
                         @endforelse

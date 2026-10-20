@@ -1,4 +1,3 @@
-<!-- Register -->
 <div class="modal modalCentered fade modal-log register" id="register">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -57,4 +56,3 @@
         </div>
     </div>
 </div>
-<!-- /Register -->

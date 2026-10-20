@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Support\Media\ImageMimeTypes;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
-use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 final class Setting extends Model implements HasMedia
 {
@@ -68,6 +67,29 @@ final class Setting extends Model implements HasMedia
         });
     }
 
+    protected function phone(): Attribute
+    {
+        return Attribute::get(static function (?string $value): ?string {
+            if ($value === null) {
+                return null;
+            }
+
+            $digits = preg_replace('/\D/', '', $value);
+
+            if ($digits === null || strlen($digits) !== 11 || ! in_array($digits[0], ['7', '8'], true)) {
+                return $value;
+            }
+
+            return sprintf(
+                '+7 (%s) %s-%s-%s',
+                substr($digits, 1, 3),
+                substr($digits, 4, 3),
+                substr($digits, 7, 2),
+                substr($digits, 9, 2),
+            );
+        });
+    }
+
     public static function cached(): ?self
     {
         return Cache::remember(
@@ -113,39 +135,5 @@ final class Setting extends Model implements HasMedia
                 ->acceptsMimeTypes(ImageMimeTypes::ALLOWED)
                 ->singleFile();
         }
-    }
-
-    public function registerMediaConversions(?Media $media = null): void
-    {
-        $this->addMediaConversion('banner_wide')
-            ->fit(Fit::Crop, 1290, 200)
-            ->performOnCollections('banner_wide_image')
-            ->nonQueued();
-
-        $this->addMediaConversion('banner_double')
-            ->fit(Fit::Crop, 635, 180)
-            ->performOnCollections('banner_double_first_image', 'banner_double_second_image')
-            ->nonQueued();
-
-        $this->addMediaConversion('banner_triple')
-            ->fit(Fit::Crop, 417, 200)
-            ->performOnCollections(
-                'banner_triple_first_image',
-                'banner_triple_second_image',
-                'banner_triple_third_image',
-            )
-            ->nonQueued();
-
-        $this->addMediaConversion('banner_mobile')
-            ->fit(Fit::Crop, 750, 360)
-            ->performOnCollections(
-                'banner_wide_mobile_image',
-                'banner_double_first_mobile_image',
-                'banner_double_second_mobile_image',
-                'banner_triple_first_mobile_image',
-                'banner_triple_second_mobile_image',
-                'banner_triple_third_mobile_image',
-            )
-            ->nonQueued();
     }
 }

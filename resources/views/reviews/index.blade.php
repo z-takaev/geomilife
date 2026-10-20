@@ -14,7 +14,7 @@
                 <div class="col-lg-10">
                     <div class="reviews-archive-list">
                         @forelse ($reviews as $review)
-                            <x-review-card :review="$review" :delay="($loop->iteration - 1) * 0.1" />
+                            <x-review-card :review="$review" />
                         @empty
                             <x-empty-state :title="__('Отзывы пока не добавлены.')" />
                         @endforelse

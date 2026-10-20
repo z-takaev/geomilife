@@ -1,6 +1,6 @@
-@props(['review', 'delay' => 0])
+@props(['review'])
 
-<article class="home-review-card wow fadeInUp" @style(['--review-delay: ' . $delay . 's'])>
+<article class="home-review-card wow fadeInUp">
     <div class="home-review-quote" aria-hidden="true">“</div>
     <p class="home-review-text">{{ $review->text }}</p>
     <footer class="home-review-footer">

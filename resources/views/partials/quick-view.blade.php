@@ -1,4 +1,3 @@
-<!-- Quick View -->
 <div class="offcanvas offcanvas-end canvas-quickview" id="quickView" tabindex="-1" aria-labelledby="quickViewTitle">
     <div class="mini-quick-image">
         <div id="quickViewGallery" class="carousel slide quick-view-gallery" data-bs-interval="false">
@@ -115,4 +114,3 @@
         </div>
     </div>
 </div>
-<!-- /Quick View -->

@@ -1,8 +1,8 @@
-@props(['date', 'description', 'image', 'imageAlt', 'title', 'url' => '#'])
+@props(['date', 'description', 'image', 'title', 'url' => '#'])
 
 <article {{ $attributes->class(['article-blog style-list news-archive-card hover-img4']) }}>
     <a href="{{ $url }}" class="entry-image img-style4">
-        <img loading="lazy" src="{{ $image }}" alt="{{ $imageAlt }}">
+        <img loading="lazy" src="{{ $image }}" alt="{{ $title }}">
     </a>
     <div class="entry-content">
         <div class="box-head">

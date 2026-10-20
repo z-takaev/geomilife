@@ -247,9 +247,12 @@
         </div>
     </section>
 
-    @include('partials.home.special-offers', [
-        'sectionKey' => 'recommended',
-        'title' => __('Рекомендуемые товары'),
-        'products' => $recommendedProducts,
-    ])
+    @if ($recommendedProducts->isNotEmpty())
+        <x-product-selection :title="__('Рекомендуемые товары')" :all-products-url="route('catalog.index')">
+            @foreach ($recommendedProducts as $recommendedProduct)
+                <livewire:product-card :product="$recommendedProduct"
+                    :wire:key="'product-card-recommended-'.$recommendedProduct->getKey()" />
+            @endforeach
+        </x-product-selection>
+    @endif
 @endsection

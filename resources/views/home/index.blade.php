@@ -17,23 +17,29 @@
     @include('partials.home.benefits')
     @include('partials.home.featured-categories')
     @include('partials.banner-wide')
-    @include('partials.home.special-offers', [
-        'sectionKey' => 'hits',
-        'title' => __('Хиты продаж'),
-        'products' => $hitProducts,
-    ])
+    @if ($hitProducts->isNotEmpty())
+        <x-product-selection :title="__('Хиты продаж')" :all-products-url="route('catalog.index')">
+            @foreach ($hitProducts as $product)
+                <livewire:product-card :product="$product" :wire:key="'product-card-hits-'.$product->getKey()" />
+            @endforeach
+        </x-product-selection>
+    @endif
     @include('partials.banner-double')
-    @include('partials.home.special-offers', [
-        'sectionKey' => 'new',
-        'title' => __('Новинки'),
-        'products' => $newProducts,
-    ])
+    @if ($newProducts->isNotEmpty())
+        <x-product-selection :title="__('Новинки')" :all-products-url="route('catalog.index')">
+            @foreach ($newProducts as $product)
+                <livewire:product-card :product="$product" :wire:key="'product-card-new-'.$product->getKey()" />
+            @endforeach
+        </x-product-selection>
+    @endif
     @include('partials.banner-triple')
-    @include('partials.home.special-offers', [
-        'sectionKey' => 'discounted',
-        'title' => __('Товары со скидкой'),
-        'products' => $discountedProducts,
-    ])
+    @if ($discountedProducts->isNotEmpty())
+        <x-product-selection :title="__('Товары со скидкой')" :all-products-url="route('catalog.index')">
+            @foreach ($discountedProducts as $product)
+                <livewire:product-card :product="$product" :wire:key="'product-card-discounted-'.$product->getKey()" />
+            @endforeach
+        </x-product-selection>
+    @endif
     @include('partials.home.latest-promos')
     @include('partials.home.company-story')
     @include('partials.home.reviews')

@@ -1,4 +1,3 @@
-<!-- Mobile Menu -->
 <div class="offcanvas offcanvas-start canvas-mb" id="mobileMenu">
     <div class="canvas-header">
         <span class="icon-close-popup" data-bs-dismiss="offcanvas">
@@ -65,4 +64,3 @@
         </div>
     </div>
 </div>
-<!-- /Mobile Menu -->

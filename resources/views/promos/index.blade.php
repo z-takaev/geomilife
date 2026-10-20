@@ -13,8 +13,8 @@
             <div class="row gy-30">
                 @forelse ($promos as $promo)
                     <div class="col-md-6 col-lg-4">
-                        <x-promotion-card archive :date="__('До :date', ['date' => $promo->end_at->translatedFormat('j F Y')])" :description="$promo->excerpt ?? ''" :image="$promo->getFirstMediaUrl('image', 'card')" :image-alt="$promo->title"
-                            :title="$promo->title" :url="route('promos.show', $promo)" />
+                        <x-promotion-card archive :date="__('До :date', ['date' => $promo->end_at->translatedFormat('j F Y')])" :description="$promo->excerpt ?? ''" :image="$promo->getFirstMediaUrl('image', 'card')" :title="$promo->title"
+                            :url="route('promos.show', $promo)" />
                     </div>
                 @empty
                     <div class="col-12">

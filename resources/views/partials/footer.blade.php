@@ -1,4 +1,3 @@
-<!-- Footer -->
 <footer class="tf-footer">
     <div class="footer-inner-wrap">
         <div class="container">
@@ -116,4 +115,3 @@
         </div>
     </div>
 </footer>
-<!-- /Footer -->

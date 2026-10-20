@@ -1,4 +1,3 @@
-<!-- Featured Categories -->
 @php
     $backgrounds = [
         'bg-peach-blush',
@@ -40,4 +39,3 @@
         </div>
     </div>
 </section>
-<!-- /Featured Categories -->

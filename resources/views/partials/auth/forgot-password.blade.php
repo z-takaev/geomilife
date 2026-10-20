@@ -1,4 +1,3 @@
-<!-- Forgot Password -->
 <div class="modal modalCentered fade modal-forgot" id="forgotPassword">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -28,4 +27,3 @@
         </div>
     </div>
 </div>
-<!-- /Forgot Password -->

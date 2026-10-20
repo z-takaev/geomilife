@@ -1,4 +1,3 @@
-<!-- Top Bar-->
 <div class="tf-topbar style-2">
     <div class="container">
         <div class="topbar-inner">
@@ -37,7 +36,7 @@
                     @if (settings()?->instagram_url)
                         <li>
                             <a href="{{ settings()?->instagram_url }}" class="social-links__link"
-                                aria-label="{{ __('Инстаграм') }}" target="_blank" rel="noopener noreferrer">
+                                aria-label="{{ __('Instagram') }}" target="_blank" rel="noopener noreferrer">
                                 <i class="social-icon social-icon--instagram" aria-hidden="true"></i>
                             </a>
                         </li>
@@ -45,7 +44,7 @@
                     @if (settings()?->youtube_url)
                         <li>
                             <a href="{{ settings()?->youtube_url }}" class="social-links__link"
-                                aria-label="{{ __('Ютуб') }}" target="_blank" rel="noopener noreferrer">
+                                aria-label="{{ __('Youtube') }}" target="_blank" rel="noopener noreferrer">
                                 <i class="social-icon social-icon--youtube" aria-hidden="true"></i>
                             </a>
                         </li>
@@ -61,7 +60,7 @@
                     @if (settings()?->telegram_url)
                         <li>
                             <a href="{{ settings()?->telegram_url }}" class="social-links__link"
-                                aria-label="{{ __('Телеграм') }}" target="_blank" rel="noopener noreferrer">
+                                aria-label="{{ __('Telegram') }}" target="_blank" rel="noopener noreferrer">
                                 <i class="social-icon social-icon--telegram" aria-hidden="true"></i>
                             </a>
                         </li>
@@ -79,8 +78,7 @@
         </div>
     </div>
 </div>
-<!-- /Top Bar -->
-<!-- Header -->
+
 <header class="tf-header style-2">
     <div class="container">
         <div class="header-inner">
@@ -105,40 +103,44 @@
                                 <i class="icon icon-magnifying-glass"></i>
                             </a>
                         </li>
-                        <li>
-                            <a href="#login" data-bs-toggle="modal" class="nav-icon-item text-primary link"
-                                aria-label="{{ __('Войти') }}">
-                                <i class="icon icon-user"></i>
-                            </a>
-                        </li>
-                        {{-- <li class="dropdown account-menu">
-                            <button id="accountMenu" type="button"
-                                class="nav-icon-item text-primary link account-menu__toggle" data-bs-toggle="dropdown"
-                                aria-expanded="false" aria-label="{{ __('Открыть меню пользователя') }}">
-                                <i class="icon icon-user"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end account-menu__dropdown"
-                                aria-labelledby="accountMenu">
-                                <li>
-                                    <a href="{{ route('profile.show') }}" class="dropdown-item account-menu__item">
-                                        <i class="icon icon-UserCircle" aria-hidden="true"></i>
-                                        <span>{{ __('Профиль') }}</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ route('orders.index') }}" class="dropdown-item account-menu__item">
-                                        <i class="icon icon-package" aria-hidden="true"></i>
-                                        <span>{{ __('Заказы') }}</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <button type="button" class="dropdown-item account-menu__item">
-                                        <i class="icon icon-arrow-right" aria-hidden="true"></i>
-                                        <span>{{ __('Выход') }}</span>
-                                    </button>
-                                </li>
-                            </ul>
-                        </li> --}}
+                        @guest
+                            <li>
+                                <a href="#login" data-bs-toggle="modal" class="nav-icon-item text-primary link"
+                                    aria-label="{{ __('Войти') }}">
+                                    <i class="icon icon-user"></i>
+                                </a>
+                            </li>
+                        @endguest
+                        @auth
+                            <li class="dropdown account-menu">
+                                <button id="accountMenu" type="button"
+                                    class="nav-icon-item text-primary link account-menu__toggle" data-bs-toggle="dropdown"
+                                    aria-expanded="false" aria-label="{{ __('Открыть меню пользователя') }}">
+                                    <i class="icon icon-user"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end account-menu__dropdown"
+                                    aria-labelledby="accountMenu">
+                                    <li>
+                                        <a href="{{ route('profile.show') }}" class="dropdown-item account-menu__item">
+                                            <i class="icon icon-UserCircle" aria-hidden="true"></i>
+                                            <span>{{ __('Профиль') }}</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('orders.index') }}" class="dropdown-item account-menu__item">
+                                            <i class="icon icon-package" aria-hidden="true"></i>
+                                            <span>{{ __('Заказы') }}</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <button type="button" class="dropdown-item account-menu__item">
+                                            <i class="icon icon-arrow-right" aria-hidden="true"></i>
+                                            <span>{{ __('Выход') }}</span>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </li>
+                        @endauth
                         <li>
                             <a href="#wishList" data-bs-toggle="offcanvas" class="nav-icon-item text-primary link">
                                 <i class="icon icon-heart-stroke"></i>
@@ -159,4 +161,3 @@
         </div>
     </div>
 </header>
-<!-- /Header -->

@@ -1,4 +1,3 @@
-<!-- Company Story -->
 @php
     $storyVideoUrl = settings()?->storyVideoEmbedUrl();
 @endphp
@@ -27,8 +26,7 @@
             <div class="about-video home-story-media">
                 @if (settings()?->hasMedia('story_image'))
                     <div class="video-thumb">
-                        <img loading="lazy" src="{{ settings()?->getFirstMediaUrl('story_image') }}"
-                            alt="{{ __('Бережное выращивание натуральных продуктов') }}">
+                        <img loading="lazy" src="{{ settings()?->getFirstMediaUrl('story_image') }}" alt="">
                     </div>
                 @endif
                 @if ($storyVideoUrl)
@@ -52,4 +50,3 @@
         </div>
     </div>
 @endif
-<!-- /Company Story -->

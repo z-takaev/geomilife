@@ -1,4 +1,3 @@
-<!-- Open Search -->
 <div class="offcanvas offcanvas-top offcanvas-search" id="canvasSearch">
     <div class="container">
         <div class="row">
@@ -87,4 +86,3 @@
         </div>
     </div>
 </div>
-<!-- End Open Search -->

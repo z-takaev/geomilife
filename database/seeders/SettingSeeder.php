@@ -32,7 +32,7 @@ final class SettingSeeder extends Seeder
     public function run(): void
     {
         $setting = Setting::query()->updateOrCreate([], [
-            'phone' => '+7-9888-731-020',
+            'phone' => '+7 (988) 873-10-20',
             'email' => 'geomilife@bk.ru',
             'address' => 'ул. Тамаева 35, Владикавказ',
             'working_hours' => 'Пн–Пт: 09:00–18:00, Сб–Вс: выходной',

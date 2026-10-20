@@ -1,4 +1,3 @@
-<!-- Benefits -->
 <section id="advantages" class="home-content-section home-benefits">
     <div class="container">
         <div class="swiper tf-swiper" data-preview="5" data-tablet="3" data-mobile-sm="2" data-mobile="1" data-space-lg="24"
@@ -65,4 +64,3 @@
         </div>
     </div>
 </section>
-<!-- /Benefits -->
