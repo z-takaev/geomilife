@@ -1,16 +1,7 @@
 @extends('layouts.base')
 
 @section('content')
-    <section class="s-page-title inner-page-title">
-        <div class="container">
-            <x-breadcrumbs :items="[
-                ['label' => __('Главная'), 'url' => route('home')],
-                ['label' => __('Статьи'), 'url' => route('articles.index')],
-                ['label' => $article->title],
-            ]" />
-            <h1 class="page-title text-white font-sora">{{ $article->title }}</h1>
-        </div>
-    </section>
+    <x-breadcrumbs :title="$article->title" :items="[['label' => __('Статьи'), 'url' => route('articles.index')], ['label' => $article->title]]" />
 
     <section class="content-detail-section flat-spacing">
         <div class="container">

@@ -9,12 +9,7 @@
 @endpush
 
 @section('content')
-    <section class="s-page-title inner-page-title">
-        <div class="container">
-            <x-breadcrumbs :items="[['label' => __('Главная'), 'url' => route('home')], ['label' => $page->title]]" />
-            <h1 class="page-title text-white font-sora">{{ $page->title }}</h1>
-        </div>
-    </section>
+    <x-breadcrumbs :title="$page->title" :items="[['label' => $page->title]]" />
 
     <section class="content-detail-section flat-spacing">
         <div class="container">

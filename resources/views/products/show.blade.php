@@ -23,16 +23,7 @@
             ->values();
     @endphp
 
-    <section class="s-page-title inner-page-title product-page-title">
-        <div class="container">
-            <x-breadcrumbs :items="[
-                ['label' => __('Главная'), 'url' => route('home')],
-                ['label' => __('Каталог'), 'url' => route('catalog.index')],
-                ['label' => $product->name],
-            ]" />
-            <h1 class="page-title text-white font-sora">{{ $product->category?->name }}</h1>
-        </div>
-    </section>
+    <x-breadcrumbs class="product-page-title" :title="$product->category?->name" :items="[['label' => __('Каталог'), 'url' => route('catalog.index')], ['label' => $product->name]]" />
 
     <section class="section-product-single flat-spacing product-detail">
         <div class="container">
