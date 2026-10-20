@@ -12,11 +12,11 @@
         </fieldset>
 
         <fieldset class="tf-field">
-            <label for="question-email" class="tf-lable cl-text-main">
-                {{ __('Электронная почта') }}<span class="text-primary">*</span>
+            <label for="question-phone" class="tf-lable cl-text-main">
+                {{ __('Контактный телефон') }}<span class="text-primary">*</span>
             </label>
-            <input type="email" id="question-email" placeholder="{{ __('Введите электронную почту') }}"
-                autocomplete="email">
+            <input type="tel" id="question-phone" name="phone" placeholder="{{ __('+7 (___) ___-__-__') }}"
+                autocomplete="tel" inputmode="tel" maxlength="18" data-phone-mask>
         </fieldset>
 
         <fieldset class="tf-field">

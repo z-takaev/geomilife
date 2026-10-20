@@ -30,7 +30,7 @@
                 ['label' => __('Каталог'), 'url' => route('catalog.index')],
                 ['label' => $product->name],
             ]" />
-            <h1 class="page-title text-white font-sora">{{ $product->name }}</h1>
+            <h1 class="page-title text-white font-sora">{{ $product->category?->name }}</h1>
         </div>
     </section>
 
@@ -76,16 +76,10 @@
                     <div class="tf-product-info-wrap product-detail__info">
                         <div class="tf-product-info-heading">
                             <div class="product-info-meta">
-                                @if ($product->category !== null)
-                                    <a href="{{ route('catalog.index') }}"
-                                        class="infor_cate product-detail__category fw-semibold text-uppercase">
-                                        {{ $product->category->name }}
-                                    </a>
-                                @else
-                                    <span class="infor_cate fw-semibold text-uppercase">
-                                        {{ __('Натуральные продукты') }}
-                                    </span>
-                                @endif
+                                <a href="{{ route('catalog.index') }}"
+                                    class="infor_cate product-detail__category fw-semibold text-uppercase">
+                                    {{ $product->category->name }}
+                                </a>
                                 @if ($product->is_new)
                                     <span class="product-card-badge product-card-badge--new">{{ __('Новинка') }}</span>
                                 @endif
@@ -164,11 +158,7 @@
                             <div>
                                 <dt>{{ __('Категория') }}</dt>
                                 <dd>
-                                    @if ($product->category !== null)
-                                        <a href="{{ route('catalog.index') }}">{{ $product->category->name }}</a>
-                                    @else
-                                        {{ __('Не указана') }}
-                                    @endif
+                                    <a href="{{ route('catalog.index') }}">{{ $product->category->name }}</a>
                                 </dd>
                             </div>
                         </dl>

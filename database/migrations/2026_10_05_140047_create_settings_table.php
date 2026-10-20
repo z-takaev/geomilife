@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->text('address')->nullable();
             $table->text('working_hours')->nullable();
+            $table->text('yandex_map_script')->nullable();
 
             $table->string('footer_title')->nullable();
             $table->text('footer_description')->nullable();

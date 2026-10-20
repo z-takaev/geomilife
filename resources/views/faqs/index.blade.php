@@ -12,6 +12,15 @@
         <div class="container">
             <div class="row gy-30">
                 <div class="col-lg-8">
+                    <div class="faq-intro">
+                        <span class="faq-intro__icon" aria-hidden="true">
+                            <i class="icon-question"></i>
+                        </span>
+                        <p class="faq-intro__text">
+                            {{ __('Чтобы вы быстро нашли нужную информацию, мы собрали здесь ответы на ключевые вопросы.') }}
+                        </p>
+                    </div>
+
                     @if ($faqs->isNotEmpty())
                         <ul class="faq-list">
                             <li class="faq-item">

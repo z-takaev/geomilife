@@ -6,7 +6,7 @@
     </a>
     <div class="article-list-content">
         <h2 class="article-list-title h5">
-            <a href="{{ $url }}" class="text-primary link-underline">{{ $title }}</a>
+            <a href="{{ $url }}" class="cl-text-main link-underline">{{ $title }}</a>
         </h2>
         <a href="{{ $url }}" class="tf-btn-line">{{ __('Смотреть') }}</a>
     </div>

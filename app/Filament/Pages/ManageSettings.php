@@ -76,6 +76,11 @@ final class ManageSettings extends Page
                                         ->maxLength(1000)
                                         ->rows(3)
                                         ->columnSpanFull(),
+                                    Textarea::make('yandex_map_script')
+                                        ->label('Скрипт Яндекс Карты')
+                                        ->helperText('Вставьте код карты из конструктора Яндекс Карт.')
+                                        ->rows(8)
+                                        ->columnSpanFull(),
                                 ])
                                 ->columns(2),
                             Tab::make('Футер')

@@ -7069,6 +7069,31 @@ select.select-2 {
     display: grid;
     gap: 40px;
 }
+.section-faq .faq-intro {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding: 20px 24px;
+    border-radius: 16px;
+    background-color: var(--surface);
+}
+.section-faq .faq-intro__icon {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: var(--primary);
+    color: var(--text-white);
+    font-size: 24px;
+}
+.section-faq .faq-intro__text {
+    margin-bottom: 0;
+    color: var(--text-secondary);
+}
 .section-faq .accordion-action {
     gap: 20px;
     border: 0;
@@ -7076,6 +7101,8 @@ select.select-2 {
 }
 .section-faq .accordion-action .text {
     min-width: 0;
+    color: var(--text-black);
+    font-size: 18px;
 }
 .section-faq .accordion-action .ic-ar {
     flex: none;
@@ -7270,6 +7297,15 @@ select.select-2 {
     }
     .section-faq .accordion-action {
         gap: 12px;
+    }
+    .section-faq .faq-intro {
+        align-items: flex-start;
+        padding: 16px;
+    }
+    .section-faq .faq-intro__icon {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
     }
     .article-list-item {
         grid-template-columns: 105px minmax(0, 1fr);
@@ -13250,6 +13286,12 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
     background-color: var(--primary);
     color: var(--text-white);
 }
+.product-gallery__control:focus,
+.product-gallery__control:active {
+    background-color: var(--white);
+    color: var(--text-black);
+    opacity: 1;
+}
 
 .product-gallery__thumbnails {
     position: static;
@@ -13928,6 +13970,44 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
     color: var(--text-black);
     font-size: 17px;
     line-height: 1.65;
+}
+
+.home-review-card--expandable .home-review-text {
+    display: -webkit-box;
+    overflow: hidden;
+    margin-bottom: 0;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 5;
+}
+
+.home-review-content {
+    margin-bottom: 28px;
+}
+
+.home-review-card--expandable .home-review-text.is-expanded {
+    display: block;
+    overflow: visible;
+}
+
+.home-review-toggle {
+    display: inline-flex;
+    margin-top: 12px;
+    padding: 0 0 2px;
+    border: 0;
+    border-bottom: 1px solid currentColor;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+}
+
+.home-review-toggle[hidden] {
+    display: none;
+}
+
+.home-review-toggle:hover {
+    color: var(--primary);
 }
 
 .home-review-footer {

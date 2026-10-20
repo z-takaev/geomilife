@@ -25,7 +25,7 @@
                             <div>
                                 <p class="contacts-info-card__label">{{ __('Телефон') }}</p>
                                 <a href="tel:{{ preg_replace('/[^\d+]/', '', settings()?->phone) }}"
-                                    class="contacts-info-card__value link">
+                                    class="contacts-info-card__value link-primary">
                                     {{ __(settings()?->phone) }}
                                 </a>
                             </div>
@@ -37,7 +37,7 @@
                             </span>
                             <div>
                                 <p class="contacts-info-card__label">{{ __('Электронная почта') }}</p>
-                                <a href="mailto:{{ settings()?->email }}" class="contacts-info-card__value link">
+                                <a href="mailto:{{ settings()?->email }}" class="contacts-info-card__value link-primary">
                                     {{ __(settings()?->email) }}
                                 </a>
                             </div>
@@ -131,14 +131,13 @@
                     </div>
                 </div>
 
-                <div class="col-12">
-                    <div class="contacts-map">
-                        <iframe
-                            src="https://yandex.ru/map-widget/v1/?ll=44.681900%2C43.036700&z=14&pt=44.681900%2C43.036700%2Cpm2rdm"
-                            title="{{ __('Карта с расположением магазина GeoMiLife') }}" loading="lazy"
-                            allowfullscreen></iframe>
+                @if (filled(settings()?->yandex_map_script))
+                    <div class="col-12">
+                        <div class="contacts-map">
+                            {!! settings()?->yandex_map_script !!}
+                        </div>
                     </div>
-                </div>
+                @endif
             </div>
         </div>
     </section>

@@ -1183,6 +1183,65 @@
         });
     };
 
+    var phoneMask = function () {
+        $('[data-phone-mask]').on('input', function () {
+            const input = this;
+
+            if (input.value === '') {
+                return;
+            }
+
+            let digits = input.value.replace(/\D/g, '');
+
+            if (digits.startsWith('7') || digits.startsWith('8')) {
+                digits = digits.slice(1);
+            }
+
+            digits = digits.slice(0, 10);
+
+            let value = '+7';
+
+            if (digits.length > 0) {
+                value += ` (${digits.slice(0, 3)}`;
+            }
+
+            if (digits.length >= 3) {
+                value += `) ${digits.slice(3, 6)}`;
+            }
+
+            if (digits.length >= 6) {
+                value += `-${digits.slice(6, 8)}`;
+            }
+
+            if (digits.length >= 8) {
+                value += `-${digits.slice(8, 10)}`;
+            }
+
+            input.value = value;
+        });
+    };
+
+    var expandableReviews = function () {
+        document.querySelectorAll('[data-review-card-expandable]').forEach((card) => {
+            const text = card.querySelector('[data-review-text]');
+            const toggle = card.querySelector('[data-review-toggle]');
+
+            if (!text || !toggle) {
+                return;
+            }
+
+            toggle.hidden = text.scrollHeight <= text.clientHeight + 1;
+
+            toggle.addEventListener('click', () => {
+                const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+
+                text.classList.toggle('is-expanded', !isExpanded);
+                toggle.setAttribute('aria-expanded', String(!isExpanded));
+                toggle.textContent = isExpanded ? toggle.dataset.showLabel : toggle.dataset.hideLabel;
+            });
+        });
+    };
+
     /* Preloader
     -------------------------------------------------------------------------*/
     var preloader = function () {
@@ -1224,6 +1283,8 @@
         goTop();
         writeReview();
         clickScroll();
+        phoneMask();
+        expandableReviews();
 
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', preloader);

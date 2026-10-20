@@ -117,7 +117,8 @@
                                         aria-hidden="true"></span></label>
                                 <input id="checkout-phone" type="tel" name="phone"
                                     value="{{ old('phone', $customer?->phone) }}"
-                                    placeholder="{{ __('+7 (___) ___-__-__') }}" autocomplete="tel" required>
+                                    placeholder="{{ __('+7 (___) ___-__-__') }}" autocomplete="tel" inputmode="tel"
+                                    maxlength="18" data-phone-mask required>
                             </fieldset>
                             <fieldset class="checkout-field">
                                 <label for="checkout-email">{{ __('Электронная почта') }} <span

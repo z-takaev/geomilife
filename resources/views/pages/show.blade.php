@@ -44,8 +44,7 @@
                         <div class="content-detail-gallery content-gallery sticky-top">
                             @foreach ($images as $image)
                                 <a href="{{ $image->getUrl() }}" class="gallery-item">
-                                    <img loading="lazy" src="{{ $image->getUrl() }}"
-                                        alt="{{ __('Изображение страницы «:title»', ['title' => $page->title]) }}">
+                                    <img loading="lazy" src="{{ $image->getUrl() }}" alt="">
                                 </a>
                             @endforeach
                         </div>

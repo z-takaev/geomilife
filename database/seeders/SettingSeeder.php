@@ -36,6 +36,9 @@ final class SettingSeeder extends Seeder
             'email' => 'geomilife@bk.ru',
             'address' => 'ул. Тамаева 35, Владикавказ',
             'working_hours' => 'Пн–Пт: 09:00–18:00, Сб–Вс: выходной',
+            'yandex_map_script' => <<<'HTML'
+                <iframe src="https://yandex.ru/map-widget/v1/?ll=44.681900%2C43.036700&z=14&pt=44.681900%2C43.036700%2Cpm2rdm" title="Карта с расположением магазина GeoMiLife" loading="lazy" allowfullscreen></iframe>
+                HTML,
             'instagram_url' => 'https://www.instagram.com/geomilife/',
             'youtube_url' => 'https://www.youtube.com/@geomilife8532',
             'vk_url' => 'https://vk.ru/geomilifee',

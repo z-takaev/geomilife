@@ -44,6 +44,7 @@ final class Setting extends Model implements HasMedia
         'email',
         'address',
         'working_hours',
+        'yandex_map_script',
         'footer_title',
         'footer_description',
         'instagram_url',
