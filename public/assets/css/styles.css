@@ -1566,8 +1566,10 @@ h6,
     min-width: 220px;
 }
 
-.catalog-empty {
+.catalog-empty,
+.empty-state {
     display: flex;
+    width: 100%;
     min-height: 360px;
     align-items: center;
     justify-content: center;
@@ -1578,18 +1580,21 @@ h6,
     text-align: center;
 }
 
-.catalog-empty .icon {
+.catalog-empty .icon,
+.empty-state .icon {
     margin-bottom: 20px;
     color: var(--text-secondary);
     font-size: 42px;
 }
 
-.catalog-empty h2 {
+.catalog-empty h2,
+.empty-state h2 {
     margin-bottom: 8px;
     color: var(--text-black);
 }
 
-.catalog-empty p {
+.catalog-empty p,
+.empty-state p {
     color: var(--text-secondary);
 }
 

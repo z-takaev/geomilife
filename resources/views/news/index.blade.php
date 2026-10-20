@@ -13,10 +13,12 @@
             <div class="row justify-content-center">
                 <div class="col-lg-8">
                     <div class="news-archive-list">
-                        @foreach ($newsItems as $news)
+                        @forelse ($newsItems as $news)
                             <x-news-card :date="$news->published_at->translatedFormat('j F Y')" :description="$news->excerpt ?? ''" :image="$news->getFirstMediaUrl('image', 'card')" :image-alt="$news->title"
                                 :title="$news->title" :url="route('news.show', $news)" />
-                        @endforeach
+                        @empty
+                            <x-empty-state :title="__('Новости пока не добавлены.')" />
+                        @endforelse
                     </div>
 
                     {{ $newsItems->links() }}

@@ -16,7 +16,7 @@
                         @forelse ($reviews as $review)
                             <x-review-card :review="$review" :delay="($loop->iteration - 1) * 0.1" />
                         @empty
-                            <p class="text-center">{{ __('Отзывы пока не добавлены.') }}</p>
+                            <x-empty-state :title="__('Отзывы пока не добавлены.')" />
                         @endforelse
                     </div>
 

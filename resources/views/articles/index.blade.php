@@ -13,9 +13,11 @@
             <div class="row justify-content-center">
                 <div class="col-lg-8">
                     <div class="article-archive-list">
-                        @foreach ($articles as $article)
+                        @forelse ($articles as $article)
                             <x-article-list-item :image="$article->getFirstMediaUrl('image', 'card')" :image-alt="$article->title" :title="$article->title" :url="route('articles.show', $article)" />
-                        @endforeach
+                        @empty
+                            <x-empty-state :title="__('Статьи пока не добавлены.')" />
+                        @endforelse
                     </div>
 
                     {{ $articles->links() }}

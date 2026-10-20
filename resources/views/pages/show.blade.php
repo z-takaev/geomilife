@@ -29,9 +29,13 @@
                     'col-12' => $images->isEmpty(),
                 ])>
                     <div class="content-detail-main content-detail-main--surface">
-                        <div class="content-detail-body">
-                            {{ $page->getRichContentAttribute('content') }}
-                        </div>
+                        @if (filled($page->content))
+                            <div class="content-detail-body">
+                                {{ $page->getRichContentAttribute('content') }}
+                            </div>
+                        @else
+                            <x-empty-state :title="__('Информация пока не добавлена.')" />
+                        @endif
                     </div>
                 </article>
 
