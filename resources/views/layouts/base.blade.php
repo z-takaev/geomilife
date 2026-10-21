@@ -34,6 +34,7 @@
     @include('partials.shopping-cart')
     @include('partials.quick-view')
     @include('partials.search')
+    @include('partials.city-selection')
     @include('partials.auth.login')
     @include('partials.auth.register')
     @include('partials.auth.forgot-password')

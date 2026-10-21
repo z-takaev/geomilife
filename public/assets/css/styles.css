@@ -2710,20 +2710,18 @@ header.header-sticky .header-inner {
     flex-shrink: 0;
     font-size: 20px;
 }
-.city-selector .tf-dropdown-select > .dropdown-toggle {
-    color: var(--text-black);
-}
-.city-selector .tf-dropdown-select > .dropdown-toggle::after {
-    color: var(--text-black);
-}
-.tf-topbar .city-selector .tf-dropdown-select.style-default .filter-option-inner-inner {
+.city-selector__link {
+    display: inline-block;
+    border-bottom: 1px dashed var(--text-black);
     color: var(--text-black);
     font-size: 14px;
     font-weight: 500;
+    line-height: 1.2;
 }
-.tf-dropdown-select.type-cities > .dropdown-menu {
-    width: max-content;
-    min-width: 180px;
+.city-selector__link:hover,
+.city-selector__link:focus-visible {
+    border-color: var(--primary);
+    color: var(--primary);
 }
 @media (max-width: 767px) {
     .tf-topbar:not(.style-2) .topbar-inner {
@@ -2755,7 +2753,7 @@ header.header-sticky .header-inner {
         font-size: 13px;
         white-space: nowrap;
     }
-    .tf-topbar .city-selector .tf-dropdown-select.style-default .filter-option-inner-inner {
+    .city-selector__link {
         font-size: 13px;
     }
     .tf-topbar .topbar-center .info .icon {
@@ -2789,7 +2787,7 @@ header.header-sticky .header-inner {
         font-size: 18px;
     }
     .tf-topbar .topbar-center .info,
-    .tf-topbar .city-selector .tf-dropdown-select.style-default .filter-option-inner-inner {
+    .city-selector__link {
         font-size: 13px;
     }
 }

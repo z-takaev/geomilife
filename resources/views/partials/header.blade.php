@@ -4,14 +4,10 @@
             <div class="topbar-left ">
                 <div class="city-selector">
                     <i class="icon icon-MapPin" aria-hidden="true"></i>
-                    <label class="visually-hidden" for="city">{{ __('Выберите город') }}</label>
-                    <select id="city" class="tf-dropdown-select style-default type-cities"
-                        aria-label="{{ __('Выберите город') }}">
-                        <option value="" selected disabled>{{ __('Выберите город') }}</option>
-                        <option value="moscow">{{ __('Москва') }}</option>
-                        <option value="saint-petersburg">{{ __('Санкт-Петербург') }}</option>
-                        <option value="kazan">{{ __('Казань') }}</option>
-                    </select>
+                    <a href="#citySelection" class="city-selector__link" data-bs-toggle="modal" role="button"
+                        aria-controls="citySelection" aria-haspopup="dialog">
+                        {{ __('Выберите город') }}
+                    </a>
                 </div>
             </div>
             <div class="topbar-center">
