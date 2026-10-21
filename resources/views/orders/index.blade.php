@@ -1,7 +1,7 @@
 @extends('layouts.base')
 
 @section('content')
-    <x-breadcrumbs :title="__('Мои заказы')" :items="[['label' => __('Профиль'), 'url' => route('profile.show')], ['label' => __('Мои заказы')]]" />
+    <x-breadcrumbs :title="__('Мои заказы')" :breadcrumbs="$breadcrumbs" />
 
     <section class="flat-spacing">
         <div class="container">

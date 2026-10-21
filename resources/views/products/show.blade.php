@@ -23,7 +23,7 @@
             ->values();
     @endphp
 
-    <x-breadcrumbs class="product-page-title" :title="$product->category?->name" :items="[['label' => __('Каталог'), 'url' => route('catalog.index')], ['label' => $product->name]]" />
+    <x-breadcrumbs class="product-page-title" :title="$product->category?->name" :breadcrumbs="$breadcrumbs" />
 
     <section class="section-product-single flat-spacing product-detail">
         <div class="container">

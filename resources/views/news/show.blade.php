@@ -1,7 +1,7 @@
 @extends('layouts.base')
 
 @section('content')
-    <x-breadcrumbs :title="$news->title" :items="[['label' => __('Новости'), 'url' => route('news.index')], ['label' => $news->title]]" />
+    <x-breadcrumbs :title="$news->title" :breadcrumbs="$breadcrumbs" />
 
     <section class="content-detail-section flat-spacing">
         <div class="container">

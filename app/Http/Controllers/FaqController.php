@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Faq;
+use App\Navigation\BreadcrumbItem;
+use App\Navigation\Breadcrumbs;
 use App\Support\Seo\Schemas\BreadcrumbSchema;
 use Illuminate\Contracts\View\View;
 
@@ -12,15 +14,17 @@ final class FaqController extends Controller
 {
     public function index(): View
     {
-        $faqs = Faq::cached();
+        $breadcrumbs = Breadcrumbs::make(
+            BreadcrumbItem::make(__('Вопросы и ответы'), route('faqs.index')),
+        );
+
         seo()->forRoute(
             routeName: 'faqs.index',
             fallbackTitle: __('Вопросы и ответы'),
-        )->schema(BreadcrumbSchema::make([
-            __('Главная') => route('home'),
-            __('Вопросы и ответы') => route('faqs.index'),
-        ]));
+        )->schema(BreadcrumbSchema::make($breadcrumbs));
 
-        return view('faqs.index', compact('faqs'));
+        $faqs = Faq::cached();
+
+        return view('faqs.index', compact('faqs', 'breadcrumbs'));
     }
 }

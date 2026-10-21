@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Navigation\BreadcrumbItem;
+use App\Navigation\Breadcrumbs;
 use App\Repositories\Categories\CategoryRepository;
 use App\Repositories\Products\ProductRepository;
 use App\Support\Seo\Schemas\BreadcrumbSchema;
@@ -18,16 +20,18 @@ final class CatalogController extends Controller
 
     public function __invoke(): View
     {
-        $categories = $this->categoryRepository->getActiveCatalog();
-        $products = $this->productRepository->getCatalogProducts();
+        $breadcrumbs = Breadcrumbs::make(
+            BreadcrumbItem::make(__('Каталог'), route('catalog.index')),
+        );
+
         seo()->forRoute(
             routeName: 'catalog.index',
             fallbackTitle: __('Каталог'),
-        )->schema(BreadcrumbSchema::make([
-            __('Главная') => route('home'),
-            __('Каталог') => route('catalog.index'),
-        ]));
+        )->schema(BreadcrumbSchema::make($breadcrumbs));
 
-        return view('catalog.index', compact('categories', 'products'));
+        $categories = $this->categoryRepository->getActiveCatalog();
+        $products = $this->productRepository->getCatalogProducts();
+
+        return view('catalog.index', compact('categories', 'products', 'breadcrumbs'));
     }
 }

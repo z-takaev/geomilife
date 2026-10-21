@@ -22,21 +22,23 @@ final class HomeController extends Controller
 
     public function __invoke(): View
     {
-        $slides = HomeSlide::cached();
-        $promos = Promo::cached();
-        $reviews = Review::cached();
-        $featuredCategories = $this->categoryRepository->getFeatured();
-        [
-            'hitProducts' => $hitProducts,
-            'newProducts' => $newProducts,
-            'discountedProducts' => $discountedProducts,
-        ] = $this->productRepository->getHomeProducts();
         seo()->forRoute(
             routeName: 'home',
             fallbackTitle: config('app.name'),
         )
             ->schema(OrganizationSchema::make(settings()))
             ->schema(WebSiteSchema::make());
+
+        $slides = HomeSlide::cached();
+        $promos = Promo::cached();
+        $reviews = Review::cached();
+        $featuredCategories = $this->categoryRepository->getFeatured();
+
+        [
+            'hitProducts' => $hitProducts,
+            'newProducts' => $newProducts,
+            'discountedProducts' => $discountedProducts,
+        ] = $this->productRepository->getHomeProducts();
 
         return view('home.index', compact(
             'slides',

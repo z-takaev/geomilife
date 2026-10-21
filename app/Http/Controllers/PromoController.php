@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Promo;
+use App\Navigation\BreadcrumbItem;
+use App\Navigation\Breadcrumbs;
 use App\Support\Seo\Schemas\BreadcrumbSchema;
 use Illuminate\Contracts\View\View;
 
@@ -12,26 +14,32 @@ final class PromoController extends Controller
 {
     public function index(): View
     {
+        $breadcrumbs = Breadcrumbs::make(
+            BreadcrumbItem::make(__('Акции'), route('promos.index')),
+        );
+
+        seo()->forRoute(
+            routeName: 'promos.index',
+            fallbackTitle: __('Акции'),
+        )->schema(BreadcrumbSchema::make($breadcrumbs));
+
         $promos = Promo::query()
             ->with('media')
             ->where('is_active', true)
             ->latest('start_at')
             ->paginate(config('pagination.per_page.promos'));
 
-        seo()->forRoute(
-            routeName: 'promos.index',
-            fallbackTitle: __('Акции'),
-        )->schema(BreadcrumbSchema::make([
-            __('Главная') => route('home'),
-            __('Акции') => route('promos.index'),
-        ]));
-
-        return view('promos.index', compact('promos'));
+        return view('promos.index', compact('promos', 'breadcrumbs'));
     }
 
     public function show(Promo $promo): View
     {
         abort_unless($promo->is_active, 404);
+
+        $breadcrumbs = Breadcrumbs::make(
+            BreadcrumbItem::make(__('Акции'), route('promos.index')),
+            BreadcrumbItem::make($promo->title, route('promos.show', $promo)),
+        );
 
         seo()->forModel(
             seoable: $promo,
@@ -39,12 +47,8 @@ final class PromoController extends Controller
         )
             ->image($promo->getFirstMediaUrl('image'))
             ->type('article')
-            ->schema(BreadcrumbSchema::make([
-                __('Главная') => route('home'),
-                __('Акции') => route('promos.index'),
-                $promo->title => route('promos.show', $promo),
-            ]));
+            ->schema(BreadcrumbSchema::make($breadcrumbs));
 
-        return view('promos.show', compact('promo'));
+        return view('promos.show', compact('promo', 'breadcrumbs'));
     }
 }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Menu\MenuItem;
 use App\Models\Category;
+use App\Navigation\MenuItem;
 use App\Repositories\Categories\CategoryRepository;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;

@@ -1,7 +1,7 @@
 @extends('layouts.base')
 
 @section('content')
-    <x-breadcrumbs :title="__('Новости')" :items="[['label' => __('Новости')]]" />
+    <x-breadcrumbs :title="__('Новости')" :breadcrumbs="$breadcrumbs" />
 
     <section class="s-blog-list news-archive-section flat-spacing">
         <div class="container">

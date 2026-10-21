@@ -1,7 +1,7 @@
 @extends('layouts.base')
 
 @section('content')
-    <x-breadcrumbs :title="__('Результаты поиска')" :items="[['label' => __('Поиск')]]" />
+    <x-breadcrumbs :title="__('Результаты поиска')" :breadcrumbs="$breadcrumbs" />
 
     <section class="search-results-page flat-spacing">
         <div class="container">

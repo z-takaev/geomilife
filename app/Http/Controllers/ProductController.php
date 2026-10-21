@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Navigation\BreadcrumbItem;
+use App\Navigation\Breadcrumbs;
 use App\Repositories\Products\ProductRepository;
 use App\Support\Seo\Schemas\BreadcrumbSchema;
 use App\Support\Seo\Schemas\ProductSchema;
@@ -21,6 +23,20 @@ final class ProductController extends Controller
     {
         abort_unless($product->is_active, 404);
 
+        $breadcrumbs = Breadcrumbs::make(
+            BreadcrumbItem::make(__('Каталог'), route('catalog.index')),
+            BreadcrumbItem::make($product->name, route('products.show', $product)),
+        );
+
+        seo()->forModel(
+            seoable: $product,
+            fallbackTitle: $product->name,
+        )
+            ->image($product->getFirstMediaUrl('image'))
+            ->type('product')
+            ->schema(ProductSchema::make($product))
+            ->schema(BreadcrumbSchema::make($breadcrumbs));
+
         $product->load([
             'attributeValues.productAttribute',
             'category',
@@ -31,19 +47,6 @@ final class ProductController extends Controller
         ]);
         $recommendedProducts = $this->productRepository->getRecommendedProducts($product);
 
-        seo()->forModel(
-            seoable: $product,
-            fallbackTitle: $product->name,
-        )
-            ->image($product->getFirstMediaUrl('image'))
-            ->type('product')
-            ->schema(ProductSchema::make($product))
-            ->schema(BreadcrumbSchema::make([
-                __('Главная') => route('home'),
-                __('Каталог') => route('catalog.index'),
-                $product->name => route('products.show', $product),
-            ]));
-
-        return view('products.show', compact('product', 'recommendedProducts'));
+        return view('products.show', compact('product', 'recommendedProducts', 'breadcrumbs'));
     }
 }

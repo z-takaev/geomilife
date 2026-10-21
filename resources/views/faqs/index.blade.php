@@ -1,7 +1,7 @@
 @extends('layouts.base')
 
 @section('content')
-    <x-breadcrumbs :title="__('Вопросы и ответы')" :items="[['label' => __('Вопросы и ответы')]]" />
+    <x-breadcrumbs :title="__('Вопросы и ответы')" :breadcrumbs="$breadcrumbs" />
 
     <section class="section-faq flat-spacing">
         <div class="container">

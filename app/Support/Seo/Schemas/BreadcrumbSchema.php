@@ -4,21 +4,16 @@ declare(strict_types=1);
 
 namespace App\Support\Seo\Schemas;
 
+use App\Navigation\Breadcrumbs;
 use App\Support\Seo\Schemas\Contracts\SchemaContract;
 
 final readonly class BreadcrumbSchema implements SchemaContract
 {
-    /**
-     * @param  array<string, string>  $items
-     */
-    private function __construct(private array $items) {}
+    private function __construct(private Breadcrumbs $breadcrumbs) {}
 
-    /**
-     * @param  array<string, string>  $items
-     */
-    public static function make(array $items): self
+    public static function make(Breadcrumbs $breadcrumbs): self
     {
-        return new self($items);
+        return new self($breadcrumbs);
     }
 
     public function toArray(): array
@@ -26,12 +21,12 @@ final readonly class BreadcrumbSchema implements SchemaContract
         $itemList = [];
         $position = 1;
 
-        foreach ($this->items as $name => $url) {
+        foreach ($this->breadcrumbs->items() as $item) {
             $itemList[] = [
                 '@type' => 'ListItem',
                 'position' => $position++,
-                'name' => $name,
-                'item' => $url,
+                'name' => $item->label,
+                'item' => $item->url,
             ];
         }
 

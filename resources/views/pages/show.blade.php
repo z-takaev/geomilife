@@ -9,7 +9,7 @@
 @endpush
 
 @section('content')
-    <x-breadcrumbs :title="$page->title" :items="[['label' => $page->title]]" />
+    <x-breadcrumbs :title="$page->title" :breadcrumbs="$breadcrumbs" />
 
     <section class="content-detail-section flat-spacing">
         <div class="container">
