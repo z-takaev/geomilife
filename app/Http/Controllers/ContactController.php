@@ -4,20 +4,21 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Services\Seo\SeoService;
+use App\Support\Seo\Schemas\BreadcrumbSchema;
 use Illuminate\Contracts\View\View;
 
 final class ContactController extends Controller
 {
-    public function __construct(private readonly SeoService $seoService) {}
-
     public function __invoke(): View
     {
-        $seo = $this->seoService->forRoute(
+        seo()->forRoute(
             routeName: 'contacts.index',
             fallbackTitle: __('Контакты'),
-        );
+        )->schema(BreadcrumbSchema::make([
+            __('Главная') => route('home'),
+            __('Контакты') => route('contacts.index'),
+        ]));
 
-        return view('contacts.index', compact('seo'));
+        return view('contacts.index');
     }
 }

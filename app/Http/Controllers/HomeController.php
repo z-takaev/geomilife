@@ -9,13 +9,13 @@ use App\Models\Promo;
 use App\Models\Review;
 use App\Repositories\Categories\CategoryRepository;
 use App\Repositories\Products\ProductRepository;
-use App\Services\Seo\SeoService;
+use App\Support\Seo\Schemas\OrganizationSchema;
+use App\Support\Seo\Schemas\WebSiteSchema;
 use Illuminate\Contracts\View\View;
 
 final class HomeController extends Controller
 {
     public function __construct(
-        private readonly SeoService $seoService,
         private readonly ProductRepository $productRepository,
         private readonly CategoryRepository $categoryRepository,
     ) {}
@@ -31,10 +31,12 @@ final class HomeController extends Controller
             'newProducts' => $newProducts,
             'discountedProducts' => $discountedProducts,
         ] = $this->productRepository->getHomeProducts();
-        $seo = $this->seoService->forRoute(
+        seo()->forRoute(
             routeName: 'home',
             fallbackTitle: config('app.name'),
-        );
+        )
+            ->schema(OrganizationSchema::make(settings()))
+            ->schema(WebSiteSchema::make());
 
         return view('home.index', compact(
             'slides',
@@ -44,7 +46,6 @@ final class HomeController extends Controller
             'hitProducts',
             'newProducts',
             'discountedProducts',
-            'seo',
         ));
     }
 }

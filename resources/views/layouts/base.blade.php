@@ -3,11 +3,8 @@
 
 <head>
     <meta charset="utf-8">
-    <title>{{ $seo->title ?? config('app.name', __('Geomilife')) }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    @if (filled($seo->description ?? null))
-        <meta name="description" content="{{ $seo->description }}">
-    @endif
+    <x-seo />
 
     <link rel="stylesheet" href="{{ asset('assets/fonts/fonts.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/icon/icomoon/style.css') }}">

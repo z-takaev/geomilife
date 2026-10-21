@@ -6,13 +6,12 @@ namespace App\Http\Controllers;
 
 use App\Repositories\Categories\CategoryRepository;
 use App\Repositories\Products\ProductRepository;
-use App\Services\Seo\SeoService;
+use App\Support\Seo\Schemas\BreadcrumbSchema;
 use Illuminate\Contracts\View\View;
 
 final class CatalogController extends Controller
 {
     public function __construct(
-        private readonly SeoService $seoService,
         private readonly ProductRepository $productRepository,
         private readonly CategoryRepository $categoryRepository,
     ) {}
@@ -21,11 +20,14 @@ final class CatalogController extends Controller
     {
         $categories = $this->categoryRepository->getActiveCatalog();
         $products = $this->productRepository->getCatalogProducts();
-        $seo = $this->seoService->forRoute(
+        seo()->forRoute(
             routeName: 'catalog.index',
             fallbackTitle: __('Каталог'),
-        );
+        )->schema(BreadcrumbSchema::make([
+            __('Главная') => route('home'),
+            __('Каталог') => route('catalog.index'),
+        ]));
 
-        return view('catalog.index', compact('categories', 'products', 'seo'));
+        return view('catalog.index', compact('categories', 'products'));
     }
 }

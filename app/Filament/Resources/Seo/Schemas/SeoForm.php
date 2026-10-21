@@ -30,7 +30,7 @@ final class SeoForm
     private static function section(bool $showPage = false): Section
     {
         return Section::make('Поисковая оптимизация')
-            ->description('Пустой SEO-заголовок будет заполнен заголовком страницы. При пустом SEO-описании meta description не выводится.')
+            ->description('Пустой SEO-заголовок будет заполнен заголовком страницы. Для пустого SEO-описания используется значение по умолчанию.')
             ->schema([
                 ...($showPage ? [
                     TextEntry::make('path')

@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Promo;
-use App\Services\Seo\SeoService;
+use App\Support\Seo\Schemas\BreadcrumbSchema;
 use Illuminate\Contracts\View\View;
 
 final class PromoController extends Controller
 {
-    public function __construct(private readonly SeoService $seoService) {}
-
     public function index(): View
     {
         $promos = Promo::query()
@@ -20,23 +18,33 @@ final class PromoController extends Controller
             ->latest('start_at')
             ->paginate(config('pagination.per_page.promos'));
 
-        $seo = $this->seoService->forRoute(
+        seo()->forRoute(
             routeName: 'promos.index',
             fallbackTitle: __('Акции'),
-        );
+        )->schema(BreadcrumbSchema::make([
+            __('Главная') => route('home'),
+            __('Акции') => route('promos.index'),
+        ]));
 
-        return view('promos.index', compact('promos', 'seo'));
+        return view('promos.index', compact('promos'));
     }
 
     public function show(Promo $promo): View
     {
         abort_unless($promo->is_active, 404);
 
-        $seo = $this->seoService->forModel(
+        seo()->forModel(
             seoable: $promo,
             fallbackTitle: $promo->title,
-        );
+        )
+            ->image($promo->getFirstMediaUrl('image'))
+            ->type('article')
+            ->schema(BreadcrumbSchema::make([
+                __('Главная') => route('home'),
+                __('Акции') => route('promos.index'),
+                $promo->title => route('promos.show', $promo),
+            ]));
 
-        return view('promos.show', compact('promo', 'seo'));
+        return view('promos.show', compact('promo'));
     }
 }
