@@ -7,7 +7,7 @@ namespace App\Console\Commands;
 use App\Actions\Images\CleanUploadedImagesAction;
 use Illuminate\Console\Command;
 
-final class InstallProject extends Command
+final class InstallProjectCommand extends Command
 {
     protected $signature = 'project:install';
 

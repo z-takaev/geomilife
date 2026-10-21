@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Cities;
 
-use App\Filament\Resources\Cities\Pages\CreateCity;
 use App\Filament\Resources\Cities\Pages\EditCity;
 use App\Filament\Resources\Cities\Pages\ListCities;
 use App\Filament\Resources\Cities\Schemas\CityForm;
@@ -15,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 final class CityResource extends Resource
 {
@@ -40,6 +40,21 @@ final class CityResource extends Resource
         return CitiesTable::configure($table);
     }
 
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return false;
+    }
+
     public static function getRelations(): array
     {
         return [
@@ -51,7 +66,6 @@ final class CityResource extends Resource
     {
         return [
             'index' => ListCities::route('/'),
-            'create' => CreateCity::route('/create'),
             'edit' => EditCity::route('/{record}/edit'),
         ];
     }

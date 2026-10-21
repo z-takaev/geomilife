@@ -13,7 +13,7 @@ final class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        $city = City::query()->where('slug', 'vladikavkaz')->firstOrFail();
+        $city = City::query()->where('cdek_code', 1082)->firstOrFail();
 
         User::query()->updateOrCreate(
             ['email' => 'user@user.ru'],

@@ -28,6 +28,14 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'cdek' => [
+        'base_url' => env('CDEK_BASE_URL'),
+        'client_id' => env('CDEK_CLIENT_ID'),
+        'client_secret' => env('CDEK_CLIENT_SECRET'),
+        'connect_timeout' => 5,
+        'timeout' => 15,
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

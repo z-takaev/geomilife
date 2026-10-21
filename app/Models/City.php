@@ -13,15 +13,22 @@ final class City extends Model
     use HasFactory;
 
     protected $fillable = [
+        'cdek_code',
         'name',
-        'slug',
+        'region',
+        'sub_region',
         'is_active',
+        'is_pickup_available',
+        'is_courier_available',
     ];
 
     protected function casts(): array
     {
         return [
+            'cdek_code' => 'integer',
             'is_active' => 'boolean',
+            'is_pickup_available' => 'boolean',
+            'is_courier_available' => 'boolean',
         ];
     }
 

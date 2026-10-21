@@ -7,7 +7,7 @@ namespace App\Console\Commands;
 use App\Actions\Images\CleanUploadedImagesAction;
 use Illuminate\Console\Command;
 
-final class RefreshProject extends Command
+final class RefreshProjectCommand extends Command
 {
     protected $signature = 'project:refresh {--force : Выполнить без подтверждения}';
 
