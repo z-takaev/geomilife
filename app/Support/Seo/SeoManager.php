@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Seo;
 
-use App\Contracts\Seoable;
 use App\Models\Seo;
+use App\Support\Seo\Contracts\Seoable;
 use App\Support\Seo\Schemas\Contracts\SchemaContract;
 use Illuminate\Support\Str;
 

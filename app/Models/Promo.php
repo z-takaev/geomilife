@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Contracts\Seoable;
 use App\Support\Media\ImageMimeTypes;
+use App\Support\Seo\Contracts\Seoable;
+use App\Support\Seo\Traits\HasSeo;
 use App\Support\Traits\HasSlug;
-use App\Support\Traits\WithSeo;
 use Filament\Forms\Components\RichEditor\FileAttachmentProviders\SpatieMediaLibraryFileAttachmentProvider;
 use Filament\Forms\Components\RichEditor\Models\Concerns\InteractsWithRichContent;
 use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
@@ -22,7 +22,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 final class Promo extends Model implements HasMedia, HasRichContent, Seoable
 {
-    use HasFactory, HasSlug, InteractsWithMedia, InteractsWithRichContent, WithSeo;
+    use HasFactory, HasSeo, HasSlug, InteractsWithMedia, InteractsWithRichContent;
 
     private const string CACHE_KEY = 'latest_promos';
 

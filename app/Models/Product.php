@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Contracts\Seoable;
 use App\Repositories\Categories\CategoryRepository;
 use App\Support\Media\ImageMimeTypes;
+use App\Support\Seo\Contracts\Seoable;
+use App\Support\Seo\Traits\HasSeo;
 use App\Support\Traits\HasSlug;
-use App\Support\Traits\WithSeo;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -21,7 +21,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 final class Product extends Model implements HasMedia, Seoable
 {
-    use HasFactory, HasSlug, InteractsWithMedia, WithSeo;
+    use HasFactory, HasSeo, HasSlug, InteractsWithMedia;
 
     protected $fillable = [
         'category_id',
