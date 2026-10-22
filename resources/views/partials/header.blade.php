@@ -78,9 +78,13 @@
 <header class="tf-header style-2">
     <div class="container">
         <div class="header-inner">
-            <div class="box-btn-menu d-xl-none">
+            <div class="box-btn-menu header-mobile-actions d-xl-none">
                 <a href="#mobileMenu" data-bs-toggle="offcanvas" class="btn-mobile-menu">
                     <span></span>
+                </a>
+                <a href="#canvasSearch" data-bs-toggle="offcanvas" class="nav-icon-item text-primary link"
+                    aria-label="{{ __('Открыть поиск') }}">
+                    <i class="icon icon-magnifying-glass"></i>
                 </a>
             </div>
             <div class="header-left">
@@ -93,7 +97,7 @@
             <div class="header-right">
                 <div class="box-nav-icon">
                     <ul class="nav-icon-list">
-                        <li>
+                        <li class="d-none d-xl-flex">
                             <a href="#canvasSearch" data-bs-toggle="offcanvas" class="nav-icon-item text-primary link"
                                 aria-label="{{ __('Открыть поиск') }}">
                                 <i class="icon icon-magnifying-glass"></i>

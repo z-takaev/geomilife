@@ -6,8 +6,8 @@
             <ol class="breadcrums">
                 @foreach ($breadcrumbs->items() as $item)
                     @if (!$loop->first)
-                        <li aria-hidden="true">
-                            <i class="icon icon-arrow-right"></i>
+                        <li class="breadcrums__separator" aria-hidden="true">
+                            <span></span>
                         </li>
                     @endif
 
@@ -26,6 +26,6 @@
             </ol>
         </nav>
 
-        <h1 class="page-title text-white font-sora">{{ $title }}</h1>
+        <h1 class="page-title font-sora">{{ $title }}</h1>
     </div>
 </section>
