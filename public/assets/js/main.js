@@ -1027,6 +1027,16 @@
             videoPlayer?.play();
         };
 
+        const loadVideo = function () {
+            if (videoFrame.hasAttribute('src') || !videoFrame.dataset.src) {
+                return false;
+            }
+
+            videoFrame.src = videoFrame.dataset.src;
+
+            return true;
+        };
+
         videoFrame.addEventListener('load', function () {
             initializeVideoPlayer();
 
@@ -1035,8 +1045,6 @@
             }
         });
 
-        initializeVideoPlayer();
-
         videoLinks.magnificPopup({
             type: 'inline',
             mainClass: 'home-story-video-popup',
@@ -1044,6 +1052,11 @@
             callbacks: {
                 open: function () {
                     isPopupOpen = true;
+
+                    if (loadVideo()) {
+                        return;
+                    }
+
                     initializeVideoPlayer();
                     playVideo();
                 },

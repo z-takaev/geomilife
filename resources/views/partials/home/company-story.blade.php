@@ -43,7 +43,7 @@
 @if ($storyVideoUrl)
     <div id="home-story-video-popup" class="home-story-video-dialog mfp-hide">
         <div class="home-story-video-frame">
-            <iframe id="home-story-video-frame" src="{{ $storyVideoUrl }}"
+            <iframe id="home-story-video-frame" data-src="{{ $storyVideoUrl }}" loading="lazy"
                 title="{{ __('История GeoMiLife на VK Видео') }}"
                 allow="autoplay; encrypted-media; fullscreen; picture-in-picture; screen-wake-lock"
                 allowfullscreen></iframe>
