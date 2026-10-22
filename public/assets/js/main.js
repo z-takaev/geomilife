@@ -1255,6 +1255,32 @@
         });
     };
 
+    var cookieConsent = function () {
+        const consent = document.querySelector('[data-cookie-consent]');
+        const acceptButton = consent?.querySelector('[data-cookie-consent-accept]');
+        const storageKey = 'cookie-consent-accepted';
+
+        if (!consent || !acceptButton) {
+            return;
+        }
+
+        try {
+            if (localStorage.getItem(storageKey) === 'true') {
+                return;
+            }
+        } catch {}
+
+        consent.hidden = false;
+
+        acceptButton.addEventListener('click', () => {
+            try {
+                localStorage.setItem(storageKey, 'true');
+            } catch {}
+
+            consent.hidden = true;
+        });
+    };
+
     /* Preloader
     -------------------------------------------------------------------------*/
     var preloader = function () {
@@ -1298,6 +1324,7 @@
         clickScroll();
         phoneMask();
         expandableReviews();
+        cookieConsent();
 
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', preloader);

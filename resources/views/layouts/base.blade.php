@@ -38,6 +38,7 @@
     @include('partials.auth.login')
     @include('partials.auth.register')
     @include('partials.auth.forgot-password')
+    @include('partials.cookie-consent')
 
     <script src="{{ asset('assets/js/bootstrap.min.js') }}"></script>
     <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
