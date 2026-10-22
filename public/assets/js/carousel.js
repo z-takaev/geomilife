@@ -40,6 +40,26 @@ $(window).on('load', function () {
         var direction = $this.data('direction') || 'horizontal';
         var centered = $this.data('center') ?? false;
         var init = $this.data('init') || 0;
+        var slideCount = $this.children('.swiper-wrapper').children('.swiper-slide').length;
+        var loopBreakpoints = [
+            [mobile, perGroup],
+            [mobileSm, perGroupSm],
+            [tablet, perGroupMd],
+            [preview, perGroupLg],
+            [laptop === 1 ? preview : laptop, perGroupLg],
+        ];
+        var minimumLoopSlides = Math.max(
+            ...loopBreakpoints.map(function ([slidesPerView, slidesPerGroup]) {
+                var visibleSlides = slidesPerView === 'auto' ? 1 : Math.ceil(Number(slidesPerView));
+
+                if (centered && visibleSlides % 2 === 0) {
+                    visibleSlides += 1;
+                }
+
+                return visibleSlides + Number(slidesPerGroup);
+            }),
+        );
+        var loopEnabled = loop && slideCount >= minimumLoopSlides;
 
         var swiperT = new Swiper($this[0], {
             direction: direction,
@@ -49,7 +69,8 @@ $(window).on('load', function () {
             spaceBetween: spacing,
             slidesPerGroup: perGroup,
             grabCursor: cursorType,
-            loop: loop,
+            loop: loopEnabled,
+            rewind: loop && !loopEnabled,
             effect: effect,
             initialSlide: init,
             autoplay: atPlay
