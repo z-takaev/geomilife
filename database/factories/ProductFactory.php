@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Enums\ProductAvailability;
 use App\Enums\ProductUnit;
 use App\Models\Category;
 use App\Models\Product;
@@ -57,8 +56,8 @@ final class ProductFactory extends Factory
                     },
                     'price' => Money::fromRubles(fake()->numberBetween(100, 5_000)),
                     'discount_percent' => fake()->optional(0.3)->numberBetween(1, 99),
-                    'status' => fake()->randomElement(ProductAvailability::cases()),
                     'is_active' => fake()->boolean(85),
+                    'is_preorder' => fake()->boolean(20),
                     'order' => $order,
                 ];
             }

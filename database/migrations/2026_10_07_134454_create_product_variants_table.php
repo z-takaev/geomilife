@@ -18,8 +18,8 @@ return new class extends Migration
             $table->decimal('value', 12, 3);
             $table->unsignedBigInteger('price');
             $table->unsignedTinyInteger('discount_percent')->nullable();
-            $table->string('status');
             $table->boolean('is_active')->default(false);
+            $table->boolean('is_preorder')->default(false);
             $table->integer('order')->default(0);
             $table->timestamps();
 

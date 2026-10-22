@@ -4,7 +4,16 @@
     'home-review-card wow fadeInUp',
     'home-review-card--expandable' => $expandable,
 ]) @if ($expandable) data-review-card-expandable @endif>
-    <div class="home-review-quote" aria-hidden="true">“</div>
+    <header class="home-review-meta">
+        @if ($review->source !== null)
+            <img class="home-review-source-logo" src="{{ asset($review->source->logoPath()) }}"
+                alt="{{ __($review->source->getLabel()) }}">
+        @endif
+        <span class="home-review-rating" aria-label="{{ __('Рейтинг: :rating из 5', ['rating' => $review->rating]) }}">
+            <span class="icon icon-star-4" aria-hidden="true"></span>
+            <span>{{ $review->rating }}</span>
+        </span>
+    </header>
     @if ($expandable)
         <div class="home-review-content">
             <p class="home-review-text" data-review-text>{{ $review->text }}</p>

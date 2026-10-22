@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Support\Values\Money;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -20,6 +21,8 @@ final class City extends Model
         'is_active',
         'is_pickup_available',
         'is_courier_available',
+        'courier_delivery_price',
+        'floor_lifting_price',
     ];
 
     protected function casts(): array
@@ -29,6 +32,8 @@ final class City extends Model
             'is_active' => 'boolean',
             'is_pickup_available' => 'boolean',
             'is_courier_available' => 'boolean',
+            'courier_delivery_price' => Money::class,
+            'floor_lifting_price' => Money::class,
         ];
     }
 

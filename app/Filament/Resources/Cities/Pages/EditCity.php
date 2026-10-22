@@ -22,6 +22,8 @@ final class EditCity extends EditRecord
             'is_active',
             'is_pickup_available',
             'is_courier_available',
+            'courier_delivery_price',
+            'floor_lifting_price',
         ]);
     }
 }

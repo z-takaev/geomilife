@@ -23,7 +23,7 @@ final class ProductRepository
             ->with([
                 'variants' => function (HasMany $query): void {
                     $query
-                        ->select(['id', 'product_id', 'unit', 'value', 'price', 'discount_percent', 'status'])
+                        ->select(['id', 'product_id', 'unit', 'value', 'price', 'discount_percent', 'is_preorder'])
                         ->active();
                 },
                 'media' => function (MorphMany $query): void {
@@ -76,7 +76,7 @@ final class ProductRepository
             ->with([
                 'variants' => function (HasMany $query): void {
                     $query
-                        ->select(['id', 'product_id', 'unit', 'value', 'price', 'discount_percent', 'status'])
+                        ->select(['id', 'product_id', 'unit', 'value', 'price', 'discount_percent', 'is_preorder'])
                         ->active();
                 },
                 'media' => function (MorphMany $query): void {
@@ -105,7 +105,7 @@ final class ProductRepository
             ->with([
                 'variants' => function (HasMany $query): void {
                     $query
-                        ->select(['id', 'product_id', 'unit', 'value', 'price', 'discount_percent', 'status'])
+                        ->select(['id', 'product_id', 'unit', 'value', 'price', 'discount_percent', 'is_preorder'])
                         ->active();
                 },
                 'media' => function (MorphMany $query): void {

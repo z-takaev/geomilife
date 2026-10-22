@@ -52,7 +52,7 @@ final class SitemapController extends Controller
                 ]),
         )->concat(
             Product::query()
-                ->where('is_active', true)
+                ->available()
                 ->get(['slug', 'updated_at'])
                 ->map(static fn (Product $product): array => [
                     'location' => route('products.show', $product),

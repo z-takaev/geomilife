@@ -143,7 +143,7 @@
                             </div>
                             <div>
                                 <dt>{{ __('Наличие') }}</dt>
-                                <dd>{{ $selectedVariant !== null ? __($selectedVariant->status->getLabel()) : __('Нет в наличии') }}
+                                <dd>{{ $selectedVariant?->is_preorder ? __('Под заказ') : __('В наличии') }}
                                 </dd>
                             </div>
                             <div>

@@ -21,7 +21,16 @@ final class ProductController extends Controller
 
     public function show(Product $product): View
     {
-        abort_unless($product->is_active, 404);
+        abort_unless($product->is_active && $product->variants()->active()->exists(), 404);
+
+        $product->load([
+            'attributeValues.productAttribute',
+            'category',
+            'media',
+            'variants' => static function (HasMany $query): void {
+                $query->active();
+            },
+        ]);
 
         $breadcrumbs = Breadcrumbs::make(
             BreadcrumbItem::make(__('Каталог'), route('catalog.index')),
@@ -37,14 +46,6 @@ final class ProductController extends Controller
             ->schema(ProductSchema::make($product))
             ->schema(BreadcrumbSchema::make($breadcrumbs));
 
-        $product->load([
-            'attributeValues.productAttribute',
-            'category',
-            'media',
-            'variants' => static function (HasMany $query): void {
-                $query->active();
-            },
-        ]);
         $recommendedProducts = $this->productRepository->getRecommendedProducts($product);
 
         return view('products.show', compact('product', 'recommendedProducts', 'breadcrumbs'));

@@ -19,6 +19,8 @@ return new class extends Migration
             $table->boolean('is_active')->default(false);
             $table->boolean('is_pickup_available')->default(false);
             $table->boolean('is_courier_available')->default(false);
+            $table->unsignedBigInteger('courier_delivery_price')->nullable();
+            $table->unsignedBigInteger('floor_lifting_price')->nullable();
             $table->timestamps();
         });
     }

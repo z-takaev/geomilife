@@ -24,7 +24,7 @@ final class ReviewController extends Controller
         )->schema(BreadcrumbSchema::make($breadcrumbs));
 
         $reviews = Review::query()
-            ->select(['id', 'author_name', 'text', 'reviewed_at'])
+            ->select(['id', 'author_name', 'text', 'rating', 'source', 'reviewed_at'])
             ->where('is_active', true)
             ->latest('reviewed_at')
             ->latest('id')

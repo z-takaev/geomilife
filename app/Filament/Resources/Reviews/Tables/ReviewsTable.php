@@ -25,6 +25,12 @@ final class ReviewsTable
                     ->label('Текст отзыва')
                     ->limit(80)
                     ->wrap(),
+                TextColumn::make('rating')
+                    ->label('Рейтинг')
+                    ->sortable(),
+                TextColumn::make('source')
+                    ->label('Источник')
+                    ->placeholder('Не указан'),
                 TextColumn::make('reviewed_at')
                     ->label('Дата отзыва')
                     ->date('d.m.Y')

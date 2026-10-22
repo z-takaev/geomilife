@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\ProductAvailability;
 use App\Enums\ProductUnit;
 use App\Support\Values\Money;
 use Illuminate\Database\Eloquent\Builder;
@@ -24,8 +23,8 @@ final class ProductVariant extends Model
         'value',
         'price',
         'discount_percent',
-        'status',
         'is_active',
+        'is_preorder',
         'order',
     ];
 
@@ -35,9 +34,9 @@ final class ProductVariant extends Model
             'value' => 'decimal:3',
             'price' => Money::class,
             'discount_percent' => 'integer',
-            'status' => ProductAvailability::class,
             'unit' => ProductUnit::class,
             'is_active' => 'boolean',
+            'is_preorder' => 'boolean',
             'order' => 'integer',
         ];
     }

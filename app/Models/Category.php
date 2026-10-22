@@ -54,7 +54,7 @@ final class Category extends Model implements HasMedia
 
     public function activeProducts(): HasMany
     {
-        return $this->products()->active();
+        return $this->products()->available();
     }
 
     public function scopeActive(Builder $query): void

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Support\Seo\Schemas;
 
-use App\Enums\ProductAvailability;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Support\Seo\Schemas\Contracts\SchemaContract;
@@ -47,11 +46,9 @@ final readonly class ProductSchema implements SchemaContract
             'url' => route('products.show', $this->product),
             'priceCurrency' => Money::CURRENCY,
             'price' => $variant->currentPrice()->toRubles(),
-            'availability' => match ($variant->status) {
-                ProductAvailability::IN_STOCK => 'https://schema.org/InStock',
-                ProductAvailability::PREORDER => 'https://schema.org/PreOrder',
-                ProductAvailability::UNAVAILABLE => 'https://schema.org/OutOfStock',
-            },
+            'availability' => $variant->is_preorder
+                ? 'https://schema.org/PreOrder'
+                : 'https://schema.org/InStock',
         ];
     }
 }

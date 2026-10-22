@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\ReviewSourceEnum;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +19,8 @@ final class Review extends Model
     protected $fillable = [
         'author_name',
         'text',
+        'rating',
+        'source',
         'reviewed_at',
         'is_active',
     ];
@@ -25,6 +28,8 @@ final class Review extends Model
     protected function casts(): array
     {
         return [
+            'rating' => 'decimal:1',
+            'source' => ReviewSourceEnum::class,
             'reviewed_at' => 'date',
             'is_active' => 'boolean',
         ];
@@ -50,7 +55,7 @@ final class Review extends Model
             self::CACHE_KEY,
             now()->addHours(2),
             static fn (): Collection => self::query()
-                ->select(['id', 'author_name', 'text', 'reviewed_at'])
+                ->select(['id', 'author_name', 'text', 'rating', 'source', 'reviewed_at'])
                 ->where('is_active', true)
                 ->latest('reviewed_at')
                 ->latest('id')

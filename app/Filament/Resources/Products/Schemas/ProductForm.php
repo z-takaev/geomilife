@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Products\Schemas;
 
-use App\Enums\ProductAvailability;
 use App\Enums\ProductUnit;
 use App\Filament\Forms\Components\MediaImageUpload;
 use App\Filament\Forms\Components\SlugField;
@@ -19,6 +18,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Flex;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -137,14 +137,16 @@ final class ProductForm
                                                     ->minValue(1)
                                                     ->maxValue(99)
                                                     ->suffix('%'),
-                                                Select::make('status')
-                                                    ->label('Доступность')
-                                                    ->options(ProductAvailability::class)
-                                                    ->default(ProductAvailability::IN_STOCK->value)
-                                                    ->required(),
-                                                Toggle::make('is_active')
-                                                    ->label('Активен')
-                                                    ->default(true),
+                                                Flex::make([
+                                                    Toggle::make('is_active')
+                                                        ->label('Активен')
+                                                        ->default(true)
+                                                        ->grow(false),
+                                                    Toggle::make('is_preorder')
+                                                        ->label('Доступен по предзаказу')
+                                                        ->grow(false),
+                                                ])
+                                                    ->columnSpanFull(),
                                             ]),
                                     ])
                                     ->itemLabel(self::variantLabel(...))

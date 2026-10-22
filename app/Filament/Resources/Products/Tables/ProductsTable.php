@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Products\Tables;
 
-use App\Enums\ProductAvailability;
 use App\Models\Product;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -60,16 +59,21 @@ final class ProductsTable
                     ->relationship('category', 'name')
                     ->searchable()
                     ->preload(),
-                SelectFilter::make('availability')
-                    ->label('Доступность вариантов')
-                    ->options(ProductAvailability::class)
-                    ->query(static fn (Builder $query, array $data): Builder => $query->when(
-                        filled($data['value'] ?? null),
-                        static fn (Builder $query): Builder => $query->whereHas(
+                TernaryFilter::make('is_preorder')
+                    ->label('Предзаказ')
+                    ->queries(
+                        true: static fn (Builder $query): Builder => $query->whereHas(
                             'variants',
-                            static fn (Builder $query): Builder => $query->where('status', $data['value']),
+                            static fn (Builder $query): Builder => $query->where('is_preorder', true),
                         ),
-                    )),
+                        false: static fn (Builder $query): Builder => $query->whereHas(
+                            'variants',
+                            static fn (Builder $query): Builder => $query->where('is_preorder', false),
+                        ),
+                    )
+                    ->placeholder('Все товары')
+                    ->trueLabel('Доступны по предзаказу')
+                    ->falseLabel('В наличии'),
                 TernaryFilter::make('is_active')
                     ->label('Активность')
                     ->placeholder('Все товары')

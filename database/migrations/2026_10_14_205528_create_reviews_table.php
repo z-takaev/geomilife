@@ -14,6 +14,8 @@ return new class extends Migration
             $table->id();
             $table->string('author_name');
             $table->text('text');
+            $table->decimal('rating', 2, 1);
+            $table->string('source')->nullable();
             $table->date('reviewed_at');
             $table->boolean('is_active')->default(false);
             $table->timestamps();
