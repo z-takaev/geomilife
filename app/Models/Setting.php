@@ -42,6 +42,7 @@ final class Setting extends Model implements HasMedia
     protected $fillable = [
         'phone',
         'email',
+        'admin_email',
         'address',
         'working_hours',
         'yandex_map_script',

@@ -7283,6 +7283,10 @@ select.select-2 {
 .faq-question-form {
     background-color: var(--white);
 }
+.question-form-toast {
+    color: var(--text-white);
+    background-color: var(--primary);
+}
 
 .archive-pagination {
     margin-top: 48px;

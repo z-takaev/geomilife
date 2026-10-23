@@ -14,6 +14,7 @@ return new class extends Migration
             $table->id();
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
+            $table->string('admin_email')->nullable();
             $table->text('address')->nullable();
             $table->text('working_hours')->nullable();
             $table->text('yandex_map_script')->nullable();

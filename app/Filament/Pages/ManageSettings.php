@@ -64,6 +64,12 @@ final class ManageSettings extends Page
                                         ->email()
                                         ->required()
                                         ->maxLength(255),
+                                    TextInput::make('admin_email')
+                                        ->label('Email администратора')
+                                        ->helperText('На этот адрес будут приходить вопросы с сайта.')
+                                        ->email()
+                                        ->required()
+                                        ->maxLength(255),
                                     Textarea::make('address')
                                         ->label('Адрес')
                                         ->required()
