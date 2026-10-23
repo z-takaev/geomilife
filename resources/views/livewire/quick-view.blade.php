@@ -50,7 +50,7 @@
             <div class="quickview-product-info">
                 @if ($product !== null)
                     <div class="product-info-meta">
-                        <a href="{{ route('catalog.index') }}"
+                        <a href="{{ route('catalog.category', $product->category) }}"
                             class="infor_cate product-detail__category fw-semibold text-uppercase">
                             {{ $product->category->name }}
                         </a>

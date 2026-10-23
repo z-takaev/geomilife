@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\Products;
 
+use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -16,11 +17,18 @@ final class ProductRepository
     /**
      * @return LengthAwarePaginator<int, Product>
      */
-    public function getCatalogProducts(int $perPage = 9): LengthAwarePaginator
+    public function getCatalogProducts(?Category $category = null, int $perPage = 9): LengthAwarePaginator
     {
         return Product::query()
             ->select(['id', 'name', 'slug', 'is_new', 'is_hit'])
             ->available()
+            ->when(
+                $category,
+                static fn (Builder $query, Category $category): Builder => $query->whereIn(
+                    'category_id',
+                    $category->descendantsAndSelf()->active()->pluck('id'),
+                ),
+            )
             ->with([
                 'variants' => function (HasMany $query): void {
                     $query

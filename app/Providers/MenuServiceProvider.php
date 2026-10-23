@@ -30,7 +30,10 @@ final class MenuServiceProvider extends ServiceProvider
     private function header(CategoryRepository $categoryRepository): array
     {
         return [
-            MenuItem::make('Каталог')->isCatalog()->children($this->catalog($categoryRepository)),
+            MenuItem::make('Каталог')
+                ->url(route('catalog.index'))
+                ->isCatalog()
+                ->children($this->catalog($categoryRepository)),
             MenuItem::make('Акции')->url(route('promos.index')),
             MenuItem::make('Доставка и оплата')->url(route('pages.show', 'delivery')),
             MenuItem::make('О нас')->url(route('pages.show', 'about')),
@@ -84,10 +87,12 @@ final class MenuServiceProvider extends ServiceProvider
 
     private function categoryMenuItem(Category $category): MenuItem
     {
-        return MenuItem::make($category->name)->children(
-            $category->children
-                ->map(fn (Category $child): MenuItem => $this->categoryMenuItem($child))
-                ->all(),
-        );
+        return MenuItem::make($category->name)
+            ->url(route('catalog.category', $category))
+            ->children(
+                $category->children
+                    ->map(fn (Category $child): MenuItem => $this->categoryMenuItem($child))
+                    ->all(),
+            );
     }
 }

@@ -19,7 +19,7 @@
     <div class="container">
         <div class="sect-head type-2 mb-30 wow fadeInUp">
             <h4 class="s-title text-primary">{{ __('Наш каталог') }}</h4>
-            <a href="#" class="tf-btn-line pb-0">
+            <a href="{{ route('catalog.index') }}" class="tf-btn-line pb-0">
                 <span class="d-none d-sm-inline">{{ __('Все категории') }}</span>
                 <span class="d-sm-none">{{ __('Все') }}</span>
             </a>
@@ -33,7 +33,8 @@
                     '{0} Нет товаров|{1} :count товар|[2,4] :count товара|[5,*] :count товаров',
                     $productsCount,
                     ['count' => $productsCount],
-                )" />
+                )"
+                    :url="route('catalog.category', $category)" />
             @endforeach
         </div>
     </div>

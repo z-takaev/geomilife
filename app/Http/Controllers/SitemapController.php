@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Article;
+use App\Models\Category;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Product;
 use App\Models\Promo;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Response;
 
 final class SitemapController extends Controller
@@ -27,6 +29,18 @@ final class SitemapController extends Controller
             ['location' => route('search.index'), 'lastModified' => null],
             ['location' => route('checkout.index'), 'lastModified' => null],
         ])->concat(
+            Category::query()
+                ->active()
+                ->whereDoesntHave(
+                    'ancestors',
+                    static fn (Builder $query): Builder => $query->where('is_active', false),
+                )
+                ->get(['slug', 'updated_at'])
+                ->map(static fn (Category $category): array => [
+                    'location' => route('catalog.category', $category),
+                    'lastModified' => $category->updated_at,
+                ]),
+        )->concat(
             Page::query()
                 ->active()
                 ->get(['slug', 'updated_at'])

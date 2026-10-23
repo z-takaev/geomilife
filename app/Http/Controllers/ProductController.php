@@ -34,6 +34,7 @@ final class ProductController extends Controller
 
         $breadcrumbs = Breadcrumbs::make(
             BreadcrumbItem::make(__('Каталог'), route('catalog.index')),
+            BreadcrumbItem::make($product->category->name, route('catalog.category', $product->category)),
             BreadcrumbItem::make($product->name, route('products.show', $product)),
         );
 

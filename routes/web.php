@@ -24,6 +24,7 @@ Route::get('/', HomeController::class)->name('home');
 Route::get('/contacts', ContactController::class)->name('contacts.index');
 
 Route::get('/catalog', CatalogController::class)->name('catalog.index');
+Route::get('/catalog/{category}', [CatalogController::class, 'show'])->name('catalog.category');
 
 Route::get('/search', SearchController::class)->name('search.index');
 

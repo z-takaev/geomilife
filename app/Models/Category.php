@@ -6,6 +6,8 @@ namespace App\Models;
 
 use App\Repositories\Categories\CategoryRepository;
 use App\Support\Media\ImageMimeTypes;
+use App\Support\Seo\Contracts\Seoable;
+use App\Support\Seo\Traits\HasSeo;
 use App\Support\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,9 +17,9 @@ use Openplain\FilamentTreeView\Concerns\HasTreeStructure;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
-final class Category extends Model implements HasMedia
+final class Category extends Model implements HasMedia, Seoable
 {
-    use HasFactory, HasSlug, HasTreeStructure, InteractsWithMedia;
+    use HasFactory, HasSeo, HasSlug, HasTreeStructure, InteractsWithMedia;
 
     protected $fillable = [
         'parent_id',
@@ -45,6 +47,11 @@ final class Category extends Model implements HasMedia
         self::deleted(static function (): void {
             app(CategoryRepository::class)->forget();
         });
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
     }
 
     public function products(): HasMany

@@ -1,7 +1,7 @@
 @extends('layouts.base')
 
 @section('content')
-    <x-breadcrumbs :title="__('Каталог')" :breadcrumbs="$breadcrumbs" />
+    <x-breadcrumbs :title="$category?->name ?? __('Каталог')" :breadcrumbs="$breadcrumbs" />
 
     <section class="catalog-page flat-spacing">
         <div class="container">
@@ -63,7 +63,9 @@
                             @endif
                         </div>
                     @else
-                        <x-empty-state :title="__('Товары не найдены')" :description="__('Попробуйте изменить параметры фильтрации.')" />
+                        <x-empty-state :title="__('Товары не найдены')" :description="$category === null
+                            ? __('Попробуйте изменить параметры фильтрации.')
+                            : __('В этой категории пока нет товаров.')" />
                     @endif
                 </div>
             </div>

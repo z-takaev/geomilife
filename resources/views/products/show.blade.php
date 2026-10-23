@@ -60,7 +60,7 @@
                     <div class="tf-product-info-wrap product-detail__info" x-data="productVariantSelector(@js($variantOptions))">
                         <div class="tf-product-info-heading">
                             <div class="product-info-meta">
-                                <a href="{{ route('catalog.index') }}"
+                                <a href="{{ route('catalog.category', $product->category) }}"
                                     class="infor_cate product-detail__category fw-semibold text-uppercase">
                                     {{ $product->category->name }}
                                 </a>

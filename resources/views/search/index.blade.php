@@ -34,7 +34,7 @@
                                 $productsCount,
                                 ['count' => $productsCount],
                             )"
-                                :url="route('catalog.index')" />
+                                :url="route('catalog.category', $category)" />
                         @endforeach
                     </div>
                 </section>

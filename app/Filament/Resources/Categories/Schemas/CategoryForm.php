@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Categories\Schemas;
 
 use App\Filament\Forms\Components\MediaImageUpload;
 use App\Filament\Forms\Components\SlugField;
+use App\Filament\Resources\Seo\Schemas\SeoForm;
 use App\Models\Category;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -55,6 +56,7 @@ final class CategoryForm
                 Toggle::make('is_active')
                     ->label('Активна')
                     ->columnSpanFull(),
+                SeoForm::relationshipSection(),
             ]);
     }
 }
