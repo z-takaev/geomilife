@@ -27,8 +27,7 @@
         <div class="featured-categories-grid wow fadeInUp">
             @foreach ($featuredCategories as $category)
                 @php
-                    $productsCount =
-                        $category->active_products_count + $category->children->sum('active_products_count');
+                    $productsCount = $category->totalActiveProductsCount();
                 @endphp
                 <x-category-card :background="$backgrounds[$loop->index]" :image="$category->getFirstMediaUrl('image')" :name="$category->name" :product-count="trans_choice(
                     '{0} Нет товаров|{1} :count товар|[2,4] :count товара|[5,*] :count товаров',

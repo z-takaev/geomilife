@@ -27,9 +27,7 @@
                     <div class="featured-categories-grid">
                         @foreach ($categories as $category)
                             @php
-                                $productsCount =
-                                    $category->active_products_count +
-                                    $category->children->sum('active_products_count');
+                                $productsCount = $category->totalActiveProductsCount();
                             @endphp
                             <x-category-card :background="$categoryBackgrounds[$loop->index % count($categoryBackgrounds)]" :image="$category->getFirstMediaUrl('image')" :name="$category->name" :product-count="trans_choice(
                                 '{0} Нет товаров|{1} :count товар|[2,4] :count товара|[5,*] :count товаров',

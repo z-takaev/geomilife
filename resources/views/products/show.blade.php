@@ -136,23 +136,6 @@
                             </div>
                         </div>
 
-                        <dl class="product-detail__meta">
-                            <div>
-                                <dt>{{ __('Артикул') }}</dt>
-                                <dd>{{ $selectedVariant?->sku ?? __('Не указан') }}</dd>
-                            </div>
-                            <div>
-                                <dt>{{ __('Наличие') }}</dt>
-                                <dd>{{ $selectedVariant?->is_preorder ? __('Под заказ') : __('В наличии') }}
-                                </dd>
-                            </div>
-                            <div>
-                                <dt>{{ __('Категория') }}</dt>
-                                <dd>
-                                    <a href="{{ route('catalog.index') }}">{{ $product->category->name }}</a>
-                                </dd>
-                            </div>
-                        </dl>
                     </div>
                 </div>
             </div>

@@ -73,6 +73,14 @@ final class Category extends Model implements HasMedia
             && ! ($this->products_exists ?? $this->products()->exists());
     }
 
+    public function totalActiveProductsCount(): int
+    {
+        return (int) (
+            $this->active_products_count
+            + $this->children->sum('active_products_count')
+        );
+    }
+
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('image')

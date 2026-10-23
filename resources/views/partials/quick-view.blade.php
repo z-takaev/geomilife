@@ -69,9 +69,6 @@
                     <h2 class="text-black price-on-sale">{{ __('890 ₽') }}</h2>
                     <p class="text-body-large cl-text-2 text-decoration-line-through">{{ __('1 190 ₽') }}</p>
                 </div>
-                <p class="product-infor-desc cl-text-main">
-                    {{ __('Натуральное сыродавленное масло с насыщенным вкусом и ароматом. Подходит для салатов, каш и холодных блюд.') }}
-                </p>
             </div>
             <div class="quickview-product-variant">
                 <div class="variant-picker-item variant-unit">
@@ -108,8 +105,57 @@
                     </button>
                 </div>
             </div>
-            <div class="box-action">
-                <a href="#" class="tf-btn-line">{{ __('Подробнее о товаре') }}</a>
+        </div>
+    </div>
+    <div class="product-detail-tabs quick-view-tabs">
+        <nav class="product-detail-tabs__navigation" role="tablist" aria-label="{{ __('Информация о товаре') }}">
+            <button class="active" id="quick-view-description-tab" type="button" role="tab"
+                data-bs-toggle="tab" data-bs-target="#quick-view-description" aria-controls="quick-view-description"
+                aria-selected="true">
+                {{ __('Описание') }}
+            </button>
+            <button id="quick-view-characteristics-tab" type="button" role="tab" data-bs-toggle="tab"
+                data-bs-target="#quick-view-characteristics" aria-controls="quick-view-characteristics"
+                aria-selected="false">
+                {{ __('Характеристики') }}
+            </button>
+        </nav>
+
+        <div class="tab-content product-detail-tabs__content">
+            <div class="tab-pane fade show active" id="quick-view-description" role="tabpanel"
+                aria-labelledby="quick-view-description-tab" tabindex="0">
+                <p>
+                    {{ __('Натуральное сыродавленное масло с насыщенным вкусом и ароматом. Подходит для салатов, каш и холодных блюд.') }}
+                </p>
+                <p>
+                    {{ __('Храните продукт в сухом прохладном месте, защищённом от прямых солнечных лучей. После вскрытия упаковки соблюдайте рекомендации на этикетке.') }}
+                </p>
+            </div>
+
+            <div class="tab-pane fade" id="quick-view-characteristics" role="tabpanel"
+                aria-labelledby="quick-view-characteristics-tab" tabindex="0">
+                <dl class="product-characteristics__list">
+                    <div class="product-characteristics__item">
+                        <dt>{{ __('Состав') }}</dt>
+                        <span aria-hidden="true"></span>
+                        <dd>{{ __('100% масло чёрного тмина') }}</dd>
+                    </div>
+                    <div class="product-characteristics__item">
+                        <dt>{{ __('Объём') }}</dt>
+                        <span aria-hidden="true"></span>
+                        <dd>{{ __('250 мл') }}</dd>
+                    </div>
+                    <div class="product-characteristics__item">
+                        <dt>{{ __('Страна производства') }}</dt>
+                        <span aria-hidden="true"></span>
+                        <dd>{{ __('Россия') }}</dd>
+                    </div>
+                    <div class="product-characteristics__item">
+                        <dt>{{ __('Срок годности') }}</dt>
+                        <span aria-hidden="true"></span>
+                        <dd>{{ __('12 месяцев') }}</dd>
+                    </div>
+                </dl>
             </div>
         </div>
     </div>
