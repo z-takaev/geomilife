@@ -6,6 +6,7 @@ namespace App\Repositories\Products;
 
 use App\Models\Product;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Collection;
@@ -35,69 +36,54 @@ final class ProductRepository
     }
 
     /**
-     * @return array{
-     *     hitProducts: Collection<int, Product>,
-     *     newProducts: Collection<int, Product>,
-     *     discountedProducts: Collection<int, Product>
-     * }
+     * @return Collection<int, Product>
      */
-    public function getHomeProducts(int $limit = 10): array
+    public function getHitProducts(int $limit = 10): Collection
     {
-        $productsQuery = Product::query()
-            ->available();
-
-        $hitProductIds = $productsQuery
+        return $this->getProductCardsQuery()
             ->where('is_hit', true)
-            ->latest('id')
+            ->inRandomOrder()
             ->limit($limit)
-            ->pluck('id');
+            ->get();
+    }
 
-        $newProductIds = $productsQuery
+    /**
+     * @return Collection<int, Product>
+     */
+    public function getNewProducts(int $limit = 10): Collection
+    {
+        return $this->getProductCardsQuery()
             ->where('is_new', true)
-            ->latest('id')
+            ->inRandomOrder()
             ->limit($limit)
-            ->pluck('id');
+            ->get();
+    }
 
-        $discountedProductIds = Product::query()
+    /**
+     * @return Collection<int, Product>
+     */
+    public function getDiscountedProducts(int $limit = 10): Collection
+    {
+        return $this->getProductCardsQuery()
             ->discounted()
-            ->latest('id')
+            ->inRandomOrder()
             ->limit($limit)
-            ->pluck('id');
-
-        $productIds = $hitProductIds
-            ->concat($newProductIds)
-            ->concat($discountedProductIds)
-            ->unique()
-            ->values();
-
-        $products = Product::query()
-            ->select(['id', 'name', 'slug', 'is_new', 'is_hit'])
-            ->active()
-            ->with([
-                'variants' => function (HasMany $query): void {
-                    $query
-                        ->select(['id', 'product_id', 'unit', 'value', 'price', 'discount_percent', 'is_preorder'])
-                        ->active();
-                },
-                'media' => function (MorphMany $query): void {
-                    $query->where('collection_name', 'image');
-                },
-            ])
-            ->whereKey($productIds)
-            ->get()
-            ->keyBy('id');
-
-        return [
-            'hitProducts' => $this->restoreProductOrder($hitProductIds, $products),
-            'newProducts' => $this->restoreProductOrder($newProductIds, $products),
-            'discountedProducts' => $this->restoreProductOrder($discountedProductIds, $products),
-        ];
+            ->get();
     }
 
     /**
      * @return Collection<int, Product>
      */
     public function getRecommendedProducts(Product $product, int $limit = 10): Collection
+    {
+        return $this->getProductCardsQuery()
+            ->whereKeyNot($product->getKey())
+            ->inRandomOrder()
+            ->limit($limit)
+            ->get();
+    }
+
+    private function getProductCardsQuery(): Builder
     {
         return Product::query()
             ->select(['id', 'name', 'slug', 'is_new', 'is_hit'])
@@ -111,24 +97,6 @@ final class ProductRepository
                 'media' => function (MorphMany $query): void {
                     $query->where('collection_name', 'image');
                 },
-            ])
-            ->whereKeyNot($product->getKey())
-            ->orderByDesc('is_hit')
-            ->latest('id')
-            ->limit($limit)
-            ->get();
-    }
-
-    /**
-     * @param  Collection<int, int>  $productIds
-     * @param  Collection<int, Product>  $products
-     * @return Collection<int, Product>
-     */
-    private function restoreProductOrder(Collection $productIds, Collection $products): Collection
-    {
-        return $productIds
-            ->map(static fn (int $productId): ?Product => $products->get($productId))
-            ->filter()
-            ->values();
+            ]);
     }
 }

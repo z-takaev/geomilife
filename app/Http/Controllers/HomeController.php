@@ -34,11 +34,9 @@ final class HomeController extends Controller
         $reviews = Review::cached();
         $featuredCategories = $this->categoryRepository->getFeatured();
 
-        [
-            'hitProducts' => $hitProducts,
-            'newProducts' => $newProducts,
-            'discountedProducts' => $discountedProducts,
-        ] = $this->productRepository->getHomeProducts();
+        $hitProducts = $this->productRepository->getHitProducts();
+        $newProducts = $this->productRepository->getNewProducts();
+        $discountedProducts = $this->productRepository->getDiscountedProducts();
 
         return view('home.index', compact(
             'slides',
