@@ -1551,6 +1551,14 @@ h6,
     border-color: var(--primary);
 }
 
+.catalog-filter-error {
+    display: block;
+    margin-top: 8px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 18px;
+}
+
 .catalog-price-range__separator {
     width: 12px;
     height: 1px;
@@ -1606,6 +1614,15 @@ h6,
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 24px 16px;
+}
+
+.catalog-content {
+    transition: opacity 0.2s ease;
+}
+
+.catalog-content--loading {
+    opacity: 0.55;
+    pointer-events: none;
 }
 
 .catalog-products-grid > .swiper-slide {
