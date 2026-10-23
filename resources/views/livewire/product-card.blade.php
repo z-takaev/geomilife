@@ -34,6 +34,7 @@
                 </li>
                 <li>
                     <button type="button" data-bs-toggle="offcanvas" data-bs-target="#quickView"
+                        wire:click="$dispatchTo('quick-view', 'open-quick-view', { productId: {{ $product->getKey() }} })"
                         class="hover-tooltip tooltip-left box-icon" aria-label="{{ __('Быстрый просмотр') }}">
                         <span class="icon icon-eye" aria-hidden="true"></span>
                         <span class="tooltip">{{ __('Быстрый просмотр') }}</span>

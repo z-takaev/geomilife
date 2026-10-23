@@ -4487,6 +4487,14 @@ header.header-sticky .header-inner {
     width: 920px !important;
     overflow-y: auto;
 }
+.canvas-quickview .quick-view-loading {
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    align-items: center;
+    justify-content: center;
+    background: var(--white);
+}
 .canvas-quickview .mini-quick-image {
     display: flex;
     width: 100%;

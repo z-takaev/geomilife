@@ -32,7 +32,7 @@
     @include('partials.mobile-menu')
     @include('partials.wishlist')
     @include('partials.shopping-cart')
-    @include('partials.quick-view')
+    <livewire:quick-view />
     @include('partials.search')
     @include('partials.city-selection')
     @include('partials.auth.login')
