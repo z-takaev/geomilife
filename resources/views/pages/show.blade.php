@@ -39,7 +39,7 @@
                         <div class="content-detail-gallery content-gallery sticky-top">
                             @foreach ($images as $image)
                                 <a href="{{ $image->getUrl() }}" class="gallery-item">
-                                    <img loading="lazy" src="{{ $image->getUrl() }}" alt="">
+                                    <img loading="lazy" src="{{ $image->getUrl('thumbnail') }}" alt="">
                                 </a>
                             @endforeach
                         </div>

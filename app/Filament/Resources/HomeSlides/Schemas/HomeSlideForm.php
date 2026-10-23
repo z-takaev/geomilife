@@ -50,7 +50,7 @@ final class HomeSlideForm
             ->collection($collection)
             ->required()
             ->maxFiles(1)
-            ->helperText("Статичное JPEG, PNG или WebP до 12 МБ. Результат: {$width} × {$height}, без обрезки и увеличения, с прозрачными полями. Исходник не сохраняется.")
+            ->helperText("Рекомендуемый размер: {$width}×{$height} пикселей.")
             ->processImage(static fn (Image $image): Image => $image->fit(
                 Fit::Fill,
                 $width,

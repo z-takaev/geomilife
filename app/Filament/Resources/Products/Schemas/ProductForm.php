@@ -45,7 +45,7 @@ final class ProductForm
                                     ->required()
                                     ->maxFiles(1)
                                     ->processImage(static fn (Image $image): Image => $image->fit(Fit::Fill, 1200, 1200, backgroundColor: '#ffffff'))
-                                    ->helperText('Статичное JPEG, PNG или WebP до 12 МБ. Результат: WebP 1200 × 1200 на белом фоне.'),
+                                    ->helperText('Рекомендуемый размер: 1200×1200 пикселей.'),
                                 MediaImageUpload::make('gallery')
                                     ->label('Галерея')
                                     ->collection('gallery')
@@ -53,7 +53,7 @@ final class ProductForm
                                     ->reorderable()
                                     ->maxFiles(10)
                                     ->processImage(static fn (Image $image): Image => $image->fit(Fit::Fill, 1200, 1200, backgroundColor: '#ffffff'))
-                                    ->helperText('До 10 изображений. Порядок можно менять перетаскиванием.'),
+                                    ->helperText('Рекомендуемый размер: 1200×1200 пикселей.'),
                                 Grid::make(2)
                                     ->schema([
                                         TextInput::make('name')

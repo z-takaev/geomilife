@@ -7,6 +7,8 @@ namespace Database\Seeders;
 use App\Models\Setting;
 use App\Support\Media\FixtureImages;
 use Illuminate\Database\Seeder;
+use Spatie\Image\Enums\Fit;
+use Spatie\Image\Image;
 
 final class SettingSeeder extends Seeder
 {
@@ -62,6 +64,9 @@ final class SettingSeeder extends Seeder
             model: $setting,
             file: 'Setting/'.$fileName,
             collection: $collection,
+            processImage: $collection === 'story_image'
+                ? static fn (Image $image): Image => $image->fit(Fit::Crop, 1800, 1200)
+                : null,
         );
     }
 }

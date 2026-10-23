@@ -34,7 +34,7 @@ final class PageForm
                     ->collection('images')
                     ->multiple()
                     ->reorderable()
-                    ->helperText('Статичные JPEG, PNG или WebP до 12 МБ. Порядок можно менять перетаскиванием.')
+                    ->helperText('Рекомендуемый размер: 1536×1024 пикселей.')
                     ->columnSpanFull(),
                 RichEditor::make('content')
                     ->label('Содержание')

@@ -15,6 +15,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
+use Spatie\Image\Enums\Fit;
 use Spatie\Image\Image;
 
 final class PromoForm
@@ -28,8 +29,8 @@ final class PromoForm
                     ->collection('image')
                     ->required()
                     ->maxFiles(1)
-                    ->processImage(static fn (Image $image): Image => $image)
-                    ->helperText('Статичное JPEG, PNG или WebP до 12 МБ. Для карточки автоматически создаётся миниатюра 410 × 273.')
+                    ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 1536, 1024))
+                    ->helperText('Рекомендуемый размер: 1536×1024 пикселей.')
                     ->columnSpanFull(),
                 Grid::make(2)
                     ->schema([

@@ -130,7 +130,7 @@ final class ManageSettings extends Page
                                         ->maxLength(5000)
                                         ->rows(6)
                                         ->columnSpanFull(),
-                                    self::imageUpload('story_image', 'Изображение', columnSpanFull: true),
+                                    self::storyImageUpload(),
                                 ])
                                 ->columns(2),
                             Tab::make('Баннеры')
@@ -185,22 +185,17 @@ final class ManageSettings extends Page
     private static function imageUpload(
         string $collection,
         string $label,
-        ?string $recommendation = null,
+        int $width,
+        int $height,
         bool $columnSpanFull = false,
     ): MediaImageUpload {
-        $helperText = 'Статичное JPEG, PNG или WebP до 5 МБ.';
-
-        if ($recommendation !== null) {
-            $helperText .= ' '.$recommendation;
-        }
-
         $upload = MediaImageUpload::make($collection)
             ->label($label)
             ->collection($collection)
             ->maxFiles(1)
             ->maxSize(5120)
             ->processImage(static fn (Image $image): Image => $image)
-            ->helperText($helperText);
+            ->helperText("Рекомендуемый размер: {$width}×{$height} пикселей.");
 
         if ($columnSpanFull) {
             $upload->columnSpanFull();
@@ -219,12 +214,26 @@ final class ManageSettings extends Page
         $upload = self::imageUpload(
             $collection,
             $label,
-            "Результат: {$width} × {$height}. Изображение будет обрезано по центру. Исходник не сохраняется.",
+            $width,
+            $height,
             $columnSpanFull,
         );
 
         return $upload->processImage(
             static fn (Image $image): Image => $image->fit(Fit::Crop, $width, $height),
+        );
+    }
+
+    private static function storyImageUpload(): MediaImageUpload
+    {
+        return self::imageUpload(
+            'story_image',
+            'Изображение',
+            1800,
+            1200,
+            columnSpanFull: true,
+        )->processImage(
+            static fn (Image $image): Image => $image->fit(Fit::Crop, 1800, 1200),
         );
     }
 

@@ -11,8 +11,10 @@ use Filament\Forms\Components\RichEditor\FileAttachmentProviders\SpatieMediaLibr
 use Filament\Forms\Components\RichEditor\Models\Concerns\InteractsWithRichContent;
 use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 final class Page extends Model implements HasMedia, HasRichContent, Seoable
 {
@@ -45,6 +47,14 @@ final class Page extends Model implements HasMedia, HasRichContent, Seoable
 
         $this->addMediaCollection('content')
             ->acceptsMimeTypes(ImageMimeTypes::ALLOWED);
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('thumbnail')
+            ->fit(Fit::Crop, 600, 400)
+            ->performOnCollections('images')
+            ->nonQueued();
     }
 
     public function setUpRichContent(): void

@@ -47,7 +47,7 @@ final class CategorySeeder extends Seeder
                 model: $category,
                 file: 'Category/'.$data['image'],
                 name: $data['name'],
-                processImage: static fn (Image $image): Image => $image->fit(Fit::Fill, 120, 120),
+                processImage: static fn (Image $image): Image => $image->fit(Fit::Fill, 240, 240, backgroundColor: 'rgba(255, 255, 255, 0)'),
             );
 
             foreach ($data['children'] ?? [] as $childIndex => $childName) {

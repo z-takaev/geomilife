@@ -28,8 +28,8 @@ final class CategoryForm
                     ->collection('image')
                     ->required()
                     ->maxFiles(1)
-                    ->processImage(static fn (Image $image): Image => $image->fit(Fit::Fill, 120, 120))
-                    ->helperText('Статичное JPEG, PNG или WebP до 12 МБ. Результат: WebP 120 × 120, без обрезки и увеличения, с прозрачными полями.')
+                    ->processImage(static fn (Image $image): Image => $image->fit(Fit::Fill, 240, 240, backgroundColor: 'rgba(255, 255, 255, 0)'))
+                    ->helperText('Рекомендуемый размер: 240×240 пикселей.')
                     ->columnSpanFull(),
                 Grid::make(2)
                     ->schema([

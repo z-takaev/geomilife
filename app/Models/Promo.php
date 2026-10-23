@@ -92,7 +92,7 @@ final class Promo extends Model implements HasMedia, HasRichContent, Seoable
     public function registerMediaConversions(?Media $media = null): void
     {
         $this->addMediaConversion('card')
-            ->fit(Fit::Crop, 410, 273)
+            ->fit(Fit::Crop, 820, 546)
             ->performOnCollections('image')
             ->nonQueued();
     }

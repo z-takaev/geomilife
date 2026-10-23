@@ -8,6 +8,8 @@ use App\Models\News;
 use App\Support\Media\FixtureImages;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
+use Spatie\Image\Enums\Fit;
+use Spatie\Image\Image;
 
 /**
  * @extends Factory<News>
@@ -53,7 +55,11 @@ final class NewsFactory extends Factory
     public function configure(): static
     {
         return $this->afterCreating(function (News $news): void {
-            app(FixtureImages::class)->attachRandom($news, 'News');
+            app(FixtureImages::class)->attachRandom(
+                model: $news,
+                directory: 'News',
+                processImage: static fn (Image $image): Image => $image->fit(Fit::Crop, 1536, 1024),
+            );
         });
     }
 
