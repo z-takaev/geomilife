@@ -44,7 +44,7 @@ final class CategoryForm
                     ->label('Родительская категория')
                     ->placeholder('Корневая категория')
                     ->relationship('parent', 'name', modifyQueryUsing: static fn (Builder $query, ?Category $record): Builder => $query
-                        ->whereNull('parent_id')
+                        ->roots()
                         ->when($record, static fn (Builder $query): Builder => $query->whereKeyNot($record->getKey()))
                         ->orderBy('order'))
                     ->searchable()

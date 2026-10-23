@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\ReviewSourceEnum;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -46,6 +47,11 @@ final class Review extends Model
         });
     }
 
+    public function scopeActive(Builder $query): void
+    {
+        $query->where('is_active', true);
+    }
+
     /**
      * @return Collection<int, self>
      */
@@ -56,7 +62,7 @@ final class Review extends Model
             now()->addHours(2),
             static fn (): Collection => self::query()
                 ->select(['id', 'author_name', 'text', 'rating', 'source', 'reviewed_at'])
-                ->where('is_active', true)
+                ->active()
                 ->latest('reviewed_at')
                 ->latest('id')
                 ->limit(3)

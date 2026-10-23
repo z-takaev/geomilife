@@ -11,6 +11,7 @@ use App\Support\Traits\HasSlug;
 use Filament\Forms\Components\RichEditor\FileAttachmentProviders\SpatieMediaLibraryFileAttachmentProvider;
 use Filament\Forms\Components\RichEditor\Models\Concerns\InteractsWithRichContent;
 use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Image\Enums\Fit;
@@ -42,6 +43,13 @@ final class News extends Model implements HasMedia, HasRichContent, Seoable
     public function getRouteKeyName(): string
     {
         return 'slug';
+    }
+
+    public function scopePublished(Builder $query): void
+    {
+        $query
+            ->where('is_active', true)
+            ->where('published_at', '<=', today());
     }
 
     public function registerMediaCollections(): void

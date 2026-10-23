@@ -62,6 +62,11 @@ final class Category extends Model implements HasMedia
         $query->where('is_active', true);
     }
 
+    public function scopeRoots(Builder $query): void
+    {
+        $query->whereNull('parent_id');
+    }
+
     public function canBeDeleted(): bool
     {
         return ! ($this->children_exists ?? $this->children()->exists())

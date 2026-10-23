@@ -10,6 +10,7 @@ use App\Support\Seo\Traits\HasSeo;
 use Filament\Forms\Components\RichEditor\FileAttachmentProviders\SpatieMediaLibraryFileAttachmentProvider;
 use Filament\Forms\Components\RichEditor\Models\Concerns\InteractsWithRichContent;
 use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
@@ -38,6 +39,11 @@ final class Page extends Model implements HasMedia, HasRichContent, Seoable
     public function getRouteKeyName(): string
     {
         return 'slug';
+    }
+
+    public function scopeActive(Builder $query): void
+    {
+        $query->where('is_active', true);
     }
 
     public function registerMediaCollections(): void

@@ -26,7 +26,7 @@ final class NewsController extends Controller
 
         $newsItems = News::query()
             ->with('media')
-            ->where('is_active', true)
+            ->published()
             ->latest('published_at')
             ->paginate(config('pagination.per_page.news'));
 

@@ -11,6 +11,7 @@ use App\Support\Traits\HasSlug;
 use Filament\Forms\Components\RichEditor\FileAttachmentProviders\SpatieMediaLibraryFileAttachmentProvider;
 use Filament\Forms\Components\RichEditor\Models\Concerns\InteractsWithRichContent;
 use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -61,6 +62,14 @@ final class Promo extends Model implements HasMedia, HasRichContent, Seoable
         return 'slug';
     }
 
+    public function scopeCurrent(Builder $query): void
+    {
+        $query
+            ->where('is_active', true)
+            ->where('start_at', '<=', today())
+            ->where('end_at', '>=', today());
+    }
+
     /**
      * @return Collection<int, self>
      */
@@ -70,7 +79,7 @@ final class Promo extends Model implements HasMedia, HasRichContent, Seoable
             self::CACHE_KEY,
             now()->addHours(2),
             static fn (): Collection => self::query()
-                ->where('is_active', true)
+                ->current()
                 ->with('media')
                 ->latest('start_at')
                 ->latest('id')

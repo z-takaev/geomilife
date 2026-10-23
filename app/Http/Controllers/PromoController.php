@@ -25,7 +25,7 @@ final class PromoController extends Controller
 
         $promos = Promo::query()
             ->with('media')
-            ->where('is_active', true)
+            ->current()
             ->latest('start_at')
             ->paginate(config('pagination.per_page.promos'));
 

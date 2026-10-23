@@ -26,7 +26,7 @@ final class ArticleController extends Controller
 
         $articles = Article::query()
             ->with('media')
-            ->where('is_active', true)
+            ->published()
             ->latest('published_at')
             ->paginate(config('pagination.per_page.articles'));
 

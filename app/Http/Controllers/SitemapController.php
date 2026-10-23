@@ -28,7 +28,7 @@ final class SitemapController extends Controller
             ['location' => route('checkout.index'), 'lastModified' => null],
         ])->concat(
             Page::query()
-                ->where('is_active', true)
+                ->active()
                 ->get(['slug', 'updated_at'])
                 ->map(static fn (Page $page): array => [
                     'location' => route('pages.show', $page),
@@ -36,7 +36,7 @@ final class SitemapController extends Controller
                 ]),
         )->concat(
             News::query()
-                ->where('is_active', true)
+                ->published()
                 ->get(['slug', 'updated_at'])
                 ->map(static fn (News $news): array => [
                     'location' => route('news.show', $news),
@@ -44,7 +44,7 @@ final class SitemapController extends Controller
                 ]),
         )->concat(
             Article::query()
-                ->where('is_active', true)
+                ->published()
                 ->get(['slug', 'updated_at'])
                 ->map(static fn (Article $article): array => [
                     'location' => route('articles.show', $article),
@@ -60,7 +60,7 @@ final class SitemapController extends Controller
                 ]),
         )->concat(
             Promo::query()
-                ->where('is_active', true)
+                ->current()
                 ->get(['slug', 'updated_at'])
                 ->map(static fn (Promo $promo): array => [
                     'location' => route('promos.show', $promo),

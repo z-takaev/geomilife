@@ -204,7 +204,7 @@ final class ProductForm
     {
         $options = [];
         $categories = Category::query()
-            ->whereNull('parent_id')
+            ->roots()
             ->with(['children' => static fn (HasMany $query): HasMany => $query->orderBy('order')->orderBy('name')])
             ->orderBy('order')
             ->orderBy('name')

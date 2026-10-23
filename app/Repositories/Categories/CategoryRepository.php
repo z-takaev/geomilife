@@ -22,7 +22,7 @@ final class CategoryRepository
             self::CACHE_KEY,
             now()->addHours(2),
             static fn (): Collection => Category::query()
-                ->whereNull('parent_id')
+                ->roots()
                 ->active()
                 ->withCount('activeProducts')
                 ->with('media')
