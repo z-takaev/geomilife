@@ -114,16 +114,27 @@ final class CatalogProducts extends Component
         $packageOptions = $this->category === null
             ? []
             : $productRepository->getCatalogPackageOptions($this->category);
-        $categories = $categoryRepository->getActiveCatalog();
+        $categories = $this->category === null
+            ? $categoryRepository->getActiveCatalog()
+            : $categoryRepository->getActiveChildren($this->category);
+        $parentCategory = $this->category?->parent;
+        $categoryBackUrl = $this->category === null
+            ? null
+            : ($parentCategory === null
+                ? route('catalog.index')
+                : route('catalog.category', $parentCategory));
+        $categoryBackLabel = $this->category === null
+            ? null
+            : ($parentCategory?->name ?? __('Весь каталог'));
         $hasMoreProducts = $page + $this->additionalPages < $products->lastPage();
-        $availabilityKey = implode('-', $this->availability);
 
         return view('livewire.catalog-products', compact(
             'categories',
             'products',
             'packageOptions',
+            'categoryBackUrl',
+            'categoryBackLabel',
             'hasMoreProducts',
-            'availabilityKey',
         ));
     }
 

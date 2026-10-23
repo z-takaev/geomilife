@@ -32,8 +32,8 @@
                     @if ($products->isNotEmpty())
                         <div class="catalog-products-grid">
                             @foreach ($products as $product)
-                                <livewire:product-card :product="$product"
-                                    :wire:key="'catalog-product-'.$product->getKey().'-'.$availabilityKey" />
+                                <livewire:product-card :product="$product" :initial-variant-id="(int) $product->getAttribute('catalog_variant_id')"
+                                    :wire:key="'catalog-product-'.$product->getKey().'-'.$product->getAttribute('catalog_variant_id')" />
                             @endforeach
                         </div>
 

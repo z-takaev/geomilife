@@ -27,10 +27,12 @@
  * Preloader
  */
 
-window.productVariantSelector = function (variants) {
+window.productVariantSelector = function (variants, initialVariantId = null) {
+    const hasInitialVariant = variants.some((variant) => variant.id === initialVariantId);
+
     return {
         variants,
-        selectedVariantId: variants[0]?.id ?? null,
+        selectedVariantId: hasInitialVariant ? initialVariantId : (variants[0]?.id ?? null),
         quantity: 1,
 
         get selectedVariant() {

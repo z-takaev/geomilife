@@ -1,5 +1,5 @@
 <div class="swiper-slide">
-    <article class="card-product home-product-card" x-data="productVariantSelector(@js($variantOptions))">
+    <article class="card-product home-product-card" x-data="productVariantSelector(@js($variantOptions), @js($selectedVariantId))">
         <div class="card-product_wrapper home-product-card__media">
             <a href="{{ route('products.show', $product) }}" class="product-img" aria-label="{{ $product->name }}">
                 @if ($imageUrl !== '')
@@ -52,11 +52,14 @@
             <div class="product-card-order">
                 <div class="product-card-weights" role="group" aria-label="{{ __('Выберите вариацию') }}">
                     @foreach ($product->variants as $variant)
-                        <button type="button" @class(['product-card-weight', 'is-active' => $loop->first])
+                        <button type="button" @class([
+                            'product-card-weight',
+                            'is-active' => $variant->getKey() === $selectedVariantId,
+                        ])
                             x-on:click="selectVariant({{ $variant->getKey() }})"
                             x-bind:class="{ 'is-active': selectedVariantId === {{ $variant->getKey() }} }"
                             x-bind:aria-pressed="selectedVariantId === {{ $variant->getKey() }}"
-                            aria-pressed="{{ $loop->first ? 'true' : 'false' }}">
+                            aria-pressed="{{ $variant->getKey() === $selectedVariantId ? 'true' : 'false' }}">
                             {{ $variant->label() }}
                         </button>
                     @endforeach

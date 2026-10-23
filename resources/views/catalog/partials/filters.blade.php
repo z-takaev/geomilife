@@ -1,42 +1,24 @@
 <nav class="catalog-categories" aria-label="{{ __('Разделы каталога') }}">
     <h2 class="catalog-sidebar-title">{{ __('Категории') }}</h2>
-    <ul class="catalog-category-list">
-        <li>
-            <a href="{{ route('catalog.index') }}" @class(['catalog-category-link', 'active' => $category === null])
-                @if ($category === null) aria-current="page" @endif>
-                {{ __('Все товары') }}
-            </a>
-        </li>
-        @foreach ($categories as $catalogCategory)
-            <li>
-                <a href="{{ route('catalog.category', $catalogCategory) }}" @class([
-                    'catalog-category-link',
-                    'active' => $category?->is($catalogCategory),
-                    'catalog-category-link--parent' =>
-                        $category?->parent_id === $catalogCategory->getKey(),
-                ])
-                    @if ($category?->is($catalogCategory)) aria-current="page" @endif>
-                    {{ $catalogCategory->name }}
-                </a>
 
-                @if ($catalogCategory->children->isNotEmpty())
-                    <ul class="catalog-category-list catalog-category-list--nested">
-                        @foreach ($catalogCategory->children as $childCategory)
-                            <li>
-                                <a href="{{ route('catalog.category', $childCategory) }}" @class([
-                                    'catalog-category-link',
-                                    'active' => $category?->is($childCategory),
-                                ])
-                                    @if ($category?->is($childCategory)) aria-current="page" @endif>
-                                    {{ $childCategory->name }}
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
-                @endif
-            </li>
-        @endforeach
-    </ul>
+    @if ($categoryBackUrl !== null && $categoryBackLabel !== null)
+        <a href="{{ $categoryBackUrl }}" class="catalog-category-back">
+            <span aria-hidden="true">←</span>
+            <span>{{ $categoryBackLabel }}</span>
+        </a>
+    @endif
+
+    @if ($categories->isNotEmpty())
+        <ul class="catalog-category-list">
+            @foreach ($categories as $catalogCategory)
+                <li>
+                    <a href="{{ route('catalog.category', $catalogCategory) }}" class="catalog-category-link">
+                        {{ $catalogCategory->name }}
+                    </a>
+                </li>
+            @endforeach
+        </ul>
+    @endif
 </nav>
 
 <form class="catalog-filters" wire:submit="applyFilters">

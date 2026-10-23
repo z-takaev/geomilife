@@ -49,12 +49,17 @@ final class ProductRepository
         int $page,
         int $additionalPages = 0,
     ): LengthAwarePaginator {
-        $query = $this->getCatalogQuery(
-            category: $category,
-            preferredPreorder: $this->preferredPreorder($filters['availability']),
-        );
+        $variantCriteria = $this->variantCriteria($filters);
+        $query = $this->getCatalogQuery($category);
 
-        $this->applyFilters($query, $filters);
+        $this->applyFilters($query, $variantCriteria);
+
+        $representativeVariantQuery = $this->representativeVariantQuery($variantCriteria);
+
+        $query->addSelect([
+            'catalog_variant_id' => (clone $representativeVariantQuery)->select('id'),
+            'catalog_price' => (clone $representativeVariantQuery)->selectRaw(self::CURRENT_PRICE_EXPRESSION),
+        ]);
 
         $total = (clone $query)->reorder()->count('products.id');
         $page = max(1, $page);
@@ -175,6 +180,10 @@ final class ProductRepository
      */
     public function searchSuggestions(string $searchQuery, int $limit = 5): Collection
     {
+        if (trim($searchQuery) === '') {
+            return new Collection;
+        }
+
         return $this->getSearchQuery($searchQuery)
             ->latest('id')
             ->limit($limit)
@@ -214,7 +223,7 @@ final class ProductRepository
         });
     }
 
-    private function getCatalogQuery(?Category $category, ?bool $preferredPreorder = null): Builder
+    private function getCatalogQuery(?Category $category): Builder
     {
         return Product::query()
             ->select(['id', 'name', 'slug', 'is_new', 'is_hit'])
@@ -227,18 +236,10 @@ final class ProductRepository
                 ),
             )
             ->with([
-                'variants' => function (HasMany $query) use ($preferredPreorder): void {
+                'variants' => function (HasMany $query): void {
                     $query
                         ->select(['id', 'product_id', 'unit', 'value', 'price', 'discount_percent', 'is_preorder'])
                         ->active();
-
-                    if ($preferredPreorder !== null) {
-                        $query
-                            ->reorder()
-                            ->orderBy('is_preorder', $preferredPreorder ? 'desc' : 'asc')
-                            ->orderBy('order')
-                            ->orderBy('id');
-                    }
                 },
                 'media' => function (MorphMany $query): void {
                     $query->where('collection_name', 'image');
@@ -248,72 +249,133 @@ final class ProductRepository
 
     /**
      * @param  array{
-     *     priceFrom: string,
-     *     priceTo: string,
+     *     priceFrom: int|null,
+     *     priceTo: int|null,
      *     availability: list<string>,
-     *     packageValues: list<string>
-     * }  $filters
+     *     packageValues: list<array{unit: string, value: string}>
+     * }  $variantCriteria
      */
-    private function applyFilters(Builder $query, array $filters): void
+    private function applyFilters(Builder $query, array $variantCriteria): void
     {
-        $priceFrom = $this->priceInMinor($filters['priceFrom']);
-        $priceTo = $this->priceInMinor($filters['priceTo']);
-        $availability = array_values(array_intersect(['in-stock', 'preorder'], $filters['availability']));
-        $packageValues = $this->parsePackageValues($filters['packageValues']);
-
-        if ($priceFrom === null && $priceTo === null && $availability === [] && $packageValues === []) {
+        if (! $this->hasVariantCriteria($variantCriteria)) {
             return;
         }
 
-        $query->whereHas('variants', static function (Builder $variantQuery) use (
-            $priceFrom,
-            $priceTo,
-            $availability,
-            $packageValues,
-        ): void {
+        $query->whereHas('variants', function (Builder $variantQuery) use ($variantCriteria): void {
             $variantQuery->active();
-
-            if ($priceFrom !== null) {
-                $variantQuery->whereRaw(self::CURRENT_PRICE_EXPRESSION.' >= ?', [$priceFrom]);
-            }
-
-            if ($priceTo !== null) {
-                $variantQuery->whereRaw(self::CURRENT_PRICE_EXPRESSION.' <= ?', [$priceTo]);
-            }
-
-            if (count($availability) === 1) {
-                $variantQuery->where('is_preorder', $availability[0] === 'preorder');
-            }
-
-            if ($packageValues !== []) {
-                $variantQuery->where(static function (Builder $packageQuery) use ($packageValues): void {
-                    foreach ($packageValues as $packageValue) {
-                        $packageQuery->orWhere(static fn (Builder $optionQuery): Builder => $optionQuery
-                            ->where('unit', $packageValue['unit'])
-                            ->where('value', $packageValue['value']));
-                    }
-                });
-            }
+            $this->applyVariantCriteria($variantQuery, $variantCriteria);
         });
+    }
+
+    /**
+     * @param  array{
+     *     priceFrom: int|null,
+     *     priceTo: int|null,
+     *     availability: list<string>,
+     *     packageValues: list<array{unit: string, value: string}>
+     * }  $variantCriteria
+     */
+    private function representativeVariantQuery(array $variantCriteria): Builder
+    {
+        $query = ProductVariant::query()
+            ->whereColumn('product_variants.product_id', 'products.id')
+            ->active();
+
+        $this->applyVariantCriteria($query, $variantCriteria);
+
+        if (count($variantCriteria['availability']) !== 1) {
+            $query->orderBy('is_preorder');
+        }
+
+        return $query
+            ->orderByRaw(self::CURRENT_PRICE_EXPRESSION)
+            ->orderBy('order')
+            ->orderBy('id')
+            ->limit(1);
     }
 
     private function applySorting(Builder $query, string $sort): void
     {
         match ($sort) {
             'new' => $query->orderByDesc('is_new')->orderByDesc('id'),
-            'price-asc' => $query->orderBy($this->minimumPriceQuery())->orderBy('id'),
-            'price-desc' => $query->orderByDesc($this->minimumPriceQuery())->orderByDesc('id'),
+            'price-asc' => $query->orderBy('catalog_price')->orderBy('id'),
+            'price-desc' => $query->orderByDesc('catalog_price')->orderByDesc('id'),
             'name' => $query->orderBy('name')->orderBy('id'),
             default => $query->orderByDesc('is_hit')->orderByDesc('id'),
         };
     }
 
-    private function minimumPriceQuery(): Builder
+    /**
+     * @param  array{
+     *     priceFrom: string,
+     *     priceTo: string,
+     *     availability: list<string>,
+     *     packageValues: list<string>
+     * }  $filters
+     * @return array{
+     *     priceFrom: int|null,
+     *     priceTo: int|null,
+     *     availability: list<string>,
+     *     packageValues: list<array{unit: string, value: string}>
+     * }
+     */
+    private function variantCriteria(array $filters): array
     {
-        return ProductVariant::query()
-            ->selectRaw('MIN('.self::CURRENT_PRICE_EXPRESSION.')')
-            ->whereColumn('product_variants.product_id', 'products.id')
-            ->active();
+        return [
+            'priceFrom' => $this->priceInMinor($filters['priceFrom']),
+            'priceTo' => $this->priceInMinor($filters['priceTo']),
+            'availability' => array_values(array_intersect(['in-stock', 'preorder'], $filters['availability'])),
+            'packageValues' => $this->parsePackageValues($filters['packageValues']),
+        ];
+    }
+
+    /**
+     * @param  array{
+     *     priceFrom: int|null,
+     *     priceTo: int|null,
+     *     availability: list<string>,
+     *     packageValues: list<array{unit: string, value: string}>
+     * }  $variantCriteria
+     */
+    private function hasVariantCriteria(array $variantCriteria): bool
+    {
+        return $variantCriteria['priceFrom'] !== null
+            || $variantCriteria['priceTo'] !== null
+            || $variantCriteria['availability'] !== []
+            || $variantCriteria['packageValues'] !== [];
+    }
+
+    /**
+     * @param  array{
+     *     priceFrom: int|null,
+     *     priceTo: int|null,
+     *     availability: list<string>,
+     *     packageValues: list<array{unit: string, value: string}>
+     * }  $variantCriteria
+     */
+    private function applyVariantCriteria(Builder $query, array $variantCriteria): void
+    {
+        if ($variantCriteria['priceFrom'] !== null) {
+            $query->whereRaw(self::CURRENT_PRICE_EXPRESSION.' >= ?', [$variantCriteria['priceFrom']]);
+        }
+
+        if ($variantCriteria['priceTo'] !== null) {
+            $query->whereRaw(self::CURRENT_PRICE_EXPRESSION.' <= ?', [$variantCriteria['priceTo']]);
+        }
+
+        if (count($variantCriteria['availability']) === 1) {
+            $query->where('is_preorder', $variantCriteria['availability'][0] === 'preorder');
+        }
+
+        if ($variantCriteria['packageValues'] !== []) {
+            $query->where(static function (Builder $packageQuery) use ($variantCriteria): void {
+                foreach ($variantCriteria['packageValues'] as $packageValue) {
+                    $packageQuery->orWhere(static fn (Builder $optionQuery): Builder => $optionQuery
+                        ->where('unit', $packageValue['unit'])
+                        ->where('value', $packageValue['value']));
+                }
+            });
+        }
     }
 
     /**
@@ -351,20 +413,6 @@ final class ProductRepository
         }
 
         return (int) $price * 100;
-    }
-
-    /**
-     * @param  list<string>  $availability
-     */
-    private function preferredPreorder(array $availability): ?bool
-    {
-        $availability = array_values(array_intersect(['in-stock', 'preorder'], $availability));
-
-        if (count($availability) !== 1) {
-            return null;
-        }
-
-        return $availability[0] === 'preorder';
     }
 
     /**
