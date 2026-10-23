@@ -47,7 +47,13 @@ final class ProductController extends Controller
             ->schema(BreadcrumbSchema::make($breadcrumbs));
 
         $recommendedProducts = $this->productRepository->getRecommendedProducts($product);
+        $selectedVariant = $product->variants->firstOrFail();
+        $variantOptions = $product->variantOptions();
+        $images = $product->images();
 
-        return view('products.show', compact('product', 'recommendedProducts', 'breadcrumbs'));
+        return view(
+            'products.show',
+            compact('product', 'recommendedProducts', 'breadcrumbs', 'selectedVariant', 'variantOptions', 'images'),
+        );
     }
 }

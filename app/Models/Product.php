@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -118,6 +119,33 @@ final class Product extends Model implements HasMedia, Seoable
             ->fit(Fit::Fill, 600, 600)
             ->performOnCollections('image')
             ->nonQueued();
+    }
+
+    /**
+     * @return Collection<int, Media>
+     */
+    public function images(): Collection
+    {
+        return $this->getMedia('image')
+            ->merge($this->getMedia('gallery'))
+            ->unique(static fn (Media $media): int => $media->getKey())
+            ->values();
+    }
+
+    /**
+     * @return list<array{id: int, price: string, oldPrice: string|null, isPreorder: bool}>
+     */
+    public function variantOptions(): array
+    {
+        return $this->variants
+            ->map(static fn (ProductVariant $variant): array => [
+                'id' => $variant->getKey(),
+                'price' => $variant->currentPrice()->format(),
+                'oldPrice' => $variant->oldPrice()?->format(),
+                'isPreorder' => $variant->is_preorder,
+            ])
+            ->values()
+            ->all();
     }
 
     protected function getSlugSourceAttribute(): string

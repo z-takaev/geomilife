@@ -4634,7 +4634,7 @@ header.header-sticky .header-inner {
 }
 .canvas-quickview .quickview-product-variant .variant-picker-values {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     align-items: center;
     gap: 12px;
 }
@@ -13449,7 +13449,7 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
 
 .product-detail__variant .variant-picker-values {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     align-items: center;
     gap: 12px;
 }

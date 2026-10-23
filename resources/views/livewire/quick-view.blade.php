@@ -7,24 +7,24 @@
     </div>
 
     <div class="mini-quick-image" wire:loading.remove>
-        @if ($product !== null && $imageUrls !== [])
+        @if ($product !== null && $images->isNotEmpty())
             <div id="quickViewGallery" class="carousel slide quick-view-gallery" data-bs-interval="false">
                 <div class="carousel-inner quick-view-gallery__main">
-                    @foreach ($imageUrls as $imageUrl)
+                    @foreach ($images as $image)
                         <div @class(['carousel-item', 'active' => $loop->first])>
-                            <img loading="lazy" src="{{ $imageUrl }}" alt="{{ $product->name }}">
+                            <img loading="lazy" src="{{ $image->getUrl() }}" alt="{{ $product->name }}">
                         </div>
                     @endforeach
                 </div>
 
-                @if (count($imageUrls) > 1)
+                @if ($images->count() > 1)
                     <div class="carousel-indicators quick-view-gallery__thumbnails">
-                        @foreach ($imageUrls as $imageUrl)
+                        @foreach ($images as $image)
                             <button type="button" @class(['active' => $loop->first]) data-bs-target="#quickViewGallery"
                                 data-bs-slide-to="{{ $loop->index }}"
                                 @if ($loop->first) aria-current="true" @endif
                                 aria-label="{{ __('Показать изображение :number', ['number' => $loop->iteration]) }}">
-                                <img loading="lazy" src="{{ $imageUrl }}"
+                                <img loading="lazy" src="{{ $image->getUrl() }}"
                                     alt="{{ __('Превью товара :number', ['number' => $loop->iteration]) }}">
                             </button>
                         @endforeach
@@ -36,7 +36,8 @@
         @endif
     </div>
 
-    <div class="wrap-canvas" wire:loading.remove>
+    <div class="wrap-canvas" wire:key="quick-view-product-{{ $product?->getKey() ?? 'empty' }}" wire:loading.remove
+        x-data="productVariantSelector(@js($variantOptions))">
         <div class="canvas-header ps-md-0">
             <h5 class="title-pop text-primary" id="quickViewTitle">{{ __('Быстрый просмотр') }}</h5>
             <button type="button" class="icon-close-popup" data-bs-dismiss="offcanvas"
@@ -66,48 +67,70 @@
                     <h3 class="product-infor-name text-black">{{ $product->name }}</h3>
                 @endif
 
-                <div class="product-infor-price">
-                    <h2 class="text-black price-on-sale">{{ __('890 ₽') }}</h2>
-                    <p class="text-body-large cl-text-2 text-decoration-line-through">{{ __('1 190 ₽') }}</p>
-                </div>
+                @if ($selectedVariant !== null)
+                    <div class="product-infor-price">
+                        <h2 class="text-black price-on-sale" x-text="selectedVariant.price">
+                            {{ $selectedVariant->currentPrice()->format() }}</h2>
+                        <p class="text-body-large cl-text-2 text-decoration-line-through"
+                            x-show="selectedVariant.oldPrice !== null" x-text="selectedVariant.oldPrice ?? ''">
+                            {{ $selectedVariant->oldPrice()?->format() }}</p>
+                    </div>
+                @endif
             </div>
 
-            <div class="quickview-product-variant">
-                <div class="variant-picker-item variant-unit">
-                    <div class="variant-picker-values">
-                        <button type="button" class="unit-btn active" data-unit="250 мл"
-                            data-price="890">{{ __('250 мл') }}</button>
-                        <button type="button" class="unit-btn" data-unit="500 мл"
-                            data-price="1490">{{ __('500 мл') }}</button>
-                        <button type="button" class="unit-btn" data-unit="1 л"
-                            data-price="2690">{{ __('1 л') }}</button>
+            @if ($product !== null && $product->variants->isNotEmpty())
+                <div class="quickview-product-variant">
+                    <div class="variant-picker-item variant-unit">
+                        <div class="variant-picker-values" role="group"
+                            aria-label="{{ __('Выберите объём или вес') }}">
+                            @foreach ($product->variants as $variant)
+                                <button type="button" @class(['unit-btn', 'active' => $loop->first])
+                                    x-on:click="selectVariant({{ $variant->getKey() }})"
+                                    x-bind:class="{ 'active': selectedVariantId === {{ $variant->getKey() }} }"
+                                    x-bind:aria-pressed="selectedVariantId === {{ $variant->getKey() }}"
+                                    aria-pressed="{{ $loop->first ? 'true' : 'false' }}">
+                                    {{ $variant->label() }}
+                                </button>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
-            </div>
+            @endif
 
-            <div class="quickview-product-total-btn">
-                <div class="group-btn">
-                    <div class="wg-quantity quick-view-quantity">
-                        <button type="button" class="btn-quantity minus-prd quick-view-quantity__button"
-                            aria-label="{{ __('Уменьшить количество') }}">
-                            <i class="icon icon-minus" aria-hidden="true"></i>
-                        </button>
-                        <input class="quantity-product quick-view-quantity__input" type="text" name="number"
-                            value="1" inputmode="numeric" aria-label="{{ __('Количество') }}">
-                        <button type="button" class="btn-quantity plus-prd quick-view-quantity__button"
-                            aria-label="{{ __('Увеличить количество') }}">
-                            <i class="icon icon-plus" aria-hidden="true"></i>
+            @if ($selectedVariant !== null)
+                <div class="quickview-product-total-btn">
+                    <div class="group-btn">
+                        <div class="wg-quantity quick-view-quantity">
+                            <button type="button" class="btn-quantity minus-prd quick-view-quantity__button"
+                                x-on:click="decreaseQuantity" aria-label="{{ __('Уменьшить количество') }}">
+                                <i class="icon icon-minus" aria-hidden="true"></i>
+                            </button>
+                            <input class="quantity-product quick-view-quantity__input" type="number" name="number"
+                                min="1" step="1" inputmode="numeric" x-model.number="quantity"
+                                x-on:change="normalizeQuantity" aria-label="{{ __('Количество') }}">
+                            <button type="button" class="btn-quantity plus-prd quick-view-quantity__button"
+                                x-on:click="increaseQuantity" aria-label="{{ __('Увеличить количество') }}">
+                                <i class="icon icon-plus" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <a href="#shoppingCart" data-bs-toggle="offcanvas" class="product-card-buy quick-view-buy w-100"
+                            x-bind:class="{ 'is-preorder hover-tooltip': selectedVariant.isPreorder }"
+                            x-bind:aria-label="selectedVariant.isPreorder ? @js(__('Под заказ. Срок поставки уточнит менеджер')) : @js(__('Купить'))">
+                            <span
+                                x-text="selectedVariant.isPreorder ? @js(__('Под заказ')) : @js(__('Купить'))">{{ $selectedVariant->is_preorder ? __('Под заказ') : __('Купить') }}</span>
+                            <span class="product-card-preorder-icon" x-show="selectedVariant.isPreorder"
+                                aria-hidden="true">i</span>
+                            <span class="tooltip" x-show="selectedVariant.isPreorder" role="tooltip">
+                                {{ __('Товар доступен под заказ. Срок поставки уточнит менеджер') }}
+                            </span>
+                        </a>
+                        <button type="button" class="tf-btn-icon hover-tooltip btn-add-wishlist"
+                            aria-label="{{ __('Добавить в избранное') }}">
+                            <i class="icon icon-heart-stroke" aria-hidden="true"></i>
                         </button>
                     </div>
-                    <a href="#shoppingCart" data-bs-toggle="offcanvas" class="product-card-buy quick-view-buy w-100">
-                        {{ __('Купить') }}
-                    </a>
-                    <button type="button" class="tf-btn-icon hover-tooltip btn-add-wishlist"
-                        aria-label="{{ __('Добавить в избранное') }}">
-                        <i class="icon icon-heart-stroke" aria-hidden="true"></i>
-                    </button>
                 </div>
-            </div>
+            @endif
 
             @if ($product !== null)
                 <a href="{{ route('products.show', $product) }}" class="link-underline text-primary">
@@ -119,8 +142,9 @@
 
     <div class="product-detail-tabs quick-view-tabs" wire:loading.remove>
         <nav class="product-detail-tabs__navigation" role="tablist" aria-label="{{ __('Информация о товаре') }}">
-            <button class="active" id="quick-view-description-tab" type="button" role="tab" data-bs-toggle="tab"
-                data-bs-target="#quick-view-description" aria-controls="quick-view-description" aria-selected="true">
+            <button class="active" id="quick-view-description-tab" type="button" role="tab"
+                data-bs-toggle="tab" data-bs-target="#quick-view-description" aria-controls="quick-view-description"
+                aria-selected="true">
                 {{ __('Описание') }}
             </button>
             <button id="quick-view-characteristics-tab" type="button" role="tab" data-bs-toggle="tab"

@@ -6,8 +6,8 @@ namespace App\Livewire;
 
 use App\Models\Product;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Livewire\Component;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 final class QuickView extends Component
 {
@@ -23,6 +23,9 @@ final class QuickView extends Component
                 'attributeValues.productAttribute',
                 'category',
                 'media',
+                'variants' => static function (HasMany $query): void {
+                    $query->active();
+                },
             ])
             ->findOrFail($productId);
 
@@ -36,7 +39,9 @@ final class QuickView extends Component
     public function render(): View
     {
         return view('livewire.quick-view', [
-            'imageUrls' => $this->imageUrls(),
+            'images' => $this->product?->images() ?? collect(),
+            'selectedVariant' => $this->product?->variants->first(),
+            'variantOptions' => $this->product?->variantOptions() ?? [],
         ]);
     }
 
@@ -45,20 +50,5 @@ final class QuickView extends Component
         return [
             'open-quick-view' => 'open',
         ];
-    }
-
-    private function imageUrls(): array
-    {
-        if ($this->product === null) {
-            return [];
-        }
-
-        return $this->product
-            ->getMedia('image')
-            ->merge($this->product->getMedia('gallery'))
-            ->map(static fn (Media $media): string => $media->getUrl())
-            ->unique()
-            ->values()
-            ->all();
     }
 }

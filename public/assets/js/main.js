@@ -1,13 +1,11 @@
-/** 28
+/**
  * Select Image
  * Button Quantity
  * Delete File
  * Go Top
- * Variant Picker
  * Change Value
  * Sidebar Mobile
  * Header Sticky
- * Total Price Variant
  * Handle Footer
  * Add Wishlist
  * Handle Sidebar Filter
@@ -21,7 +19,6 @@
  * Select Category
  * Hover Pin
  * Rate Click
- * Quickview
  * Video Popup
  * Indicator Item
  * Only One Active
@@ -29,6 +26,40 @@
  * Click Scroll
  * Preloader
  */
+
+window.productVariantSelector = function (variants) {
+    return {
+        variants,
+        selectedVariantId: variants[0]?.id ?? null,
+        quantity: 1,
+
+        get selectedVariant() {
+            return this.variants.find((variant) => variant.id === this.selectedVariantId) ?? null;
+        },
+
+        selectVariant(variantId) {
+            if (this.variants.some((variant) => variant.id === variantId)) {
+                this.selectedVariantId = variantId;
+            }
+        },
+
+        decreaseQuantity() {
+            this.normalizeQuantity();
+            this.quantity = Math.max(1, this.quantity - 1);
+        },
+
+        increaseQuantity() {
+            this.normalizeQuantity();
+            this.quantity += 1;
+        },
+
+        normalizeQuantity() {
+            const quantity = Number.parseInt(this.quantity, 10);
+
+            this.quantity = Number.isNaN(quantity) ? 1 : Math.max(1, quantity);
+        },
+    };
+};
 
 (function ($) {
     'use strict';
@@ -241,20 +272,6 @@
         });
     };
 
-    /* Variant Picker
-    -------------------------------------------------------------------------*/
-    var variantPicker = function () {
-        if ($('.variant-picker-item').length) {
-            $('.unit-btn').on('click', function (e) {
-                var value = $(this).data('unit');
-                $('.value-currentUnit').text(value);
-
-                $(this).closest('.variant-picker-values').find('.unit-btn').removeClass('active');
-                $(this).addClass('active');
-            });
-        }
-    };
-
     /* Change Value
     -------------------------------------------------------------------------*/
     var changeValue = function () {
@@ -330,57 +347,6 @@
         }, 250);
     };
 
-    /* Total Price Variant
-    -------------------------------------------------------------------------*/
-    var totalPriceVariant = function () {
-        $('.tf-product-info-wrap').each(function () {
-            var productItem = $(this);
-            var priceEl = productItem.find('.price-on-sale');
-            var quantityInput = productItem.find('.quantity-product');
-            if (!priceEl.data('price')) {
-                var initialPrice = parseFloat(
-                    priceEl
-                        .text()
-                        .replace(/[^0-9.,]/g, '')
-                        .replace(',', '.'),
-                );
-                priceEl.data('price', initialPrice);
-            }
-            productItem.find('.unit-btn').on('click', function () {
-                var rawPrice = $(this).attr('data-price');
-                var newPrice = parseFloat(rawPrice.replace(/,/g, '')) || basePrice;
-                quantityInput.val(1);
-                productItem
-                    .find('.price-on-sale')
-                    .text(`${newPrice.toLocaleString('ru-RU')} ₽`)
-                    .data('price', newPrice);
-                updateTotalPrice(newPrice, productItem);
-            });
-
-            productItem.find('.btn-increase').on('click', function () {
-                var currentQuantity = parseInt(quantityInput.val(), 10);
-                quantityInput.val(currentQuantity + 1);
-                updateTotalPrice(null, productItem);
-            });
-
-            productItem.find('.btn-decrease').on('click', function () {
-                var currentQuantity = parseInt(quantityInput.val(), 10);
-                if (currentQuantity > 1) {
-                    quantityInput.val(currentQuantity - 1);
-                    updateTotalPrice(null, productItem);
-                }
-            });
-
-            function updateTotalPrice(price, scope) {
-                var currentPrice = price || parseFloat(scope.find('.price-on-sale').data('price'));
-                var quantity = parseInt(scope.find('.quantity-product').val(), 10);
-                var totalPrice = currentPrice * quantity;
-                scope.find('.price-add').text(`${totalPrice.toLocaleString('ru-RU')} ₽`);
-            }
-            updateTotalPrice(null, productItem);
-        });
-    };
-
     /* Handle Footer
     -------------------------------------------------------------------------*/
     var handleFooter = function () {
@@ -443,41 +409,6 @@
                 tooltip.text(addText);
                 $this.find('button').attr('aria-label', addText);
             }
-        });
-    };
-
-    /* Product Card Controls
-    -------------------------------------------------------------------------*/
-    var productCardControls = function () {
-        $('.product-card-order').on('click', '.product-card-weight', function () {
-            $(this)
-                .addClass('is-active')
-                .attr('aria-pressed', 'true')
-                .siblings()
-                .removeClass('is-active')
-                .attr('aria-pressed', 'false');
-        });
-
-        $('.product-card-order').on(
-            'click',
-            '.product-card-quantity__minus, .product-card-quantity__plus',
-            function () {
-                var $input = $(this).siblings('.product-card-quantity__input');
-                var quantity = parseInt($input.val(), 10) || 1;
-
-                if ($(this).hasClass('product-card-quantity__plus')) {
-                    quantity += 1;
-                } else {
-                    quantity = Math.max(1, quantity - 1);
-                }
-
-                $input.val(quantity);
-            },
-        );
-
-        $('.product-card-quantity__input').on('change', function () {
-            var quantity = parseInt($(this).val(), 10) || 1;
-            $(this).val(Math.max(1, quantity));
         });
     };
 
@@ -954,51 +885,6 @@
         }
     };
 
-    /* Quickview
-    -------------------------------------------------------------------------*/
-    var quickViewDetail = () => {
-        $('.canvas-quickview').each(function () {
-            const $mainCanvas = $('.tf-quick-view');
-
-            const $btnMinus = $mainCanvas.find('.minus-prd');
-            const $btnPlus = $mainCanvas.find('.plus-prd');
-            const $quantityInput = $mainCanvas.find('.quantity-product');
-            const $priceOnSale = $mainCanvas.find('.price-on-sale');
-            const $priceAdd = $mainCanvas.find('.price-add');
-
-            function updateTotal() {
-                let qty = parseInt($quantityInput.val()) || 1;
-                if (qty < 1) qty = 1;
-
-                const unitPrice = parseFloat($priceOnSale.text().replace(/[^0-9.]/g, ''));
-
-                const total = unitPrice * qty;
-
-                $quantityInput.val(qty);
-                $priceAdd.text(`${total.toLocaleString('ru-RU')} ₽`);
-            }
-
-            $btnMinus.on('click', function (e) {
-                e.preventDefault();
-                let qty = parseInt($quantityInput.val()) || 1;
-                qty = Math.max(1, qty - 1);
-                $quantityInput.val(qty);
-                updateTotal();
-            });
-
-            $btnPlus.on('click', function (e) {
-                e.preventDefault();
-                let qty = parseInt($quantityInput.val()) || 1;
-                $quantityInput.val(qty + 1);
-                updateTotal();
-            });
-
-            $quantityInput.on('input', function () {
-                updateTotal();
-            });
-        });
-    };
-
     /* Video Popup
     -------------------------------------------------------------------------*/
     var videoPopup = function () {
@@ -1296,13 +1182,10 @@
         dropdownSelect();
         btnQuantity();
         deleteFile();
-        variantPicker();
         changeValue();
         sidebarMobile();
-        totalPriceVariant();
         handleFooter();
         addWishList();
-        productCardControls();
         handleSidebarFilter();
         estimateShipping();
         textCopy();
@@ -1314,7 +1197,6 @@
         hoverPin();
         btnActive();
         rateClick();
-        quickViewDetail();
         videoPopup();
         contentGalleryPopup();
         indicatorItem();

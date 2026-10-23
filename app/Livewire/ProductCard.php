@@ -28,6 +28,7 @@ final class ProductCard extends Component
             'isPreorder' => $selectedVariant->is_preorder,
             'oldPrice' => $selectedVariant->oldPrice(),
             'price' => $selectedVariant->currentPrice(),
+            'variantOptions' => $this->product->variantOptions(),
         ]);
     }
 
