@@ -30,9 +30,10 @@ final class SearchController extends Controller
             fallbackTitle: __('Поиск'),
         )->schema(BreadcrumbSchema::make($breadcrumbs));
 
-        $query = trim((string) $request->query('q', ''));
-        $categories = $this->categoryRepository->getActiveCatalog();
-        $products = $this->productRepository->getCatalogProducts();
+        $queryValue = $request->query('q', '');
+        $query = is_string($queryValue) ? mb_substr(trim($queryValue), 0, 255) : '';
+        $categories = $this->categoryRepository->search($query);
+        $products = $this->productRepository->search($query);
 
         return view('search.index', compact('query', 'categories', 'products', 'breadcrumbs'));
     }

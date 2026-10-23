@@ -48,6 +48,39 @@ final class CategoryRepository
         return $this->getActiveCatalog()->take($limit)->values();
     }
 
+    /**
+     * @return Collection<int, Category>
+     */
+    public function search(string $searchQuery, ?int $limit = null): Collection
+    {
+        $searchQuery = trim($searchQuery);
+
+        if ($searchQuery === '') {
+            return new Collection;
+        }
+
+        $query = Category::query()
+            ->active()
+            ->whereLike('name', '%'.$searchQuery.'%')
+            ->withCount('activeProducts')
+            ->with('media')
+            ->with([
+                'children' => static fn (HasMany $query): HasMany => $query
+                    ->active()
+                    ->withCount('activeProducts')
+                    ->orderBy('order')
+                    ->orderBy('id'),
+            ])
+            ->orderBy('order')
+            ->orderBy('id');
+
+        if ($limit !== null) {
+            $query->limit($limit);
+        }
+
+        return $query->get();
+    }
+
     public function forget(): void
     {
         Cache::memo()->forget(self::CACHE_KEY);

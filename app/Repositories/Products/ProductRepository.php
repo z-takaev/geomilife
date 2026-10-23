@@ -19,6 +19,8 @@ final class ProductRepository
 {
     private const int CATALOG_PER_PAGE = 9;
 
+    private const int SEARCH_PER_PAGE = 12;
+
     private const string CURRENT_PRICE_EXPRESSION = '((product_variants.price * (100 - COALESCE(product_variants.discount_percent, 0)) + 50) / 100)';
 
     /**
@@ -157,6 +159,28 @@ final class ProductRepository
             ->get();
     }
 
+    /**
+     * @return LengthAwarePaginator<int, Product>
+     */
+    public function search(string $searchQuery): LengthAwarePaginator
+    {
+        return $this->getSearchQuery($searchQuery)
+            ->latest('id')
+            ->paginate(self::SEARCH_PER_PAGE)
+            ->withQueryString();
+    }
+
+    /**
+     * @return Collection<int, Product>
+     */
+    public function searchSuggestions(string $searchQuery, int $limit = 5): Collection
+    {
+        return $this->getSearchQuery($searchQuery)
+            ->latest('id')
+            ->limit($limit)
+            ->get();
+    }
+
     private function getProductCardsQuery(): Builder
     {
         return Product::query()
@@ -172,6 +196,22 @@ final class ProductRepository
                     $query->where('collection_name', 'image');
                 },
             ]);
+    }
+
+    private function getSearchQuery(string $searchQuery): Builder
+    {
+        $searchQuery = trim($searchQuery);
+        $query = $this->getProductCardsQuery();
+
+        if ($searchQuery === '') {
+            return $query->whereKey([]);
+        }
+
+        return $query->where(static function (Builder $query) use ($searchQuery): void {
+            $query
+                ->whereLike('name', '%'.$searchQuery.'%')
+                ->orWhereLike('description', '%'.$searchQuery.'%');
+        });
     }
 
     private function getCatalogQuery(?Category $category, ?bool $preferredPreorder = null): Builder

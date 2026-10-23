@@ -5181,6 +5181,10 @@ header.header-sticky .header-inner {
 .search-suggestion:hover {
     color: var(--primary);
 }
+.search-suggestions__empty {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
 .search-suggestion img {
     width: 48px;
     height: 48px;

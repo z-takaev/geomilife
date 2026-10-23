@@ -5,6 +5,23 @@
 
     <section class="search-results-page flat-spacing">
         <div class="container">
+            <div class="search-results-summary">
+                <div>
+                    <p class="search-results-summary__eyebrow">{{ __('Поисковый запрос') }}</p>
+                    <p class="search-results-summary__query">{{ $query !== '' ? $query : __('Не задан') }}</p>
+                </div>
+                <dl class="search-results-counts">
+                    <div class="search-results-counts__item">
+                        <dt>{{ __('Категории') }}</dt>
+                        <dd>{{ $categories->count() }}</dd>
+                    </div>
+                    <div class="search-results-counts__item">
+                        <dt>{{ __('Товары') }}</dt>
+                        <dd>{{ $products->total() }}</dd>
+                    </div>
+                </dl>
+            </div>
+
             @if ($categories->isNotEmpty())
                 @php
                     $categoryBackgrounds = [

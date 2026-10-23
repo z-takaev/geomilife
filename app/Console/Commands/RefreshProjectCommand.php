@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Actions\Images\CleanUploadedImagesAction;
+use Database\Seeders\FactorySeeder;
 use Illuminate\Console\Command;
 
 final class RefreshProjectCommand extends Command
 {
-    protected $signature = 'project:refresh {--force : Выполнить без подтверждения}';
+    protected $signature = 'project:refresh
+        {--force : Выполнить без подтверждения}
+        {--factories : Заполнить базу тестовыми данными через фабрики}';
 
     protected $description = 'Пересоздать базу данных и заполнить начальные данные';
 
@@ -30,6 +33,13 @@ final class RefreshProjectCommand extends Command
         $cleanUploadedImages->run();
 
         if ($this->call('migrate:fresh', ['--seed' => true, '--force' => true]) !== self::SUCCESS) {
+            return self::FAILURE;
+        }
+
+        if ($this->option('factories') && $this->call('db:seed', [
+            '--class' => FactorySeeder::class,
+            '--force' => true,
+        ]) !== self::SUCCESS) {
             return self::FAILURE;
         }
 
