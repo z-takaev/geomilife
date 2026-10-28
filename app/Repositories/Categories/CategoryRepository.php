@@ -22,11 +22,10 @@ final class CategoryRepository
             self::CACHE_KEY,
             now()->addHours(2),
             static fn (): Collection => Category::query()
-                ->active()
+                ->visible()
                 ->withCount('activeProducts')
                 ->with('media')
                 ->orderBy('order')
-                ->orderBy('id')
                 ->get(),
         );
 
@@ -53,7 +52,7 @@ final class CategoryRepository
     /**
      * @return Collection<int, Category>
      */
-    public function search(string $searchQuery, ?int $limit = null): Collection
+    public function search(string $searchQuery): Collection
     {
         $searchQuery = trim($searchQuery);
 
@@ -62,8 +61,8 @@ final class CategoryRepository
         }
 
         $query = Category::query()
-            ->active()
-            ->whereLike('name', '%'.$searchQuery.'%')
+            ->visible()
+            ->whereLike('name', '%'.addcslashes($searchQuery, '\\%_').'%')
             ->withCount('activeProducts')
             ->with('media')
             ->with([
@@ -73,14 +72,19 @@ final class CategoryRepository
                     ->orderBy('order')
                     ->orderBy('id'),
             ])
-            ->orderBy('order')
-            ->orderBy('id');
+            ->orderBy('order');
 
-        if ($limit !== null) {
-            $query->limit($limit);
-        }
+        return $this->withProductCounts($query->get());
+    }
 
-        return $query->get();
+    public function searchSuggestions(string $searchQuery, int $limit = 4): Collection
+    {
+        return Category::query()
+            ->visible()
+            ->whereLike('name', '%'.addcslashes($searchQuery, '\\%_').'%')
+            ->with('media')
+            ->orderBy('order')->orderBy('id')->limit($limit)
+            ->get(['id', 'name', 'slug']);
     }
 
     public function forget(): void
@@ -116,7 +120,17 @@ final class CategoryRepository
             );
         }
 
+        $this->withProductCounts($categories);
+
         return $rootCategories;
+    }
+
+    private function withProductCounts(Collection $categories): Collection
+    {
+        return $categories->each(static function (Category $category): void {
+            $category->setAttribute('total_active_products_count', (int) $category->active_products_count
+                + $category->children->sum('active_products_count'));
+        });
     }
 
     /**

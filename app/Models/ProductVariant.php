@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\ProductUnit;
+use App\Repositories\Categories\CategoryRepository;
 use App\Support\Values\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -41,6 +42,19 @@ final class ProductVariant extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        self::saved(static function (self $variant): void {
+            if ($variant->wasRecentlyCreated || $variant->wasChanged(['product_id', 'is_active'])) {
+                app(CategoryRepository::class)->forget();
+            }
+        });
+
+        self::deleted(static function (): void {
+            app(CategoryRepository::class)->forget();
+        });
+    }
+
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
@@ -65,7 +79,7 @@ final class ProductVariant extends Model
 
     public function hasDiscount(): bool
     {
-        return $this->discount_percent !== null;
+        return $this->discount_percent > 0;
     }
 
     public function currentPrice(): Money

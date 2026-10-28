@@ -2,8 +2,17 @@
 
 declare(strict_types=1);
 
+use App\Models\City;
 use App\Models\Setting;
+use App\Services\Cities\CurrentCityService;
 use App\Support\Seo\SeoManager;
+
+if (! function_exists('current_city')) {
+    function current_city(): ?City
+    {
+        return app(CurrentCityService::class)->current();
+    }
+}
 
 if (! function_exists('settings')) {
     function settings(): ?Setting

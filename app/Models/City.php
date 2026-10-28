@@ -19,6 +19,7 @@ final class City extends Model
         'region',
         'sub_region',
         'is_active',
+        'is_suggested',
         'is_pickup_available',
         'is_courier_available',
         'courier_delivery_price',
@@ -30,6 +31,7 @@ final class City extends Model
         return [
             'cdek_code' => 'integer',
             'is_active' => 'boolean',
+            'is_suggested' => 'boolean',
             'is_pickup_available' => 'boolean',
             'is_courier_available' => 'boolean',
             'courier_delivery_price' => Money::class,

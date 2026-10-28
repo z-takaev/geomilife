@@ -5,8 +5,8 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "format": "prettier --write \"resources/**/*.{blade.php,html,css,js,json}\" \"public/assets/css/styles.css\" \"public/assets/js/{carousel,main}.js\"",
-        "format:check": "prettier --check \"resources/**/*.{blade.php,html,css,js,json}\" \"public/assets/css/styles.css\" \"public/assets/js/{carousel,main}.js\""
+        "format": "prettier --write \"resources/**/*.{blade.php,html,css,js,json}\" \"public/assets/css/styles.css\" \"public/assets/js/{carousel,main,products}.js\"",
+        "format:check": "prettier --check \"resources/**/*.{blade.php,html,css,js,json}\" \"public/assets/css/styles.css\" \"public/assets/js/{carousel,main,products}.js\""
     },
     "devDependencies": {
         "@shufo/prettier-plugin-blade": "^1.16.2",

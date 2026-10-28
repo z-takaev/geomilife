@@ -30,6 +30,8 @@ final class CityForm
                     ->disabled(),
                 Toggle::make('is_active')
                     ->label('Доступен для выбора'),
+                Toggle::make('is_suggested')
+                    ->label('Показывать в подсказках'),
                 Toggle::make('is_pickup_available')
                     ->label('Доступен самовывоз'),
                 Toggle::make('is_courier_available')

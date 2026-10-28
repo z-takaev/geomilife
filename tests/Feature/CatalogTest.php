@@ -111,6 +111,6 @@ it('проверяет диапазон цены и сбрасывает фил�
         ->assertSet('priceFrom', '')
         ->assertSet('priceTo', '')
         ->assertSet('availability', [])
-        ->assertSet('sort', 'popular')
+        ->assertSet('sort', '')
         ->assertHasNoErrors();
 });

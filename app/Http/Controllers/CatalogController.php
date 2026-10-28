@@ -29,11 +29,7 @@ final class CatalogController extends Controller
 
     public function show(Category $category): View
     {
-        abort_unless(
-            $category->is_active
-                && $category->ancestors()->where('is_active', false)->doesntExist(),
-            404,
-        );
+        abort_unless(Category::query()->visible()->whereKey($category->getKey())->exists(), 404);
 
         $category->loadMissing(['media', 'parent']);
 

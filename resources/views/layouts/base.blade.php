@@ -44,6 +44,7 @@
     <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
     <script src="{{ asset('assets/js/bootstrap-select.min.js') }}"></script>
     @stack('scripts')
+    <script src="{{ asset('assets/js/products.js') }}"></script>
     <script src="{{ asset('assets/js/main.js') }}"></script>
 </body>
 

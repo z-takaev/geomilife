@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
 use App\Navigation\BreadcrumbItem;
 use App\Navigation\Breadcrumbs;
 use App\Repositories\Products\ProductRepository;
 use App\Support\Seo\Schemas\BreadcrumbSchema;
 use App\Support\Seo\Schemas\ProductSchema;
+use App\View\Products\ProductPresentation;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Http\Request;
 
 final class ProductController extends Controller
 {
@@ -19,18 +19,11 @@ final class ProductController extends Controller
         private readonly ProductRepository $productRepository,
     ) {}
 
-    public function show(Product $product): View
+    public function show(string $product, Request $request): View
     {
-        abort_unless($product->is_active && $product->variants()->active()->exists(), 404);
-
-        $product->load([
-            'attributeValues.productAttribute',
-            'category',
-            'media',
-            'variants' => static function (HasMany $query): void {
-                $query->active();
-            },
-        ]);
+        $product = $this->productRepository->getDetails($product);
+        abort_if($product === null, 404);
+        $presentation = new ProductPresentation($product, $request->integer('variant'));
 
         $breadcrumbs = Breadcrumbs::make(
             BreadcrumbItem::make(__('Каталог'), route('catalog.index')),
@@ -44,17 +37,15 @@ final class ProductController extends Controller
         )
             ->image($product->getFirstMediaUrl('image'))
             ->type('product')
-            ->schema(ProductSchema::make($product))
+            ->schema(ProductSchema::make($product, $presentation->selectedVariant['id']))
             ->schema(BreadcrumbSchema::make($breadcrumbs));
 
         $recommendedProducts = $this->productRepository->getRecommendedProducts($product);
-        $selectedVariant = $product->variants->firstOrFail();
-        $variantOptions = $product->variantOptions();
         $images = $product->images();
 
         return view(
             'products.show',
-            compact('product', 'recommendedProducts', 'breadcrumbs', 'selectedVariant', 'variantOptions', 'images'),
+            compact('product', 'recommendedProducts', 'breadcrumbs', 'presentation', 'images'),
         );
     }
 }

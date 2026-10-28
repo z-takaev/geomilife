@@ -45,8 +45,10 @@ final class Product extends Model implements HasMedia, Seoable
 
     protected static function booted(): void
     {
-        self::saved(static function (): void {
-            app(CategoryRepository::class)->forget();
+        self::saved(static function (self $product): void {
+            if ($product->wasRecentlyCreated || $product->wasChanged(['category_id', 'is_active'])) {
+                app(CategoryRepository::class)->forget();
+            }
         });
 
         self::deleted(static function (): void {
@@ -66,12 +68,17 @@ final class Product extends Model implements HasMedia, Seoable
 
     public function variants(): HasMany
     {
-        return $this->hasMany(ProductVariant::class)->orderBy('order');
+        return $this->hasMany(ProductVariant::class)->orderBy('order')->orderBy('id');
+    }
+
+    public function activeVariants(): HasMany
+    {
+        return $this->variants()->active();
     }
 
     public function attributeValues(): HasMany
     {
-        return $this->hasMany(ProductAttributeValue::class);
+        return $this->hasMany(ProductAttributeValue::class)->orderBy('order');
     }
 
     public function favorites(): HasMany
@@ -81,14 +88,15 @@ final class Product extends Model implements HasMedia, Seoable
 
     public function scopeActive(Builder $query): void
     {
-        $query->where('is_active', true);
+        $query->where('products.is_active', true);
     }
 
     public function scopeAvailable(Builder $query): void
     {
         $query
             ->active()
-            ->whereHas('variants', static fn (Builder $query): Builder => $query->active());
+            ->whereHas('category', static fn (Builder $query): Builder => $query->visible())
+            ->has('activeVariants');
     }
 
     public function scopeDiscounted(Builder $query): void
@@ -96,11 +104,34 @@ final class Product extends Model implements HasMedia, Seoable
         $query
             ->active()
             ->whereHas(
-                'variants',
+                'activeVariants',
                 static fn (Builder $query): Builder => $query
-                    ->active()
                     ->where('discount_percent', '>', 0),
             );
+    }
+
+    public function selectedVariant(?int $variantId = null): ProductVariant
+    {
+        return $this->activeVariants->firstWhere('id', $variantId)
+            ?? $this->activeVariants->firstOrFail();
+    }
+
+    public function hasDiscount(): bool
+    {
+        return $this->activeVariants->contains(
+            static fn (ProductVariant $variant): bool => $variant->hasDiscount(),
+        );
+    }
+
+    /**
+     * @return Collection<int, Media>
+     */
+    public function images(): Collection
+    {
+        return $this->getMedia('image')
+            ->merge($this->getMedia('gallery'))
+            ->unique(static fn (Media $media): int => $media->getKey())
+            ->values();
     }
 
     public function registerMediaCollections(): void
@@ -119,33 +150,6 @@ final class Product extends Model implements HasMedia, Seoable
             ->fit(Fit::Fill, 600, 600)
             ->performOnCollections('image')
             ->nonQueued();
-    }
-
-    /**
-     * @return Collection<int, Media>
-     */
-    public function images(): Collection
-    {
-        return $this->getMedia('image')
-            ->merge($this->getMedia('gallery'))
-            ->unique(static fn (Media $media): int => $media->getKey())
-            ->values();
-    }
-
-    /**
-     * @return list<array{id: int, price: string, oldPrice: string|null, isPreorder: bool}>
-     */
-    public function variantOptions(): array
-    {
-        return $this->variants
-            ->map(static fn (ProductVariant $variant): array => [
-                'id' => $variant->getKey(),
-                'price' => $variant->currentPrice()->format(),
-                'oldPrice' => $variant->oldPrice()?->format(),
-                'isPreorder' => $variant->is_preorder,
-            ])
-            ->values()
-            ->all();
     }
 
     protected function getSlugSourceAttribute(): string

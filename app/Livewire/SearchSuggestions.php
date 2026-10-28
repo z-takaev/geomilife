@@ -34,8 +34,8 @@ final class SearchSuggestions extends Component
         $products = new Collection;
 
         if ($query !== '') {
-            $categories = $categoryRepository->search($query, 4);
-            $products = $productRepository->searchSuggestions($query, 5);
+            $categories = $categoryRepository->searchSuggestions($query);
+            $products = $productRepository->searchSuggestions($query);
         }
 
         return view('livewire.search-suggestions', compact('query', 'categories', 'products'));

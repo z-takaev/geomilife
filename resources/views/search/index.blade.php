@@ -5,6 +5,15 @@
 
     <section class="search-results-page flat-spacing">
         <div class="container">
+            <form action="{{ route('search.index') }}" method="get" class="form-search mb-30">
+                <fieldset>
+                    <input type="search" name="q" value="{{ $query }}" maxlength="255" required
+                        placeholder="{{ __('Найти товар') }}" aria-label="{{ __('Поисковый запрос') }}">
+                </fieldset>
+                <button type="submit" class="link-2" aria-label="{{ __('Искать') }}">
+                    <i class="icon icon-magnifying-glass" aria-hidden="true"></i>
+                </button>
+            </form>
             <div class="search-results-summary">
                 <div>
                     <p class="search-results-summary__eyebrow">{{ __('Поисковый запрос') }}</p>
@@ -44,7 +53,7 @@
                     <div class="featured-categories-grid">
                         @foreach ($categories as $category)
                             @php
-                                $productsCount = $category->totalActiveProductsCount();
+                                $productsCount = $category->total_active_products_count;
                             @endphp
                             <x-category-card :background="$categoryBackgrounds[$loop->index % count($categoryBackgrounds)]" :image="$category->getFirstMediaUrl('image')" :name="$category->name" :product-count="trans_choice(
                                 '{0} Нет товаров|{1} :count товар|[2,4] :count товара|[5,*] :count товаров',
@@ -66,7 +75,7 @@
                 @if ($products->isNotEmpty())
                     <div class="catalog-products-grid search-products-grid">
                         @foreach ($products as $product)
-                            <livewire:product-card :product="$product" :wire:key="'search-product-'.$product->getKey()" />
+                            <x-product-card :product="$product" :wire:key="'search-product-'.$product->getKey()" />
                         @endforeach
                     </div>
 

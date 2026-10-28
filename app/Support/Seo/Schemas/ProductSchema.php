@@ -11,28 +11,28 @@ use App\Support\Values\Money;
 
 final readonly class ProductSchema implements SchemaContract
 {
-    private function __construct(private Product $product) {}
+    private function __construct(private Product $product, private ?int $variantId) {}
 
-    public static function make(Product $product): self
+    public static function make(Product $product, ?int $variantId = null): self
     {
-        return new self($product);
+        return new self($product, $variantId);
     }
 
     public function toArray(): array
     {
-        $variant = $this->product->variants->firstWhere('is_active', true);
+        $variant = $this->product->selectedVariant($this->variantId);
 
         return array_filter([
             '@type' => 'Product',
             'name' => $this->product->name,
             'description' => $this->product->description,
             'image' => $this->product->getFirstMediaUrl('image') ?: null,
-            'sku' => $variant?->sku,
+            'sku' => $variant->sku,
             'brand' => [
                 '@type' => 'Brand',
                 'name' => 'GeoMiLife',
             ],
-            'offers' => $variant !== null ? $this->offer($variant) : null,
+            'offers' => $this->offer($variant),
         ], static fn (mixed $value): bool => $value !== null && $value !== '');
     }
 
@@ -43,7 +43,7 @@ final readonly class ProductSchema implements SchemaContract
     {
         return [
             '@type' => 'Offer',
-            'url' => route('products.show', $this->product),
+            'url' => route('products.show', [$this->product, 'variant' => $variant->getKey()]),
             'priceCurrency' => Money::CURRENCY,
             'price' => $variant->currentPrice()->toRubles(),
             'availability' => $variant->is_preorder

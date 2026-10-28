@@ -20,7 +20,7 @@
     @if ($hitProducts->isNotEmpty())
         <x-product-selection :title="__('Хиты продаж')" :all-products-url="route('catalog.index')">
             @foreach ($hitProducts as $product)
-                <livewire:product-card :product="$product" :wire:key="'product-card-hits-'.$product->getKey()" />
+                <x-product-card :product="$product" :wire:key="'product-card-hits-'.$product->getKey()" />
             @endforeach
         </x-product-selection>
     @endif
@@ -28,7 +28,7 @@
     @if ($newProducts->isNotEmpty())
         <x-product-selection :title="__('Новинки')" :all-products-url="route('catalog.index')">
             @foreach ($newProducts as $product)
-                <livewire:product-card :product="$product" :wire:key="'product-card-new-'.$product->getKey()" />
+                <x-product-card :product="$product" :wire:key="'product-card-new-'.$product->getKey()" />
             @endforeach
         </x-product-selection>
     @endif
@@ -36,7 +36,7 @@
     @if ($discountedProducts->isNotEmpty())
         <x-product-selection :title="__('Товары со скидкой')" :all-products-url="route('catalog.index')">
             @foreach ($discountedProducts as $product)
-                <livewire:product-card :product="$product" :wire:key="'product-card-discounted-'.$product->getKey()" />
+                <x-product-card :product="$product" :wire:key="'product-card-discounted-'.$product->getKey()" />
             @endforeach
         </x-product-selection>
     @endif

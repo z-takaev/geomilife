@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('region')->nullable();
             $table->string('sub_region')->nullable();
             $table->boolean('is_active')->default(false);
+            $table->boolean('is_suggested')->default(false);
             $table->boolean('is_pickup_available')->default(false);
             $table->boolean('is_courier_available')->default(false);
             $table->unsignedBigInteger('courier_delivery_price')->nullable();

@@ -78,8 +78,7 @@
     @endif
 
     <div class="catalog-filter-actions">
-        <button type="submit" class="catalog-filter-apply" wire:loading.attr="disabled"
-            @if ($filterIdPrefix === 'mobile') data-bs-dismiss="offcanvas" @endif>
+        <button type="submit" class="catalog-filter-apply" wire:loading.attr="disabled">
             {{ __('Показать товары') }}
         </button>
         <button type="button" class="catalog-filter-reset" wire:click="resetFilters" wire:loading.attr="disabled">

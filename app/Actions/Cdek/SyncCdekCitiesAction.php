@@ -75,6 +75,7 @@ final class SyncCdekCitiesAction
             'region' => $region,
             'sub_region' => $subRegion,
             'is_active' => true,
+            'is_suggested' => in_array($code, config('cities.suggested_cdek_codes'), true),
             'is_pickup_available' => false,
             'is_courier_available' => false,
             'created_at' => $now,

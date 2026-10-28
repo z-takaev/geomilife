@@ -35,6 +35,9 @@ final class CitiesTable
                 ToggleColumn::make('is_active')
                     ->label('Активен')
                     ->sortable(),
+                ToggleColumn::make('is_suggested')
+                    ->label('В подсказках')
+                    ->sortable(),
                 ToggleColumn::make('is_pickup_available')
                     ->label('Самовывоз')
                     ->sortable(),
@@ -43,6 +46,8 @@ final class CitiesTable
                     ->sortable(),
             ])
             ->filters([
+                TernaryFilter::make('is_suggested')
+                    ->label('В подсказках'),
                 TernaryFilter::make('is_active')
                     ->label('Активность')
                     ->placeholder('Все города')

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use App\DTO\Products\CatalogFiltersDto;
 use App\Models\Category;
 use App\Repositories\Categories\CategoryRepository;
-use App\Repositories\Products\ProductRepository;
+use App\Repositories\Products\CatalogRepository;
 use Illuminate\Contracts\View\View;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Validation\Rule;
-use Livewire\Attributes\Locked;
-use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -18,45 +18,40 @@ final class CatalogProducts extends Component
 {
     use WithPagination;
 
-    /** @var list<string> */
-    private const array AVAILABILITY_OPTIONS = ['in-stock', 'preorder'];
+    private const array SORT_OPTIONS = ['', 'popular', 'new', 'price-asc', 'price-desc', 'name'];
 
-    /** @var list<string> */
-    private const array SORT_OPTIONS = ['popular', 'new', 'price-asc', 'price-desc', 'name'];
-
-    #[Locked]
     public ?Category $category = null;
 
-    #[Url(except: '', as: 'price_from', history: true)]
     public string $priceFrom = '';
 
-    #[Url(except: '', as: 'price_to', history: true)]
     public string $priceTo = '';
 
-    /** @var list<string> */
-    #[Url(except: [], history: true)]
     public array $availability = [];
 
-    /** @var list<string> */
-    #[Url(except: [], as: 'package_values', history: true)]
     public array $packageValues = [];
 
-    #[Url(except: 'popular', history: true)]
-    public string $sort = 'popular';
+    public array $appliedFilters = [
+        'priceFrom' => '',
+        'priceTo' => '',
+        'availability' => [],
+        'packageValues' => [],
+    ];
 
-    #[Locked]
+    public string $sort = '';
+
     public int $additionalPages = 0;
 
     public function mount(?Category $category = null): void
     {
         $this->category = $category;
-        $this->normalizeFilterValues();
+        $this->normalizeFilters();
+        $this->fill($this->appliedFilters);
     }
 
-    public function applyFilters(ProductRepository $productRepository): void
+    public function applyFilters(): void
     {
         $this->resetValidation();
-        $this->validate();
+        $values = $this->validate();
 
         if ($this->priceFrom !== '' && $this->priceTo !== '' && (int) $this->priceFrom > (int) $this->priceTo) {
             $this->addError('priceTo', __('Максимальная цена должна быть не меньше минимальной.'));
@@ -64,28 +59,33 @@ final class CatalogProducts extends Component
             return;
         }
 
-        $this->normalizeFilterValues($productRepository);
+        $this->appliedFilters = $values;
+        $this->normalizeFilters();
+        $this->fill($this->appliedFilters);
         $this->resetCatalogPage();
+        $this->dispatch('catalog-filters-applied');
     }
 
     public function resetFilters(): void
     {
-        $this->priceFrom = '';
-        $this->priceTo = '';
-        $this->availability = [];
-        $this->packageValues = [];
-        $this->sort = 'popular';
+        $this->appliedFilters = (new CatalogFiltersDto)->toArray();
+        $this->fill($this->appliedFilters);
+        $this->reset('sort');
         $this->resetValidation();
         $this->resetCatalogPage();
     }
 
     public function updatedSort(): void
     {
-        if (! in_array($this->sort, self::SORT_OPTIONS, true)) {
-            $this->sort = 'popular';
-        }
-
+        $this->normalizeSort();
         $this->resetCatalogPage();
+    }
+
+    public function updatedAppliedFilters(): void
+    {
+        $this->normalizeFilters();
+        $this->fill($this->appliedFilters);
+        $this->resetValidation();
     }
 
     public function loadMore(): void
@@ -98,104 +98,91 @@ final class CatalogProducts extends Component
         $this->additionalPages = 0;
     }
 
-    public function render(
-        ProductRepository $productRepository,
-        CategoryRepository $categoryRepository,
-    ): View {
-        $page = (int) $this->getPage();
-        $filters = $this->filters();
-        $products = $productRepository->getFilteredCatalogProducts(
-            category: $this->category,
-            filters: $filters,
-            sort: $this->sort,
-            page: $page,
-            additionalPages: $this->additionalPages,
-        );
-        $packageOptions = $this->category === null
-            ? []
-            : $productRepository->getCatalogPackageOptions($this->category);
+    public function render(CatalogRepository $catalogRepository, CategoryRepository $categoryRepository): View
+    {
+        $products = $this->catalogProducts($catalogRepository);
+        $hasMoreProducts = $products->currentPage() + $this->additionalPages < $products->lastPage();
+        $catalogKey = hash('xxh128', json_encode([$this->appliedFilters, $this->sort, $products->currentPage()]));
+        $packageOptions = $this->packageOptions();
         $categories = $this->category === null
             ? $categoryRepository->getActiveCatalog()
             : $categoryRepository->getActiveChildren($this->category);
-        $parentCategory = $this->category?->parent;
-        $categoryBackUrl = $this->category === null
-            ? null
-            : ($parentCategory === null
-                ? route('catalog.index')
-                : route('catalog.category', $parentCategory));
-        $categoryBackLabel = $this->category === null
-            ? null
-            : ($parentCategory?->name ?? __('Весь каталог'));
-        $hasMoreProducts = $page + $this->additionalPages < $products->lastPage();
+        [$categoryBackUrl, $categoryBackLabel] = $this->categoryBackLink();
 
         return view('livewire.catalog-products', compact(
-            'categories',
-            'products',
-            'packageOptions',
-            'categoryBackUrl',
-            'categoryBackLabel',
-            'hasMoreProducts',
+            'products', 'categories', 'packageOptions', 'hasMoreProducts', 'categoryBackUrl', 'categoryBackLabel', 'catalogKey',
         ));
+    }
+
+    protected function queryString(): array
+    {
+        return [
+            'appliedFilters.priceFrom' => ['as' => 'price_from', 'except' => '', 'history' => true],
+            'appliedFilters.priceTo' => ['as' => 'price_to', 'except' => '', 'history' => true],
+            'appliedFilters.availability' => ['as' => 'availability', 'except' => [], 'history' => true],
+            'appliedFilters.packageValues' => ['as' => 'package_values', 'except' => [], 'history' => true],
+            'sort' => ['except' => '', 'history' => true],
+            'additionalPages' => ['as' => 'more', 'except' => 0, 'history' => true],
+        ];
     }
 
     protected function rules(): array
     {
         return [
-            'priceFrom' => ['nullable', 'integer', 'min:0', 'max:1000000000'],
-            'priceTo' => ['nullable', 'integer', 'min:0', 'max:1000000000'],
-            'availability' => ['array'],
-            'availability.*' => [Rule::in(self::AVAILABILITY_OPTIONS)],
+            'priceFrom' => ['nullable', 'integer', 'min:0', 'max:'.CatalogFiltersDto::MAX_PRICE],
+            'priceTo' => ['nullable', 'integer', 'min:0', 'max:'.CatalogFiltersDto::MAX_PRICE],
+            'availability' => ['array', 'max:2'],
+            'availability.*' => [Rule::in(CatalogFiltersDto::AVAILABILITY)],
             'packageValues' => ['array'],
-            'packageValues.*' => ['string', 'max:64'],
-            'sort' => [Rule::in(self::SORT_OPTIONS)],
+            'packageValues.*' => ['string', Rule::in(array_column($this->packageOptions(), 'value'))],
         ];
     }
 
-    /**
-     * @return array{
-     *     priceFrom: string,
-     *     priceTo: string,
-     *     availability: list<string>,
-     *     packageValues: list<string>
-     * }
-     */
-    private function filters(): array
+    private function normalizeFilters(): CatalogFiltersDto
     {
-        return [
-            'priceFrom' => $this->priceFrom,
-            'priceTo' => $this->priceTo,
-            'availability' => $this->availability,
-            'packageValues' => $this->category === null ? [] : $this->packageValues,
-        ];
+        $filters = CatalogFiltersDto::fromArray($this->appliedFilters, $this->packageOptions());
+        $this->appliedFilters = $filters->toArray();
+
+        return $filters;
     }
 
-    private function normalizeFilterValues(?ProductRepository $productRepository = null): void
+    private function catalogProducts(CatalogRepository $catalogRepository): LengthAwarePaginator
     {
-        $this->sort = in_array($this->sort, self::SORT_OPTIONS, true) ? $this->sort : 'popular';
-        $this->availability = array_values(array_unique(array_intersect(
-            self::AVAILABILITY_OPTIONS,
-            $this->availability,
-        )));
-
-        if ($this->category === null) {
-            $this->packageValues = [];
-
-            return;
-        }
-
-        if ($productRepository === null) {
-            return;
-        }
-
-        $availablePackageValues = array_column(
-            $productRepository->getCatalogPackageOptions($this->category),
-            'value',
+        $filters = $this->normalizeFilters();
+        $this->normalizeSort();
+        $products = $catalogRepository->getProducts(
+            $this->category, $filters, $this->sort, (int) $this->getPage(), $this->additionalPages,
         );
+        $this->paginators['page'] = $products->currentPage();
+        $this->additionalPages = min(max(0, $this->additionalPages), $products->lastPage() - $products->currentPage());
 
-        $this->packageValues = array_values(array_unique(array_intersect(
-            $availablePackageValues,
-            $this->packageValues,
-        )));
+        return $products;
+    }
+
+    private function categoryBackLink(): array
+    {
+        if ($this->category === null) {
+            return [null, null];
+        }
+
+        $parent = $this->category->parent;
+
+        return $parent === null
+            ? [route('catalog.index'), __('Весь каталог')]
+            : [route('catalog.category', $parent), $parent->name];
+    }
+
+    private function packageOptions(): array
+    {
+        return once(fn (): array => $this->category === null
+            ? [] : app(CatalogRepository::class)->getPackageOptions($this->category));
+    }
+
+    private function normalizeSort(): void
+    {
+        if (! in_array($this->sort, self::SORT_OPTIONS, true)) {
+            $this->reset('sort');
+        }
     }
 
     private function resetCatalogPage(): void

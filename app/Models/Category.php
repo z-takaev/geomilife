@@ -61,7 +61,7 @@ final class Category extends Model implements HasMedia, Seoable
 
     public function activeProducts(): HasMany
     {
-        return $this->products()->available();
+        return $this->products()->active()->has('activeVariants');
     }
 
     public function scopeActive(Builder $query): void
@@ -74,18 +74,18 @@ final class Category extends Model implements HasMedia, Seoable
         $query->whereNull('parent_id');
     }
 
+    public function scopeVisible(Builder $query): void
+    {
+        $query->active()->whereDoesntHave(
+            'ancestors',
+            static fn (Builder $query): Builder => $query->where('is_active', false),
+        );
+    }
+
     public function canBeDeleted(): bool
     {
         return ! ($this->children_exists ?? $this->children()->exists())
             && ! ($this->products_exists ?? $this->products()->exists());
-    }
-
-    public function totalActiveProductsCount(): int
-    {
-        return (int) (
-            $this->active_products_count
-            + $this->children->sum('active_products_count')
-        );
     }
 
     public function registerMediaCollections(): void

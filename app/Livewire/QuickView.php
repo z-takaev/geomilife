@@ -4,51 +4,37 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
-use App\Models\Product;
+use App\Repositories\Products\ProductRepository;
+use App\View\Products\ProductPresentation;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Livewire\Component;
 
 final class QuickView extends Component
 {
-    public ?Product $product = null;
+    public ?int $productId = null;
 
-    public bool $hasDiscount = false;
+    public ?int $variantId = null;
 
-    public function open(int $productId): void
+    public int $opening = 0;
+
+    public function open(int $productId, ?int $variantId = null): void
     {
-        $this->product = Product::query()
-            ->available()
-            ->with([
-                'attributeValues.productAttribute',
-                'category',
-                'media',
-                'variants' => static function (HasMany $query): void {
-                    $query->active();
-                },
-            ])
-            ->findOrFail($productId);
-
-        $this->hasDiscount = $this->product
-            ->variants()
-            ->active()
-            ->where('discount_percent', '>', 0)
-            ->exists();
+        $this->productId = $productId;
+        $this->variantId = $variantId;
+        $this->opening++;
     }
 
-    public function render(): View
+    public function render(ProductRepository $products): View
     {
-        return view('livewire.quick-view', [
-            'images' => $this->product?->images() ?? collect(),
-            'selectedVariant' => $this->product?->variants->first(),
-            'variantOptions' => $this->product?->variantOptions() ?? [],
-        ]);
+        $product = $this->productId === null ? null : $products->getDetails($this->productId);
+        $images = $product?->images() ?? collect();
+        $presentation = $product === null ? null : new ProductPresentation($product, $this->variantId);
+
+        return view('livewire.quick-view', compact('product', 'images', 'presentation'));
     }
 
     protected function getListeners(): array
     {
-        return [
-            'open-quick-view' => 'open',
-        ];
+        return ['open-quick-view' => 'open'];
     }
 }

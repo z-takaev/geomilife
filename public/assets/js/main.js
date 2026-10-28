@@ -27,42 +27,6 @@
  * Preloader
  */
 
-window.productVariantSelector = function (variants, initialVariantId = null) {
-    const hasInitialVariant = variants.some((variant) => variant.id === initialVariantId);
-
-    return {
-        variants,
-        selectedVariantId: hasInitialVariant ? initialVariantId : (variants[0]?.id ?? null),
-        quantity: 1,
-
-        get selectedVariant() {
-            return this.variants.find((variant) => variant.id === this.selectedVariantId) ?? null;
-        },
-
-        selectVariant(variantId) {
-            if (this.variants.some((variant) => variant.id === variantId)) {
-                this.selectedVariantId = variantId;
-            }
-        },
-
-        decreaseQuantity() {
-            this.normalizeQuantity();
-            this.quantity = Math.max(1, this.quantity - 1);
-        },
-
-        increaseQuantity() {
-            this.normalizeQuantity();
-            this.quantity += 1;
-        },
-
-        normalizeQuantity() {
-            const quantity = Number.parseInt(this.quantity, 10);
-
-            this.quantity = Number.isNaN(quantity) ? 1 : Math.max(1, quantity);
-        },
-    };
-};
-
 (function ($) {
     'use strict';
 

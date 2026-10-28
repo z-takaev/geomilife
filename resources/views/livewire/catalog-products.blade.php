@@ -13,7 +13,8 @@
                     <span class="catalog-sorting__control">
                         <span class="icon icon-ArrowsLeftRight" aria-hidden="true"></span>
                         <select wire:model.live="sort" name="sort" aria-label="{{ __('Сортировка товаров') }}">
-                            <option value="popular">{{ __('По популярности') }}</option>
+                            <option value="">{{ __('По умолчанию') }}</option>
+                            <option value="popular">{{ __('Сначала хиты') }}</option>
                             <option value="new">{{ __('По новизне') }}</option>
                             <option value="price-asc">{{ __('Сначала дешевле') }}</option>
                             <option value="price-desc">{{ __('Сначала дороже') }}</option>
@@ -30,9 +31,9 @@
 
                 <div class="catalog-content" wire:loading.class="catalog-content--loading">
                     @if ($products->isNotEmpty())
-                        <div class="catalog-products-grid">
+                        <div class="catalog-products-grid" wire:key="catalog-results-{{ $catalogKey }}">
                             @foreach ($products as $product)
-                                <livewire:product-card :product="$product" :initial-variant-id="(int) $product->getAttribute('catalog_variant_id')"
+                                <x-product-card :product="$product"
                                     :wire:key="'catalog-product-'.$product->getKey().'-'.$product->getAttribute('catalog_variant_id')" />
                             @endforeach
                         </div>
