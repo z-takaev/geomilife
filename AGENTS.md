@@ -18,6 +18,7 @@
 - В среде Codex доступ к Docker-сокету может быть запрещён песочницей. В этом случае Sail ошибочно выводит `Docker or Podman is not running`, а `docker info` возвращает `permission denied` для `~/.docker/run/docker.sock`; это не означает, что Docker остановлен.
 - Если команда Sail не может обратиться к Docker из-за `permission denied`, повторить необходимую команду с расширенным доступом (`sandbox_permissions: require_escalated`). Не предлагать пользователю запускать Docker и не переходить на локальные PHP, Composer или npm, пока состояние контейнеров не проверено вне песочницы.
 - Для безопасной проверки форматирования без изменения файлов использовать `sail composer format:check`; для исправления форматирования после изменения кода использовать `sail composer format`.
+- После изменения миграций, связей, аксессоров, мутаторов или query scope моделей повторно генерировать IDE-подсказки командой `sail artisan ide-helper:models --nowrite`.
 - Директория `/template` в корне проекта содержит исходный HTML-шаблон для верстки сайта. Использовать его как основу, переносить нужные элементы в Laravel/Blade/Livewire и адаптировать под требования проекта.
 - Всю работу с загрузкой изображений выполнять через `spatie/laravel-medialibrary`.
 - Для загрузки изображений в Filament всегда использовать `App\Filament\Forms\Components\MediaImageUpload`.
