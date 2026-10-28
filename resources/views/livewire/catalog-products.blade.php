@@ -14,11 +14,9 @@
                         <span class="icon icon-ArrowsLeftRight" aria-hidden="true"></span>
                         <select wire:model.live="sort" name="sort" aria-label="{{ __('Сортировка товаров') }}">
                             <option value="">{{ __('По умолчанию') }}</option>
-                            <option value="popular">{{ __('Сначала хиты') }}</option>
-                            <option value="new">{{ __('По новизне') }}</option>
-                            <option value="price-asc">{{ __('Сначала дешевле') }}</option>
-                            <option value="price-desc">{{ __('Сначала дороже') }}</option>
-                            <option value="name">{{ __('По названию') }}</option>
+                            @foreach ($sortOptions as $sortOption)
+                                <option value="{{ $sortOption->value }}">{{ __($sortOption->label()) }}</option>
+                            @endforeach
                         </select>
                     </span>
                 </label>
@@ -38,25 +36,20 @@
                             @endforeach
                         </div>
 
-                        <div class="catalog-pagination">
-                            @if ($hasMoreProducts)
-                                <button type="button" class="catalog-load-more" wire:click="loadMore"
-                                    wire:loading.attr="disabled">
-                                    <span wire:loading.remove wire:target="loadMore">{{ __('Загрузить ещё') }}</span>
-                                    <span wire:loading wire:target="loadMore">{{ __('Загрузка…') }}</span>
-                                </button>
-                            @endif
+                        @if ($products->hasPages())
+                            <div class="catalog-pagination">
+                                @if ($hasMoreProducts)
+                                    <button type="button" class="catalog-load-more" wire:click="loadMore"
+                                        wire:loading.attr="disabled">
+                                        <span wire:loading.remove
+                                            wire:target="loadMore">{{ __('Загрузить ещё') }}</span>
+                                        <span wire:loading wire:target="loadMore">{{ __('Загрузка…') }}</span>
+                                    </button>
+                                @endif
 
-                            @if ($products->hasPages())
                                 {{ $products->onEachSide(1)->links('livewire.catalog-pagination', ['scrollTo' => '.catalog-page']) }}
-                            @else
-                                <nav aria-label="{{ __('Навигация по страницам') }}">
-                                    <ul class="wg-pagination archive-pagination justify-content-center">
-                                        <li><span class="pagination-item active" aria-current="page">1</span></li>
-                                    </ul>
-                                </nav>
-                            @endif
-                        </div>
+                            </div>
+                        @endif
                     @else
                         <x-empty-state :title="__('Товары не найдены')" :description="__('Попробуйте изменить параметры фильтрации.')" />
                     @endif

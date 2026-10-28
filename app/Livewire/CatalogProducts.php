@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire;
 
 use App\DTO\Products\CatalogFiltersDto;
+use App\Enums\CatalogProductSort;
 use App\Models\Category;
 use App\Repositories\Categories\CategoryRepository;
 use App\Repositories\Products\CatalogRepository;
@@ -17,8 +18,6 @@ use Livewire\WithPagination;
 final class CatalogProducts extends Component
 {
     use WithPagination;
-
-    private const array SORT_OPTIONS = ['', 'popular', 'new', 'price-asc', 'price-desc', 'name'];
 
     public ?Category $category = null;
 
@@ -48,6 +47,24 @@ final class CatalogProducts extends Component
         $this->fill($this->appliedFilters);
     }
 
+    public function updatingPaginators(): void
+    {
+        $this->additionalPages = 0;
+    }
+
+    public function updatedSort(): void
+    {
+        $this->normalizeSort();
+        $this->resetCatalogPage();
+    }
+
+    public function updatedAppliedFilters(): void
+    {
+        $this->normalizeFilters();
+        $this->fill($this->appliedFilters);
+        $this->resetValidation();
+    }
+
     public function applyFilters(): void
     {
         $this->resetValidation();
@@ -75,27 +92,9 @@ final class CatalogProducts extends Component
         $this->resetCatalogPage();
     }
 
-    public function updatedSort(): void
-    {
-        $this->normalizeSort();
-        $this->resetCatalogPage();
-    }
-
-    public function updatedAppliedFilters(): void
-    {
-        $this->normalizeFilters();
-        $this->fill($this->appliedFilters);
-        $this->resetValidation();
-    }
-
     public function loadMore(): void
     {
         $this->additionalPages++;
-    }
-
-    public function updatingPaginators(): void
-    {
-        $this->additionalPages = 0;
     }
 
     public function render(CatalogRepository $catalogRepository, CategoryRepository $categoryRepository): View
@@ -104,13 +103,14 @@ final class CatalogProducts extends Component
         $hasMoreProducts = $products->currentPage() + $this->additionalPages < $products->lastPage();
         $catalogKey = hash('xxh128', json_encode([$this->appliedFilters, $this->sort, $products->currentPage()]));
         $packageOptions = $this->packageOptions();
+        $sortOptions = CatalogProductSort::cases();
         $categories = $this->category === null
             ? $categoryRepository->getActiveCatalog()
             : $categoryRepository->getActiveChildren($this->category);
         [$categoryBackUrl, $categoryBackLabel] = $this->categoryBackLink();
 
         return view('livewire.catalog-products', compact(
-            'products', 'categories', 'packageOptions', 'hasMoreProducts', 'categoryBackUrl', 'categoryBackLabel', 'catalogKey',
+            'products', 'categories', 'packageOptions', 'sortOptions', 'hasMoreProducts', 'categoryBackUrl', 'categoryBackLabel', 'catalogKey',
         ));
     }
 
@@ -149,9 +149,9 @@ final class CatalogProducts extends Component
     private function catalogProducts(CatalogRepository $catalogRepository): LengthAwarePaginator
     {
         $filters = $this->normalizeFilters();
-        $this->normalizeSort();
+        $sort = $this->normalizeSort();
         $products = $catalogRepository->getProducts(
-            $this->category, $filters, $this->sort, (int) $this->getPage(), $this->additionalPages,
+            $this->category, $filters, $sort, (int) $this->getPage(), $this->additionalPages,
         );
         $this->paginators['page'] = $products->currentPage();
         $this->additionalPages = min(max(0, $this->additionalPages), $products->lastPage() - $products->currentPage());
@@ -178,11 +178,15 @@ final class CatalogProducts extends Component
             ? [] : app(CatalogRepository::class)->getPackageOptions($this->category));
     }
 
-    private function normalizeSort(): void
+    private function normalizeSort(): ?CatalogProductSort
     {
-        if (! in_array($this->sort, self::SORT_OPTIONS, true)) {
+        $sort = CatalogProductSort::tryFrom($this->sort);
+
+        if ($sort === null && $this->sort !== '') {
             $this->reset('sort');
         }
+
+        return $sort;
     }
 
     private function resetCatalogPage(): void

@@ -11,16 +11,14 @@ use Illuminate\Support\Facades\Cache;
 
 final class CategoryRepository
 {
-    private const string CACHE_KEY = 'catalog_categories_flat';
-
     /**
      * @return Collection<int, Category>
      */
     public function getActiveCatalog(): Collection
     {
         $categories = Cache::memo()->remember(
-            self::CACHE_KEY,
-            now()->addHours(2),
+            (string) config('cache.items.catalog_categories.key'),
+            (int) config('cache.items.catalog_categories.ttl'),
             static fn (): Collection => Category::query()
                 ->visible()
                 ->withCount('activeProducts')
@@ -89,7 +87,7 @@ final class CategoryRepository
 
     public function forget(): void
     {
-        Cache::memo()->forget(self::CACHE_KEY);
+        Cache::memo()->forget((string) config('cache.items.catalog_categories.key'));
     }
 
     /**

@@ -9,7 +9,7 @@ use App\Navigation\Breadcrumbs;
 use App\Repositories\Products\ProductRepository;
 use App\Support\Seo\Schemas\BreadcrumbSchema;
 use App\Support\Seo\Schemas\ProductSchema;
-use App\View\Products\ProductPresentation;
+use App\ViewModel\Products\ProductViewModel;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
@@ -23,7 +23,7 @@ final class ProductController extends Controller
     {
         $product = $this->productRepository->getDetails($product);
         abort_if($product === null, 404);
-        $presentation = new ProductPresentation($product, $request->integer('variant'));
+        $productViewModel = new ProductViewModel($product, $request->integer('variant'));
 
         $breadcrumbs = Breadcrumbs::make(
             BreadcrumbItem::make(__('Каталог'), route('catalog.index')),
@@ -37,7 +37,7 @@ final class ProductController extends Controller
         )
             ->image($product->getFirstMediaUrl('image'))
             ->type('product')
-            ->schema(ProductSchema::make($product, $presentation->selectedVariant['id']))
+            ->schema(ProductSchema::make($product, $productViewModel->selectedVariant['id']))
             ->schema(BreadcrumbSchema::make($breadcrumbs));
 
         $recommendedProducts = $this->productRepository->getRecommendedProducts($product);
@@ -45,7 +45,7 @@ final class ProductController extends Controller
 
         return view(
             'products.show',
-            compact('product', 'recommendedProducts', 'breadcrumbs', 'presentation', 'images'),
+            compact('product', 'recommendedProducts', 'breadcrumbs', 'productViewModel', 'images'),
         );
     }
 }

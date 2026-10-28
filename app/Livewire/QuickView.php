@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire;
 
 use App\Repositories\Products\ProductRepository;
-use App\View\Products\ProductPresentation;
+use App\ViewModel\Products\ProductViewModel;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
@@ -28,9 +28,9 @@ final class QuickView extends Component
     {
         $product = $this->productId === null ? null : $products->getDetails($this->productId);
         $images = $product?->images() ?? collect();
-        $presentation = $product === null ? null : new ProductPresentation($product, $this->variantId);
+        $productViewModel = $product === null ? null : new ProductViewModel($product, $this->variantId);
 
-        return view('livewire.quick-view', compact('product', 'images', 'presentation'));
+        return view('livewire.quick-view', compact('product', 'images', 'productViewModel'));
     }
 
     protected function getListeners(): array

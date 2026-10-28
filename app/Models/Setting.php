@@ -34,8 +34,6 @@ final class Setting extends Model implements HasMedia
         'banner_triple_third_mobile_image',
     ];
 
-    private const string CACHE_KEY = 'site_setting';
-
     /**
      * @var list<string>
      */
@@ -61,11 +59,11 @@ final class Setting extends Model implements HasMedia
     protected static function booted(): void
     {
         self::saved(static function (): void {
-            Cache::forget(self::CACHE_KEY);
+            Cache::forget((string) config('cache.items.settings.key'));
         });
 
         self::deleted(static function (): void {
-            Cache::forget(self::CACHE_KEY);
+            Cache::forget((string) config('cache.items.settings.key'));
         });
     }
 
@@ -95,8 +93,8 @@ final class Setting extends Model implements HasMedia
     public static function cached(): ?self
     {
         return Cache::remember(
-            self::CACHE_KEY,
-            now()->addHours(2),
+            (string) config('cache.items.settings.key'),
+            (int) config('cache.items.settings.ttl'),
             static fn (): ?self => self::query()
                 ->with('media')
                 ->first(),

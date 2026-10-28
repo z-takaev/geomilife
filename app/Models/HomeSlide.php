@@ -17,8 +17,6 @@ final class HomeSlide extends Model implements HasMedia
 {
     use HasFactory, HasOrder, InteractsWithMedia;
 
-    private const string CACHE_KEY = 'home_slides';
-
     protected $fillable = [
         'link_url',
         'open_in_new_tab',
@@ -38,11 +36,11 @@ final class HomeSlide extends Model implements HasMedia
     protected static function booted(): void
     {
         self::saved(static function (): void {
-            Cache::forget(self::CACHE_KEY);
+            Cache::forget((string) config('cache.items.home_slides.key'));
         });
 
         self::deleted(static function (): void {
-            Cache::forget(self::CACHE_KEY);
+            Cache::forget((string) config('cache.items.home_slides.key'));
         });
     }
 
@@ -52,8 +50,8 @@ final class HomeSlide extends Model implements HasMedia
     public static function cached(): Collection
     {
         return Cache::remember(
-            self::CACHE_KEY,
-            now()->addHours(2),
+            (string) config('cache.items.home_slides.key'),
+            (int) config('cache.items.home_slides.ttl'),
             static fn (): Collection => self::query()
                 ->where('is_active', true)
                 ->with('media')

@@ -133,6 +133,49 @@ return [
 
     'prefix' => env('CACHE_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-cache-'),
 
+    'items' => [
+        'faqs' => [
+            'key' => 'faqs',
+            'ttl' => 3600,
+        ],
+
+        'home_slides' => [
+            'key' => 'home_slides',
+            'ttl' => 3600,
+        ],
+
+        'promos' => [
+            'key' => 'latest_promos',
+            'ttl' => 3600,
+        ],
+
+        'reviews' => [
+            'key' => 'latest_reviews',
+            'ttl' => 3600,
+        ],
+
+        'seo_routes' => [
+            'key' => 'seo_route_metadata',
+            'ttl' => 3600,
+        ],
+
+        'settings' => [
+            'key' => 'site_setting',
+            'ttl' => 3600,
+        ],
+
+        'catalog_categories' => [
+            'key' => 'catalog_categories_flat',
+            'ttl' => 3600,
+        ],
+
+        'cdek_oauth_token' => [
+            'key_prefix' => 'cdek.oauth_token.',
+            'ttl_reserve' => 60,
+            'minimum_ttl' => 1,
+        ],
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Serializable Classes

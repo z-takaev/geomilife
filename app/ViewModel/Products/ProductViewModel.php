@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\View\Products;
+namespace App\ViewModel\Products;
 
 use App\Models\Product;
 use App\Models\ProductVariant;
 
-final readonly class ProductPresentation
+final readonly class ProductViewModel
 {
     public array $selectedVariant;
 

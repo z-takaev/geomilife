@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire;
 
 use App\Models\City;
-use App\Services\Cities\CurrentCityService;
+use App\Services\Locations\LocationService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Component;
@@ -16,9 +16,9 @@ final class CitySelection extends Component
 
     public string $query = '';
 
-    public function select(int $cityId, CurrentCityService $currentCity): void
+    public function select(int $cityId, LocationService $locationService): void
     {
-        $city = $currentCity->select($cityId);
+        $city = $locationService->select($cityId);
 
         $this->reset('query');
         $this->dispatch('city-selected', id: $city->getKey(), name: $city->name);

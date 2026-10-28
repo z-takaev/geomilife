@@ -12,8 +12,6 @@ use Illuminate\Support\Collection;
 
 final class ProductRepository
 {
-    private const int SEARCH_PER_PAGE = 12;
-
     public function getDetails(int|string $identifier): ?Product
     {
         return Product::query()
@@ -65,7 +63,7 @@ final class ProductRepository
     {
         return $this->applySearch($this->cardQuery(), $searchQuery)
             ->latest('id')
-            ->paginate(self::SEARCH_PER_PAGE)
+            ->paginate(config('pagination.per_page.search'))
             ->withQueryString();
     }
 

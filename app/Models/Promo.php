@@ -25,8 +25,6 @@ final class Promo extends Model implements HasMedia, HasRichContent, Seoable
 {
     use HasFactory, HasSeo, HasSlug, InteractsWithMedia, InteractsWithRichContent;
 
-    private const string CACHE_KEY = 'latest_promos';
-
     protected $fillable = [
         'title',
         'slug',
@@ -49,11 +47,11 @@ final class Promo extends Model implements HasMedia, HasRichContent, Seoable
     protected static function booted(): void
     {
         self::saved(static function (): void {
-            Cache::forget(self::CACHE_KEY);
+            Cache::forget((string) config('cache.items.promos.key'));
         });
 
         self::deleted(static function (): void {
-            Cache::forget(self::CACHE_KEY);
+            Cache::forget((string) config('cache.items.promos.key'));
         });
     }
 
@@ -76,8 +74,8 @@ final class Promo extends Model implements HasMedia, HasRichContent, Seoable
     public static function cached(): Collection
     {
         return Cache::remember(
-            self::CACHE_KEY,
-            now()->addHours(2),
+            (string) config('cache.items.promos.key'),
+            (int) config('cache.items.promos.ttl'),
             static fn (): Collection => self::query()
                 ->current()
                 ->with('media')

@@ -57,7 +57,7 @@
                 </div>
 
                 <div class="col-lg-8">
-                    <div class="tf-product-info-wrap product-detail__info" x-data="productVariantSelector(@js($presentation->variantOptions), @js($presentation->selectedVariant['id']))">
+                    <div class="tf-product-info-wrap product-detail__info" x-data="productVariantSelector(@js($productViewModel->variantOptions), @js($productViewModel->selectedVariant['id']))">
                         <div class="tf-product-info-heading">
                             <div class="product-info-meta">
                                 <a href="{{ route('catalog.category', $product->category) }}"
@@ -74,18 +74,18 @@
 
                             <h2 class="product-infor-name">{{ $product->name }}</h2>
 
-                            <x-products.price :variant="$presentation->selectedVariant" />
+                            <x-products.price :variant="$productViewModel->selectedVariant" />
                         </div>
                         <div class="quickview-product-variant product-detail__variant">
                             <div class="variant-picker-item variant-unit">
-                                <x-products.variants :variants="$presentation->variantOptions" :selected-id="$presentation->selectedVariant['id']" />
+                                <x-products.variants :variants="$productViewModel->variantOptions" :selected-id="$productViewModel->selectedVariant['id']" />
                             </div>
                         </div>
 
                         <div class="quickview-product-total-btn product-detail__actions">
                             <div class="group-btn">
                                 <x-products.quantity />
-                                <x-products.buy-button :variant="$presentation->selectedVariant" />
+                                <x-products.buy-button :variant="$productViewModel->selectedVariant" />
                                 <button type="button" class="tf-btn-icon hover-tooltip btn-add-wishlist"
                                     aria-label="{{ __('Добавить в избранное') }}">
                                     <i class="icon icon-heart-stroke" aria-hidden="true"></i>

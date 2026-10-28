@@ -15,8 +15,6 @@ final class Review extends Model
 {
     use HasFactory;
 
-    private const string CACHE_KEY = 'latest_reviews';
-
     protected $fillable = [
         'author_name',
         'text',
@@ -39,11 +37,11 @@ final class Review extends Model
     protected static function booted(): void
     {
         self::saved(static function (): void {
-            Cache::forget(self::CACHE_KEY);
+            Cache::forget((string) config('cache.items.reviews.key'));
         });
 
         self::deleted(static function (): void {
-            Cache::forget(self::CACHE_KEY);
+            Cache::forget((string) config('cache.items.reviews.key'));
         });
     }
 
@@ -58,8 +56,8 @@ final class Review extends Model
     public static function cached(): Collection
     {
         return Cache::remember(
-            self::CACHE_KEY,
-            now()->addHours(2),
+            (string) config('cache.items.reviews.key'),
+            (int) config('cache.items.reviews.ttl'),
             static fn (): Collection => self::query()
                 ->select(['id', 'author_name', 'text', 'rating', 'source', 'reviewed_at'])
                 ->active()

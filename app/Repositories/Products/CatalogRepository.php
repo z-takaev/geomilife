@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Products;
 
 use App\DTO\Products\CatalogFiltersDto;
+use App\Enums\CatalogProductSort;
 use App\Enums\ProductUnit;
 use App\Models\Category;
 use App\Models\ProductVariant;
@@ -14,8 +15,6 @@ use Illuminate\Support\Collection;
 
 final class CatalogRepository
 {
-    private const int PER_PAGE = 9;
-
     private const string PRICE_IN_RUBLES = 'ROUND(ROUND(product_variants.price * (100 - COALESCE(product_variants.discount_percent, 0)) / 100.0) / 100)';
 
     public function __construct(private readonly ProductRepository $products) {}
@@ -23,10 +22,11 @@ final class CatalogRepository
     public function getProducts(
         ?Category $category,
         CatalogFiltersDto $filters,
-        string $sort,
+        ?CatalogProductSort $sort,
         int $page,
         int $additionalPages = 0,
     ): LengthAwarePaginator {
+        $perPage = config('pagination.per_page.catalog');
         $variants = $this->matchingVariants($filters);
         $query = $this->products->cardQuery()
             ->when($category, fn (Builder $query): Builder => $query->whereIn('category_id', $this->categoryIds($category)));
@@ -35,24 +35,24 @@ final class CatalogRepository
         $variants->selectRaw('id as catalog_variant_id, '.self::PRICE_IN_RUBLES.' as catalog_price');
 
         match ($sort) {
-            'price-asc' => $variants->orderBy('catalog_price'),
-            'price-desc' => $variants->orderByDesc('catalog_price'),
+            CatalogProductSort::PRICE_ASC => $variants->orderBy('catalog_price'),
+            CatalogProductSort::PRICE_DESC => $variants->orderByDesc('catalog_price'),
             default => null,
         };
 
-        $variants->orderBy('order')->orderBy('id')->limit(1);
+        $variants->orderBy('order')->limit(1);
         $query->joinLateral($variants, 'selected_variant')
             ->addSelect(['selected_variant.catalog_variant_id', 'selected_variant.catalog_price']);
         $this->sortProducts($query, $sort);
 
-        $lastPage = max(1, (int) ceil($total / self::PER_PAGE));
+        $lastPage = max(1, (int) ceil($total / $perPage));
         $page = min(max(1, $page), $lastPage);
         $additionalPages = min(max(0, $additionalPages), $lastPage - $page);
-        $products = $query->offset(($page - 1) * self::PER_PAGE)
-            ->limit(self::PER_PAGE * ($additionalPages + 1))
+        $products = $query->offset(($page - 1) * $perPage)
+            ->limit($perPage * ($additionalPages + 1))
             ->get();
 
-        return new LengthAwarePaginator($products, $total, self::PER_PAGE, $page);
+        return new LengthAwarePaginator($products, $total, $perPage, $page);
     }
 
     public function getPackageOptions(Category $category): array
@@ -110,14 +110,14 @@ final class CatalogRepository
         return $query;
     }
 
-    private function sortProducts(Builder $query, string $sort): void
+    private function sortProducts(Builder $query, ?CatalogProductSort $sort): void
     {
         match ($sort) {
-            'popular' => $query->orderByDesc('is_hit')->orderByDesc('products.id'),
-            'new' => $query->orderByDesc('is_new')->orderByDesc('products.id'),
-            'price-asc' => $query->orderBy('catalog_price')->orderBy('products.id'),
-            'price-desc' => $query->orderByDesc('catalog_price')->orderByDesc('products.id'),
-            'name' => $query->orderBy('name')->orderBy('products.id'),
+            CatalogProductSort::POPULAR => $query->orderByDesc('is_hit')->orderByDesc('products.id'),
+            CatalogProductSort::NEW => $query->orderByDesc('is_new')->orderByDesc('products.id'),
+            CatalogProductSort::PRICE_ASC => $query->orderBy('catalog_price')->orderBy('products.id'),
+            CatalogProductSort::PRICE_DESC => $query->orderByDesc('catalog_price')->orderByDesc('products.id'),
+            CatalogProductSort::NAME => $query->orderBy('name')->orderBy('products.id'),
             default => $query->orderBy('products.id'),
         };
     }

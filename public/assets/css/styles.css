@@ -1556,7 +1556,7 @@ h6,
 .catalog-filter-error {
     display: block;
     margin-top: 8px;
-    color: var(--text-secondary);
+    color: var(--bs-form-invalid-color);
     font-size: 12px;
     line-height: 18px;
 }

@@ -46,7 +46,7 @@
         </div>
 
         <div class="canvas-body ps-md-0 tf-quick-view" wire:loading.remove
-            wire:key="quick-view-product-{{ $opening }}" x-data="productVariantSelector(@js($presentation?->variantOptions ?? []), @js($presentation->selectedVariant['id'] ?? null), @js($presentation?->productUrl))">
+            wire:key="quick-view-product-{{ $opening }}" x-data="productVariantSelector(@js($productViewModel?->variantOptions ?? []), @js($productViewModel->selectedVariant['id'] ?? null), @js($productViewModel?->productUrl))">
             @if ($product !== null)
 
                 <div class="quickview-product-info">
@@ -59,29 +59,29 @@
                         @if ($product->is_new)
                             <span class="product-card-badge product-card-badge--new">{{ __('Новинка') }}</span>
                         @endif
-                        @if ($presentation->hasDiscount)
+                        @if ($productViewModel->hasDiscount)
                             <span class="product-card-badge product-card-badge--sale">{{ __('Скидка') }}</span>
                         @endif
                     </div>
                     <h3 class="product-infor-name text-black">{{ $product->name }}</h3>
-                    <x-products.price :variant="$presentation->selectedVariant" />
+                    <x-products.price :variant="$productViewModel->selectedVariant" />
                 </div>
                 <div class="quickview-product-variant">
                     <div class="variant-picker-item variant-unit">
-                        <x-products.variants :variants="$presentation->variantOptions" :selected-id="$presentation->selectedVariant['id']" />
+                        <x-products.variants :variants="$productViewModel->variantOptions" :selected-id="$productViewModel->selectedVariant['id']" />
                     </div>
                 </div>
                 <div class="quickview-product-total-btn">
                     <div class="group-btn">
                         <x-products.quantity />
-                        <x-products.buy-button :variant="$presentation->selectedVariant" />
+                        <x-products.buy-button :variant="$productViewModel->selectedVariant" />
                         <button type="button" class="tf-btn-icon hover-tooltip btn-add-wishlist"
                             aria-label="{{ __('Добавить в избранное') }}">
                             <i class="icon icon-heart-stroke" aria-hidden="true"></i>
                         </button>
                     </div>
                 </div>
-                <a href="{{ $presentation->productUrl }}" x-bind:href="selectedProductUrl"
+                <a href="{{ $productViewModel->productUrl }}" x-bind:href="selectedProductUrl"
                     class="link-underline text-primary">{{ __('Подробнее о товаре') }}</a>
             @elseif ($productId !== null)
                 <p role="status">{{ __('Товар больше недоступен.') }}</p>

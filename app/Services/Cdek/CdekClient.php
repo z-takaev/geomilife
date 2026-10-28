@@ -98,7 +98,10 @@ final class CdekClient
         Cache::put(
             $this->tokenCacheKey(),
             $accessToken,
-            max(1, $expiresIn - 60),
+            max(
+                (int) config('cache.items.cdek_oauth_token.minimum_ttl'),
+                $expiresIn - (int) config('cache.items.cdek_oauth_token.ttl_reserve'),
+            ),
         );
 
         return $accessToken;
@@ -124,7 +127,8 @@ final class CdekClient
 
     private function tokenCacheKey(): string
     {
-        return 'cdek.oauth_token.'.hash('sha256', $this->baseUrl.'|'.$this->clientId);
+        return (string) config('cache.items.cdek_oauth_token.key_prefix')
+            .hash('sha256', $this->baseUrl.'|'.$this->clientId);
     }
 
     private function stringConfig(string $key): string

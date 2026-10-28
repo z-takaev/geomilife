@@ -14,8 +14,6 @@ final class Faq extends Model
 {
     use HasFactory, HasOrder;
 
-    private const string CACHE_KEY = 'faqs';
-
     protected $fillable = [
         'question',
         'answer',
@@ -34,11 +32,11 @@ final class Faq extends Model
     protected static function booted(): void
     {
         self::saved(static function (): void {
-            Cache::forget(self::CACHE_KEY);
+            Cache::forget((string) config('cache.items.faqs.key'));
         });
 
         self::deleted(static function (): void {
-            Cache::forget(self::CACHE_KEY);
+            Cache::forget((string) config('cache.items.faqs.key'));
         });
     }
 
@@ -48,8 +46,8 @@ final class Faq extends Model
     public static function cached(): Collection
     {
         return Cache::remember(
-            self::CACHE_KEY,
-            now()->addHours(2),
+            (string) config('cache.items.faqs.key'),
+            (int) config('cache.items.faqs.ttl'),
             static fn (): Collection => self::query()
                 ->where('is_active', true)
                 ->orderBy('order')

@@ -13,8 +13,6 @@ use Illuminate\Support\Facades\Route;
 
 final class Seo extends Model
 {
-    private const string ROUTE_CACHE_KEY = 'seo_route_metadata';
-
     protected $table = 'seo_metadata';
 
     protected $fillable = [
@@ -27,13 +25,13 @@ final class Seo extends Model
     {
         self::saved(static function (self $seo): void {
             if ($seo->route_name !== null || $seo->getRawOriginal('route_name') !== null) {
-                Cache::forget(self::ROUTE_CACHE_KEY);
+                Cache::forget((string) config('cache.items.seo_routes.key'));
             }
         });
 
         self::deleted(static function (self $seo): void {
             if ($seo->route_name !== null) {
-                Cache::forget(self::ROUTE_CACHE_KEY);
+                Cache::forget((string) config('cache.items.seo_routes.key'));
             }
         });
     }
@@ -49,8 +47,8 @@ final class Seo extends Model
     public static function cachedRoutes(): Collection
     {
         return Cache::remember(
-            self::ROUTE_CACHE_KEY,
-            now()->addHours(2),
+            (string) config('cache.items.seo_routes.key'),
+            (int) config('cache.items.seo_routes.ttl'),
             static fn (): Collection => self::query()
                 ->whereNotNull('route_name')
                 ->get()
