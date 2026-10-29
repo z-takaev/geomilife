@@ -31,6 +31,7 @@ final class SignInController extends Controller
         }
 
         $request->session()->regenerate();
+        $request->session()->forget('favorites.merge_declined');
 
         return redirect()->intended(route('profile.show'));
     }

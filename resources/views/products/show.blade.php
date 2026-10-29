@@ -86,11 +86,7 @@
                             <div class="group-btn">
                                 <x-products.quantity />
                                 <x-products.buy-button :variant="$productViewModel->selectedVariant" />
-                                <button type="button" class="tf-btn-icon hover-tooltip btn-add-wishlist"
-                                    aria-label="{{ __('Добавить в избранное') }}">
-                                    <i class="icon icon-heart-stroke" aria-hidden="true"></i>
-                                    <span class="tooltip">{{ __('В избранное') }}</span>
-                                </button>
+                                <x-products.favorite-button :product="$product" />
                             </div>
                         </div>
 

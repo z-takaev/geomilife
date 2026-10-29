@@ -49,3 +49,53 @@ window.addEventListener('catalog-filters-applied', () => {
 document.getElementById('canvasSearch')?.addEventListener('shown.bs.offcanvas', (event) => {
     event.target.querySelector('input[type="search"]')?.focus();
 });
+
+document.addEventListener('alpine:init', () => {
+    Alpine.store('wishlist', {
+        ids: [],
+        ready: false,
+        busy: false,
+        wire: null,
+        async perform(action, ...parameters) {
+            if (!this.ready || this.busy) return;
+            this.busy = true;
+            try {
+                await this.wire[action](...parameters);
+            } finally {
+                this.busy = false;
+            }
+        },
+    });
+});
+
+window.wishlistBrowser = function (wire, authenticated, accountIds) {
+    const storageKey = 'guest-wishlist';
+
+    return {
+        async init() {
+            const store = this.$store.wishlist;
+            if (store.wire === wire) return;
+            store.wire = wire;
+            store.ready = false;
+            let guestIds = [];
+            try {
+                const saved = JSON.parse(sessionStorage.getItem(storageKey) ?? '[]');
+                if (Array.isArray(saved)) {
+                    guestIds = [...new Set(saved.filter((id) => Number.isSafeInteger(id) && id > 0))].slice(0, 1000);
+                }
+            } catch {
+                guestIds = [];
+            }
+            store.ids = authenticated ? accountIds : guestIds;
+            if (guestIds.length > 0) await wire.initialize(guestIds);
+            store.ready = true;
+        },
+        update(ids) {
+            this.$store.wishlist.ids = ids;
+            if (!authenticated) sessionStorage.setItem(storageKey, JSON.stringify(ids));
+        },
+        clearGuest() {
+            sessionStorage.removeItem(storageKey);
+        },
+    };
+};

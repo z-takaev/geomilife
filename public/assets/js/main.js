@@ -353,31 +353,6 @@
         $(window).on('resize', handleAccordion);
     };
 
-    /* Add Wishlist
-    -------------------------------------------------------------------------*/
-    var addWishList = function () {
-        $('.btn-add-wishlist, .card-product .wishlist').on('click', function (e) {
-            e.preventDefault();
-            let $this = $(this);
-            let icon = $this.find('.icon');
-            let tooltip = $this.find('.tooltip');
-            let addText = $this.data('tooltip-add') || 'Add to Wishlist';
-            let removeText = $this.data('tooltip-remove') || 'Remove Wishlist';
-
-            $this.toggleClass('addwishlist');
-
-            if ($this.hasClass('addwishlist')) {
-                icon.removeClass('icon-heart-stroke').addClass('icon-heart');
-                tooltip.text(removeText);
-                $this.find('button').attr('aria-label', removeText);
-            } else {
-                icon.removeClass('icon-heart').addClass('icon-heart-stroke');
-                tooltip.text(addText);
-                $this.find('button').attr('aria-label', addText);
-            }
-        });
-    };
-
     /* Handle Sidebar Filter 
     -------------------------------------------------------------------------*/
     var handleSidebarFilter = function () {
@@ -1151,7 +1126,6 @@
         changeValue();
         sidebarMobile();
         handleFooter();
-        addWishList();
         handleSidebarFilter();
         estimateShipping();
         textCopy();

@@ -31,7 +31,7 @@
     </main>
 
     @include('partials.mobile-menu')
-    @include('partials.wishlist')
+    <livewire:wishlist />
     @include('partials.shopping-cart')
     <livewire:quick-view />
     <livewire:search-suggestions />

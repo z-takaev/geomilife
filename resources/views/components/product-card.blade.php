@@ -25,13 +25,8 @@
             @endif
 
             <ul class="product-action_list">
-                <li class="wishlist" data-tooltip-add="{{ __('В избранное') }}"
-                    data-tooltip-remove="{{ __('Убрать из избранного') }}">
-                    <button type="button" class="hover-tooltip tooltip-left box-icon"
-                        aria-label="{{ __('Добавить в избранное') }}">
-                        <span class="icon icon-heart-stroke" aria-hidden="true"></span>
-                        <span class="tooltip">{{ __('В избранное') }}</span>
-                    </button>
+                <li>
+                    <x-products.favorite-button :product="$product" compact />
                 </li>
                 <li>
                     <button type="button" data-bs-toggle="offcanvas" data-bs-target="#quickView"
