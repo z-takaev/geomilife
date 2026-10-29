@@ -53,25 +53,4 @@
         </div>
     </form>
 
-    <div class="toast-container position-fixed top-0 end-0 p-3">
-        <div class="toast question-form-toast" role="status" aria-live="polite" aria-atomic="true" wire:ignore>
-            <div class="d-flex align-items-center">
-                <div class="toast-body">
-                    {{ __('Ваш вопрос отправлен.') }}
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
-                    aria-label="{{ __('Закрыть уведомление') }}"></button>
-            </div>
-        </div>
-    </div>
 </div>
-
-@script
-    <script>
-        $wire.on('question-sent', () => {
-            const toastElement = $wire.$el.querySelector('.question-form-toast');
-
-            bootstrap.Toast.getOrCreateInstance(toastElement).show();
-        });
-    </script>
-@endscript

@@ -25,6 +25,7 @@ final class QuestionForm extends Component
 
         if (blank($adminEmail)) {
             $this->addError('message', __('Не удалось отправить вопрос. Попробуйте позже.'));
+            $this->dispatch('notify', message: __('Не удалось отправить вопрос. Попробуйте позже.'), type: 'error');
 
             return;
         }
@@ -38,6 +39,7 @@ final class QuestionForm extends Component
         $this->reset(['name', 'phone', 'message']);
         $this->resetValidation();
         $this->dispatch('question-sent');
+        $this->dispatch('notify', message: __('Ваш вопрос отправлен.'), type: 'success');
     }
 
     public function render(): View

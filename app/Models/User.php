@@ -32,6 +32,7 @@ final class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
+        'telegram_link_token',
     ];
 
     protected function casts(): array

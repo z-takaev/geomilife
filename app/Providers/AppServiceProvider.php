@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Repositories\Products\CatalogRepository;
 use App\Services\Locations\LocationService;
+use App\Services\Telegram\TelegramService;
 use App\Support\Seo\SeoManager;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -14,11 +15,18 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
+use SergiX44\Nutgram\Nutgram;
 
 final class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->scoped(Nutgram::class, static function (): Nutgram {
+            $bot = new Nutgram((string) config('telegram.bot_token'));
+            $bot->onMessage([app(TelegramService::class), 'handleMessage']);
+
+            return $bot;
+        });
         $this->app->scoped(SeoManager::class);
         $this->app->scoped(CatalogRepository::class);
         $this->app->scoped(LocationService::class);

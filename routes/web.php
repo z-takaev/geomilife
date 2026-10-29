@@ -22,6 +22,7 @@ use App\Http\Controllers\PromoController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\TelegramWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
@@ -97,3 +98,5 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
 });
 
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+
+Route::post('/telegram/webhook', TelegramWebhookController::class)->name('telegram.webhook');

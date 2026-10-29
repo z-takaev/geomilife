@@ -25,6 +25,7 @@ return new class extends Migration
             $table->bigInteger('telegram_chat_id')->nullable();
             $table->string('telegram_username')->nullable();
             $table->boolean('telegram_notifications_enabled')->default(true);
+            $table->string('telegram_link_token', 64)->nullable()->unique();
             $table->rememberToken();
             $table->timestamps();
         });

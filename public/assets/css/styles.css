@@ -7323,9 +7323,17 @@ select.select-2 {
 .faq-question-form {
     background-color: var(--white);
 }
-.question-form-toast {
+.app-toast {
     color: var(--text-white);
     background-color: var(--primary);
+}
+
+.app-toast--error {
+    background-color: #b42318;
+}
+.app-toast--warning {
+    color: var(--text-black);
+    background-color: #f5cc71;
 }
 
 .archive-pagination {
@@ -15867,3 +15875,271 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
 }
 
 /*# sourceMappingURL=styles.css.map */
+
+.profile-page {
+    color: var(--text-black);
+}
+.profile-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+}
+.profile-card {
+    padding: 32px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--white);
+}
+.profile-card__heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+.profile-card__heading h2 {
+    margin: 0;
+    color: var(--text-black);
+    font-size: 24px;
+    font-weight: 600;
+}
+.profile-eyebrow {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+.profile-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+.profile-form label {
+    display: grid;
+    gap: 8px;
+    color: var(--text-black);
+    font-size: 14px;
+}
+.profile-form input,
+.profile-form select {
+    width: 100%;
+    min-height: 48px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--text-black);
+    background: var(--white);
+    transition: border-color 0.2s ease;
+}
+.profile-form input:focus,
+.profile-form select:focus {
+    border-color: var(--primary);
+    outline: 0;
+    box-shadow: 0 0 0 3px rgb(144 65 48 / 10%);
+}
+.profile-form input:disabled {
+    color: var(--text-secondary);
+    background: var(--surface);
+}
+.profile-form__wide {
+    grid-column: 1 / -1;
+}
+.profile-form__actions,
+.profile-address__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+.profile-button {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 24px;
+    border: 1px solid var(--primary);
+    border-radius: 999px;
+    color: var(--text-white);
+    background: var(--primary);
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+}
+.profile-button:hover,
+.profile-button:focus-visible {
+    border-color: var(--primary-2);
+    color: var(--text-white);
+    background: var(--primary-2);
+}
+.profile-button--light {
+    color: var(--primary);
+    background: var(--white);
+}
+.profile-notice,
+.profile-muted {
+    color: var(--text-secondary);
+}
+.profile-address {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 20px 0;
+    border-top: 1px solid var(--line);
+}
+.profile-address--active {
+    padding-left: 16px;
+    border-left: 3px solid var(--primary);
+}
+.profile-address strong {
+    color: var(--text-black);
+    font-weight: 600;
+}
+.profile-address p {
+    margin: 7px 0 0;
+    color: var(--text-secondary);
+}
+.profile-address__actions button,
+.profile-text-button {
+    padding: 4px 0;
+    border: 0;
+    color: var(--primary);
+    background: transparent;
+    font-size: 14px;
+    cursor: pointer;
+}
+.profile-badge,
+.profile-telegram__status {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    margin-top: 10px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    color: var(--primary);
+    background: var(--secondary);
+    font-size: 12px;
+    line-height: 1.2;
+}
+.profile-form small,
+.profile-card small {
+    color: #b42318;
+}
+.profile-address-modal .modal-content {
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--white);
+}
+.profile-address-modal .modal-header {
+    border-bottom: 1px solid var(--line);
+}
+.profile-address-modal .modal-title {
+    color: var(--text-black);
+    font-size: 22px;
+}
+.profile-address-modal .modal-body {
+    padding: 16px 20px 20px;
+}
+.profile-address-modal .profile-form--address {
+    gap: 18px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+.profile-check {
+    display: flex !important;
+    align-items: center;
+    gap: 10px !important;
+}
+.profile-check input {
+    width: 18px;
+    min-height: 18px;
+}
+.profile-telegram {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 24px 28px;
+    border-color: var(--line);
+    background: var(--surface);
+}
+.profile-telegram__content {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 16px;
+}
+.profile-telegram__logo {
+    display: block;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    border-radius: 50%;
+    background: #229ed9;
+    -webkit-mask: url('../images/social/telegram.svg') center / contain no-repeat;
+    mask: url('../images/social/telegram.svg') center / contain no-repeat;
+}
+.profile-telegram__copy h2 {
+    margin: 0 0 5px;
+    color: var(--text-black);
+    font-size: 18px;
+    font-weight: 600;
+}
+.profile-telegram__copy p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+.profile-telegram__controls {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 16px;
+}
+.profile-telegram__status {
+    margin: 0;
+    color: var(--text-secondary);
+    background: var(--white);
+    white-space: nowrap;
+}
+.profile-telegram__status--connected {
+    color: var(--primary);
+    background: var(--secondary);
+}
+@media (max-width: 767px) {
+    .profile-grid {
+        gap: 24px;
+    }
+    .profile-card {
+        padding: 22px;
+    }
+    .profile-card__heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+    .profile-form {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .profile-form__wide {
+        grid-column: auto;
+    }
+    .profile-address {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+    .profile-telegram {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 18px;
+        padding: 22px;
+    }
+    .profile-telegram__controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
