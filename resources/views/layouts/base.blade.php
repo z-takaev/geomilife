@@ -32,7 +32,7 @@
 
     @include('partials.mobile-menu')
     <livewire:wishlist />
-    @include('partials.shopping-cart')
+    <livewire:shopping-cart />
     <livewire:quick-view />
     <livewire:search-suggestions />
     @include('partials.city-selection')

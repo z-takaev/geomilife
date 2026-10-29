@@ -152,10 +152,11 @@
                         </li>
                         <li>
                             <a href="#shoppingCart" data-bs-toggle="offcanvas"
-                                class="nav-icon-item text-primary link has-num">
+                                class="nav-icon-item text-primary link" x-data
+                                x-bind:class="{ 'has-num': $store.cart.count > 0 }">
                                 <i class="icon icon-ShoppingCartSimple"></i>
-                                <span class="number-count text-caption-02">
-                                    3
+                                <span class="number-count text-caption-02" x-show="$store.cart.count > 0" x-cloak>
+                                    <span x-text="$store.cart.count">0</span>
                                 </span>
                             </a>
                         </li>

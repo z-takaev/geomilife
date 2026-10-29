@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Repositories\Products\CatalogRepository;
+use App\Services\Cart\CartService;
 use App\Services\Favorites\FavoriteService;
 use App\Services\Locations\LocationService;
 use App\Services\Telegram\TelegramService;
@@ -29,6 +30,7 @@ final class AppServiceProvider extends ServiceProvider
             return $bot;
         });
         $this->app->scoped(FavoriteService::class);
+        $this->app->scoped(CartService::class);
         $this->app->scoped(SeoManager::class);
         $this->app->scoped(CatalogRepository::class);
         $this->app->scoped(LocationService::class);

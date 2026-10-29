@@ -7,7 +7,7 @@
 ])
     x-bind:class="{ 'is-preorder hover-tooltip': selectedVariant.isPreorder }"
     x-bind:aria-label="selectedVariant.isPreorder ? @js(__('Под заказ. Срок поставки уточнит менеджер')) : @js(__('Купить'))"
-    data-bs-toggle="offcanvas" data-bs-target="#shoppingCart">
+    x-on:click="addToCart()" x-bind:disabled="$store.cart.busy">
     <span
         x-text="selectedVariant.isPreorder ? @js(__('Под заказ')) : @js(__('Купить'))">{{ $variant['isPreorder'] ? __('Под заказ') : __('Купить') }}</span>
     <span class="product-card-preorder-icon" x-show="selectedVariant.isPreorder" aria-hidden="true">i</span>

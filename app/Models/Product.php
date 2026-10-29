@@ -146,6 +146,11 @@ final class Product extends Model implements HasMedia, Seoable
 
     public function registerMediaConversions(?Media $media = null): void
     {
+        $this->addMediaConversion('cart')
+            ->fit(Fit::Fill, 120, 120)
+            ->performOnCollections('image')
+            ->nonQueued();
+
         $this->addMediaConversion('card')
             ->fit(Fit::Fill, 600, 600)
             ->performOnCollections('image')

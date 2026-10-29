@@ -18,7 +18,6 @@
                         <a href="{{ $item['viewModel']->productUrl }}"
                             class="prd_name link-underline text-black fw-medium">
                             <span>{{ $item['name'] }}</span>
-                            <span class="mini-product-weight">{{ $item['viewModel']->selectedVariant['label'] }}</span>
                         </a>
                     </div>
                     <div class="prd-action">
@@ -27,9 +26,6 @@
                             x-bind:aria-disabled="$store.wishlist.busy">
                             <span class="text-caption-01">{{ __('Удалить') }}</span>
                         </button>
-                        <div class="quantity-price text-black fw-medium">
-                            <span>{{ $item['viewModel']->selectedVariant['price'] }}</span>
-                        </div>
                     </div>
                 </li>
             @empty

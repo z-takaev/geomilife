@@ -30,13 +30,20 @@ window.productVariantSelector = function (variants, initialVariantId = null, pro
 
         increaseQuantity() {
             this.normalizeQuantity();
-            this.quantity = Math.min(Number.MAX_SAFE_INTEGER, this.quantity + 1);
+            this.quantity = Math.min(1000, this.quantity + 1);
+        },
+
+        async addToCart() {
+            this.normalizeQuantity();
+            if (this.selectedVariantId && (await this.$store.cart.add(this.selectedVariantId, this.quantity))) {
+                this.quantity = 1;
+            }
         },
 
         normalizeQuantity() {
             const quantity = Number.parseInt(this.quantity, 10);
 
-            this.quantity = Number.isSafeInteger(quantity) ? Math.max(1, quantity) : 1;
+            this.quantity = Number.isSafeInteger(quantity) ? Math.min(1000, Math.max(1, quantity)) : 1;
         },
     };
 };
@@ -51,6 +58,21 @@ document.getElementById('canvasSearch')?.addEventListener('shown.bs.offcanvas', 
 });
 
 document.addEventListener('alpine:init', () => {
+    Alpine.store('cart', {
+        count: 0,
+        busy: false,
+        wire: null,
+        async add(variantId, quantity) {
+            if (!this.wire || this.busy) return false;
+            this.busy = true;
+            try {
+                return await this.wire.add(variantId, quantity);
+            } finally {
+                this.busy = false;
+            }
+        },
+    });
+
     Alpine.store('wishlist', {
         ids: [],
         ready: false,
@@ -99,3 +121,10 @@ window.wishlistBrowser = function (wire, authenticated, accountIds) {
         },
     };
 };
+
+document.addEventListener('shown.bs.offcanvas', (event) => {
+    if (!event.target.matches('#shoppingCart, #wishList')) return;
+
+    const backdrop = event.target.parentElement?.querySelector(':scope > .offcanvas-backdrop');
+    if (backdrop) document.body.append(backdrop);
+});
