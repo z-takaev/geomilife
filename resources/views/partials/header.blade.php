@@ -134,10 +134,13 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <button type="button" class="dropdown-item account-menu__item">
-                                            <i class="icon icon-arrow-right" aria-hidden="true"></i>
-                                            <span>{{ __('Выход') }}</span>
-                                        </button>
+                                        <form action="{{ route('logout') }}" method="POST" class="account-menu__form">
+                                            @csrf
+                                            <button type="submit" class="dropdown-item account-menu__item">
+                                                <i class="icon icon-arrow-right" aria-hidden="true"></i>
+                                                <span>{{ __('Выход') }}</span>
+                                            </button>
+                                        </form>
                                     </li>
                                 </ul>
                             </li>

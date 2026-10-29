@@ -6,13 +6,19 @@ use App\Models\Order;
 use App\Models\User;
 use App\Support\Values\Money;
 
-function createAccountUser(string $email): User
+function createAccountUser(string $email, bool $emailVerified = true): User
 {
-    return User::query()->create([
+    $user = User::query()->create([
         'first_name' => 'Покупатель',
         'email' => $email,
         'password' => 'password',
     ]);
+
+    if ($emailVerified) {
+        $user->markEmailAsVerified();
+    }
+
+    return $user;
 }
 
 function createAccountOrder(User $user, string $number): Order
@@ -37,6 +43,18 @@ it('открывает профиль и список заказов автор�
 
     $this->actingAs($user)->get(route('profile.show'))->assertOk();
     $this->actingAs($user)->get(route('orders.index'))->assertOk();
+});
+
+it('перенаправляет пользователя без подтвержденной почты на страницу подтверждения', function (): void {
+    $user = createAccountUser('unverified@example.com', false);
+
+    $this->actingAs($user)
+        ->get(route('profile.show'))
+        ->assertRedirect(route('verification.notice'));
+
+    $this->actingAs($user)
+        ->get(route('orders.index'))
+        ->assertRedirect(route('verification.notice'));
 });
 
 it('показывает пользователю только принадлежащий ему заказ', function (): void {

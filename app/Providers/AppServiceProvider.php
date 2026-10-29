@@ -7,8 +7,13 @@ namespace App\Providers;
 use App\Repositories\Products\CatalogRepository;
 use App\Services\Locations\LocationService;
 use App\Support\Seo\SeoManager;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
 
 final class AppServiceProvider extends ServiceProvider
 {
@@ -22,5 +27,26 @@ final class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::useBootstrapFive();
+
+        Password::defaults(
+            static fn (): Password => Password::min(8)
+                ->max(30)
+                ->mixedCase()
+                ->numbers(),
+        );
+
+        RateLimiter::for(
+            'login',
+            static fn (Request $request): Limit => Limit::perMinute(5)->by(
+                Str::lower($request->string('email')->toString()).'|'.$request->ip(),
+            ),
+        );
+
+        RateLimiter::for(
+            'password-reset',
+            static fn (Request $request): Limit => Limit::perMinute(3)->by(
+                Str::lower($request->string('email')->toString()).'|'.$request->ip(),
+            ),
+        );
     }
 }

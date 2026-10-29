@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <x-seo />
+    @stack('meta')
 
     <link rel="stylesheet" href="{{ asset('assets/fonts/fonts.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/icon/icomoon/style.css') }}">
@@ -35,9 +36,11 @@
     <livewire:quick-view />
     <livewire:search-suggestions />
     @include('partials.city-selection')
-    @include('partials.auth.login')
-    @include('partials.auth.register')
-    @include('partials.auth.forgot-password')
+    @guest
+        @include('partials.auth.login')
+        @include('partials.auth.register')
+        @include('partials.auth.forgot-password')
+    @endguest
     @include('partials.cookie-consent')
 
     <script src="{{ asset('assets/js/bootstrap.min.js') }}"></script>
@@ -46,6 +49,24 @@
     @stack('scripts')
     <script src="{{ asset('assets/js/products.js') }}"></script>
     <script src="{{ asset('assets/js/main.js') }}"></script>
+
+    @guest
+        @php
+            $authModal = match (true) {
+                $errors->signIn->any() => 'login',
+                $errors->signUp->any() => 'register',
+                $errors->forgotPassword->any() => 'forgotPassword',
+                session('auth_modal') !== null => session('auth_modal'),
+                request()->string('auth')->toString() === 'login' => 'login',
+                default => null,
+            };
+        @endphp
+        @if ($authModal !== null)
+            <script>
+                bootstrap.Modal.getOrCreateInstance(document.getElementById(@js($authModal))).show();
+            </script>
+        @endif
+    @endguest
 </body>
 
 </html>

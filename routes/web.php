@@ -3,6 +3,11 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\Auth\EmailVerificationController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Auth\SignInController;
+use App\Http\Controllers\Auth\SignUpController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ContactController;
@@ -53,7 +58,36 @@ Route::controller(PromoController::class)->prefix('promos')->name('promos.')->gr
     Route::get('/{promo}', 'show')->name('show');
 });
 
+Route::middleware('guest')->group(function (): void {
+    Route::post('/login', [SignInController::class, 'login'])
+        ->middleware('throttle:login')
+        ->name('login');
+    Route::post('/register', [SignUpController::class, 'register'])
+        ->middleware('throttle:6,1')
+        ->name('register');
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink'])
+        ->middleware('throttle:password-reset')
+        ->name('password.email');
+    Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])
+        ->name('password.reset');
+    Route::post('/reset-password', [ResetPasswordController::class, 'resetPassword'])
+        ->name('password.update');
+});
+
 Route::middleware('auth')->group(function (): void {
+    Route::post('/logout', [SignInController::class, 'logout'])->name('logout');
+
+    Route::get('/email/verify', [EmailVerificationController::class, 'showVerificationNotice'])
+        ->name('verification.notice');
+    Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verifyEmail'])
+        ->middleware(['signed', 'throttle:6,1'])
+        ->name('verification.verify');
+    Route::post('/email/verification-notification', [EmailVerificationController::class, 'resendVerificationEmail'])
+        ->middleware('throttle:6,1')
+        ->name('verification.send');
+});
+
+Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/profile', ProfileController::class)->name('profile.show');
 
     Route::controller(OrderController::class)->prefix('profile/orders')->name('orders.')->group(function (): void {

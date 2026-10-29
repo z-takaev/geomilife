@@ -5,26 +5,42 @@
                 <i class="icon icon-close"></i>
             </div>
             <h3 class="title-pop text-black text-center">{{ __('Вход') }}</h3>
-            <form class="form-log">
+            @if (session('auth_status') && session('auth_modal') === 'login')
+                <div class="auth-notice" role="status">
+                    {{ session('auth_status') }}
+                </div>
+            @endif
+            <form action="{{ route('login') }}" method="POST" class="form-log">
+                @csrf
                 <div class="form-content">
                     <fieldset class="tf-field">
                         <label for="email3" class="tf-lable">{{ __('Электронная почта') }}<span
                                 class="text-secondary">*</span></label>
-                        <input type="email" id="email3" placeholder="{{ __('Электронная почта') }}"
-                            autocomplete="email" required="">
+                        <input type="email" id="email3" name="email"
+                            value="{{ $errors->signIn->any() ? old('email') : '' }}"
+                            placeholder="{{ __('Электронная почта') }}" autocomplete="email" required
+                            @class(['is-invalid' => $errors->signIn->has('email')])>
+                        @error('email', 'signIn')
+                            <span class="invalid-feedback d-block">{{ $message }}</span>
+                        @enderror
                     </fieldset>
                     <fieldset class="tf-field ">
                         <label for="password-log" class="tf-lable ">{{ __('Пароль') }}<span
                                 class="text-secondary">*</span></label>
                         <div class="password-wrapper">
-                            <input class="password-field" type="password" id="password-log"
-                                placeholder="{{ __('Пароль') }}" autocomplete="current-password" required="">
+                            <input class="password-field" type="password" id="password-log" name="password"
+                                placeholder="{{ __('Пароль') }}" autocomplete="current-password" required
+                                @class(['is-invalid' => $errors->signIn->has('password')])>
                             <span class="toggle-pass icon-eye-open"></span>
                         </div>
+                        @error('password', 'signIn')
+                            <span class="invalid-feedback d-block">{{ $message }}</span>
+                        @enderror
                     </fieldset>
                     <div class="check-bottom">
                         <div class="checkbox-wrap">
-                            <input id="save" type="checkbox" class="tf-check style-4 radius-3">
+                            <input id="save" name="remember" value="1" type="checkbox"
+                                class="tf-check style-4 radius-3" @checked($errors->signIn->any() && old('remember'))>
                             <label for="save" class="text-black text-caption-01">
                                 {{ __('Запомнить меня') }}
                             </label>

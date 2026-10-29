@@ -2329,6 +2329,11 @@ header.header-sticky .header-inner {
 .account-menu__dropdown li {
     width: 100%;
 }
+.account-menu__form {
+    display: block;
+    width: 100%;
+    margin: 0;
+}
 .account-menu__item {
     display: flex;
     align-items: center;
@@ -5857,6 +5862,35 @@ input[type='number']::-webkit-outer-spin-button {
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 16px;
+}
+.auth-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--primary);
+    border-radius: 12px;
+    background-color: var(--surface);
+    color: var(--text-black);
+    font-size: 14px;
+    line-height: 20px;
+}
+.auth-notice::before {
+    content: '✓';
+    display: flex;
+    flex: 0 0 22px;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background-color: var(--primary);
+    color: var(--text-white);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
 }
 .form-log .log-orther {
     display: flex;

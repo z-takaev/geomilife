@@ -8,12 +8,23 @@
             <p class="desc-pop">
                 {{ __('Введите электронную почту, указанную при регистрации. Мы отправим на неё ссылку для восстановления пароля.') }}
             </p>
-            <form class="form-forgot">
+            @if (session('auth_status') && session('auth_modal') === 'forgotPassword')
+                <div class="auth-notice" role="status">
+                    {{ session('auth_status') }}
+                </div>
+            @endif
+            <form action="{{ route('password.email') }}" method="POST" class="form-forgot">
+                @csrf
                 <div class="form-content">
                     <fieldset class="tf-field">
                         <label for="email2" class="tf-lable">{{ __('Электронная почта') }}</label>
-                        <input type="email" id="email2" placeholder="{{ __('Электронная почта') }}"
-                            autocomplete="email" required="">
+                        <input type="email" id="email2" name="email"
+                            value="{{ $errors->forgotPassword->any() ? old('email') : '' }}"
+                            placeholder="{{ __('Электронная почта') }}" autocomplete="email" required
+                            @class(['is-invalid' => $errors->forgotPassword->has('email')])>
+                        @error('email', 'forgotPassword')
+                            <span class="invalid-feedback d-block">{{ $message }}</span>
+                        @enderror
                     </fieldset>
                     <button type="submit" class="tf-btn animate-btn w-100">
                         {{ __('Отправить ссылку') }}

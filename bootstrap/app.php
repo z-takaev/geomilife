@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+use App\Http\Middleware\EnsureUserIsNotBlocked;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,7 +15,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->web(append: [
+            EnsureUserIsNotBlocked::class,
+        ]);
+
+        $middleware->redirectGuestsTo(
+            static fn (Request $request): string => route('home', ['auth' => 'login']),
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
