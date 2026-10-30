@@ -5,7 +5,7 @@
 
     <section class="flat-spacing">
         <div class="container">
-            <livewire:profile.manage-profile />
+            <livewire:user-profile />
         </div>
     </section>
 @endsection

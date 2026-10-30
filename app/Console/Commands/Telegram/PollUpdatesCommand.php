@@ -7,7 +7,7 @@ namespace App\Console\Commands\Telegram;
 use Illuminate\Console\Command;
 use SergiX44\Nutgram\Nutgram;
 
-final class PollUpdates extends Command
+final class PollUpdatesCommand extends Command
 {
     protected $signature = 'telegram:poll';
 
@@ -29,7 +29,7 @@ final class PollUpdates extends Command
 
         $bot = app(Nutgram::class);
         $bot->deleteWebhook();
-        $this->info('Ожидание сообщений Telegram. Для остановки нажмите Ctrl+C.');
+        $this->info('Ожидание сообщений Telegram.');
         $bot->run();
 
         return self::SUCCESS;

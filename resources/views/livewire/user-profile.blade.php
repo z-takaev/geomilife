@@ -7,18 +7,18 @@
                 </div>
             </div>
             <form wire:submit="saveProfile" class="profile-form">
-                <label>{{ __('Имя') }}<input type="text" wire:model="firstName" autocomplete="given-name">
-                    @error('firstName')
+                <label>{{ __('Имя') }}<input type="text" wire:model="first_name" autocomplete="given-name">
+                    @error('first_name')
                         <small>{{ $message }}</small>
                     @enderror
                 </label>
-                <label>{{ __('Фамилия') }}<input type="text" wire:model="lastName" autocomplete="family-name">
-                    @error('lastName')
+                <label>{{ __('Фамилия') }}<input type="text" wire:model="last_name" autocomplete="family-name">
+                    @error('last_name')
                         <small>{{ $message }}</small>
                     @enderror
                 </label>
-                <label>{{ __('Дата рождения') }}<input type="date" wire:model="birthDate">
-                    @error('birthDate')
+                <label>{{ __('Дата рождения') }}<input type="date" wire:model="birth_date">
+                    @error('birth_date')
                         <small>{{ $message }}</small>
                     @enderror
                 </label>
@@ -74,12 +74,12 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <h2 class="modal-title" id="profileAddressModalTitle">
-                                {{ $addressId ? __('Изменить адрес') : __('Новый адрес') }}</h2><button type="button"
+                                {{ $address_id ? __('Изменить адрес') : __('Новый адрес') }}</h2><button type="button"
                                 class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Закрыть') }}"></button>
                         </div>
                         <div class="modal-body">
                             <form wire:submit="saveAddress" class="profile-form profile-form--address">
-                                <label class="profile-form__wide">{{ __('Город') }}<select wire:model="cityId">
+                                <label class="profile-form__wide">{{ __('Город') }}<select wire:model="city_id">
                                         <option value="">{{ __('Выберите город') }}</option>
                                         @foreach ($cities as $city)
                                             <option value="{{ $city->id }}">
@@ -87,7 +87,7 @@
                                             </option>
                                         @endforeach
                                     </select>
-                                    @error('cityId')
+                                    @error('city_id')
                                         <small>{{ $message }}</small>
                                     @enderror
                                 </label>
@@ -109,7 +109,7 @@
                                         wire:model="floor"></label><label>{{ __('Домофон') }}<input type="text"
                                         wire:model="intercom"></label>
                                 <label class="profile-check profile-form__wide"><input type="checkbox"
-                                        wire:model="isDefault">{{ __('Сделать активным адресом и городом') }}</label>
+                                        wire:model="is_default">{{ __('Сделать активным адресом и городом') }}</label>
                                 <div class="profile-form__wide profile-form__actions"><button class="profile-button"
                                         type="submit">{{ __('Сохранить адрес') }}</button></div>
                             </form>

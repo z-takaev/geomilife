@@ -7,11 +7,11 @@ namespace App\Console\Commands\Telegram;
 use Illuminate\Console\Command;
 use SergiX44\Nutgram\Nutgram;
 
-final class SetWebhook extends Command
+final class RegisterWebhookCommand extends Command
 {
     protected $signature = 'telegram:webhook';
 
-    protected $description = 'Зарегистрировать webhook Telegram для текущего сайта';
+    protected $description = 'Зарегистрировать webhook Telegram';
 
     public function handle(): int
     {
@@ -19,7 +19,7 @@ final class SetWebhook extends Command
         $url = route('telegram.webhook');
 
         if (blank(config('telegram.bot_token')) || preg_match('/^[A-Za-z0-9_-]{1,256}$/D', $secret) !== 1) {
-            $this->error('Укажите TELEGRAM_BOT_TOKEN и TELEGRAM_WEBHOOK_SECRET (1–256 букв, цифр, символов _ или -).');
+            $this->error('Укажите TELEGRAM_BOT_TOKEN и TELEGRAM_WEBHOOK_SECRET.');
 
             return self::FAILURE;
         }

@@ -2,29 +2,29 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Profile;
+namespace App\Livewire;
 
 use App\Models\Address;
 use App\Models\City;
+use App\Services\Telegram\TelegramService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
-final class ManageProfile extends Component
+final class UserProfile extends Component
 {
-    public string $firstName = '';
+    public string $first_name = '';
 
-    public string $lastName = '';
+    public string $last_name = '';
 
-    public ?string $birthDate = null;
+    public ?string $birth_date = null;
 
     public ?string $phone = null;
 
-    public ?int $addressId = null;
+    public ?int $address_id = null;
 
-    public ?int $cityId = null;
+    public ?int $city_id = null;
 
     public string $street = '';
 
@@ -40,14 +40,15 @@ final class ManageProfile extends Component
 
     public ?string $intercom = null;
 
-    public bool $isDefault = false;
+    public bool $is_default = false;
 
     public function mount(): void
     {
         $user = auth()->user();
-        $this->firstName = $user->first_name;
-        $this->lastName = $user->last_name ?? '';
-        $this->birthDate = $user->birth_date?->format('Y-m-d');
+
+        $this->first_name = $user->first_name;
+        $this->last_name = $user->last_name ?? '';
+        $this->birth_date = $user->birth_date?->format('Y-m-d');
         $this->phone = $user->phone;
     }
 
@@ -55,12 +56,13 @@ final class ManageProfile extends Component
     {
         $user = auth()->user();
         $validated = $this->validate([
-            'firstName' => ['required', 'string', 'max:255'],
-            'lastName' => ['nullable', 'string', 'max:255'],
-            'birthDate' => ['nullable', 'date', 'before:today'],
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['nullable', 'string', 'max:255'],
+            'birth_date' => ['nullable', 'date', 'before:today'],
             'phone' => ['nullable', 'string', 'max:255', Rule::unique('users', 'phone')->ignore($user->getKey())],
         ]);
-        $user->update(['first_name' => $validated['firstName'], 'last_name' => $validated['lastName'], 'birth_date' => $validated['birthDate'], 'phone' => $validated['phone']]);
+
+        $user->update($validated);
         $this->dispatch('notify', message: __('Данные профиля сохранены.'), type: 'success');
     }
 
@@ -68,8 +70,9 @@ final class ManageProfile extends Component
     {
         $address = auth()->user()->addresses()->findOrFail($addressId);
         $this->resetValidation();
-        $this->addressId = $address->id;
-        $this->cityId = $address->city_id;
+
+        $this->address_id = $address->id;
+        $this->city_id = $address->city_id;
         $this->street = $address->street ?? '';
         $this->house = $address->house ?? '';
         $this->building = $address->building;
@@ -77,15 +80,15 @@ final class ManageProfile extends Component
         $this->entrance = $address->entrance;
         $this->floor = $address->floor;
         $this->intercom = $address->intercom;
-        $this->isDefault = $address->is_default;
+        $this->is_default = $address->is_default;
     }
 
     public function saveAddress(): void
     {
         $user = auth()->user();
         $validated = $this->validate([
-            'addressId' => ['nullable', 'integer', Rule::exists('addresses', 'id')->where('user_id', $user->getKey())],
-            'cityId' => ['required', 'integer', Rule::exists('cities', 'id')->where('is_active', true)],
+            'address_id' => ['nullable', 'integer', Rule::exists('addresses', 'id')->where('user_id', $user->getKey())],
+            'city_id' => ['required', 'integer', Rule::exists('cities', 'id')->where('is_active', true)],
             'street' => ['nullable', 'string', 'max:255'],
             'house' => ['nullable', 'string', 'max:255', 'required_with:street'],
             'building' => ['nullable', 'string', 'max:255'],
@@ -93,34 +96,47 @@ final class ManageProfile extends Component
             'entrance' => ['nullable', 'string', 'max:255'],
             'floor' => ['nullable', 'string', 'max:255'],
             'intercom' => ['nullable', 'string', 'max:255'],
-            'isDefault' => ['boolean'],
+            'is_default' => ['boolean'],
         ]);
+
         DB::transaction(function () use ($user, $validated): void {
             $user->newQuery()->whereKey($user->getKey())->lockForUpdate()->firstOrFail();
-            if ($validated['isDefault']) {
+
+            if ($validated['is_default']) {
                 $user->addresses()->update(['is_default' => false]);
             }
-            $address = $validated['addressId'] ? $user->addresses()->findOrFail($validated['addressId']) : new Address;
+
+            $address = $validated['address_id'] ? $user->addresses()->findOrFail($validated['address_id']) : new Address;
+
             $address->fill([
-                'city_id' => $validated['cityId'], 'street' => $validated['street'], 'house' => $validated['house'],
-                'building' => $validated['building'], 'apartment' => $validated['apartment'], 'entrance' => $validated['entrance'],
-                'floor' => $validated['floor'], 'intercom' => $validated['intercom'],
-                'is_default' => $validated['isDefault'] || $address->is_default || ! $user->addresses()->exists(),
+                'city_id' => $validated['city_id'],
+                'street' => $validated['street'],
+                'house' => $validated['house'],
+                'building' => $validated['building'],
+                'apartment' => $validated['apartment'],
+                'entrance' => $validated['entrance'],
+                'floor' => $validated['floor'],
+                'intercom' => $validated['intercom'],
+                'is_default' => $validated['is_default'] || $address->is_default || ! $user->addresses()->exists(),
             ]);
+
             $user->addresses()->save($address);
+
             if ($address->is_default) {
                 $user->city()->associate($address->city_id);
                 $user->save();
             }
         });
+
         $this->resetAddressForm();
-        $this->dispatch('notify', message: $validated['addressId'] === null ? __('Адрес добавлен.') : __('Адрес сохранён.'), type: 'success');
+        $this->dispatch('notify', message: __('Адрес сохранён.'), type: 'success');
         $this->dispatch('address-saved');
     }
 
     public function setDefaultAddress(int $addressId): void
     {
         $user = auth()->user();
+
         DB::transaction(function () use ($user, $addressId): void {
             $user->newQuery()->whereKey($user->getKey())->lockForUpdate()->firstOrFail();
             $address = $user->addresses()->findOrFail($addressId);
@@ -129,12 +145,14 @@ final class ManageProfile extends Component
             $user->city()->associate($address->city_id);
             $user->save();
         });
-        $this->dispatch('notify', message: __('Активный адрес выбран.'), type: 'success');
+
+        $this->dispatch('notify', message: __('Активный адрес обновлен.'), type: 'success');
     }
 
     public function deleteAddress(int $addressId): void
     {
         $user = auth()->user();
+
         DB::transaction(function () use ($user, $addressId): void {
             $user->newQuery()->whereKey($user->getKey())->lockForUpdate()->firstOrFail();
             $address = $user->addresses()->findOrFail($addressId);
@@ -147,7 +165,8 @@ final class ManageProfile extends Component
                 $user->save();
             }
         });
-        if ($this->addressId === $addressId) {
+
+        if ($this->address_id === $addressId) {
             $this->resetAddressForm();
         }
     }
@@ -155,26 +174,23 @@ final class ManageProfile extends Component
     public function resetAddressForm(): void
     {
         $this->resetValidation();
-        $this->reset(['addressId', 'cityId', 'street', 'house', 'building', 'apartment', 'entrance', 'floor', 'intercom', 'isDefault']);
+        $this->reset(['address_id', 'city_id', 'street', 'house', 'building', 'apartment', 'entrance', 'floor', 'intercom', 'is_default']);
     }
 
-    public function connectTelegram(): ?string
+    public function connectTelegram(TelegramService $telegramService): ?string
     {
-        $username = (string) config('telegram.bot_username');
-        if ($username === '' || blank(config('telegram.bot_token'))) {
-            $this->addError('telegram', __('Telegram-бот пока не настроен.'));
+        if (! $telegramService->isConfigured()) {
+            $this->addError('telegram', __('Telegram-бот недоступен.'));
 
             return null;
         }
-        $token = Str::random(64);
-        auth()->user()->forceFill(['telegram_link_token' => $token])->save();
 
-        return 'https://t.me/'.ltrim($username, '@').'?start='.$token;
+        return $telegramService->createConnectionUrl(auth()->user());
     }
 
-    public function disconnectTelegram(): void
+    public function disconnectTelegram(TelegramService $telegramService): void
     {
-        auth()->user()->forceFill(['telegram_chat_id' => null, 'telegram_username' => null, 'telegram_link_token' => null, 'telegram_notifications_enabled' => false])->save();
+        $telegramService->disconnect(auth()->user());
     }
 
     public function addAddress(): void
@@ -182,13 +198,13 @@ final class ManageProfile extends Component
         $this->resetAddressForm();
     }
 
-    public function render(): View
+    public function render(TelegramService $telegramService): View
     {
         $user = auth()->user();
         $addresses = $user->addresses()->with('city')->orderByDesc('is_default')->latest()->get();
         $cities = City::query()->where('is_active', true)->orderBy('name')->get();
-        $telegramBotConfigured = filled(config('telegram.bot_username')) && filled(config('telegram.bot_token'));
+        $telegramBotConfigured = $telegramService->isConfigured();
 
-        return view('livewire.profile.manage-profile', compact('user', 'addresses', 'cities', 'telegramBotConfigured'));
+        return view('livewire.user-profile', compact('user', 'addresses', 'cities', 'telegramBotConfigured'));
     }
 }

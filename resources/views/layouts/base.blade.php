@@ -42,7 +42,6 @@
         @include('partials.auth.forgot-password')
     @endguest
     @include('partials.cookie-consent')
-
     @include('partials.notifications')
 
     <script src="{{ asset('assets/js/bootstrap.min.js') }}"></script>
