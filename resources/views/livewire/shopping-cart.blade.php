@@ -1,9 +1,4 @@
-<div x-data="{
-    init() {
-        $store.cart.wire = $wire;
-        $store.cart.count = @js($count);
-    }
-}"
+<div x-data="shoppingCart($wire, @js($count))"
     x-on:cart-merge-suggested.window="bootstrap.Modal.getOrCreateInstance($refs.mergeModal).show()"
     x-on:cart-merge-resolved.window="bootstrap.Modal.getOrCreateInstance($refs.mergeModal).hide()"
     x-on:cart-updated.window="$store.cart.count = $event.detail.count">

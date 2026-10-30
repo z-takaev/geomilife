@@ -30,6 +30,17 @@
 (function ($) {
     'use strict';
 
+    document.getElementById('canvasSearch')?.addEventListener('shown.bs.offcanvas', (event) => {
+        event.target.querySelector('input[type="search"]')?.focus();
+    });
+
+    document.addEventListener('shown.bs.offcanvas', (event) => {
+        if (!event.target.matches('#shoppingCart, #wishList')) return;
+
+        const backdrop = event.target.parentElement?.querySelector(':scope > .offcanvas-backdrop');
+        if (backdrop) document.body.append(backdrop);
+    });
+
     /* Select Image
     -------------------------------------------------------------------------*/
     var dropdownSelect = function () {

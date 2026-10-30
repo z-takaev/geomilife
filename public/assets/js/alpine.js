@@ -53,10 +53,6 @@ window.addEventListener('catalog-filters-applied', () => {
     if (filters) bootstrap.Offcanvas.getInstance(filters)?.hide();
 });
 
-document.getElementById('canvasSearch')?.addEventListener('shown.bs.offcanvas', (event) => {
-    event.target.querySelector('input[type="search"]')?.focus();
-});
-
 document.addEventListener('alpine:init', () => {
     Alpine.store('cart', {
         count: 0,
@@ -122,9 +118,70 @@ window.wishlistBrowser = function (wire, authenticated, accountIds) {
     };
 };
 
-document.addEventListener('shown.bs.offcanvas', (event) => {
-    if (!event.target.matches('#shoppingCart, #wishList')) return;
+window.shoppingCart = function (wire, count) {
+    return {
+        init() {
+            this.$store.cart.wire = wire;
+            this.$store.cart.count = count;
+        },
+    };
+};
 
-    const backdrop = event.target.parentElement?.querySelector(':scope > .offcanvas-backdrop');
-    if (backdrop) document.body.append(backdrop);
-});
+window.telegramConnect = function () {
+    return {
+        connecting: false,
+        async connect() {
+            const telegramWindow = window.open('about:blank', '_blank');
+            if (!telegramWindow) return;
+            telegramWindow.opener = null;
+            this.connecting = true;
+            try {
+                const url = await this.$wire.connectTelegram();
+                if (url) {
+                    telegramWindow.location.replace(url);
+                } else {
+                    telegramWindow.close();
+                }
+            } catch (error) {
+                telegramWindow.close();
+            } finally {
+                this.connecting = false;
+            }
+        },
+    };
+};
+
+window.notifications = function () {
+    return {
+        message: '',
+        type: 'success',
+        show(detail) {
+            if (typeof detail.message !== 'string' || !detail.message.trim()) return;
+            this.message = detail.message;
+            this.type = ['success', 'error', 'warning'].includes(detail.type) ? detail.type : 'success';
+            this.$nextTick(() => bootstrap.Toast.getOrCreateInstance(this.$refs.toast).show());
+        },
+    };
+};
+
+window.citySearch = function () {
+    return {
+        suggestionsOpen: false,
+        clear() {
+            this.$wire.$set('query', '');
+            this.$refs.citySearch.focus();
+            this.suggestionsOpen = false;
+        },
+    };
+};
+
+window.favoriteButton = function (productId) {
+    return {
+        get favorite() {
+            return this.$store.wishlist.ids.includes(productId);
+        },
+        toggle() {
+            return this.$store.wishlist.perform('toggle', productId);
+        },
+    };
+};

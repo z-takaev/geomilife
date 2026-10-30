@@ -19,7 +19,7 @@ function browser(saved = null) {
             removeItem(key) { storage.delete(key); },
         },
     };
-    vm.runInNewContext(readFileSync('public/assets/js/products.js', 'utf8'), context);
+    vm.runInNewContext(readFileSync('public/assets/js/alpine.js', 'utf8'), context);
     return { storage, stores, component(wire, authenticated = false, ids = []) {
         const component = context.window.wishlistBrowser(wire, authenticated, ids);
         component.$store = stores;

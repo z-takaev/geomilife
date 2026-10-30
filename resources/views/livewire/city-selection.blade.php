@@ -14,7 +14,7 @@
                     {{ __('Начните вводить свой город и выберите его из списка.') }}
                 </p>
 
-                <div class="city-selection__search" role="search" x-data="{ suggestionsOpen: false }"
+                <div class="city-selection__search" role="search" x-data="citySearch()"
                     x-on:click.outside="suggestionsOpen = false" x-on:keydown.escape.stop="suggestionsOpen = false">
                     <label class="visually-hidden" for="citySearch">{{ __('Ваш город') }}</label>
                     <input id="citySearch" type="search" placeholder="{{ __('Ваш город') }}" autocomplete="off"
@@ -24,8 +24,7 @@
                         {{ __('Поиск…') }}
                     </span>
                     <button type="button" class="city-selection__clear" aria-label="{{ __('Очистить поиск города') }}"
-                        x-cloak x-show="$wire.query !== ''"
-                        x-on:click="$wire.$set('query', ''); $refs.citySearch.focus(); suggestionsOpen = false">
+                        x-cloak x-show="$wire.query !== ''" x-on:click="clear()">
                         <i class="icon icon-close" aria-hidden="true"></i>
                     </button>
 

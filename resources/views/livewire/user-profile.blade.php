@@ -136,26 +136,8 @@
             @elseif ($telegramBotConfigured)
                 <div class="profile-telegram__controls">
                     <span class="profile-telegram__status">{{ __('Не подключен') }}</span>
-                    <button type="button" class="profile-button" x-data="{ connecting: false }"
-                        x-bind:disabled="connecting"
-                        x-on:click="
-                            const telegramWindow = window.open('about:blank', '_blank');
-                            if (!telegramWindow) return;
-                            telegramWindow.opener = null;
-                            connecting = true;
-                            try {
-                                const url = await $wire.connectTelegram();
-                                if (url) {
-                                    telegramWindow.location.replace(url);
-                                } else {
-                                    telegramWindow.close();
-                                }
-                            } catch (error) {
-                                telegramWindow.close();
-                            } finally {
-                                connecting = false;
-                            }
-                        ">{{ __('Подключить') }}</button>
+                    <button type="button" class="profile-button" x-data="telegramConnect()"
+                        x-bind:disabled="connecting" x-on:click="connect()">{{ __('Подключить') }}</button>
                 </div>
             @else
                 <div class="profile-telegram__controls">
