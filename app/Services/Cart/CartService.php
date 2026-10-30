@@ -50,7 +50,7 @@ final class CartService
                 'name' => $variant->product->name,
                 'label' => $variant->label(),
                 'url' => route('products.show', [$variant->product, 'variant' => $variant->id]),
-                'image' => $variant->product->getFirstMediaUrl('image', 'cart'),
+                'image' => $variant->product->getFirstMediaUrl('image', 'thumbnail'),
                 'quantity' => $quantity,
                 'price' => $price->format(),
             ];

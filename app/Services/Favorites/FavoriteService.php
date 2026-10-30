@@ -6,7 +6,6 @@ namespace App\Services\Favorites;
 
 use App\Models\Product;
 use App\Repositories\Products\ProductRepository;
-use App\ViewModel\Products\ProductViewModel;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -44,12 +43,16 @@ final class FavoriteService
             return collect();
         }
 
-        return app(ProductRepository::class)->cardQuery()->whereKey($ids)->latest('id')->get()
+        return app(ProductRepository::class)
+            ->cardQuery()
+            ->whereKey($ids)
+            ->latest('id')
+            ->get()
             ->map(static fn (Product $product): array => [
                 'id' => $product->getKey(),
                 'name' => $product->name,
-                'image' => $product->getFirstMediaUrl('image', 'card'),
-                'viewModel' => new ProductViewModel($product),
+                'slug' => $product->slug,
+                'image' => $product->getFirstMediaUrl('image', 'thumbnail'),
             ]);
     }
 
@@ -89,6 +92,7 @@ final class FavoriteService
     public function merge(array $guestIds): void
     {
         abort_unless(auth()->check(), 403);
+
         $ids = $this->availableGuestIds($guestIds);
 
         DB::transaction(function () use ($ids): void {
@@ -103,6 +107,7 @@ final class FavoriteService
     public function declineMerge(): void
     {
         abort_unless(auth()->check(), 403);
+
         session()->put('favorites.merge_declined', auth()->id());
     }
 }

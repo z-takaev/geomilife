@@ -70,7 +70,7 @@ final class Wishlist extends Component
         $this->dispatch('favorites-merged');
         $this->dispatch('favorites-merge-resolved');
         $this->dispatch('favorites-updated', ids: $favorites->ids());
-        $this->dispatch('notify', message: __('Избранное объединено.'), type: 'success');
+        $this->dispatch('notify', message: __('Товары добавлены в избранное.'), type: 'success');
     }
 
     public function decline(FavoriteService $favorites): void
