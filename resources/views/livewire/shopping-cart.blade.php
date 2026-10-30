@@ -1,7 +1,7 @@
 <div x-data="{
     init() {
         $store.cart.wire = $wire;
-        $store.cart.count = @js($details['count']);
+        $store.cart.count = @js($count);
     }
 }"
     x-on:cart-merge-suggested.window="bootstrap.Modal.getOrCreateInstance($refs.mergeModal).show()"
@@ -18,7 +18,7 @@
                 <div class="tf-mini-cart-wrap">
                     <div class="tf-mini-cart-sroll">
                         <ul class="tf-mini-cart-items list-mini-product">
-                            @forelse ($details['items'] as $item)
+                            @forelse ($items as $item)
                                 <li class="mini-product-cart" wire:key="cart-{{ $item['id'] }}">
                                     <div class="prd-wrap">
                                         <div class="prd_image"><img loading="lazy" src="{{ $item['image'] }}"
@@ -32,7 +32,7 @@
                                             wire:click="remove({{ $item['id'] }})">{{ __('Удалить') }}</button>
                                         <div class="quantity-price text-black fw-medium">
                                             <span>{{ $item['quantity'] }}</span><span>{{ __('×') }}</span><span
-                                                class="tf-mini-card-price">{{ $item['price'] }}</span>
+                                                class="tf-mini-card-price">{{ $item['price']->format() }}</span>
                                         </div>
                                     </div>
                                 </li>
@@ -46,7 +46,7 @@
             <div class="canvas-footer">
                 <div class="tf-cart-totals-discounts fw-medium text-primary">
                     <h4 class="tf-cart-total-text">{{ __('Итого') }}</h4>
-                    <h4 class="tf-totals-total-value">{{ $details['total'] }}</h4>
+                    <h4 class="tf-totals-total-value">{{ $total->format() }}</h4>
                 </div>
                 <div class="group-btn">
                     <a href="{{ route('checkout') }}" class="tf-btn animate-btn w-100">{{ __('Оформить заказ') }}</a>

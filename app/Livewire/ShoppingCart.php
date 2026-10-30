@@ -22,7 +22,7 @@ final class ShoppingCart extends Component
     {
         try {
             $cart->add($variantId, $quantity);
-            $this->dispatch('cart-updated', count: $cart->details()['count']);
+            $this->dispatch('cart-updated', count: $cart->count());
             $this->dispatch('notify', message: __('Товар добавлен в корзину.'), type: 'success');
 
             return true;
@@ -37,7 +37,7 @@ final class ShoppingCart extends Component
     public function remove(int $variantId, CartService $cart): void
     {
         $cart->remove($variantId);
-        $this->dispatch('cart-updated', count: $cart->details()['count']);
+        $this->dispatch('cart-updated', count: $cart->count());
         $this->dispatch('notify', message: __('Товар удалён из корзины.'), type: 'success');
     }
 
@@ -45,7 +45,7 @@ final class ShoppingCart extends Component
     {
         try {
             $cart->merge();
-            $this->dispatch('cart-updated', count: $cart->details()['count']);
+            $this->dispatch('cart-updated', count: $cart->count());
             $this->dispatch('cart-merge-resolved');
             $this->dispatch('notify', message: __('Корзины объединены.'), type: 'success');
         } catch (ValidationException $exception) {
@@ -63,8 +63,10 @@ final class ShoppingCart extends Component
 
     public function render(CartService $cart): View
     {
-        $details = $cart->details();
+        $items = $cart->items();
+        $count = $cart->count();
+        $total = $cart->total();
 
-        return view('livewire.shopping-cart', compact('details'));
+        return view('livewire.shopping-cart', compact('items', 'count', 'total'));
     }
 }

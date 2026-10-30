@@ -13,9 +13,9 @@ final class CartService
 {
     private const string SESSION_KEY = 'cart.items';
 
-    private ?array $cachedDetails = null;
+    private ?array $cachedItems = null;
 
-    public function items(): array
+    public function quantities(): array
     {
         if (! auth()->check()) {
             return session(self::SESSION_KEY, []);
@@ -24,27 +24,25 @@ final class CartService
         return auth()->user()->cart?->items->pluck('quantity', 'product_variant_id')->all() ?? [];
     }
 
-    public function details(): array
+    public function items(): array
     {
-        if ($this->cachedDetails !== null) {
-            return $this->cachedDetails;
+        if ($this->cachedItems !== null) {
+            return $this->cachedItems;
         }
 
-        $quantities = $this->items();
+        $quantities = $this->quantities();
+
         if ($quantities === []) {
-            return $this->cachedDetails = ['items' => [], 'count' => 0, 'total' => Money::fromMinor(0)->format()];
+            return $this->cachedItems = [];
         }
 
         $variants = ProductVariant::query()->with('product.media')->whereKey(array_keys($quantities))
             ->where('is_active', true)->whereHas('product', static fn ($query) => $query->available())->get();
-        $total = Money::fromMinor(0);
-        $count = 0;
         $items = [];
+
         foreach ($variants as $variant) {
             $quantity = (int) $quantities[$variant->id];
             $price = $variant->currentPrice();
-            $total = $total->add($price->multiply($quantity));
-            $count += $quantity;
             $items[] = [
                 'id' => $variant->id,
                 'name' => $variant->product->name,
@@ -52,27 +50,52 @@ final class CartService
                 'url' => route('products.show', [$variant->product, 'variant' => $variant->id]),
                 'image' => $variant->product->getFirstMediaUrl('image', 'thumbnail'),
                 'quantity' => $quantity,
-                'price' => $price->format(),
+                'price' => $price,
             ];
         }
 
-        return $this->cachedDetails = ['items' => $items, 'count' => $count, 'total' => $total->format()];
+        return $this->cachedItems = $items;
+    }
+
+    public function count(): int
+    {
+        return array_sum(array_column($this->items(), 'quantity'));
+    }
+
+    public function total(): Money
+    {
+        $total = Money::fromMinor(0);
+
+        foreach ($this->items() as $item) {
+            $total = $total->add($item['price']->multiply($item['quantity']));
+        }
+
+        return $total;
     }
 
     public function add(int $variantId, int $quantity): void
     {
         $this->validateQuantity($quantity);
-        $variant = ProductVariant::query()->with('product')->whereKey($variantId)->where('is_active', true)
-            ->whereHas('product', static fn ($query) => $query->available())->firstOrFail();
-        $items = $this->items();
-        $this->assertCompatible($variant, $items);
-        $current = (int) ($items[$variantId] ?? 0);
+
+        $variant = ProductVariant::query()
+            ->with('product')
+            ->whereKey($variantId)
+            ->where('is_active', true)
+            ->whereHas('product', static fn ($query) => $query->available())
+            ->firstOrFail();
+
+        $quantities = $this->quantities();
+
+        $this->assertCompatible($variant, $quantities);
+
+        $current = (int) ($quantities[$variantId] ?? 0);
+
         $this->validateQuantity($current + $quantity);
 
         if (! auth()->check()) {
-            $items[$variantId] = $current + $quantity;
-            session()->put(self::SESSION_KEY, $items);
-            $this->cachedDetails = null;
+            $quantities[$variantId] = $current + $quantity;
+            session()->put(self::SESSION_KEY, $quantities);
+            $this->cachedItems = null;
 
             return;
         }
@@ -82,24 +105,30 @@ final class CartService
             $item = $cart->items()->firstOrCreate(['product_variant_id' => $variantId], ['quantity' => 0]);
             $item->increment('quantity', $quantity);
         });
+
         auth()->user()->unsetRelation('cart');
-        $this->cachedDetails = null;
+
+        $this->cachedItems = null;
     }
 
     public function remove(int $variantId): void
     {
         if (! auth()->check()) {
-            $items = $this->items();
-            unset($items[$variantId]);
-            session()->put(self::SESSION_KEY, $items);
-            $this->cachedDetails = null;
+            $quantities = $this->quantities();
+            unset($quantities[$variantId]);
+            session()->put(self::SESSION_KEY, $quantities);
+            $this->cachedItems = null;
 
             return;
         }
 
-        auth()->user()->cart?->items()->where('product_variant_id', $variantId)->delete();
+        auth()->user()->cart?->items()
+            ->where('product_variant_id', $variantId)
+            ->delete();
+
         auth()->user()->unsetRelation('cart');
-        $this->cachedDetails = null;
+
+        $this->cachedItems = null;
     }
 
     public function shouldSuggestMerge(): bool
@@ -111,26 +140,33 @@ final class CartService
     public function merge(): void
     {
         abort_unless(auth()->check(), 403);
+
         $guestItems = session(self::SESSION_KEY, []);
-        $accountItems = $this->items();
+
+        $accountQuantities = $this->quantities();
+
         $variants = ProductVariant::query()->with('product')->whereKey(array_keys($guestItems))
             ->where('is_active', true)->whereHas('product', static fn ($query) => $query->available())->get();
 
         foreach ($variants as $variant) {
-            $this->assertCompatible($variant, $accountItems);
-            $this->validateQuantity((int) ($accountItems[$variant->id] ?? 0) + (int) $guestItems[$variant->id]);
+            $this->assertCompatible($variant, $accountQuantities);
+            $this->validateQuantity((int) ($accountQuantities[$variant->id] ?? 0) + (int) $guestItems[$variant->id]);
         }
 
         DB::transaction(function () use ($variants, $guestItems): void {
             $cart = auth()->user()->cart()->firstOrCreate([]);
+
             foreach ($variants as $variant) {
                 $item = $cart->items()->firstOrCreate(['product_variant_id' => $variant->id], ['quantity' => 0]);
                 $item->increment('quantity', (int) $guestItems[$variant->id]);
             }
         });
+
         session()->forget([self::SESSION_KEY, 'cart.merge_declined']);
+
         auth()->user()->unsetRelation('cart');
-        $this->cachedDetails = null;
+
+        $this->cachedItems = null;
     }
 
     public function declineMerge(): void
@@ -139,13 +175,15 @@ final class CartService
         session()->put('cart.merge_declined', auth()->id());
     }
 
-    private function assertCompatible(ProductVariant $variant, array $items): void
+    private function assertCompatible(ProductVariant $variant, array $quantities): void
     {
-        if ($items === []) {
+        if ($quantities === []) {
             return;
         }
-        $hasConflict = ProductVariant::query()->whereKey(array_keys($items))
-            ->where('is_preorder', ! $variant->is_preorder)->exists();
+        $hasConflict = ProductVariant::query()
+            ->whereKey(array_keys($quantities))
+            ->where('is_preorder', ! $variant->is_preorder)
+            ->exists();
         if ($hasConflict) {
             throw ValidationException::withMessages(['cart' => __('В корзине нельзя смешивать товары в наличии и под заказ.')]);
         }

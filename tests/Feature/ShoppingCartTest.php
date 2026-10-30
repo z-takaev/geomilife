@@ -31,7 +31,7 @@ it('хранит гостевую корзину в сессии и считае
     $variant = cartVariant();
     Livewire::test(ShoppingCart::class)->call('add', $variant->id, 2)->assertSee('1 780 ₽')->assertSee('2');
     expect(session('cart.items'))->toBe([$variant->id => 2]);
-    expect(app(CartService::class)->details()['count'])->toBe(2);
+    expect(app(CartService::class)->count())->toBe(2);
     $this->assertDatabaseCount('carts', 0);
     Livewire::test(ShoppingCart::class)->call('remove', $variant->id)->assertSee('Корзина пока пуста.');
 });
@@ -50,7 +50,7 @@ it('не смешивает товар в наличии и под заказ', 
     $cart = app(CartService::class);
     $cart->add($available->id, 1);
     expect(fn () => $cart->add($preorder->id, 1))->toThrow(ValidationException::class);
-    expect($cart->items())->toBe([$available->id => 1]);
+    expect($cart->quantities())->toBe([$available->id => 1]);
 });
 
 it('предлагает объединить корзины и складывает количества после согласия', function (): void {
