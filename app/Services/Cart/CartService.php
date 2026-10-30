@@ -150,7 +150,9 @@ final class CartService
 
         foreach ($variants as $variant) {
             $this->assertCompatible($variant, $accountQuantities);
-            $this->validateQuantity((int) ($accountQuantities[$variant->id] ?? 0) + (int) $guestItems[$variant->id]);
+            $quantity = (int) ($accountQuantities[$variant->id] ?? 0) + (int) $guestItems[$variant->id];
+            $this->validateQuantity($quantity);
+            $accountQuantities[$variant->id] = $quantity;
         }
 
         DB::transaction(function () use ($variants, $guestItems): void {

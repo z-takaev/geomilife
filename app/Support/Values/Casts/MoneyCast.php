@@ -12,8 +12,12 @@ use InvalidArgumentException;
 
 final class MoneyCast implements CastsAttributes, SerializesCastableAttributes
 {
-    public function get(Model $model, string $key, mixed $value, array $attributes): Money
+    public function get(Model $model, string $key, mixed $value, array $attributes): ?Money
     {
+        if ($value === null) {
+            return null;
+        }
+
         if (! is_int($value) && ! is_string($value)) {
             throw new InvalidArgumentException("Атрибут {$key} должен содержать целое количество копеек.");
         }
@@ -21,8 +25,12 @@ final class MoneyCast implements CastsAttributes, SerializesCastableAttributes
         return Money::fromMinor((int) $value);
     }
 
-    public function set(Model $model, string $key, mixed $value, array $attributes): int
+    public function set(Model $model, string $key, mixed $value, array $attributes): ?int
     {
+        if ($value === null) {
+            return null;
+        }
+
         if ($value instanceof Money) {
             return $value->minorAmount();
         }
@@ -34,8 +42,12 @@ final class MoneyCast implements CastsAttributes, SerializesCastableAttributes
         return Money::fromRubles($value)->minorAmount();
     }
 
-    public function serialize(Model $model, string $key, mixed $value, array $attributes): string
+    public function serialize(Model $model, string $key, mixed $value, array $attributes): ?string
     {
+        if ($value === null) {
+            return null;
+        }
+
         if (! $value instanceof Money) {
             throw new InvalidArgumentException("Атрибут {$key} должен быть объектом Money.");
         }

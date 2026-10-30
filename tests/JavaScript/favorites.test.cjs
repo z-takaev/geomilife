@@ -7,7 +7,8 @@ function browser(saved = null) {
     const storage = new Map(saved === null ? [] : [['guest-wishlist', saved]]);
     const stores = {};
     const context = {
-        window: { addEventListener() {} },
+        window: { addEventListener() {}, location: { origin: 'https://shop.test' } },
+        URL,
         document: {
             addEventListener(name, callback) { if (name === 'alpine:init') callback(); },
             getElementById() { return null; },
@@ -20,7 +21,7 @@ function browser(saved = null) {
         },
     };
     vm.runInNewContext(readFileSync('public/assets/js/alpine.js', 'utf8'), context);
-    return { storage, stores, component(wire, authenticated = false, ids = []) {
+    return { storage, stores, window: context.window, component(wire, authenticated = false, ids = []) {
         const component = context.window.wishlistBrowser(wire, authenticated, ids);
         component.$store = stores;
         return component;
@@ -104,4 +105,77 @@ test('повторная инициализация не сбрасывает с
     assert.equal(calls, 1);
     assert.equal(app.stores.wishlist.ids, ids);
     assert.equal(app.stores.wishlist.ready, true);
+});
+
+
+test('сбой запроса освобождает блокировку избранного для повторной попытки', async () => {
+    const app = browser();
+    let calls = 0;
+    const component = app.component({
+        async toggle() { if (++calls === 1) throw new Error('network'); },
+    });
+    await component.init();
+    await assert.rejects(app.stores.wishlist.perform('toggle', 4), /network/);
+    assert.equal(app.stores.wishlist.busy, false);
+    await app.stores.wishlist.perform('toggle', 4);
+    assert.equal(calls, 2);
+});
+
+test('гостевой список ограничивается тысячей корректных идентификаторов', async () => {
+    const app = browser(JSON.stringify(Array.from({ length: 1005 }, (_, index) => index + 1)));
+    let received;
+    await app.component({ async initialize(ids) { received = ids; } }).init();
+    assert.equal(received.length, 1000);
+    assert.equal(received[999], 1000);
+});
+
+test('сбой запроса корзины освобождает блокировку и допускает повтор', async () => {
+    const app = browser();
+    let calls = 0;
+    app.stores.cart.wire = { async add() { if (++calls === 1) throw new Error('network'); return true; } };
+    await assert.rejects(app.stores.cart.add(4, 2), /network/);
+    assert.equal(app.stores.cart.busy, false);
+    assert.equal(await app.stores.cart.add(4, 2), true);
+    assert.equal(calls, 2);
+});
+
+
+test('выбор фасовки проверяет идентификатор и сохраняет параметры ссылки', () => {
+    const app = browser();
+    const selector = app.window.productVariantSelector([{ id: 1 }, { id: 2 }], 999, '/products/oil?source=home');
+    assert.equal(selector.selectedVariantId, 1);
+    selector.selectVariant(999);
+    assert.equal(selector.selectedVariantId, 1);
+    selector.selectVariant(2);
+    assert.equal(selector.selectedVariant.id, 2);
+    assert.equal(selector.selectedProductUrl, 'https://shop.test/products/oil?source=home&variant=2');
+});
+
+test('количество товара ограничивается допустимым диапазоном', () => {
+    const selector = browser().window.productVariantSelector([{ id: 1 }]);
+    for (const [input, expected] of [['invalid', 1], [-1, 1], [0, 1], [1001, 1000], ['12', 12]]) {
+        selector.quantity = input;
+        selector.normalizeQuantity();
+        assert.equal(selector.quantity, expected);
+    }
+    selector.quantity = 1000;
+    selector.increaseQuantity();
+    assert.equal(selector.quantity, 1000);
+    selector.quantity = 1;
+    selector.decreaseQuantity();
+    assert.equal(selector.quantity, 1);
+});
+
+test('количество сбрасывается только после успешного добавления в корзину', async () => {
+    const selector = browser().window.productVariantSelector([{ id: 2 }]);
+    const calls = [];
+    let success = false;
+    selector.$store = { cart: { async add(...parameters) { calls.push(parameters); return success; } } };
+    selector.quantity = 5;
+    await selector.addToCart();
+    assert.equal(selector.quantity, 5);
+    success = true;
+    await selector.addToCart();
+    assert.equal(selector.quantity, 1);
+    assert.deepEqual(calls, [[2, 5], [2, 5]]);
 });

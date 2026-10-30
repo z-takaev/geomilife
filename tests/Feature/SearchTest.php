@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 use App\Enums\ProductUnit;
+use App\Livewire\SearchSuggestions;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Support\Values\Money;
+use Livewire\Livewire;
 
 function createSearchProduct(Category $category, string $name, string $slug, bool $isActive = true): Product
 {
@@ -58,4 +60,22 @@ it('возвращает пустой результат для пустого �
         ->assertOk()
         ->assertSee('Не задан')
         ->assertDontSee('Льняное масло');
+});
+
+it('не интерпретирует символы поиска как SQL-шаблон', function (string $query): void {
+    $category = Category::query()->create(['name' => 'Масла', 'slug' => 'oils', 'is_active' => true]);
+    createSearchProduct($category, 'Масло', 'oil');
+    $this->get(route('search', ['q' => $query]))->assertOk()
+        ->assertViewHas('products', fn ($products): bool => $products->isEmpty());
+})->with(['%', '_']);
+
+it('подсказки исключают скрытые товары и ограничивают количество результатов', function (): void {
+    $category = Category::query()->create(['name' => 'Масла', 'slug' => 'oils', 'is_active' => true]);
+    for ($index = 1; $index <= 7; $index++) {
+        createSearchProduct($category, 'Масло '.$index, 'oil-'.$index);
+    }
+    createSearchProduct($category, 'Масло скрытое', 'hidden', false);
+    Livewire::test(SearchSuggestions::class)->set('query', 'Масло')
+        ->assertViewHas('products', fn ($products): bool => $products->count() === 5 && ! $products->contains('slug', 'hidden'))
+        ->call('submit')->assertRedirect(route('search', ['q' => 'Масло']));
 });

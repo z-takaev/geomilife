@@ -35,7 +35,7 @@ final class ArticleController extends Controller
 
     public function show(Article $article): View
     {
-        abort_unless($article->is_active, 404);
+        abort_unless($article->isAvailable(), 404);
 
         $breadcrumbs = Breadcrumbs::make(
             BreadcrumbItem::make(__('Статьи'), route('articles.index')),

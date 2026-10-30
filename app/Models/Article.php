@@ -52,6 +52,13 @@ final class Article extends Model implements HasMedia, HasRichContent, Seoable
             ->where('published_at', '<=', today());
     }
 
+    public function isAvailable(): bool
+    {
+        return $this->is_active
+            && $this->published_at !== null
+            && $this->published_at->lte(today());
+    }
+
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('image')

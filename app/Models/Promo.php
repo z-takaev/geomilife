@@ -68,6 +68,17 @@ final class Promo extends Model implements HasMedia, HasRichContent, Seoable
             ->where('end_at', '>=', today());
     }
 
+    public function isAvailable(): bool
+    {
+        $today = today();
+
+        return $this->is_active
+            && $this->start_at !== null
+            && $this->end_at !== null
+            && $this->start_at->lte($today)
+            && $this->end_at->gte($today);
+    }
+
     /**
      * @return Collection<int, self>
      */

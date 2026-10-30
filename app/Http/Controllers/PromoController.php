@@ -34,7 +34,7 @@ final class PromoController extends Controller
 
     public function show(Promo $promo): View
     {
-        abort_unless($promo->is_active, 404);
+        abort_unless($promo->isAvailable(), 404);
 
         $breadcrumbs = Breadcrumbs::make(
             BreadcrumbItem::make(__('Акции'), route('promos.index')),

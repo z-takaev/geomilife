@@ -115,9 +115,10 @@ final readonly class Money implements Castable
 
     public function format(): string
     {
-        $roundedRubles = intdiv($this->minorAmount + 50, self::MINOR_UNITS_PER_RUBLE);
+        $roundedRubles = intdiv($this->minorAmount, self::MINOR_UNITS_PER_RUBLE)
+            + (int) ($this->minorAmount % self::MINOR_UNITS_PER_RUBLE >= 50);
 
-        return number_format($roundedRubles, 0, '', ' ').' ₽';
+        return preg_replace('/\B(?=(\d{3})+(?!\d))/', ' ', (string) $roundedRubles).' ₽';
     }
 
     private static function parseWholeRubles(string $rubles): int

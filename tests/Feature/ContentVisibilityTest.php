@@ -89,3 +89,19 @@ it('не открывает неактивные материалы', function (
         'is_active' => false,
     ]],
 ]);
+
+it('не открывает будущие публикации', function (string $modelClass, string $routeName): void {
+    $model = $modelClass::query()->create(['title' => 'Завтрашняя публикация', 'slug' => 'tomorrow', 'published_at' => today()->addDay(), 'is_active' => true]);
+    $this->get(route($routeName, $model))->assertNotFound();
+})->with([[Article::class, 'articles.show'], [News::class, 'news.show']]);
+
+it('учитывает включительно границы периода акции', function (int $startOffset, int $endOffset, bool $available): void {
+    $promo = Promo::query()->create(['title' => 'Акция', 'slug' => 'promo', 'is_active' => true,
+        'start_at' => today()->addDays($startOffset), 'end_at' => today()->addDays($endOffset)]);
+    $this->get(route('promos.show', $promo))->assertStatus($available ? 200 : 404);
+})->with([
+    'начинается сегодня' => [0, 1, true],
+    'заканчивается сегодня' => [-1, 0, true],
+    'начинается завтра' => [1, 2, false],
+    'закончилась вчера' => [-2, -1, false],
+]);

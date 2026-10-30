@@ -35,7 +35,7 @@ final class NewsController extends Controller
 
     public function show(News $news): View
     {
-        abort_unless($news->is_active, 404);
+        abort_unless($news->isAvailable(), 404);
 
         $breadcrumbs = Breadcrumbs::make(
             BreadcrumbItem::make(__('Новости'), route('news.index')),
