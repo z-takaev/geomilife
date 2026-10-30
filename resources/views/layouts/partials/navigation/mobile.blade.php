@@ -23,7 +23,7 @@
                 @if (settings()?->instagram_url)
                     <li>
                         <a href="{{ settings()?->instagram_url }}" class="d-flex text-black"
-                            aria-label="{{ __('Инстаграм') }}" target="_blank" rel="noopener noreferrer">
+                            aria-label="{{ __('Instagram') }}" target="_blank" rel="noopener noreferrer">
                             <i class="social-icon social-icon--instagram" aria-hidden="true"></i>
                         </a>
                     </li>
@@ -31,7 +31,7 @@
                 @if (settings()?->youtube_url)
                     <li>
                         <a href="{{ settings()?->youtube_url }}" class="d-flex text-black"
-                            aria-label="{{ __('Ютуб') }}" target="_blank" rel="noopener noreferrer">
+                            aria-label="{{ __('Youtube') }}" target="_blank" rel="noopener noreferrer">
                             <i class="social-icon social-icon--youtube" aria-hidden="true"></i>
                         </a>
                     </li>
@@ -55,7 +55,7 @@
                 @if (settings()?->whatsapp_url)
                     <li>
                         <a href="{{ settings()?->whatsapp_url }}" class="d-flex text-black"
-                            aria-label="{{ __('Ватсап') }}" target="_blank" rel="noopener noreferrer">
+                            aria-label="{{ __('Whatsapp') }}" target="_blank" rel="noopener noreferrer">
                             <i class="social-icon social-icon--whatsapp" aria-hidden="true"></i>
                         </a>
                     </li>

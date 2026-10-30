@@ -68,13 +68,13 @@
                 </div>
                 <div class="quickview-product-variant">
                     <div class="variant-picker-item variant-unit">
-                        <x-products.variants :variants="$productViewModel->variantOptions" :selected-id="$productViewModel->selectedVariant['id']" />
+                        <x-products.variant-selector :variants="$productViewModel->variantOptions" :selected-id="$productViewModel->selectedVariant['id']" />
                     </div>
                 </div>
                 <div class="quickview-product-total-btn">
                     <div class="group-btn">
-                        <x-products.quantity />
-                        <x-products.buy-button :variant="$productViewModel->selectedVariant" />
+                        <x-products.quantity-selector />
+                        <x-products.add-to-cart-button :variant="$productViewModel->selectedVariant" />
                         <x-products.favorite-button :product="$product" />
                     </div>
                 </div>
@@ -87,7 +87,7 @@
     </div>
 
     @if ($product !== null)
-        <x-products.information :product="$product" prefix="quick-view" class="quick-view-tabs" wire:loading.remove
+        <x-products.details :product="$product" prefix="quick-view" class="quick-view-tabs" wire:loading.remove
             wire:key="quick-view-information-{{ $opening }}" />
     @endif
 </div>

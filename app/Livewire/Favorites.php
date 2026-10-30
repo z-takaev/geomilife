@@ -8,7 +8,7 @@ use App\Services\Favorites\FavoriteService;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
-final class Wishlist extends Component
+final class Favorites extends Component
 {
     public array $guestIds = [];
 
@@ -86,6 +86,6 @@ final class Wishlist extends Component
         $ids = $favorites->ids($this->guestIds);
         $authenticated = auth()->check();
 
-        return view('livewire.wishlist', compact('items', 'ids', 'authenticated'));
+        return view('livewire.favorites', compact('items', 'ids', 'authenticated'));
     }
 }

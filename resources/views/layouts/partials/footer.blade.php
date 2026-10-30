@@ -18,7 +18,7 @@
                     @endif
                 </div>
 
-                @include('partials.footer-navigation')
+                @include('layouts.partials.navigation.footer')
 
                 <div class="inner-right">
                     <div id="contacts" class="footer-col-block open">

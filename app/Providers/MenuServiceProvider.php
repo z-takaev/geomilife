@@ -15,11 +15,11 @@ final class MenuServiceProvider extends ServiceProvider
 {
     public function boot(CategoryRepository $categoryRepository): void
     {
-        View::composer('partials.navigation', function (ViewInstance $view) use ($categoryRepository): void {
+        View::composer('layouts.partials.navigation.header', function (ViewInstance $view) use ($categoryRepository): void {
             $view->with('items', $this->header($categoryRepository));
         });
 
-        View::composer('partials.footer-navigation', function (ViewInstance $view): void {
+        View::composer('layouts.partials.navigation.footer', function (ViewInstance $view): void {
             $view->with('columns', $this->footer());
         });
     }

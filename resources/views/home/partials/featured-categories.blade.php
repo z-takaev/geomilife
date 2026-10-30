@@ -29,7 +29,7 @@
                 @php
                     $productsCount = $category->total_active_products_count;
                 @endphp
-                <x-category-card :background="$backgrounds[$loop->index]" :image="$category->getFirstMediaUrl('image')" :name="$category->name" :product-count="trans_choice(
+                <x-categories.card :background="$backgrounds[$loop->index]" :image="$category->getFirstMediaUrl('image')" :name="$category->name" :product-count="trans_choice(
                     '{0} Нет товаров|{1} :count товар|[2,4] :count товара|[5,*] :count товаров',
                     $productsCount,
                     ['count' => $productsCount],

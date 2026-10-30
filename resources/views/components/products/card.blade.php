@@ -30,7 +30,7 @@
                 </li>
                 <li>
                     <button type="button" data-bs-toggle="offcanvas" data-bs-target="#quickView"
-                        x-on:click="Livewire.dispatchTo('quick-view', 'open-quick-view', { productId: {{ $product->getKey() }}, variantId: selectedVariantId })"
+                        x-on:click="Livewire.dispatchTo('product-quick-view', 'open-quick-view', { productId: {{ $product->getKey() }}, variantId: selectedVariantId })"
                         class="hover-tooltip tooltip-left box-icon" aria-label="{{ __('Быстрый просмотр') }}">
                         <span class="icon icon-eye" aria-hidden="true"></span>
                         <span class="tooltip">{{ __('Быстрый просмотр') }}</span>
@@ -46,11 +46,11 @@
             </a>
 
             <div class="product-card-order">
-                <x-products.variants :variants="$productViewModel->variantOptions" :selected-id="$productViewModel->selectedVariant['id']" compact />
+                <x-products.variant-selector :variants="$productViewModel->variantOptions" :selected-id="$productViewModel->selectedVariant['id']" compact />
                 <x-products.price :variant="$productViewModel->selectedVariant" compact />
                 <div class="product-card-purchase">
-                    <x-products.quantity compact />
-                    <x-products.buy-button :variant="$productViewModel->selectedVariant" compact />
+                    <x-products.quantity-selector compact />
+                    <x-products.add-to-cart-button :variant="$productViewModel->selectedVariant" compact />
                 </div>
             </div>
         </div>

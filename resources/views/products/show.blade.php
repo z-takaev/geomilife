@@ -78,14 +78,14 @@
                         </div>
                         <div class="quickview-product-variant product-detail__variant">
                             <div class="variant-picker-item variant-unit">
-                                <x-products.variants :variants="$productViewModel->variantOptions" :selected-id="$productViewModel->selectedVariant['id']" />
+                                <x-products.variant-selector :variants="$productViewModel->variantOptions" :selected-id="$productViewModel->selectedVariant['id']" />
                             </div>
                         </div>
 
                         <div class="quickview-product-total-btn product-detail__actions">
                             <div class="group-btn">
-                                <x-products.quantity />
-                                <x-products.buy-button :variant="$productViewModel->selectedVariant" />
+                                <x-products.quantity-selector />
+                                <x-products.add-to-cart-button :variant="$productViewModel->selectedVariant" />
                                 <x-products.favorite-button :product="$product" />
                             </div>
                         </div>
@@ -98,15 +98,15 @@
 
     <section class="product-description-section">
         <div class="container">
-            <x-products.information :product="$product" prefix="product" />
+            <x-products.details :product="$product" prefix="product" />
         </div>
     </section>
 
     @if ($recommendedProducts->isNotEmpty())
-        <x-product-selection :title="__('Рекомендуемые товары')" :all-products-url="route('catalog.index')">
+        <x-products.slider :title="__('Рекомендуемые товары')" :all-products-url="route('catalog.index')">
             @foreach ($recommendedProducts as $recommendedProduct)
-                <x-product-card :product="$recommendedProduct" :wire:key="'product-card-recommended-'.$recommendedProduct->getKey()" />
+                <x-products.card :product="$recommendedProduct" :wire:key="'product-card-recommended-'.$recommendedProduct->getKey()" />
             @endforeach
-        </x-product-selection>
+        </x-products.slider>
     @endif
 @endsection

@@ -9,7 +9,7 @@
                 <div class="col-lg-10">
                     <div class="reviews-archive-list">
                         @forelse ($reviews as $review)
-                            <x-review-card :review="$review" :expandable="true" />
+                            <x-reviews.card :review="$review" :expandable="true" />
                         @empty
                             <x-empty-state :title="__('Отзывы пока не добавлены.')" />
                         @endforelse

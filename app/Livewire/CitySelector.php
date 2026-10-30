@@ -5,20 +5,20 @@ declare(strict_types=1);
 namespace App\Livewire;
 
 use App\Models\City;
-use App\Services\Locations\LocationService;
+use App\Services\Cities\CurrentCityService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Component;
 
-final class CitySelection extends Component
+final class CitySelector extends Component
 {
     private const int SEARCH_LIMIT = 5;
 
     public string $query = '';
 
-    public function select(int $cityId, LocationService $locationService): void
+    public function select(int $cityId, CurrentCityService $currentCityService): void
     {
-        $city = $locationService->select($cityId);
+        $city = $currentCityService->select($cityId);
 
         $this->reset('query');
         $this->dispatch('city-selected', id: $city->getKey(), name: $city->name);
@@ -58,6 +58,6 @@ final class CitySelection extends Component
             ->groupBy(static fn (City $city): string => mb_strtoupper(mb_substr($city->name, 0, 1)))
             ->splitIn(3);
 
-        return view('livewire.city-selection', compact('query', 'searchResults', 'featuredCities', 'cityColumns'));
+        return view('livewire.city-selector', compact('query', 'searchResults', 'featuredCities', 'cityColumns'));
     }
 }

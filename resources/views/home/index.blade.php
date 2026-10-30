@@ -13,34 +13,34 @@
 @endpush
 
 @section('content')
-    @include('partials.home.hero-slider')
-    @include('partials.home.benefits')
-    @include('partials.home.featured-categories')
-    @include('partials.banner-wide')
+    @include('home.partials.main-slider')
+    @include('home.partials.benefits')
+    @include('home.partials.featured-categories')
+    @include('home.partials.wide-banner')
     @if ($hitProducts->isNotEmpty())
-        <x-product-selection :title="__('Хиты продаж')" :all-products-url="route('catalog.index')">
+        <x-products.slider :title="__('Хиты продаж')" :all-products-url="route('catalog.index')">
             @foreach ($hitProducts as $product)
-                <x-product-card :product="$product" :wire:key="'product-card-hits-'.$product->getKey()" />
+                <x-products.card :product="$product" :wire:key="'product-card-hits-'.$product->getKey()" />
             @endforeach
-        </x-product-selection>
+        </x-products.slider>
     @endif
-    @include('partials.banner-double')
+    @include('home.partials.two-banners')
     @if ($newProducts->isNotEmpty())
-        <x-product-selection :title="__('Новинки')" :all-products-url="route('catalog.index')">
+        <x-products.slider :title="__('Новинки')" :all-products-url="route('catalog.index')">
             @foreach ($newProducts as $product)
-                <x-product-card :product="$product" :wire:key="'product-card-new-'.$product->getKey()" />
+                <x-products.card :product="$product" :wire:key="'product-card-new-'.$product->getKey()" />
             @endforeach
-        </x-product-selection>
+        </x-products.slider>
     @endif
-    @include('partials.banner-triple')
+    @include('home.partials.three-banners')
     @if ($discountedProducts->isNotEmpty())
-        <x-product-selection :title="__('Товары со скидкой')" :all-products-url="route('catalog.index')">
+        <x-products.slider :title="__('Товары со скидкой')" :all-products-url="route('catalog.index')">
             @foreach ($discountedProducts as $product)
-                <x-product-card :product="$product" :wire:key="'product-card-discounted-'.$product->getKey()" />
+                <x-products.card :product="$product" :wire:key="'product-card-discounted-'.$product->getKey()" />
             @endforeach
-        </x-product-selection>
+        </x-products.slider>
     @endif
-    @include('partials.home.latest-promos')
-    @include('partials.home.company-story')
-    @include('partials.home.reviews')
+    @include('home.partials.latest-promos')
+    @include('home.partials.company-story')
+    @include('home.partials.reviews')
 @endsection

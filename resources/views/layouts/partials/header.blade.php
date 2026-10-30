@@ -93,7 +93,7 @@
                     <img loading="lazy" src="{{ asset('assets/images/logo/logo-default.svg') }}"
                         alt="{{ __('Логотип GeoMiLife') }}">
                 </a>
-                @include('partials.navigation')
+                @include('layouts.partials.navigation.header')
             </div>
             <div class="header-right">
                 <div class="box-nav-icon">

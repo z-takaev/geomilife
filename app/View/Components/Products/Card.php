@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\View\Components;
+namespace App\View\Components\Products;
 
 use App\Models\Product;
 use App\ViewModel\Products\ProductViewModel;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
-final class ProductCard extends Component
+final class Card extends Component
 {
     public ProductViewModel $productViewModel;
 
@@ -23,6 +23,6 @@ final class ProductCard extends Component
 
     public function render(): View
     {
-        return view('components.product-card');
+        return view('components.products.card');
     }
 }

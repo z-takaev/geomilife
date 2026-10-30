@@ -9,7 +9,7 @@
         <div class="home-offers-scroll">
             <div class="home-offers-list">
                 @foreach ($promos as $promo)
-                    <x-promotion-card :date="__('До :date', ['date' => $promo->end_at->translatedFormat('j F Y')])" :description="$promo->excerpt ?? ''" :image="$promo->getFirstMediaUrl('image', 'card')" :title="$promo->title"
+                    <x-promos.card :date="__('До :date', ['date' => $promo->end_at->translatedFormat('j F Y')])" :description="$promo->excerpt ?? ''" :image="$promo->getFirstMediaUrl('image', 'card')" :title="$promo->title"
                         :url="route('promos.show', $promo)" />
                 @endforeach
             </div>

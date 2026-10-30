@@ -9,7 +9,7 @@
                 <div class="col-lg-8">
                     <div class="article-archive-list">
                         @forelse ($articles as $article)
-                            <x-article-card :image="$article->getFirstMediaUrl('image', 'card')" :title="$article->title" :url="route('articles.show', $article)" />
+                            <x-articles.card :image="$article->getFirstMediaUrl('image', 'card')" :title="$article->title" :url="route('articles.show', $article)" />
                         @empty
                             <x-empty-state :title="__('Статьи пока не добавлены.')" />
                         @endforelse

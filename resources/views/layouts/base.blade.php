@@ -19,30 +19,30 @@
 </head>
 
 <body>
-    @include('partials.go-top')
-    @include('partials.preload')
+    @include('layouts.partials.back-to-top')
+    @include('layouts.partials.page-loader')
 
     <main id="wrapper">
-        @include('partials.header')
+        @include('layouts.partials.header')
 
         @yield('content')
 
-        @include('partials.footer')
+        @include('layouts.partials.footer')
     </main>
 
-    @include('partials.mobile-menu')
-    <livewire:wishlist />
+    @include('layouts.partials.navigation.mobile')
+    <livewire:favorites />
     <livewire:shopping-cart />
-    <livewire:quick-view />
+    <livewire:product-quick-view />
     <livewire:search-suggestions />
-    @include('partials.city-selection')
+    <livewire:city-selector />
     @guest
-        @include('partials.auth.login')
-        @include('partials.auth.register')
-        @include('partials.auth.forgot-password')
+        @include('auth.partials.login')
+        @include('auth.partials.register')
+        @include('auth.partials.forgot-password')
     @endguest
-    @include('partials.cookie-consent')
-    @include('partials.notifications')
+    @include('layouts.partials.cookie-consent')
+    @include('layouts.partials.notifications')
 
     <script src="{{ asset('assets/js/bootstrap.min.js') }}"></script>
     <script src="{{ asset('assets/js/jquery.min.js') }}"></script>

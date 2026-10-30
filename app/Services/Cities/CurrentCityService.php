@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Locations;
+namespace App\Services\Cities;
 
 use App\Models\City;
 use Illuminate\Support\Facades\Cookie;
 
-final class LocationService
+final class CurrentCityService
 {
     private array $cities = [];
 

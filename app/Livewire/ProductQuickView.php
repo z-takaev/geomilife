@@ -9,7 +9,7 @@ use App\ViewModel\Products\ProductViewModel;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
-final class QuickView extends Component
+final class ProductQuickView extends Component
 {
     public ?int $productId = null;
 
@@ -30,7 +30,7 @@ final class QuickView extends Component
         $images = $product?->images() ?? collect();
         $productViewModel = $product === null ? null : new ProductViewModel($product, $this->variantId);
 
-        return view('livewire.quick-view', compact('product', 'images', 'productViewModel'));
+        return view('livewire.product-quick-view', compact('product', 'images', 'productViewModel'));
     }
 
     protected function getListeners(): array

@@ -109,7 +109,7 @@ final class CatalogProducts extends Component
             : $categoryRepository->getActiveChildren($this->category);
         [$categoryBackUrl, $categoryBackLabel] = $this->categoryBackLink();
 
-        return view('livewire.catalog-products', compact(
+        return view('livewire.catalog-products.catalog-products', compact(
             'products', 'categories', 'packageOptions', 'sortOptions', 'hasMoreProducts', 'categoryBackUrl', 'categoryBackLabel', 'catalogKey',
         ));
     }

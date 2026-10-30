@@ -6,8 +6,8 @@ namespace App\Providers;
 
 use App\Repositories\Products\CatalogRepository;
 use App\Services\Cart\CartService;
+use App\Services\Cities\CurrentCityService;
 use App\Services\Favorites\FavoriteService;
-use App\Services\Locations\LocationService;
 use App\Services\Telegram\TelegramService;
 use App\Support\Seo\SeoManager;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -33,7 +33,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->scoped(CartService::class);
         $this->app->scoped(SeoManager::class);
         $this->app->scoped(CatalogRepository::class);
-        $this->app->scoped(LocationService::class);
+        $this->app->scoped(CurrentCityService::class);
     }
 
     public function boot(): void

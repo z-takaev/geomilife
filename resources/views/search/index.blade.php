@@ -55,7 +55,7 @@
                             @php
                                 $productsCount = $category->total_active_products_count;
                             @endphp
-                            <x-category-card :background="$categoryBackgrounds[$loop->index % count($categoryBackgrounds)]" :image="$category->getFirstMediaUrl('image')" :name="$category->name" :product-count="trans_choice(
+                            <x-categories.card :background="$categoryBackgrounds[$loop->index % count($categoryBackgrounds)]" :image="$category->getFirstMediaUrl('image')" :name="$category->name" :product-count="trans_choice(
                                 '{0} Нет товаров|{1} :count товар|[2,4] :count товара|[5,*] :count товаров',
                                 $productsCount,
                                 ['count' => $productsCount],
@@ -75,7 +75,7 @@
                 @if ($products->isNotEmpty())
                     <div class="catalog-products-grid search-products-grid">
                         @foreach ($products as $product)
-                            <x-product-card :product="$product" :wire:key="'search-product-'.$product->getKey()" />
+                            <x-products.card :product="$product" :wire:key="'search-product-'.$product->getKey()" />
                         @endforeach
                     </div>
 

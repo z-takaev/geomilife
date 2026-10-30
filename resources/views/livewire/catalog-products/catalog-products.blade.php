@@ -24,14 +24,14 @@
 
             <div class="catalog-layout">
                 <aside class="catalog-sidebar" aria-label="{{ __('Фильтры каталога') }}">
-                    @include('catalog.partials.filters', ['filterIdPrefix' => 'desktop'])
+                    @include('livewire.catalog-products.partials.filters', ['filterIdPrefix' => 'desktop'])
                 </aside>
 
                 <div class="catalog-content" wire:loading.class="catalog-content--loading">
                     @if ($products->isNotEmpty())
                         <div class="catalog-products-grid" wire:key="catalog-results-{{ $catalogKey }}">
                             @foreach ($products as $product)
-                                <x-product-card :product="$product"
+                                <x-products.card :product="$product"
                                     :wire:key="'catalog-product-'.$product->getKey().'-'.$product->getAttribute('catalog_variant_id')" />
                             @endforeach
                         </div>
@@ -47,7 +47,7 @@
                                     </button>
                                 @endif
 
-                                {{ $products->onEachSide(1)->links('livewire.catalog-pagination', ['scrollTo' => '.catalog-page']) }}
+                                {{ $products->onEachSide(1)->links('livewire.catalog-products.partials.pagination', ['scrollTo' => '.catalog-page']) }}
                             </div>
                         @endif
                     @else
@@ -66,7 +66,7 @@
                 aria-label="{{ __('Закрыть') }}"></button>
         </div>
         <div class="offcanvas-body">
-            @include('catalog.partials.filters', ['filterIdPrefix' => 'mobile'])
+            @include('livewire.catalog-products.partials.filters', ['filterIdPrefix' => 'mobile'])
         </div>
     </div>
 </div>

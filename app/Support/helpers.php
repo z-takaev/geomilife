@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 use App\Models\City;
 use App\Models\Setting;
-use App\Services\Locations\LocationService;
+use App\Services\Cities\CurrentCityService;
 use App\Support\Seo\SeoManager;
 
 if (! function_exists('current_city')) {
     function current_city(): ?City
     {
-        return app(LocationService::class)->current();
+        return app(CurrentCityService::class)->current();
     }
 }
 
