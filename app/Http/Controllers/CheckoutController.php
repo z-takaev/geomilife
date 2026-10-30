@@ -15,11 +15,11 @@ final class CheckoutController extends Controller
     public function __invoke(Request $request): View
     {
         $breadcrumbs = Breadcrumbs::make(
-            BreadcrumbItem::make(__('Оформление заказа'), route('checkout.index')),
+            BreadcrumbItem::make(__('Оформление заказа'), route('checkout')),
         );
 
         seo()->forRoute(
-            routeName: 'checkout.index',
+            routeName: 'checkout',
             fallbackTitle: __('Оформление заказа'),
         )->schema(BreadcrumbSchema::make($breadcrumbs));
 

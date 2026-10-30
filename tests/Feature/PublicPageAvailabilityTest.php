@@ -12,9 +12,10 @@ it('открывает публичную страницу', function (string $r
     $this->get(route($routeName))->assertOk();
 })->with([
     'главная' => 'home',
-    'контакты' => 'contacts.index',
-    'вопросы и ответы' => 'faqs.index',
-    'отзывы' => 'reviews.index',
+    'контакты' => 'contacts',
+    'вопросы и ответы' => 'faqs',
+    'отзывы' => 'reviews',
+    'оформление заказа' => 'checkout',
     'список новостей' => 'news.index',
     'список статей' => 'articles.index',
     'список акций' => 'promos.index',
@@ -39,7 +40,7 @@ it('открывает целевую страницу', function (): void {
         'is_active' => true,
     ]);
 
-    $this->get(route('pages.show', $page))->assertOk();
+    $this->get(route('page', $page))->assertOk();
 });
 
 it('создает заданный набор целевых страниц', function (): void {

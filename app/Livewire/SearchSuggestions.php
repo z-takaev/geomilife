@@ -22,7 +22,7 @@ final class SearchSuggestions extends Component
             return;
         }
 
-        $this->redirectRoute('search.index', ['q' => $query]);
+        $this->redirectRoute('search', ['q' => $query]);
     }
 
     public function render(

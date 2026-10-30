@@ -27,22 +27,22 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
 
-Route::get('/contacts', ContactController::class)->name('contacts.index');
+Route::get('/contacts', ContactController::class)->name('contacts');
 
-Route::get('/catalog', CatalogController::class)->name('catalog.index');
+Route::get('/catalog', [CatalogController::class, 'index'])->name('catalog.index');
 Route::get('/catalog/{category}', [CatalogController::class, 'show'])->name('catalog.category');
 
-Route::get('/search', SearchController::class)->name('search.index');
+Route::get('/search', SearchController::class)->name('search');
 
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 
-Route::get('/checkout', CheckoutController::class)->name('checkout.index');
+Route::get('/checkout', CheckoutController::class)->name('checkout');
 
-Route::get('/faqs', [FaqController::class, 'index'])->name('faqs.index');
+Route::get('/faqs', FaqController::class)->name('faqs');
 
-Route::get('/reviews', ReviewController::class)->name('reviews.index');
+Route::get('/reviews', ReviewController::class)->name('reviews');
 
-Route::get('/pages/{page}', [PageController::class, 'show'])->name('pages.show');
+Route::get('/pages/{page}', PageController::class)->name('page');
 
 Route::controller(NewsController::class)->prefix('news')->name('news.')->group(function (): void {
     Route::get('/', 'index')->name('index');

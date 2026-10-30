@@ -18,15 +18,15 @@ final class SitemapController extends Controller
     {
         $urls = collect([
             ['location' => route('home'), 'lastModified' => null],
-            ['location' => route('contacts.index'), 'lastModified' => null],
-            ['location' => route('faqs.index'), 'lastModified' => null],
-            ['location' => route('reviews.index'), 'lastModified' => null],
+            ['location' => route('contacts'), 'lastModified' => null],
+            ['location' => route('faqs'), 'lastModified' => null],
+            ['location' => route('reviews'), 'lastModified' => null],
             ['location' => route('news.index'), 'lastModified' => null],
             ['location' => route('articles.index'), 'lastModified' => null],
             ['location' => route('promos.index'), 'lastModified' => null],
             ['location' => route('catalog.index'), 'lastModified' => null],
-            ['location' => route('search.index'), 'lastModified' => null],
-            ['location' => route('checkout.index'), 'lastModified' => null],
+            ['location' => route('search'), 'lastModified' => null],
+            ['location' => route('checkout'), 'lastModified' => null],
         ])->concat(
             Category::query()
                 ->visible()
@@ -40,7 +40,7 @@ final class SitemapController extends Controller
                 ->active()
                 ->get(['slug', 'updated_at'])
                 ->map(static fn (Page $page): array => [
-                    'location' => route('pages.show', $page),
+                    'location' => route('page', $page),
                     'lastModified' => $page->updated_at,
                 ]),
         )->concat(

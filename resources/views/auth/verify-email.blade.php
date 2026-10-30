@@ -10,7 +10,7 @@
             <div class="row justify-content-center">
                 <div class="col-lg-8">
                     <div class="modal-content text-center">
-                        <h3 class="title-pop text-black">{{ __('Подтвердите электронную почту') }}</h3>
+                        <h3 class="title-pop text-black">{{ __('Подтвердите email') }}</h3>
                         <p class="desc-pop">
                             {{ __('Мы отправили письмо со ссылкой для подтверждения на :email.', ['email' => auth()->user()->email]) }}
                         </p>

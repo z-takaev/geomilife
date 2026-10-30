@@ -27,7 +27,7 @@ final readonly class WebSiteSchema implements SchemaContract
                 '@type' => 'SearchAction',
                 'target' => [
                     '@type' => 'EntryPoint',
-                    'urlTemplate' => route('search.index').'?q={search_term_string}',
+                    'urlTemplate' => route('search').'?q={search_term_string}',
                 ],
                 'query-input' => 'required name=search_term_string',
             ],

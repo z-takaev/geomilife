@@ -12,7 +12,7 @@ use Illuminate\Contracts\View\View;
 
 final class CatalogController extends Controller
 {
-    public function __invoke(): View
+    public function index(): View
     {
         $category = null;
         $breadcrumbs = Breadcrumbs::make(

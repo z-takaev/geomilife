@@ -58,7 +58,7 @@
                                 </div>
                             @endif
 
-                            <a href="{{ route('search.index', ['q' => $query]) }}"
+                            <a href="{{ route('search', ['q' => $query]) }}"
                                 class="link-underline text-primary">{{ __('Все результаты') }}</a>
                             @if ($categories->isEmpty() && $products->isEmpty())
                                 <p class="search-suggestions__empty">{{ __('Ничего не найдено') }}</p>

@@ -14,12 +14,11 @@
                 @csrf
                 <div class="form-content">
                     <fieldset class="tf-field">
-                        <label for="email3" class="tf-lable">{{ __('Электронная почта') }}<span
+                        <label for="email3" class="tf-lable">{{ __('Email') }}<span
                                 class="text-secondary">*</span></label>
                         <input type="email" id="email3" name="email"
-                            value="{{ $errors->signIn->any() ? old('email') : '' }}"
-                            placeholder="{{ __('Электронная почта') }}" autocomplete="email" required
-                            @class(['is-invalid' => $errors->signIn->has('email')])>
+                            value="{{ $errors->signIn->any() ? old('email') : '' }}" placeholder="{{ __('Email') }}"
+                            autocomplete="email" required @class(['is-invalid' => $errors->signIn->has('email')])>
                         @error('email', 'signIn')
                             <span class="invalid-feedback d-block">{{ $message }}</span>
                         @enderror

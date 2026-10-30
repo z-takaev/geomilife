@@ -31,7 +31,7 @@
                                 <i class="icon icon-EnvelopeSimple"></i>
                             </span>
                             <div>
-                                <p class="contacts-info-card__label">{{ __('Электронная почта') }}</p>
+                                <p class="contacts-info-card__label">{{ __('Email') }}</p>
                                 <a href="mailto:{{ settings()?->email }}" class="contacts-info-card__value link-primary">
                                     {{ __(settings()?->email) }}
                                 </a>

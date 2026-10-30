@@ -19,6 +19,6 @@ final class ForgotPasswordController extends Controller
 
         return back()
             ->with('auth_modal', 'forgotPassword')
-            ->with('auth_status', __('Если аккаунт с таким адресом существует, ссылка для сброса пароля отправлена.'));
+            ->with('auth_status', __('Cсылка для сброса пароля отправлена на ваш email.'));
     }
 }

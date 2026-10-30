@@ -5,7 +5,7 @@
 
     <section class="search-results-page flat-spacing">
         <div class="container">
-            <form action="{{ route('search.index') }}" method="get" class="form-search mb-30">
+            <form action="{{ route('search') }}" method="get" class="form-search mb-30">
                 <fieldset>
                     <input type="search" name="q" value="{{ $query }}" maxlength="255" required
                         placeholder="{{ __('Найти товар') }}" aria-label="{{ __('Поисковый запрос') }}">

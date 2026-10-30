@@ -6,7 +6,7 @@
             </div>
             <h3 class="title-pop text-black">{{ __('Восстановление пароля') }}</h3>
             <p class="desc-pop">
-                {{ __('Введите электронную почту, указанную при регистрации. Мы отправим на неё ссылку для восстановления пароля.') }}
+                {{ __('Введите email, указанный при регистрации. Мы отправим на него ссылку для восстановления пароля.') }}
             </p>
             @if (session('auth_status') && session('auth_modal') === 'forgotPassword')
                 <div class="auth-notice" role="status">
@@ -17,10 +17,10 @@
                 @csrf
                 <div class="form-content">
                     <fieldset class="tf-field">
-                        <label for="email2" class="tf-lable">{{ __('Электронная почта') }}</label>
+                        <label for="email2" class="tf-lable">{{ __('Email') }}</label>
                         <input type="email" id="email2" name="email"
                             value="{{ $errors->forgotPassword->any() ? old('email') : '' }}"
-                            placeholder="{{ __('Электронная почта') }}" autocomplete="email" required
+                            placeholder="{{ __('Email') }}" autocomplete="email" required
                             @class(['is-invalid' => $errors->forgotPassword->has('email')])>
                         @error('email', 'forgotPassword')
                             <span class="invalid-feedback d-block">{{ $message }}</span>

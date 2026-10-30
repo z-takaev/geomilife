@@ -14,11 +14,11 @@ final class ContactController extends Controller
     public function __invoke(): View
     {
         $breadcrumbs = Breadcrumbs::make(
-            BreadcrumbItem::make(__('Контакты'), route('contacts.index')),
+            BreadcrumbItem::make(__('Контакты'), route('contacts')),
         );
 
         seo()->forRoute(
-            routeName: 'contacts.index',
+            routeName: 'contacts',
             fallbackTitle: __('Контакты'),
         )->schema(BreadcrumbSchema::make($breadcrumbs));
 

@@ -39,7 +39,7 @@ it('ищет активные категории и доступные това�
     createSearchProduct($category, 'Льняное масло', 'linseed-oil');
     createSearchProduct($category, 'Скрытое масло', 'hidden-oil', false);
 
-    $this->get(route('search.index', ['q' => 'масло']))
+    $this->get(route('search', ['q' => 'масло']))
         ->assertOk()
         ->assertSee('Натуральные масла')
         ->assertSee('Льняное масло')
@@ -54,7 +54,7 @@ it('возвращает пустой результат для пустого �
     ]);
     createSearchProduct($category, 'Льняное масло', 'linseed-oil');
 
-    $this->get(route('search.index', ['q' => '   ']))
+    $this->get(route('search', ['q' => '   ']))
         ->assertOk()
         ->assertSee('Не задан')
         ->assertDontSee('Льняное масло');

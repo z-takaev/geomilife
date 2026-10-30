@@ -101,12 +101,12 @@
                 </div>
                 <ul class="footer-legal-links">
                     <li>
-                        <a href="{{ route('pages.show', 'terms') }}" class="link">
+                        <a href="{{ route('page', 'terms') }}" class="link">
                             {{ __('Пользовательское соглашение') }}
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('pages.show', 'policy') }}" class="link">
+                        <a href="{{ route('page', 'policy') }}" class="link">
                             {{ __('Политика конфиденциальности') }}
                         </a>
                     </li>

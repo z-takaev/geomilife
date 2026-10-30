@@ -15,11 +15,11 @@ final class ReviewController extends Controller
     public function __invoke(): View
     {
         $breadcrumbs = Breadcrumbs::make(
-            BreadcrumbItem::make(__('Отзывы'), route('reviews.index')),
+            BreadcrumbItem::make(__('Отзывы'), route('reviews')),
         );
 
         seo()->forRoute(
-            routeName: 'reviews.index',
+            routeName: 'reviews',
             fallbackTitle: __('Отзывы'),
         )->schema(BreadcrumbSchema::make($breadcrumbs));
 

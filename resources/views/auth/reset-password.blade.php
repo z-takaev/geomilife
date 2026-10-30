@@ -12,17 +12,17 @@
                     <div class="modal-content">
                         <h3 class="title-pop text-black text-center">{{ __('Новый пароль') }}</h3>
                         <p class="desc-pop text-center">
-                            {{ __('Укажите электронную почту и новый пароль для аккаунта.') }}
+                            {{ __('Укажите email и новый пароль для аккаунта.') }}
                         </p>
                         <form action="{{ route('password.update') }}" method="POST" class="form-log">
                             @csrf
                             <input type="hidden" name="token" value="{{ $token }}">
                             <div class="form-content">
                                 <fieldset class="tf-field">
-                                    <label for="reset-email" class="tf-lable">{{ __('Электронная почта') }}<span
+                                    <label for="reset-email" class="tf-lable">{{ __('Email') }}<span
                                             class="text-secondary">*</span></label>
                                     <input type="email" id="reset-email" name="email" value="{{ old('email', $email) }}"
-                                        placeholder="{{ __('Электронная почта') }}" autocomplete="email" required
+                                        placeholder="{{ __('Email') }}" autocomplete="email" required
                                         @class(['is-invalid' => $errors->resetPassword->has('email')])>
                                     @error('email', 'resetPassword')
                                         <span class="invalid-feedback d-block">{{ $message }}</span>

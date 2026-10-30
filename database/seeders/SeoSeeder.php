@@ -13,15 +13,15 @@ final class SeoSeeder extends Seeder
     {
         $routeNames = [
             'home',
-            'contacts.index',
-            'faqs.index',
-            'reviews.index',
+            'contacts',
+            'faqs',
+            'reviews',
             'news.index',
             'articles.index',
             'promos.index',
             'catalog.index',
-            'search.index',
-            'checkout.index',
+            'search',
+            'checkout',
             'profile.show',
             'orders.index',
         ];

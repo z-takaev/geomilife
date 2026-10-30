@@ -49,8 +49,7 @@
                     <h4 class="tf-totals-total-value">{{ $details['total'] }}</h4>
                 </div>
                 <div class="group-btn">
-                    <a href="{{ route('checkout.index') }}"
-                        class="tf-btn animate-btn w-100">{{ __('Оформить заказ') }}</a>
+                    <a href="{{ route('checkout') }}" class="tf-btn animate-btn w-100">{{ __('Оформить заказ') }}</a>
                 </div>
                 <div class="text-center"><button type="button"
                         class="fw-semibold text-primary link-2 text-decoration-underline"

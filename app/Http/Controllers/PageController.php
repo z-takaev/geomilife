@@ -12,12 +12,12 @@ use Illuminate\Contracts\View\View;
 
 final class PageController extends Controller
 {
-    public function show(Page $page): View
+    public function __invoke(Page $page): View
     {
         abort_unless($page->is_active, 404);
 
         $breadcrumbs = Breadcrumbs::make(
-            BreadcrumbItem::make($page->title, route('pages.show', $page)),
+            BreadcrumbItem::make($page->title, route('page', $page)),
         );
 
         seo()->forModel(

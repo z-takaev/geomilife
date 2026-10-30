@@ -16,10 +16,8 @@ final class SignUpController extends Controller
     public function register(SignUpRequest $request): RedirectResponse
     {
         $data = $request->safe()->only([
-            'first_name',
-            'last_name',
-            'email',
-            'password',
+            'first_name', 'last_name',
+            'email', 'password',
         ]);
 
         $user = User::query()->create($data);

@@ -12,14 +12,14 @@ use Illuminate\Contracts\View\View;
 
 final class FaqController extends Controller
 {
-    public function index(): View
+    public function __invoke(): View
     {
         $breadcrumbs = Breadcrumbs::make(
-            BreadcrumbItem::make(__('Вопросы и ответы'), route('faqs.index')),
+            BreadcrumbItem::make(__('Вопросы и ответы'), route('faqs')),
         );
 
         seo()->forRoute(
-            routeName: 'faqs.index',
+            routeName: 'faqs',
             fallbackTitle: __('Вопросы и ответы'),
         )->schema(BreadcrumbSchema::make($breadcrumbs));
 

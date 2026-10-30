@@ -116,8 +116,8 @@
                                     maxlength="18" data-phone-mask required>
                             </fieldset>
                             <fieldset class="checkout-field">
-                                <label for="checkout-email">{{ __('Электронная почта') }} <span
-                                        class="checkout-field__required" aria-hidden="true"></span></label>
+                                <label for="checkout-email">{{ __('Email') }} <span class="checkout-field__required"
+                                        aria-hidden="true"></span></label>
                                 <input id="checkout-email" type="email" name="email"
                                     value="{{ old('email', $customer?->email) }}"
                                     placeholder="{{ __('mail@example.ru') }}" autocomplete="email" required>

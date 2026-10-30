@@ -28,8 +28,8 @@
                         <small>{{ $message }}</small>
                     @enderror
                 </label>
-                <label class="profile-form__wide">{{ __('Электронная почта') }}<input type="email"
-                        value="{{ $user->email }}" disabled></label>
+                <label class="profile-form__wide">{{ __('Email') }}<input type="email" value="{{ $user->email }}"
+                        disabled></label>
                 <div class="profile-form__wide profile-form__actions"><button class="profile-button"
                         type="submit">{{ __('Сохранить данные') }}</button></div>
             </form>

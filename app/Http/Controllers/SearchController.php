@@ -22,11 +22,11 @@ final class SearchController extends Controller
     public function __invoke(Request $request): View
     {
         $breadcrumbs = Breadcrumbs::make(
-            BreadcrumbItem::make(__('Поиск'), route('search.index')),
+            BreadcrumbItem::make(__('Поиск'), route('search')),
         );
 
         seo()->forRoute(
-            routeName: 'search.index',
+            routeName: 'search',
             fallbackTitle: __('Поиск'),
         )->schema(BreadcrumbSchema::make($breadcrumbs));
 

@@ -63,7 +63,7 @@ it('не открывает неактивные материалы', function (
 
     $this->get(route($routeName, $model))->assertNotFound();
 })->with([
-    'страница' => [Page::class, 'pages.show', [
+    'страница' => [Page::class, 'page', [
         'key' => 'hidden',
         'title' => 'Скрытая страница',
         'slug' => 'hidden-page',

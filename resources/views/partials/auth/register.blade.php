@@ -31,12 +31,11 @@
                         @enderror
                     </fieldset>
                     <fieldset class="tf-field">
-                        <label for="email" class="tf-lable">{{ __('Электронная почта') }}<span
+                        <label for="email" class="tf-lable">{{ __('Email') }}<span
                                 class="text-secondary">*</span></label>
                         <input type="email" id="email" name="email"
-                            value="{{ $errors->signUp->any() ? old('email') : '' }}"
-                            placeholder="{{ __('Электронная почта') }}" autocomplete="email" required
-                            @class(['is-invalid' => $errors->signUp->has('email')])>
+                            value="{{ $errors->signUp->any() ? old('email') : '' }}" placeholder="{{ __('Email') }}"
+                            autocomplete="email" required @class(['is-invalid' => $errors->signUp->has('email')])>
                         @error('email', 'signUp')
                             <span class="invalid-feedback d-block">{{ $message }}</span>
                         @enderror
@@ -69,7 +68,7 @@
                                 class="tf-check style-4 radius-3" required @checked($errors->signUp->any() && old('terms'))>
                             <label for="agree" class="text-black text-caption-01">
                                 {{ __('Я принимаю') }}
-                                <a href="{{ route('pages.show', ['page' => 'terms']) }}" target="_blank"
+                                <a href="{{ route('page', ['page' => 'terms']) }}" target="_blank"
                                     rel="noopener noreferrer"
                                     class="text-decoration-underline fw-medium text-primary link-2">{{ __('пользовательское соглашение') }}</a>
                             </label>
