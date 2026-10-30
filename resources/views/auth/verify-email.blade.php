@@ -15,9 +15,9 @@
                             {{ __('Мы отправили письмо со ссылкой для подтверждения на :email.', ['email' => auth()->user()->email]) }}
                         </p>
                         @if (session('status') === 'verification-link-sent')
-                            <div class="auth-notice" role="status">
+                            <x-auth.notice>
                                 {{ __('Новое письмо с подтверждением отправлено.') }}
-                            </div>
+                            </x-auth.notice>
                         @endif
                         <form action="{{ route('verification.send') }}" method="POST">
                             @csrf
