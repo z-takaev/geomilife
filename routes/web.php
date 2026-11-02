@@ -23,6 +23,7 @@ use App\Http\Controllers\PromoController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\TbankWebhookController;
 use App\Http\Controllers\TelegramWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -103,3 +104,5 @@ Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::post('/telegram/webhook', TelegramWebhookController::class)->name('telegram.webhook');
 
 Route::post('/webhooks/cdek', CdekWebhookController::class)->name('cdek.webhook');
+
+Route::post('/webhooks/tbank', TbankWebhookController::class)->name('tbank.webhook');
