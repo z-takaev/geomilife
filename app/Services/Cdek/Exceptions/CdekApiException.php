@@ -12,12 +12,14 @@ final class CdekApiException extends RuntimeException
 {
     /**
      * @param  array<mixed>  $errors
+     * @param  array<mixed>  $warnings
      */
     public function __construct(
         string $message,
         public readonly ?int $statusCode = null,
         public readonly array $errors = [],
         ?Throwable $previous = null,
+        public readonly array $warnings = [],
     ) {
         parent::__construct($message, $statusCode ?? 0, $previous);
     }

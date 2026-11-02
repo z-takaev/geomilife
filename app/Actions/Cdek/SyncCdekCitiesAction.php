@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Actions\Cdek;
 
+use App\DTO\Cdek\Responses\CdekCityResponseDto;
 use App\Models\City;
 use App\Services\Cdek\CdekService;
-use App\Services\Cdek\Exceptions\CdekApiException;
 use DateTimeInterface;
 
 final class SyncCdekCitiesAction
@@ -26,7 +26,7 @@ final class SyncCdekCitiesAction
             $cities = $this->cdekService->getCities($page, self::PAGE_SIZE);
             $now = now();
             $records = array_map(
-                fn (array $city): array => $this->toRecord($city, $now),
+                fn (CdekCityResponseDto $city): array => $this->toRecord($city, $now),
                 $cities,
             );
 
@@ -47,35 +47,17 @@ final class SyncCdekCitiesAction
     }
 
     /**
-     * @param  array<string, mixed>  $city
      * @return array<string, mixed>
      */
-    private function toRecord(array $city, DateTimeInterface $now): array
+    private function toRecord(CdekCityResponseDto $city, DateTimeInterface $now): array
     {
-        $code = $city['code'] ?? null;
-        $name = $city['city'] ?? null;
-        $region = $city['region'] ?? null;
-        $subRegion = $city['sub_region'] ?? null;
-
-        if (
-            ! is_int($code)
-            || ! is_string($name)
-            || ($region !== null && ! is_string($region))
-        ) {
-            throw CdekApiException::invalidResponse();
-        }
-
-        if (! is_string($subRegion)) {
-            $subRegion = null;
-        }
-
         return [
-            'cdek_code' => $code,
-            'name' => $name,
-            'region' => $region,
-            'sub_region' => $subRegion,
+            'cdek_code' => $city->code,
+            'name' => $city->name,
+            'region' => $city->region,
+            'sub_region' => $city->subRegion,
             'is_active' => true,
-            'is_suggested' => in_array($code, config('cities.suggested_cdek_codes'), true),
+            'is_suggested' => in_array($city->code, config('cities.suggested_cdek_codes'), true),
             'is_pickup_available' => false,
             'is_courier_available' => false,
             'created_at' => $now,

@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\SignInController;
 use App\Http\Controllers\Auth\SignUpController;
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\CdekWebhookController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FaqController;
@@ -100,3 +101,5 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 
 Route::post('/telegram/webhook', TelegramWebhookController::class)->name('telegram.webhook');
+
+Route::post('/webhooks/cdek', CdekWebhookController::class)->name('cdek.webhook');

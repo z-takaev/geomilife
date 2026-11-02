@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Actions\Cdek\SyncCdekCitiesAction;
+use App\DTO\Cdek\Responses\CdekCityResponseDto;
 use App\Models\City;
 use App\Services\Cdek\CdekService;
 use App\Services\Cdek\Exceptions\CdekApiException;
@@ -22,7 +23,13 @@ it('получает OAuth токен и повторно использует �
         'cdek.test/v2/location/cities*' => Http::response([['code' => 44, 'city' => 'Москва']]),
     ]);
     $service = app(CdekService::class);
-    expect($service->getCities())->toBe([['code' => 44, 'city' => 'Москва']]);
+    $cities = $service->getCities();
+    expect($cities)->toHaveCount(1);
+    expect($cities[0])->toBeInstanceOf(CdekCityResponseDto::class);
+    expect($cities[0]->code)->toBe(44)
+        ->and($cities[0]->name)->toBe('Москва')
+        ->and($cities[0]->region)->toBeNull()
+        ->and($cities[0]->subRegion)->toBeNull();
     $service->getCities(1, 25);
     Http::assertSentCount(3);
     Http::assertSent(function (Request $request): bool {

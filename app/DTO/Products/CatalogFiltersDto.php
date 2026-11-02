@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace App\DTO\Products;
 
+use App\Support\Traits\Makeable;
+
 final readonly class CatalogFiltersDto
 {
+    use Makeable;
+
     public const array AVAILABILITY = ['in-stock', 'preorder'];
 
     public const int MAX_PRICE = 1_000_000_000;

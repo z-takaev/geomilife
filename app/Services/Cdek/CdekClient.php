@@ -32,33 +32,67 @@ final class CdekClient
     }
 
     /**
-     * @param  array<string, int|string>  $query
+     * @param  array<string, mixed>  $query
      * @return array<mixed>
      */
     public function get(string $uri, array $query = []): array
     {
-        $response = $this->sendGetRequest($uri, $query);
-
-        if ($response->unauthorized()) {
-            Cache::forget($this->tokenCacheKey());
-            $response = $this->sendGetRequest($uri, $query);
-        }
-
-        return $this->responseData($response);
+        return $this->responseData($this->request('GET', $uri, ['query' => $query]));
     }
 
     /**
-     * @param  array<string, int|string>  $query
+     * @param  array<string, mixed>  $data
+     * @return array<mixed>
      */
-    private function sendGetRequest(string $uri, array $query): Response
+    public function post(string $uri, array $data): array
+    {
+        return $this->responseData($this->request('POST', $uri, ['json' => $data]));
+    }
+
+    public function download(string $uri): string
+    {
+        $response = $this->request('GET', $uri, accept: 'application/pdf');
+
+        if (! $response->successful()) {
+            throw CdekApiException::fromResponse($response);
+        }
+
+        $contents = $response->body();
+
+        if (! str_starts_with($contents, '%PDF-')) {
+            throw CdekApiException::invalidResponse();
+        }
+
+        return $contents;
+    }
+
+    /**
+     * @param  array<string, mixed>  $options
+     */
+    private function request(string $method, string $uri, array $options = [], string $accept = 'application/json'): Response
+    {
+        $response = $this->sendRequest($method, $uri, $options, $accept);
+
+        if ($response->unauthorized()) {
+            Cache::forget($this->tokenCacheKey());
+            $response = $this->sendRequest($method, $uri, $options, $accept);
+        }
+
+        return $response;
+    }
+
+    /**
+     * @param  array<string, mixed>  $options
+     */
+    private function sendRequest(string $method, string $uri, array $options, string $accept): Response
     {
         try {
             return Http::baseUrl($this->baseUrl)
-                ->acceptJson()
+                ->accept($accept)
                 ->connectTimeout($this->connectTimeout)
                 ->timeout($this->timeout)
                 ->withToken($this->accessToken())
-                ->get($uri, $query);
+                ->send($method, $uri, $options);
         } catch (ConnectionException $exception) {
             throw CdekApiException::connection($exception);
         }
