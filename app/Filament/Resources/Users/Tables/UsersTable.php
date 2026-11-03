@@ -55,8 +55,8 @@ final class UsersTable
             ])
             ->defaultSort('id', 'desc')
             ->headerActions([
-                Action::make('exportCsv')
-                    ->label('Экспорт в CSV')
+                Action::make('exportExcel')
+                    ->label('Экспорт в Excel')
                     ->authorize(fn (): bool => UserResource::canViewAny())
                     ->action(fn (ListUsers $livewire): StreamedResponse => app(ExportUsersAction::class)->handle($livewire->getFilteredSortedTableQuery())),
             ])
