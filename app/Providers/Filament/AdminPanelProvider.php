@@ -10,6 +10,7 @@ use App\Filament\Resources\Articles\ArticleResource;
 use App\Filament\Resources\Categories\CategoryResource;
 use App\Filament\Resources\Cities\CityResource;
 use App\Filament\Resources\Faqs\FaqResource;
+use App\Filament\Resources\FilamentUsers\FilamentUserResource;
 use App\Filament\Resources\HomeSlides\HomeSlideResource;
 use App\Filament\Resources\News\NewsResource;
 use App\Filament\Resources\Orders\OrderResource;
@@ -20,6 +21,7 @@ use App\Filament\Resources\Promos\PromoResource;
 use App\Filament\Resources\Reviews\ReviewResource;
 use App\Filament\Resources\Seo\SeoResource;
 use App\Filament\Resources\Users\UserResource;
+use Filament\Actions\Action;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -48,6 +50,10 @@ final class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->authGuard('filament')
             ->login()
+            ->profile(isSimple: false)
+            ->userMenuItems([
+                'profile' => fn (Action $action): Action => $action->sort(PHP_INT_MAX - 1),
+            ])
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -108,6 +114,7 @@ final class AdminPanelProvider extends PanelProvider
                 ->items([
                     ...CityResource::getNavigationItems(),
                     ...SeoResource::getNavigationItems(),
+                    ...FilamentUserResource::getNavigationItems(),
                     ...ManageSettings::getNavigationItems(),
                 ]),
         ]);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\FilamentUserRoleEnum;
 use Filament\Models\Contracts\FilamentUser as FilamentUserContract;
 use Filament\Panel;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -20,6 +21,7 @@ final class FilamentUser extends Authenticatable implements FilamentUserContract
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -37,6 +39,7 @@ final class FilamentUser extends Authenticatable implements FilamentUserContract
     {
         return [
             'password' => 'hashed',
+            'role' => FilamentUserRoleEnum::class,
         ];
     }
 
