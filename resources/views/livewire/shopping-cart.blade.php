@@ -14,20 +14,46 @@
                     <div class="tf-mini-cart-sroll">
                         <ul class="tf-mini-cart-items list-mini-product">
                             @forelse ($items as $item)
-                                <li class="mini-product-cart" wire:key="cart-{{ $item['id'] }}">
-                                    <div class="prd-wrap">
-                                        <div class="prd_image"><img loading="lazy" src="{{ $item['image'] }}"
-                                                alt="{{ $item['name'] }}"></div>
-                                        <a href="{{ $item['url'] }}"
-                                            class="prd_name link-underline text-black fw-medium"><span>{{ $item['name'] }}</span><span
-                                                class="mini-product-weight">{{ $item['label'] }}</span></a>
-                                    </div>
-                                    <div class="prd-action">
-                                        <button type="button" class="tf-btn-line style-min p-0"
-                                            wire:click="remove({{ $item['id'] }})">{{ __('Удалить') }}</button>
-                                        <div class="quantity-price text-black fw-medium">
-                                            <span>{{ $item['quantity'] }}</span><span>{{ __('×') }}</span><span
-                                                class="tf-mini-card-price">{{ $item['price']->format() }}</span>
+                                <li class="mini-product-cart shopping-cart-item" wire:key="cart-{{ $item['id'] }}">
+                                    <div class="prd_image"><img loading="lazy" src="{{ $item['image'] }}"
+                                            alt="{{ $item['name'] }}"></div>
+                                    <div class="shopping-cart-item__details">
+                                        <div class="mini-product-cart__header">
+                                            <a href="{{ $item['url'] }}"
+                                                class="prd_name link-underline text-black fw-medium"><span>{{ $item['name'] }}</span><span
+                                                    class="mini-product-weight">{{ $item['label'] }}</span></a>
+                                            <button type="button" class="mini-product-cart__remove"
+                                                wire:click="remove({{ $item['id'] }})" wire:loading.attr="disabled"
+                                                wire:target="add, changeQuantity, remove, merge"
+                                                aria-label="{{ __('Удалить товар из корзины') }}"
+                                                title="{{ __('Удалить товар из корзины') }}">
+                                                <span class="icon icon-trash" aria-hidden="true"></span>
+                                            </button>
+                                        </div>
+                                        <div class="shopping-cart-item__order">
+                                            <div class="product-card-quantity shopping-cart-item__quantity"
+                                                role="group" aria-label="{{ __('Количество товара') }}">
+                                                <button type="button" class="product-card-quantity__button"
+                                                    wire:click="changeQuantity({{ $item['id'] }}, -1)"
+                                                    wire:loading.attr="disabled"
+                                                    wire:target="add, changeQuantity, remove, merge"
+                                                    aria-label="{{ __('Уменьшить количество') }}">
+                                                    <span class="icon icon-minus" aria-hidden="true"></span>
+                                                </button>
+                                                <span class="shopping-cart-item__count"
+                                                    aria-live="polite">{{ $item['quantity'] }}</span>
+                                                <button type="button" class="product-card-quantity__button"
+                                                    wire:click="changeQuantity({{ $item['id'] }}, 1)"
+                                                    wire:loading.attr="disabled"
+                                                    wire:target="add, changeQuantity, remove, merge"
+                                                    aria-label="{{ __('Увеличить количество') }}">
+                                                    <span class="icon icon-plus" aria-hidden="true"></span>
+                                                </button>
+                                            </div>
+                                            <div class="quantity-price text-black fw-medium">
+                                                <span>{{ $item['quantity'] }}</span><span>{{ __('×') }}</span><span
+                                                    class="tf-mini-card-price">{{ $item['price']->format() }}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </li>

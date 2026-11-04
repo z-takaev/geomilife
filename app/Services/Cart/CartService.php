@@ -111,6 +111,40 @@ final class CartService
         $this->cachedItems = null;
     }
 
+    public function changeQuantity(int $variantId, int $change): int
+    {
+        abort_unless(in_array($change, [-1, 1], true), 422);
+
+        $quantities = $this->quantities();
+
+        abort_unless(isset($quantities[$variantId]), 404);
+
+        $quantity = (int) $quantities[$variantId] + $change;
+
+        if ($quantity < 1) {
+            $this->remove($variantId);
+
+            return 0;
+        }
+
+        $this->validateQuantity($quantity);
+
+        if (! auth()->check()) {
+            $quantities[$variantId] = $quantity;
+            session()->put(self::SESSION_KEY, $quantities);
+        } else {
+            auth()->user()->cart?->items()
+                ->where('product_variant_id', $variantId)
+                ->update(['quantity' => $quantity]);
+
+            auth()->user()->unsetRelation('cart');
+        }
+
+        $this->cachedItems = null;
+
+        return $quantity;
+    }
+
     public function remove(int $variantId): void
     {
         if (! auth()->check()) {

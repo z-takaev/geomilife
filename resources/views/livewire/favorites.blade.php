@@ -13,23 +13,23 @@
         <div class="canvas-body">
             <ul class="list-mini-product">
                 @forelse ($items as $item)
-                    <li class="mini-product-cart" wire:key="favorite-{{ $item['id'] }}">
-                        <div class="prd-wrap">
-                            <div class="prd_image">
-                                @if ($item['image'] !== '')
-                                    <img loading="lazy" src="{{ $item['image'] }}" alt="{{ $item['name'] }}">
-                                @endif
-                            </div>
+                    <li class="mini-product-cart favorite-product-item" wire:key="favorite-{{ $item['id'] }}">
+                        <div class="prd_image">
+                            @if ($item['image'] !== '')
+                                <img loading="lazy" src="{{ $item['image'] }}" alt="{{ $item['name'] }}">
+                            @endif
+                        </div>
+                        <div class="mini-product-cart__header">
                             <a href="{{ route('products.show', $item['slug']) }}"
                                 class="prd_name link-underline text-black fw-medium">
                                 <span>{{ $item['name'] }}</span>
                             </a>
-                        </div>
-                        <div class="prd-action">
-                            <button type="button" class="tf-btn-line style-min p-0"
+                            <button type="button" class="mini-product-cart__remove"
                                 x-on:click="$store.wishlist.perform('remove', {{ $item['id'] }})"
-                                x-bind:aria-disabled="$store.wishlist.busy">
-                                <span class="text-caption-01">{{ __('Удалить') }}</span>
+                                x-bind:disabled="$store.wishlist.busy"
+                                aria-label="{{ __('Удалить товар из избранного') }}"
+                                title="{{ __('Удалить товар из избранного') }}">
+                                <span class="icon icon-trash" aria-hidden="true"></span>
                             </button>
                         </div>
                     </li>

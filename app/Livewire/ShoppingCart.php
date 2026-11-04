@@ -34,6 +34,21 @@ final class ShoppingCart extends Component
         }
     }
 
+    public function changeQuantity(int $variantId, int $change, CartService $cart): void
+    {
+        try {
+            $quantity = $cart->changeQuantity($variantId, $change);
+            $this->dispatch('cart-updated', count: $cart->count());
+
+            if ($quantity === 0) {
+                $this->dispatch('notify', message: __('Товар удалён из корзины.'), type: 'success');
+            }
+        } catch (ValidationException $exception) {
+            $this->skipRender();
+            $this->dispatch('notify', message: collect($exception->errors())->flatten()->first(), type: 'error');
+        }
+    }
+
     public function remove(int $variantId, CartService $cart): void
     {
         $cart->remove($variantId);
