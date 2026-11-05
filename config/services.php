@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
 
     /*
@@ -34,6 +36,14 @@ return [
         'client_secret' => env('CDEK_CLIENT_SECRET'),
         'connect_timeout' => 5,
         'timeout' => 15,
+    ],
+
+    'ipwhois' => [
+        'base_url' => 'https://ipwho.is',
+        'connect_timeout' => 2,
+        'timeout' => 3,
+        'success_cache_ttl' => 86400,
+        'failure_cache_ttl' => 900,
     ],
 
     'slack' => [

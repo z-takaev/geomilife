@@ -16,6 +16,15 @@ final class CitySelector extends Component
 
     public string $query = '';
 
+    public function detect(CurrentCityService $currentCityService): void
+    {
+        $city = $currentCityService->detect();
+
+        if ($city !== null) {
+            $this->dispatch('city-detected', id: $city->getKey(), name: $city->name);
+        }
+    }
+
     public function select(int $cityId, CurrentCityService $currentCityService): void
     {
         $city = $currentCityService->select($cityId);
@@ -26,6 +35,8 @@ final class CitySelector extends Component
 
     public function render(): View
     {
+        $currentCity = app(CurrentCityService::class)->current();
+        $shouldDetectCity = $currentCity === null && auth()->user()?->city_id === null;
         $query = mb_substr(trim($this->query), 0, 255);
         $searchResults = collect();
 
@@ -58,6 +69,6 @@ final class CitySelector extends Component
             ->groupBy(static fn (City $city): string => mb_strtoupper(mb_substr($city->name, 0, 1)))
             ->splitIn(3);
 
-        return view('livewire.city-selector', compact('query', 'searchResults', 'featuredCities', 'cityColumns'));
+        return view('livewire.city-selector', compact('currentCity', 'shouldDetectCity', 'query', 'searchResults', 'featuredCities', 'cityColumns'));
     }
 }

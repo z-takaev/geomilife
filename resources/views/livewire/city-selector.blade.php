@@ -1,6 +1,7 @@
 <div class="modal modalCentered fade modal-city-selection" id="citySelection" tabindex="-1"
     aria-labelledby="citySelectionTitle" aria-hidden="true" wire:ignore.self x-data
-    x-on:city-selected="bootstrap.Modal.getInstance($el)?.hide()">
+    x-on:city-selected="bootstrap.Modal.getInstance($el)?.hide()"
+    @if ($shouldDetectCity) wire:init="detect" @endif>
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <button type="button" class="icon-close-popup city-selection__close" data-bs-dismiss="modal"
@@ -9,7 +10,8 @@
             </button>
 
             <div class="modal-body city-selection">
-                <h2 id="citySelectionTitle" class="city-selection__title">{{ __('Выберите город') }}</h2>
+                <h2 id="citySelectionTitle" class="city-selection__title">
+                    {{ __($currentCity?->name ?? 'Выберите город') }}</h2>
                 <p class="city-selection__description">
                     {{ __('Начните вводить свой город и выберите его из списка.') }}
                 </p>

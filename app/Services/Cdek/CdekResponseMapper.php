@@ -31,8 +31,8 @@ final class CdekResponseMapper
         return array_map(fn (array $city): CdekCityResponseDto => new CdekCityResponseDto(
             code: $this->integer($city, 'code'),
             name: $this->string($city, 'city'),
-            region: $this->optionalString($city, 'region'),
-            subRegion: $this->optionalString($city, 'sub_region'),
+            region: ($city['region'] ?? null) === '' ? null : $this->optionalString($city, 'region'),
+            subRegion: ($city['sub_region'] ?? null) === '' ? null : $this->optionalString($city, 'sub_region'),
         ), $this->records($data));
     }
 

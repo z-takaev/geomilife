@@ -6,7 +6,8 @@
                     <i class="icon icon-MapPin" aria-hidden="true"></i>
                     <a href="#citySelection" class="city-selector__link" data-bs-toggle="modal" role="button"
                         aria-controls="citySelection" aria-haspopup="dialog" x-data
-                        x-on:city-selected.window="$el.textContent = $event.detail.name">
+                        x-on:city-selected.window="$el.textContent = $event.detail.name"
+                        x-on:city-detected.window="$el.textContent = $event.detail.name">
                         {{ __(current_city()?->name ?? 'Выберите город') }}
                     </a>
                 </div>
