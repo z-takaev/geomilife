@@ -23,8 +23,8 @@ final readonly class ProductViewModel
             $variant->getKey() => [
                 'id' => $variant->getKey(),
                 'label' => $variant->label(),
-                'price' => $variant->currentPrice()->format(),
-                'oldPrice' => $variant->oldPrice()?->format(),
+                'price' => $variant->price->format(),
+                'oldPrice' => $variant->old_price?->format(),
                 'isPreorder' => $variant->is_preorder,
             ],
         ]);

@@ -125,18 +125,18 @@ final class ProductForm
                                                     ->live(),
                                                 TextInput::make('price')
                                                     ->label('Цена')
-                                                    ->formatStateUsing(static fn (mixed $state): mixed => $state instanceof Money ? $state->toRubles() : $state)
+                                                    ->formatStateUsing(static fn (mixed $state): mixed => $state instanceof Money ? intdiv($state->minorAmount(), 100) : $state)
                                                     ->integer()
                                                     ->minValue(1)
                                                     ->suffix('₽')
                                                     ->required()
                                                     ->live(onBlur: true),
-                                                TextInput::make('discount_percent')
-                                                    ->label('Скидка')
+                                                TextInput::make('old_price')
+                                                    ->label('Старая цена')
+                                                    ->formatStateUsing(static fn (mixed $state): mixed => $state instanceof Money ? intdiv($state->minorAmount(), 100) : $state)
                                                     ->integer()
-                                                    ->minValue(1)
-                                                    ->maxValue(99)
-                                                    ->suffix('%'),
+                                                    ->gt('price')
+                                                    ->suffix('₽'),
                                                 Flex::make([
                                                     Toggle::make('is_active')
                                                         ->label('Активен')

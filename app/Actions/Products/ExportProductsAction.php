@@ -23,14 +23,14 @@ final class ExportProductsAction
 {
     public const array HEADERS = [
         'Тип строки', 'ID товара', 'ID вариации', 'Название', 'Новинка', 'Хит', 'Товар активен',
-        'Артикул', 'Количество (фасовка)', 'Единица', 'Цена, ₽', 'Скидка, %',
+        'Артикул', 'Количество (фасовка)', 'Единица', 'Цена, ₽', 'Старая цена, ₽',
         'Вариация активна', 'Доступен по предзаказу',
     ];
 
     public const array FIELD_LABELS = [
         'name' => 'Название', 'is_new' => 'Новинка', 'is_hit' => 'Хит', 'is_active' => 'Активен',
         'sku' => 'Артикул', 'value' => 'Количество (фасовка)', 'unit' => 'Единица',
-        'price' => 'Цена, ₽', 'discount_percent' => 'Скидка, %', 'is_preorder' => 'Доступен по предзаказу',
+        'price' => 'Цена, ₽', 'old_price' => 'Старая цена, ₽', 'is_preorder' => 'Доступен по предзаказу',
     ];
 
     public function handle(Builder $query): StreamedResponse
@@ -66,7 +66,7 @@ final class ExportProductsAction
                     ['Товар / Вариация', 'Общие поля редактируются один раз в строке товара. Остальные — в строках вариаций.'],
                     ['Да / Нет', 'Да — включено (1), Нет — выключено (0). Выбирайте значение из списка.'],
                     ['Количество', 'Фасовка, не складской остаток. Целое число от 1.'],
-                    ['Цена / Скидка', 'Цена — целое число рублей от 1. Скидка — 1–99%. Пустая ячейка или 0 убирает скидку.'],
+                    ['Цена / Старая цена', 'Цены — целые числа рублей. Цена — от 1. Старая цена должна быть больше актуальной. Пустая старая цена убирает скидку.'],
                     ['Артикул / Единица', 'Артикул должен быть уникальным. Единицу выбирайте из списка.'],
                     ['Импорт', 'Перед правкой скачайте актуальный экспорт. Строки обновляются по ID; отсутствующие строки ничего не удаляют.'],
                 ]);
@@ -95,7 +95,7 @@ final class ExportProductsAction
             ? ['Товар', (string) $record->id, null, $record->name, $yesNo($record->is_new), $yesNo($record->is_hit), $yesNo($record->is_active)]
             : ['Вариация', (string) $record->product_id, (string) $record->id, null, null, null, null,
                 $record->sku, (float) $record->value, $record->unit->getLabel(),
-                (float) $record->price->toRubles(), $record->discount_percent ?: null,
+                intdiv($record->price->minorAmount(), 100), $record->old_price === null ? null : intdiv($record->old_price->minorAmount(), 100),
                 $yesNo($record->is_active), $yesNo($record->is_preorder)];
         foreach ($values as $index => $value) {
             if ($value !== null) {

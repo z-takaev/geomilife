@@ -15,7 +15,7 @@ use Illuminate\Support\Collection;
 
 final class CatalogRepository
 {
-    private const string PRICE_IN_RUBLES = 'ROUND(ROUND(product_variants.price * (100 - COALESCE(product_variants.discount_percent, 0)) / 100.0) / 100)';
+    private const string PRICE_IN_RUBLES = '(product_variants.price / 100)';
 
     public function __construct(private readonly ProductRepository $products) {}
 

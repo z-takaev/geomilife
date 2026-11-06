@@ -47,6 +47,8 @@ final class ProductFactory extends Factory
             for ($order = 1; $order <= $variantsCount; $order++) {
                 $unit = fake()->randomElement(ProductUnit::cases());
 
+                $price = fake()->numberBetween(100, 5_000);
+
                 $variants[] = [
                     'sku' => Str::upper(fake()->unique()->bothify('PRD-#####-???')),
                     'unit' => $unit,
@@ -54,8 +56,8 @@ final class ProductFactory extends Factory
                         ProductUnit::PIECE => fake()->numberBetween(1, 12),
                         ProductUnit::GRAM, ProductUnit::MILLILITER => fake()->numberBetween(1, 20) * 50,
                     },
-                    'price' => Money::fromRubles(fake()->numberBetween(100, 5_000)),
-                    'discount_percent' => fake()->optional(0.3)->numberBetween(1, 99),
+                    'price' => Money::fromRubles($price),
+                    'old_price' => fake()->boolean(30) ? Money::fromRubles($price + fake()->numberBetween(1, 2_000)) : null,
                     'is_active' => fake()->boolean(85),
                     'is_preorder' => fake()->boolean(20),
                     'order' => $order,

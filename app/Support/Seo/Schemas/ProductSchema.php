@@ -45,7 +45,7 @@ final readonly class ProductSchema implements SchemaContract
             '@type' => 'Offer',
             'url' => route('products.show', [$this->product, 'variant' => $variant->getKey()]),
             'priceCurrency' => Money::CURRENCY,
-            'price' => $variant->currentPrice()->toRubles(),
+            'price' => $variant->price->toRubles(),
             'availability' => $variant->is_preorder
                 ? 'https://schema.org/PreOrder'
                 : 'https://schema.org/InStock',

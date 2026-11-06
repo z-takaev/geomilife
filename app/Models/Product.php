@@ -106,7 +106,7 @@ final class Product extends Model implements HasMedia, Seoable
             ->whereHas(
                 'activeVariants',
                 static fn (Builder $query): Builder => $query
-                    ->where('discount_percent', '>', 0),
+                    ->whereNotNull('old_price'),
             );
     }
 

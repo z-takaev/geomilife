@@ -23,7 +23,7 @@ final class ProductVariant extends Model
         'unit',
         'value',
         'price',
-        'discount_percent',
+        'old_price',
         'is_active',
         'is_preorder',
         'order',
@@ -34,7 +34,7 @@ final class ProductVariant extends Model
         return [
             'value' => 'decimal:3',
             'price' => Money::class,
-            'discount_percent' => 'integer',
+            'old_price' => Money::class,
             'unit' => ProductUnit::class,
             'is_active' => 'boolean',
             'is_preorder' => 'boolean',
@@ -79,18 +79,6 @@ final class ProductVariant extends Model
 
     public function hasDiscount(): bool
     {
-        return $this->discount_percent > 0;
-    }
-
-    public function currentPrice(): Money
-    {
-        return $this->hasDiscount()
-            ? $this->price->discountedBy($this->discount_percent)
-            : $this->price;
-    }
-
-    public function oldPrice(): ?Money
-    {
-        return $this->hasDiscount() ? $this->price : null;
+        return $this->old_price !== null;
     }
 }

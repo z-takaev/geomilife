@@ -107,19 +107,19 @@ final class ImportProductsAction
                         throw ValidationException::withMessages(['file' => 'Колонка «'.ExportProductsAction::HEADERS[$column].'» должна быть пустой.']);
                     }
                 }
-                $fields = $isProduct ? ['name', 'is_new', 'is_hit', 'is_active'] : ['sku', 'value', 'unit', 'price', 'discount_percent', 'is_active', 'is_preorder'];
+                $fields = $isProduct ? ['name', 'is_new', 'is_hit', 'is_active'] : ['sku', 'value', 'unit', 'price', 'old_price', 'is_active', 'is_preorder'];
                 $data = array_combine($fields, array_slice($cells, $isProduct ? 3 : 7, count($fields)));
                 if (! $isProduct) {
                     $data['value'] = str_replace(',', '.', (string) $data['value']);
                     $data['price'] = str_replace(',', '.', (string) $data['price']);
-                    $data['discount_percent'] = $data['discount_percent'] ?: null;
+                    $data['old_price'] = blank($data['old_price']) ? null : str_replace(',', '.', (string) $data['old_price']);
                 }
                 $rules = $isProduct ? ['name' => 'required|string|max:255', 'is_new' => 'required|in:Да,Нет', 'is_hit' => 'required|in:Да,Нет'] : [
                     'sku' => ['required', 'string', 'max:255', Rule::unique('product_variants', 'sku')->ignore($record->id)],
                     'value' => ['required', 'integer', 'min:1', 'max:999999999'],
                     'unit' => ['required', Rule::in(array_keys($units))],
                     'price' => ['required', 'numeric', 'min:1', 'regex:/^\d+(?:\.0{1,2})?$/'],
-                    'discount_percent' => 'nullable|integer|between:1,99', 'is_preorder' => 'required|in:Да,Нет',
+                    'old_price' => ['nullable', 'numeric', 'regex:/^\d+(?:\.0{1,2})?$/', 'gt:price'], 'is_preorder' => 'required|in:Да,Нет',
                 ];
                 $rules['is_active'] = 'required|in:Да,Нет';
                 Validator::make($data, $rules, attributes: ExportProductsAction::FIELD_LABELS)->validate();
@@ -134,9 +134,14 @@ final class ImportProductsAction
                     }
                     $skus[$data['sku']] = $line;
                     $data['unit'] = $units[$data['unit']];
-                    $data['price'] = Money::tryFromRubles($data['price']);
-                    if ($data['price'] === null) {
-                        throw ValidationException::withMessages(['file' => 'Цена превышает допустимое значение.']);
+                    foreach (['price', 'old_price'] as $field) {
+                        if ($data[$field] === null) {
+                            continue;
+                        }
+                        $data[$field] = Money::tryFromRubles($data[$field]);
+                        if ($data[$field] === null) {
+                            throw ValidationException::withMessages(['file' => ExportProductsAction::FIELD_LABELS[$field].' превышает допустимое значение.']);
+                        }
                     }
                 }
                 $record->fill($data);
@@ -171,7 +176,7 @@ final class ImportProductsAction
         return match (true) {
             $value === null => '—',
             in_array($field, ['is_new', 'is_hit', 'is_active', 'is_preorder'], true) => $value ? 'Да' : 'Нет',
-            $field === 'price' => Money::fromMinor((int) $value)->format(),
+            in_array($field, ['price', 'old_price'], true) => Money::fromMinor((int) $value)->format(),
             $field === 'unit' => ProductUnit::from($value)->getLabel(),
             $field === 'value' => (string) (int) $value,
             default => (string) $value,

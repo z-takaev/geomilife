@@ -28,7 +28,7 @@ function createCatalogProduct(
     bool $isActive = true,
     bool $variantIsActive = true,
     bool $isPreorder = false,
-    int $discountPercent = 0,
+    ?int $oldPrice = null,
 ): Product {
     $product = Product::query()->create([
         'category_id' => $category->getKey(),
@@ -43,7 +43,7 @@ function createCatalogProduct(
         'unit' => ProductUnit::GRAM,
         'value' => 500,
         'price' => Money::fromRubles($price),
-        'discount_percent' => $discountPercent > 0 ? $discountPercent : null,
+        'old_price' => $oldPrice === null ? null : Money::fromRubles($oldPrice),
         'is_active' => $variantIsActive,
         'is_preorder' => $isPreorder,
     ]);
@@ -84,7 +84,7 @@ it('не открывает категорию с неактивным роди�
 
 it('фильтрует каталог по цене, наличию и фасовке', function (): void {
     $category = createCatalogCategory('Масла', 'oils');
-    createCatalogProduct($category, 'Подходящий товар', 'matching-product', 1000, true, true, false, 20);
+    createCatalogProduct($category, 'Подходящий товар', 'matching-product', 800, true, true, false, 1000);
     createCatalogProduct($category, 'Предзаказ', 'preorder-product', 800, true, true, true);
     createCatalogProduct($category, 'Дорогой товар', 'expensive-product', 2000);
 
@@ -115,9 +115,9 @@ it('проверяет диапазон цены и сбрасывает фил�
         ->assertHasNoErrors();
 });
 
-it('сортирует по цене со скидкой, а не по исходной цене', function (string $sort, array $names): void {
+it('сортирует по актуальной цене независимо от старой цены', function (string $sort, array $names): void {
     $category = createCatalogCategory('Масла', 'oils');
-    createCatalogProduct($category, 'Со скидкой', 'discount', 1000, discountPercent: 50);
+    createCatalogProduct($category, 'Со скидкой', 'discount', 500, oldPrice: 1000);
     createCatalogProduct($category, 'Без скидки', 'regular', 700);
     Livewire::test(CatalogProducts::class)->set('sort', $sort)
         ->assertViewHas('products', fn ($products): bool => $products->pluck('name')->all() === $names);
@@ -176,7 +176,7 @@ it('выбирает безопасную фасовку при чужом ил�
 
 it('публикует в SEO цену, валюту и наличие выбранной фасовки', function (): void {
     $category = createCatalogCategory('Масла', 'oils');
-    $product = createCatalogProduct($category, 'Масло', 'oil', 1000, isPreorder: true, discountPercent: 25);
+    $product = createCatalogProduct($category, 'Масло', 'oil', 750, isPreorder: true, oldPrice: 1000);
     $variant = $product->variants()->first();
     $this->get(route('products.show', [$product, 'variant' => $variant->id]))->assertOk();
     $schema = collect(seo()->getSchemas())->firstWhere('@type', 'Product');

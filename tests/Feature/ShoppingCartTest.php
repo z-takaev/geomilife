@@ -111,8 +111,8 @@ it('не добавляет отключенную фасовку, товар и
 })->with(['variant', 'product', 'category']);
 
 it('считает итог по текущей цене со скидкой и исключает недоступные позиции', function (): void {
-    $variant = cartVariant(false, 1000);
-    $variant->update(['discount_percent' => 25]);
+    $variant = cartVariant(false, 750);
+    $variant->update(['old_price' => Money::fromRubles(1000)]);
     $hidden = cartVariant();
     session()->put('cart.items', [$variant->id => 3, $hidden->id => 5]);
     $hidden->update(['is_active' => false]);

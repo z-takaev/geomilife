@@ -85,7 +85,7 @@ final class ProductRepository
             ->select(['products.id', 'name', 'slug', 'is_new', 'is_hit'])
             ->available()
             ->with([
-                'activeVariants:id,product_id,unit,value,price,discount_percent,is_preorder',
+                'activeVariants:id,product_id,unit,value,price,old_price,is_preorder',
                 'media' => static fn (MorphMany $query): MorphMany => $query->where('collection_name', 'image'),
             ]);
     }

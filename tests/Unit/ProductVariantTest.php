@@ -18,22 +18,22 @@ it('формирует название фасовки', function (string $value
 
 it('возвращает цену со скидкой и старую цену', function (): void {
     $variant = new ProductVariant([
-        'price' => Money::fromRubles(1000),
-        'discount_percent' => 25,
+        'price' => Money::fromRubles(750),
+        'old_price' => Money::fromRubles(1000),
     ]);
 
     expect($variant->hasDiscount())->toBeTrue()
-        ->and($variant->currentPrice()->toRubles())->toBe('750.00')
-        ->and($variant->oldPrice()?->toRubles())->toBe('1000.00');
+        ->and($variant->price->toRubles())->toBe('750.00')
+        ->and($variant->old_price?->toRubles())->toBe('1000.00');
 });
 
 it('возвращает обычную цену без скидки', function (): void {
     $variant = new ProductVariant([
         'price' => Money::fromRubles(1000),
-        'discount_percent' => null,
+        'old_price' => null,
     ]);
 
     expect($variant->hasDiscount())->toBeFalse()
-        ->and($variant->currentPrice()->toRubles())->toBe('1000.00')
-        ->and($variant->oldPrice())->toBeNull();
+        ->and($variant->price->toRubles())->toBe('1000.00')
+        ->and($variant->old_price)->toBeNull();
 });

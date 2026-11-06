@@ -42,7 +42,7 @@ final class CartService
 
         foreach ($variants as $variant) {
             $quantity = (int) $quantities[$variant->id];
-            $price = $variant->currentPrice();
+            $price = $variant->price;
             $items[] = [
                 'id' => $variant->id,
                 'name' => $variant->product->name,
