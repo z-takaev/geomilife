@@ -17,6 +17,36 @@ enum OrderStatusEnum: string implements HasColor, HasLabel
     case DELIVERED = 'DELIVERED';
     case CANCELLED = 'CANCELLED';
 
+    public function is(self $type): bool
+    {
+        return $this === $type;
+    }
+
+    public function isNew(): bool
+    {
+        return $this->is(self::NEW);
+    }
+
+    public function isReadyForPickup(): bool
+    {
+        return $this->is(self::READY_FOR_PICKUP);
+    }
+
+    public function isReadyToShip(): bool
+    {
+        return $this->is(self::READY_TO_SHIP);
+    }
+
+    public function isDelivered(): bool
+    {
+        return $this->is(self::DELIVERED);
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->is(self::CANCELLED);
+    }
+
     public function getLabel(): string
     {
         return match ($this) {

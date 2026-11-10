@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Enums\OrderStatusEnum;
 use App\Models\Order;
 use App\Models\User;
 use App\Navigation\BreadcrumbItem;
@@ -111,7 +110,7 @@ final class OrderController extends Controller
 
     private function cancelOrder(Request $request, Order $order, ?User $actor): void
     {
-        abort_unless($order->status === OrderStatusEnum::NEW && $order->cancellation_state === null, 403);
+        abort_unless($order->status->isNew() && $order->cancellation_state === null, 403);
         $values = $request->validate(['reason' => ['nullable', 'string', 'max:1000']]);
         app(OrderLifecycleService::class)->cancel($order, $actor, $values['reason'] ?? __('Отмена покупателем'), onlyIfNew: true);
     }

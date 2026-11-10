@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\Orders;
 
-use App\Enums\Cdek\CdekPrintStateEnum;
 use App\Models\Order;
 use App\Models\OrderDocument;
 use App\Services\Cdek\CdekService;
@@ -82,7 +81,7 @@ final class OrderDocumentService
 
             $document->update(['state' => $result->status?->value, 'error' => $result->operation->errors[0]['message'] ?? null]);
 
-            if ($result->status !== CdekPrintStateEnum::READY) {
+            if (! $result->status?->isReady()) {
                 throw ValidationException::withMessages(['document' => __('Документ ещё не готов. Повторите скачивание позже.')]);
             }
         }

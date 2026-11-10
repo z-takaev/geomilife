@@ -7,9 +7,7 @@ namespace App\Services\Orders;
 use App\DTO\Tbank\TbankCancelPaymentRequestDto;
 use App\DTO\Tbank\TbankInitPaymentRequestDto;
 use App\DTO\Tbank\TbankPaymentNotificationDto;
-use App\Enums\DeliveryMethodEnum;
 use App\Enums\OrderStatusEnum;
-use App\Enums\PaymentMethodEnum;
 use App\Enums\PaymentStatusEnum;
 use App\Enums\Tbank\TbankPaymentStatusEnum;
 use App\Models\FilamentUser;
@@ -44,7 +42,7 @@ final class OrderPaymentService
 
         $this->initializePayment($order, $payment);
 
-        if ($order->fresh()->status === OrderStatusEnum::CANCELLED) {
+        if ($order->fresh()->status->isCancelled()) {
             $this->refund($order);
             $payment->update(['payment_url' => null]);
         }
@@ -73,7 +71,7 @@ final class OrderPaymentService
 
         $order = $payment->order()->useWritePdo()->firstOrFail();
 
-        if ($refundIfCancelled && $order->status === OrderStatusEnum::CANCELLED
+        if ($refundIfCancelled && $order->status->isCancelled()
             && in_array($payment->fresh()->status, [PaymentStatusEnum::PAID, PaymentStatusEnum::AUTHORIZED], true)) {
             $this->refund($order);
         }
@@ -111,7 +109,7 @@ final class OrderPaymentService
         $this->applyBankState($payment, $notification->status);
         $order = $payment->order()->useWritePdo()->firstOrFail();
 
-        if ($order->status === OrderStatusEnum::CANCELLED
+        if ($order->status->isCancelled()
             && in_array($payment->fresh()->status, [PaymentStatusEnum::PAID, PaymentStatusEnum::AUTHORIZED], true)) {
             $this->refund($order);
         }
@@ -124,7 +122,7 @@ final class OrderPaymentService
     {
         $order->refresh();
 
-        if ($order->status !== OrderStatusEnum::CANCELLED || $order->payment_method !== PaymentMethodEnum::ONLINE) {
+        if (! $order->status->isCancelled() || ! $order->payment_method->isOnline()) {
             return;
         }
 
@@ -145,12 +143,12 @@ final class OrderPaymentService
                 ->findOrFail($order->id);
             $this->assertNotCancelling($lockedOrder);
 
-            if ($lockedOrder->delivery_method !== DeliveryMethodEnum::PICKUP || $lockedOrder->payment_method !== PaymentMethodEnum::PICKUP
+            if (! $lockedOrder->delivery_method->isPickup() || ! $lockedOrder->payment_method->isPickup()
                 || in_array($lockedOrder->status, [OrderStatusEnum::CANCELLED, OrderStatusEnum::DELIVERED], true)) {
                 throw ValidationException::withMessages(['payment' => 'Ручная отметка оплаты недоступна.']);
             }
 
-            if ($lockedOrder->payment_status === PaymentStatusEnum::PAID) {
+            if ($lockedOrder->payment_status->isPaid()) {
                 return;
             }
 
@@ -226,7 +224,7 @@ final class OrderPaymentService
 
             $lockedPayment->update($values);
 
-            if ($nextStatus !== null && $nextStatus !== $currentStatus) {
+            if ($nextStatus !== null && ! $nextStatus->is($currentStatus)) {
                 $this->recordPaymentChange($order, $lockedPayment, $currentStatus, $nextStatus);
             }
 
@@ -236,7 +234,7 @@ final class OrderPaymentService
 
     private function isRefundUnconfirmed(Payment $payment, ?PaymentStatusEnum $nextStatus, bool $fromBankCheck): bool
     {
-        return $fromBankCheck && $nextStatus === PaymentStatusEnum::PAID && $this->isAwaitingRefund($payment)
+        return $fromBankCheck && ($nextStatus?->isPaid() ?? false) && $this->isAwaitingRefund($payment)
             && $payment->refund_requested_at?->lte(now()->subMinutes((int) config('orders.reconciliation_stale_minutes')));
     }
 
@@ -248,16 +246,16 @@ final class OrderPaymentService
     private function shouldIgnoreProviderState(Payment $payment, ?PaymentStatusEnum $nextStatus, TbankPaymentStatusEnum $providerStatus): bool
     {
         if (in_array($payment->provider_status, ['REFUNDED', 'REVERSED'], true)
-            || ($this->isAwaitingRefund($payment) && $nextStatus === PaymentStatusEnum::PAID)) {
+            || ($this->isAwaitingRefund($payment) && ($nextStatus?->isPaid() ?? false))) {
             return true;
         }
 
-        $uncapturedCancellation = $nextStatus === PaymentStatusEnum::CANCELLED
+        $uncapturedCancellation = ($nextStatus?->isCancelled() ?? false)
             && ! in_array($payment->provider_status, ['CONFIRMED', 'REFUNDING', 'ASYNC_REFUNDING', 'PARTIAL_REFUNDED'], true);
 
-        return ($payment->status === PaymentStatusEnum::PAID || $this->isAwaitingRefund($payment))
+        return ($payment->status->isPaid() || $this->isAwaitingRefund($payment))
             && ! in_array($nextStatus, [PaymentStatusEnum::PAID, PaymentStatusEnum::REFUND_PENDING, PaymentStatusEnum::REFUNDED], true)
-            && $providerStatus !== TbankPaymentStatusEnum::REVERSED
+            && ! $providerStatus->isReversed()
             && ! $uncapturedCancellation;
     }
 
@@ -278,11 +276,11 @@ final class OrderPaymentService
 
         $order->update(['payment_status' => $nextStatus]);
 
-        if ($nextStatus === PaymentStatusEnum::PAID && $previousStatus !== $nextStatus) {
+        if ($nextStatus->isPaid() && ! $previousStatus->is($nextStatus)) {
             $this->notify($order, 'PAYMENT_PAID', 'payment-paid:'.$order->id);
         }
 
-        if ($nextStatus === PaymentStatusEnum::REFUNDED && $previousStatus !== $nextStatus) {
+        if ($nextStatus->isRefunded() && ! $previousStatus->is($nextStatus)) {
             $this->notify($order, 'REFUNDED', 'payment-refunded:'.$order->id);
         }
     }
@@ -307,8 +305,8 @@ final class OrderPaymentService
 
     private function assertPayable(Order $order): void
     {
-        if ($order->payment_method !== PaymentMethodEnum::ONLINE || $order->status === OrderStatusEnum::CANCELLED
-            || $order->payment_status === PaymentStatusEnum::PAID
+        if (! $order->payment_method->isOnline() || $order->status->isCancelled()
+            || $order->payment_status->isPaid()
             || $order->cancellation_state !== null
             || $order->payment_expires_at === null || $order->payment_expires_at->lte(now())) {
             throw ValidationException::withMessages(['payment' => 'Оплата этого заказа недоступна.']);
@@ -333,7 +331,7 @@ final class OrderPaymentService
                 ->findOrFail($order->id);
             $this->assertPayable($lockedOrder);
             $existing = $lockedOrder->payments()
-                ->whereIn('status', ['PENDING', 'AUTHORIZED', 'PAID'])
+                ->whereIn('status', [PaymentStatusEnum::PENDING, PaymentStatusEnum::AUTHORIZED, PaymentStatusEnum::PAID])
                 ->latest('id')->first();
 
             if ($existing !== null) {
@@ -440,14 +438,14 @@ final class OrderPaymentService
     private function claimRefund(Payment $payment): int
     {
         return Payment::query()->whereKey($payment->id)
-            ->whereIn('status', ['PENDING', 'PAID', 'AUTHORIZED', 'REFUND_FAILED'])
+            ->whereIn('status', [PaymentStatusEnum::PENDING, PaymentStatusEnum::PAID, PaymentStatusEnum::AUTHORIZED, PaymentStatusEnum::REFUND_FAILED])
             ->where(function ($query): void {
                 $query->whereNull('operation_state')->orWhere('operation_state', '!=', 'REFUNDING')
                     ->orWhere('refund_requested_at', '<=', now()->subMinutes((int) config('orders.reconciliation_stale_minutes')));
             })->update([
                 'operation_state' => 'REFUNDING',
                 'refund_requested_at' => now(),
-                'status' => PaymentStatusEnum::REFUND_PENDING->value,
+                'status' => PaymentStatusEnum::REFUND_PENDING,
                 'error' => null,
             ]);
     }
@@ -474,11 +472,11 @@ final class OrderPaymentService
             $values['status'] = $nextStatus;
             $values['error'] = null;
 
-            if ($nextStatus !== PaymentStatusEnum::REFUND_PENDING) {
+            if (! $nextStatus->isRefundPending()) {
                 $values['operation_state'] = null;
             }
 
-            if ($nextStatus === PaymentStatusEnum::REFUNDED) {
+            if ($nextStatus->isRefunded()) {
                 $values['refunded_at'] = now();
             }
         }

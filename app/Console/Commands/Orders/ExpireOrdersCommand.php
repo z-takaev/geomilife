@@ -23,10 +23,10 @@ final class ExpireOrdersCommand extends Command
     public function handle(OrderPaymentService $payments, OrderLifecycleService $statuses): int
     {
         Order::query()
-            ->where('status', OrderStatusEnum::NEW->value)
+            ->where('status', OrderStatusEnum::NEW)
             ->where('payment_method', PaymentMethodEnum::ONLINE)
             ->where('payment_expires_at', '<=', now())
-            ->whereNot('payment_status', PaymentStatusEnum::PAID->value)
+            ->whereNot('payment_status', PaymentStatusEnum::PAID)
             ->chunkById(100, function ($orders) use ($payments, $statuses): void {
                 foreach ($orders as $order) {
                     try {
@@ -38,7 +38,7 @@ final class ExpireOrdersCommand extends Command
 
                         if (! in_array($order->payment_status, [PaymentStatusEnum::PAID, PaymentStatusEnum::AUTHORIZED], true)) {
                             $statuses->cancel($order, null, 'Истёк часовой срок онлайн-оплаты.', onlyIfUnpaid: true);
-                        } elseif ($order->payment_status === PaymentStatusEnum::AUTHORIZED) {
+                        } elseif ($order->payment_status->isAuthorized()) {
                             $statuses->cancel($order, null, 'Истёк срок оплаты, авторизация отменяется.', onlyIfUnpaid: true);
                         }
                     } catch (Throwable $exception) {

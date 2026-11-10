@@ -12,6 +12,26 @@ enum DeliveryMethodEnum: string implements HasLabel
     case COURIER = 'COURIER';
     case CDEK = 'CDEK';
 
+    public function is(self $type): bool
+    {
+        return $this === $type;
+    }
+
+    public function isPickup(): bool
+    {
+        return $this->is(self::PICKUP);
+    }
+
+    public function isCourier(): bool
+    {
+        return $this->is(self::COURIER);
+    }
+
+    public function isCdek(): bool
+    {
+        return $this->is(self::CDEK);
+    }
+
     public function getLabel(): string
     {
         return match ($this) {

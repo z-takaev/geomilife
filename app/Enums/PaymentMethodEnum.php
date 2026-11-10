@@ -11,6 +11,21 @@ enum PaymentMethodEnum: string implements HasLabel
     case ONLINE = 'ONLINE';
     case PICKUP = 'PICKUP';
 
+    public function is(self $type): bool
+    {
+        return $this === $type;
+    }
+
+    public function isOnline(): bool
+    {
+        return $this->is(self::ONLINE);
+    }
+
+    public function isPickup(): bool
+    {
+        return $this->is(self::PICKUP);
+    }
+
     public function getLabel(): string
     {
         return match ($this) {

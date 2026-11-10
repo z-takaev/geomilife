@@ -6,6 +6,7 @@ namespace App\Console\Commands\Orders;
 
 use App\Enums\DeliveryMethodEnum;
 use App\Enums\OrderStatusEnum;
+use App\Enums\PaymentStatusEnum;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Services\Orders\OrderLifecycleService;
@@ -51,7 +52,7 @@ final class ReconcileOrdersCommand extends Command
     private function reconcilePayments(OrderPaymentService $payments): void
     {
         Payment::query()->where('provider', 'TBANK')
-            ->whereIn('status', ['PENDING', 'AUTHORIZED', 'REFUND_PENDING', 'REFUND_FAILED'])
+            ->whereIn('status', [PaymentStatusEnum::PENDING, PaymentStatusEnum::AUTHORIZED, PaymentStatusEnum::REFUND_PENDING, PaymentStatusEnum::REFUND_FAILED])
             ->where(function ($query): void {
                 $query->whereNull('last_checked_at')
                     ->orWhere('last_checked_at', '<=', now()->subMinutes((int) config('orders.reconciliation_stale_minutes')));
@@ -61,7 +62,7 @@ final class ReconcileOrdersCommand extends Command
                         $payments->sync($payment);
                         $order = $payment->order()->useWritePdo()->firstOrFail();
 
-                        if ($order->status === OrderStatusEnum::CANCELLED) {
+                        if ($order->status->isCancelled()) {
                             $payments->refund($order);
                         }
                     } catch (Throwable $exception) {
@@ -76,8 +77,8 @@ final class ReconcileOrdersCommand extends Command
 
     private function reconcileShipments(): void
     {
-        Order::query()->where('delivery_method', DeliveryMethodEnum::CDEK)->where('payment_status', 'PAID')
-            ->whereIn('status', ['READY_TO_SHIP', 'SHIPPED'])->whereNull('cancellation_state')
+        Order::query()->where('delivery_method', DeliveryMethodEnum::CDEK)->where('payment_status', PaymentStatusEnum::PAID)
+            ->whereIn('status', [OrderStatusEnum::READY_TO_SHIP, OrderStatusEnum::SHIPPED])->whereNull('cancellation_state')
             ->where(function ($query): void {
                 $query->whereDoesntHave('shipment')->orWhereHas('shipment', function ($shipment): void {
                     $shipment->whereNull('last_checked_at')
@@ -87,7 +88,7 @@ final class ReconcileOrdersCommand extends Command
                 foreach ($orders as $order) {
                     try {
                         $shipments = app(OrderShipmentService::class);
-                        if ($order->status === OrderStatusEnum::READY_TO_SHIP
+                        if ($order->status->isReadyToShip()
                             && ($order->shipment === null || $order->shipment->operation_state === 'ABSENT')) {
                             $shipments->create($order);
                         } else {

@@ -72,12 +72,12 @@
     @if ($order->is_preorder)
         <p class="notice">{{ __('Предзаказ. Точные сроки согласовываются с менеджером.') }}</p>
     @endif
-    @if ($order->payment_method === \App\Enums\PaymentMethodEnum::PICKUP && $order->payment_status->value !== 'PAID')
+    @if ($order->payment_method->isPickup() && !$order->payment_status->isPaid())
         <p class="notice">{{ __('Получить оплату при выдаче') }}: {{ $order->total->format() }}</p>
     @endif
     <h2>{{ __('Адрес / пункт получения') }}</h2>
     <div class="details">{{ $address }}</div>
-    @if ($order->delivery_method === \App\Enums\DeliveryMethodEnum::COURIER)
+    @if ($order->delivery_method->isCourier())
         <p>{{ __('Доставка до двери') }}:
             {{ $order->delivery_details['delivery_to_door'] ?? false ? __('Да') : __('Нет') }}</p>
     @endif

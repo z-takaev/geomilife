@@ -19,6 +19,36 @@ enum PaymentStatusEnum: string implements HasColor, HasLabel
     case REFUNDED = 'REFUNDED';
     case REFUND_FAILED = 'REFUND_FAILED';
 
+    public function is(self $type): bool
+    {
+        return $this === $type;
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->is(self::PAID);
+    }
+
+    public function isAuthorized(): bool
+    {
+        return $this->is(self::AUTHORIZED);
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->is(self::CANCELLED);
+    }
+
+    public function isRefundPending(): bool
+    {
+        return $this->is(self::REFUND_PENDING);
+    }
+
+    public function isRefunded(): bool
+    {
+        return $this->is(self::REFUNDED);
+    }
+
     public function getLabel(): string
     {
         return match ($this) {

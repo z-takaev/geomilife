@@ -75,7 +75,7 @@ final class Order extends Model
             $order->guest_token ??= (string) Str::uuid();
             $order->idempotency_key ??= (string) Str::uuid();
 
-            if ($order->payment_method === PaymentMethodEnum::ONLINE && $order->payment_expires_at === null) {
+            if (($order->payment_method?->isOnline() ?? false) && $order->payment_expires_at === null) {
                 $order->payment_expires_at = now()->addMinutes((int) config('orders.payment_timeout_minutes'));
             }
         });

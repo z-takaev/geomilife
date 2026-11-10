@@ -11,4 +11,14 @@ enum CdekPrintStateEnum: string
     case READY = 'READY';
     case INVALID = 'INVALID';
     case REMOVED = 'REMOVED';
+
+    public function is(self $type): bool
+    {
+        return $this === $type;
+    }
+
+    public function isReady(): bool
+    {
+        return $this->is(self::READY);
+    }
 }

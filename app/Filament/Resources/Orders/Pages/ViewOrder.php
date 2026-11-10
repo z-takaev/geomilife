@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Orders\Pages;
 
-use App\Enums\DeliveryMethodEnum;
-use App\Enums\FilamentUserRoleEnum;
 use App\Enums\OrderStatusEnum;
-use App\Enums\PaymentMethodEnum;
 use App\Enums\PaymentStatusEnum;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Jobs\Orders\CreateCdekShipmentJob;
@@ -52,10 +49,10 @@ final class ViewOrder extends ViewRecord
                 ->modalDescription(fn (): string => __('Подтвердите, что получена оплата в размере :amount. Покупателю будет отправлено уведомление. После этого можно отдельно подтвердить выдачу заказа.', ['amount' => $this->getRecord()->total->format()]))
                 ->modalSubmitActionLabel('Оплата получена')
                 ->requiresConfirmation()
-                ->visible(fn (): bool => $this->getRecord()->delivery_method === DeliveryMethodEnum::PICKUP
+                ->visible(fn (): bool => $this->getRecord()->delivery_method->isPickup()
                     && $this->getRecord()->cancellation_state === null
-                    && $this->getRecord()->payment_method === PaymentMethodEnum::PICKUP
-                    && $this->getRecord()->payment_status !== PaymentStatusEnum::PAID
+                    && $this->getRecord()->payment_method->isPickup()
+                    && ! $this->getRecord()->payment_status->isPaid()
                     && ! in_array($this->getRecord()->status, [OrderStatusEnum::CANCELLED, OrderStatusEnum::DELIVERED], true))
                 ->action(fn () => $this->perform(fn () => app(OrderPaymentService::class)->markPaidOnReceipt($this->getRecord(), auth('filament')->user()))),
 
@@ -85,8 +82,8 @@ final class ViewOrder extends ViewRecord
             ActionGroup::make([
                 Action::make('checkPayment')
                     ->label('Сверить оплату с банком')
-                    ->authorize(fn (): bool => auth('filament')->user()?->role === FilamentUserRoleEnum::ADMIN)
-                    ->visible(fn (): bool => $this->getRecord()->payment_method === PaymentMethodEnum::ONLINE)
+                    ->authorize(fn (): bool => auth('filament')->user()?->role?->isAdmin() ?? false)
+                    ->visible(fn (): bool => $this->getRecord()->payment_method->isOnline())
                     ->requiresConfirmation()
                     ->modalDescription('Будет запрошено состояние всех попыток оплаты в Т-Банке. Если заказ отменён и обнаружена оплата, будет запущен возврат.')
                     ->modalSubmitActionLabel('Сверить оплату')
@@ -99,9 +96,9 @@ final class ViewOrder extends ViewRecord
                 Action::make('retryRefund')
                     ->label('Проверить / повторить возврат')
                     ->requiresConfirmation()
-                    ->visible(fn (): bool => $this->getRecord()->status === OrderStatusEnum::CANCELLED
+                    ->visible(fn (): bool => $this->getRecord()->status->isCancelled()
                         && in_array($this->getRecord()->payment_status, [PaymentStatusEnum::REFUND_PENDING, PaymentStatusEnum::REFUND_FAILED, PaymentStatusEnum::PAID], true)
-                        && $this->getRecord()->payment_method === PaymentMethodEnum::ONLINE)
+                        && $this->getRecord()->payment_method->isOnline())
                     ->action(fn () => $this->perform(fn () => app(OrderPaymentService::class)->refund($this->getRecord()))),
 
                 Action::make('checkShipment')
@@ -112,7 +109,7 @@ final class ViewOrder extends ViewRecord
                 Action::make('retryShipment')
                     ->label('Повторить регистрацию СДЭК')
                     ->requiresConfirmation()
-                    ->visible(fn (): bool => $this->getRecord()->status === OrderStatusEnum::READY_TO_SHIP && $this->getRecord()->cancellation_state === null)
+                    ->visible(fn (): bool => $this->getRecord()->status->isReadyToShip() && $this->getRecord()->cancellation_state === null)
                     ->action(fn () => $this->perform(fn () => CreateCdekShipmentJob::dispatch($this->getRecord()->id))),
 
                 Action::make('prepareDocuments')

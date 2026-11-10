@@ -27,7 +27,7 @@ final class PrepareCdekDocumentsJob implements ShouldQueue
     {
         $order = Order::query()->find($this->orderId);
 
-        if ($order !== null && $order->status->value !== 'CANCELLED' && $order->cancellation_state === null) {
+        if ($order !== null && ! $order->status->isCancelled() && $order->cancellation_state === null) {
             $service->prepareCdekDocuments($order);
 
             if ($order->documents()->whereIn('state', ['CREATING', 'ACCEPTED', 'PROCESSING'])->exists()) {

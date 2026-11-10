@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Orders;
 
-use App\Enums\DeliveryMethodEnum;
-use App\Enums\FilamentUserRoleEnum;
 use App\Filament\Resources\Orders\Pages\ListOrders;
 use App\Filament\Resources\Orders\Pages\ViewOrder;
 use App\Filament\Resources\Orders\Tables\OrdersTable;
@@ -121,13 +119,13 @@ final class OrderResource extends Resource
                 TextEntry::make('delivery_details.base_minor')->label('Курьер')->formatStateUsing(fn ($state): string => Money::fromMinor((int) $state)->format()),
                 TextEntry::make('delivery_details.door_minor')->label('До двери')->formatStateUsing(fn ($state): string => Money::fromMinor((int) $state)->format()),
                 TextEntry::make('delivery_details.lifting_minor')->label('Подъём')->formatStateUsing(fn ($state): string => Money::fromMinor((int) $state)->format()),
-            ])->columns(3)->visible(fn (Order $record): bool => $record->delivery_method === DeliveryMethodEnum::COURIER),
+            ])->columns(3)->visible(fn (Order $record): bool => $record->delivery_method->isCourier()),
             Section::make('Упаковка')->schema([
                 RepeatableEntry::make('packages')->label('Грузовые места')->schema([
                     TextEntry::make('number')->label('Место'), TextEntry::make('box_name')->label('Коробка'),
                     TextEntry::make('weight')->label('Полный вес, г'),
                 ])->columns(3),
-            ])->visible(fn (Order $record): bool => $record->delivery_method === DeliveryMethodEnum::CDEK),
+            ])->visible(fn (Order $record): bool => $record->delivery_method->isCdek()),
             Section::make('Платежи')->schema([
                 RepeatableEntry::make('payments')->label('Попытки')->schema([
                     TextEntry::make('transaction_id')->label('Платёж банка'),
@@ -141,7 +139,7 @@ final class OrderResource extends Resource
                 TextEntry::make('shipment.operation_state')->label('Операция'),
                 TextEntry::make('shipment.error')->label('Причина ошибки')->color('danger')
                     ->visible(fn (Order $record): bool => filled($record->shipment?->error))->columnSpanFull(),
-            ])->columns(2)->visible(fn (Order $record): bool => $record->delivery_method === DeliveryMethodEnum::CDEK),
+            ])->columns(2)->visible(fn (Order $record): bool => $record->delivery_method->isCdek()),
             Section::make('Документы СДЭК')->schema([
                 RepeatableEntry::make('documents')->label('Документы')->schema([
                     TextEntry::make('type')->label('Документ')
@@ -167,9 +165,9 @@ final class OrderResource extends Resource
                     TextEntry::make('error')->label('Причина ошибки')->color('danger')
                         ->visible(fn (OrderDocument $record): bool => filled($record->error)),
                 ])->columns(3),
-            ])->visible(fn (Order $record): bool => $record->delivery_method === DeliveryMethodEnum::CDEK),
+            ])->visible(fn (Order $record): bool => $record->delivery_method->isCdek()),
             Section::make('История')
-                ->visible(fn (): bool => auth('filament')->user()?->role === FilamentUserRoleEnum::ADMIN)
+                ->visible(fn (): bool => auth('filament')->user()?->role?->isAdmin() ?? false)
                 ->schema([
                     RepeatableEntry::make('history')->label('Изменения')->schema([
                         TextEntry::make('created_at')->label('Время')->dateTime('d.m.Y H:i:s'),

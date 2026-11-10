@@ -128,7 +128,7 @@ final class CdekResponseMapper
         $errors = [...$this->issues($data, 'errors'), ...($latest['errors'] ?? [])];
         $warnings = [...$this->issues($data, 'warnings'), ...($latest['warnings'] ?? [])];
 
-        if ($uuid === null && ($latest === null || $latest['state'] === CdekRequestStateEnum::SUCCESSFUL) && $errors === []) {
+        if ($uuid === null && ($latest === null || $latest['state']->isSuccessful()) && $errors === []) {
             throw CdekApiException::invalidResponse();
         }
 
@@ -177,7 +177,7 @@ final class CdekResponseMapper
 
         $url = $entity === null ? null : $this->optionalString($entity, 'url');
 
-        if ($state === CdekPrintStateEnum::READY && $url === null) {
+        if (($state?->isReady() ?? false) && $url === null) {
             throw CdekApiException::invalidResponse();
         }
 

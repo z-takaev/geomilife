@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('status');
             $table->string('payment_status');
             $table->string('delivery_method');
-            $table->string('payment_method')->default(PaymentMethodEnum::ONLINE->value);
+            $table->string('payment_method')->default(PaymentMethodEnum::ONLINE);
             $table->unsignedBigInteger('subtotal')->default(0);
             $table->json('delivery_details')->nullable();
             $table->json('packages')->nullable();

@@ -6,8 +6,6 @@ namespace App\Services\Orders;
 
 use App\Enums\DeliveryMethodEnum;
 use App\Enums\OrderStatusEnum;
-use App\Enums\PaymentMethodEnum;
-use App\Enums\PaymentStatusEnum;
 use App\Jobs\Orders\CreateCdekShipmentJob;
 use App\Models\FilamentUser;
 use App\Models\Order;
@@ -40,7 +38,7 @@ final class OrderLifecycleService
     public function nextManualStatus(Order $order): ?OrderStatusEnum
     {
         if ($order->cancellation_state !== null
-            || ($order->payment_method === PaymentMethodEnum::ONLINE && $order->payment_status !== PaymentStatusEnum::PAID)) {
+            || ($order->payment_method->isOnline() && ! $order->payment_status->isPaid())) {
             return null;
         }
 
@@ -48,8 +46,8 @@ final class OrderLifecycleService
         $index = array_search($order->status, $stages, true);
         $next = $index === false ? null : ($stages[$index + 1] ?? null);
 
-        if (($order->delivery_method === DeliveryMethodEnum::CDEK && in_array($next, [OrderStatusEnum::SHIPPED, OrderStatusEnum::DELIVERED], true))
-            || ($next === OrderStatusEnum::DELIVERED && $order->payment_status !== PaymentStatusEnum::PAID)) {
+        if (($order->delivery_method->isCdek() && in_array($next, [OrderStatusEnum::SHIPPED, OrderStatusEnum::DELIVERED], true))
+            || (($next?->isDelivered() ?? false) && ! $order->payment_status->isPaid())) {
             return null;
         }
 
@@ -63,7 +61,7 @@ final class OrderLifecycleService
     {
         $this->assertStaff($actor);
 
-        if ($status === OrderStatusEnum::CANCELLED) {
+        if ($status->isCancelled()) {
             throw ValidationException::withMessages(['status' => 'Для отмены укажите причину отдельным действием.']);
         }
 
@@ -72,13 +70,13 @@ final class OrderLifecycleService
                 ->lockForUpdate()
                 ->findOrFail($order->id);
 
-            if ($lockedOrder->status === $status) {
+            if ($lockedOrder->status->is($status)) {
                 return false;
             }
 
             $this->assertNotCancelling($lockedOrder);
 
-            if ($this->nextManualStatus($lockedOrder) !== $status) {
+            if (! $this->nextManualStatus($lockedOrder)?->is($status)) {
                 throw ValidationException::withMessages(['status' => 'Этот переход статуса недоступен.']);
             }
 
@@ -88,7 +86,7 @@ final class OrderLifecycleService
             return true;
         });
 
-        if ($changed && $status === OrderStatusEnum::READY_TO_SHIP) {
+        if ($changed && $status->isReadyToShip()) {
             CreateCdekShipmentJob::dispatch($order->id);
         }
     }
@@ -107,9 +105,9 @@ final class OrderLifecycleService
                 ->lockForUpdate()
                 ->findOrFail($order->id);
 
-            if ($lockedOrder->delivery_method !== DeliveryMethodEnum::CDEK || $lockedOrder->cancellation_state !== null
+            if (! $lockedOrder->delivery_method->isCdek() || $lockedOrder->cancellation_state !== null
                 || ! in_array($lockedOrder->status, [OrderStatusEnum::READY_TO_SHIP, OrderStatusEnum::SHIPPED], true)
-                || $lockedOrder->status === $status) {
+                || $lockedOrder->status->is($status)) {
                 return;
             }
 
@@ -129,19 +127,19 @@ final class OrderLifecycleService
                 ->lockForUpdate()
                 ->findOrFail($order->id);
 
-            if ($onlyIfNew && $lockedOrder->status !== OrderStatusEnum::NEW) {
+            if ($onlyIfNew && ! $lockedOrder->status->isNew()) {
                 throw new AuthorizationException;
             }
 
-            if ($onlyIfUnpaid && ($lockedOrder->payment_method !== PaymentMethodEnum::ONLINE
-                || $lockedOrder->status !== OrderStatusEnum::NEW || $lockedOrder->payment_status === PaymentStatusEnum::PAID
+            if ($onlyIfUnpaid && (! $lockedOrder->payment_method->isOnline()
+                || ! $lockedOrder->status->isNew() || $lockedOrder->payment_status->isPaid()
                 || $lockedOrder->payment_expires_at === null || $lockedOrder->payment_expires_at->gt(now()))) {
                 return;
             }
 
             $this->assertCancellationAllowed($lockedOrder, $actor, $reason);
 
-            if ($lockedOrder->status === OrderStatusEnum::CANCELLED) {
+            if ($lockedOrder->status->isCancelled()) {
                 return;
             }
 
@@ -163,7 +161,7 @@ final class OrderLifecycleService
     {
         $order->refresh();
 
-        if ($order->status === OrderStatusEnum::CANCELLED) {
+        if ($order->status->isCancelled()) {
             app(OrderPaymentService::class)->refund($order);
 
             return;
@@ -173,7 +171,7 @@ final class OrderLifecycleService
             return;
         }
 
-        if ($order->delivery_method === DeliveryMethodEnum::CDEK && ! $this->cancelShipment($order)) {
+        if ($order->delivery_method->isCdek() && ! $this->cancelShipment($order)) {
             return;
         }
 
@@ -210,7 +208,7 @@ final class OrderLifecycleService
                 throw new AuthorizationException;
             }
 
-            if ($order->status !== OrderStatusEnum::NEW) {
+            if (! $order->status->isNew()) {
                 throw ValidationException::withMessages(['order' => 'Покупатель может отменить только новый заказ.']);
             }
         } elseif ($actor instanceof FilamentUser) {
@@ -221,7 +219,7 @@ final class OrderLifecycleService
             }
         }
 
-        if ($order->status === OrderStatusEnum::DELIVERED) {
+        if ($order->status->isDelivered()) {
             throw ValidationException::withMessages(['order' => 'Полученный заказ отменить нельзя.']);
         }
     }
@@ -260,7 +258,7 @@ final class OrderLifecycleService
                 ->lockForUpdate()
                 ->findOrFail($order->id);
 
-            if ($lockedOrder->status === OrderStatusEnum::CANCELLED
+            if ($lockedOrder->status->isCancelled()
                 || ! in_array($lockedOrder->cancellation_state, ['PENDING', 'FAILED'], true)) {
                 return;
             }

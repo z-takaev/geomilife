@@ -81,17 +81,17 @@
                         @if ($presentation['workingHours'])
                             <p>{{ __('График: :hours', ['hours' => $presentation['workingHours']]) }}</p>
                         @endif
-                        @if ($order->delivery_method === \App\Enums\DeliveryMethodEnum::PICKUP)
+                        @if ($order->delivery_method->isPickup())
                             <p class="order-muted">
                                 {{ __('Приходите после уведомления о готовности. Время получения согласует менеджер.') }}
                             </p>
                         @endif
-                        @if ($order->delivery_method === \App\Enums\DeliveryMethodEnum::COURIER)
+                        @if ($order->delivery_method->isCourier())
                             <p>{{ !empty($order->delivery_details['delivery_to_door']) ? __('С доставкой до двери и подъёмом на этаж') : __('Без услуги доставки до двери') }}
                             </p>
                             <p class="order-muted">{{ __('Время доставки согласует менеджер.') }}</p>
                         @endif
-                        @if ($order->delivery_method === \App\Enums\DeliveryMethodEnum::CDEK)
+                        @if ($order->delivery_method->isCdek())
                             @if ($order->delivery_address['code'] ?? null)
                                 <p>{{ __('Пункт: :code', ['code' => $order->delivery_address['code']]) }}</p>
                             @endif
@@ -138,14 +138,14 @@
                         <form method="post" action="{{ $presentation['payUrl'] }}">@csrf<button class="tf-btn w-100"
                                 type="submit">{{ __('Оплатить заказ') }}</button></form>
                     @endif
-                    @if ($order->status === \App\Enums\OrderStatusEnum::CANCELLED)
+                    @if ($order->status->isCancelled())
                         <p class="order-muted">{{ __('Заказ отменён.') }}</p>
                     @endif
-                    @if ($order->payment_status === \App\Enums\PaymentStatusEnum::REFUND_PENDING)
+                    @if ($order->payment_status->isRefundPending())
                         <p class="order-muted">
                             {{ __('Полный возврат оплаты выполняется. Срок зачисления зависит от банка.') }}</p>
                     @endif
-                    @if ($order->payment_status === \App\Enums\PaymentStatusEnum::REFUNDED)
+                    @if ($order->payment_status->isRefunded())
                         <p class="order-muted">{{ __('Банк подтвердил полный возврат оплаты.') }}</p>
                     @endif
                     @if ($presentation['canCancel'])

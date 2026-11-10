@@ -11,7 +11,6 @@ use App\DTO\Tbank\TbankGetPaymentStateResponseDto;
 use App\DTO\Tbank\TbankInitPaymentRequestDto;
 use App\DTO\Tbank\TbankInitPaymentResponseDto;
 use App\DTO\Tbank\TbankPaymentNotificationDto;
-use App\Enums\Tbank\TbankPaymentStatusEnum;
 use App\Services\Tbank\Exceptions\TbankApiException;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -51,7 +50,7 @@ final class TbankService
         $result = $this->mapper->cancelPayment($this->client->post('Cancel', $payment->toArray()));
 
         if ($result->paymentId !== $payment->paymentId
-            || ($result->status !== TbankPaymentStatusEnum::CANCELED
+            || (! $result->status->isCanceled()
                 && $result->originalAmount !== null && ! $result->originalAmount->equals($payment->amount))
             || ($result->newAmount !== null && $result->newAmount->minorAmount() !== 0)) {
             throw TbankApiException::invalidResponse();

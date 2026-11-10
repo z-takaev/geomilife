@@ -266,7 +266,7 @@ final class Checkout extends Component
             $this->dispatch('cart-updated', count: app(CartService::class)->count());
         }
 
-        if ($existing->payment_method === PaymentMethodEnum::ONLINE) {
+        if ($existing->payment_method->isOnline()) {
             try {
                 $payment = app(OrderPaymentService::class)->start($existing);
 

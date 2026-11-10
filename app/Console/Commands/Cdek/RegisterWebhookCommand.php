@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Cdek;
 
-use App\Enums\Cdek\CdekRequestStateEnum;
 use App\Services\Cdek\CdekService;
 use App\Services\Cdek\Exceptions\CdekApiException;
 use Illuminate\Console\Command;
@@ -38,7 +37,7 @@ final class RegisterWebhookCommand extends Command
 
             $registration = $cdek->createOrderStatusWebhook($url);
 
-            if ($registration->errors !== [] || $registration->state === CdekRequestStateEnum::INVALID || $registration->uuid === null) {
+            if ($registration->errors !== [] || ($registration->state?->isInvalid() ?? false) || $registration->uuid === null) {
                 $this->error('Не удалось зарегистрировать вебхук СДЭК.');
 
                 return self::FAILURE;

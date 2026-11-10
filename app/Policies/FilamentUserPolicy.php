@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Enums\FilamentUserRoleEnum;
 use App\Models\FilamentUser;
 
 final class FilamentUserPolicy
 {
     public function viewAny(FilamentUser $user): bool
     {
-        return $user->role === FilamentUserRoleEnum::ADMIN;
+        return $user->role->isAdmin();
     }
 
     public function view(FilamentUser $user, FilamentUser $filamentUser): bool
     {
-        return $this->viewAny($user) && $filamentUser->role === FilamentUserRoleEnum::MANAGER;
+        return $this->viewAny($user) && $filamentUser->role->isManager();
     }
 
     public function create(FilamentUser $user): bool

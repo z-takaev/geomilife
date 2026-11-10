@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\ViewModel\Orders;
 
-use App\Enums\DeliveryMethodEnum;
 use App\Enums\OrderStatusEnum;
-use App\Enums\PaymentMethodEnum;
 use App\Enums\PaymentStatusEnum;
 use App\Models\Order;
 use App\Services\Orders\OrderLifecycleService;
@@ -24,12 +22,12 @@ final class OrderViewModel
         foreach ($steps as $index => $step) {
             $stages[] = [
                 'label' => $step->getLabel(),
-                'current' => $step === $order->status,
-                'color' => $step === $order->status ? 'primary' : ($position !== false && $index < $position ? 'success' : 'gray'),
+                'current' => $step->is($order->status),
+                'color' => $step->is($order->status) ? 'primary' : ($position !== false && $index < $position ? 'success' : 'gray'),
             ];
         }
 
-        if ($order->status === OrderStatusEnum::CANCELLED) {
+        if ($order->status->isCancelled()) {
             $stages[] = ['label' => OrderStatusEnum::CANCELLED->getLabel(), 'current' => true, 'color' => 'danger'];
         }
 
@@ -38,7 +36,7 @@ final class OrderViewModel
 
     public static function processingHint(Order $order): string
     {
-        if ($order->status === OrderStatusEnum::CANCELLED) {
+        if ($order->status->isCancelled()) {
             return __('Заказ отменён. Дальнейшая обработка недоступна.');
         }
 
@@ -46,20 +44,20 @@ final class OrderViewModel
             return __('Выполняется отмена заказа. Изменение статуса недоступно.');
         }
 
-        if ($order->status === OrderStatusEnum::DELIVERED) {
+        if ($order->status->isDelivered()) {
             return __('Заказ завершён.');
         }
 
-        if ($order->payment_method === PaymentMethodEnum::ONLINE && $order->payment_status !== PaymentStatusEnum::PAID) {
+        if ($order->payment_method->isOnline() && ! $order->payment_status->isPaid()) {
             return __('Ожидается онлайн-оплата. Обработка станет доступна после подтверждения оплаты банком.');
         }
 
-        if ($order->delivery_method === DeliveryMethodEnum::CDEK && in_array($order->status, [OrderStatusEnum::READY_TO_SHIP, OrderStatusEnum::SHIPPED], true)) {
+        if ($order->delivery_method->isCdek() && in_array($order->status, [OrderStatusEnum::READY_TO_SHIP, OrderStatusEnum::SHIPPED], true)) {
             return __('Статусы отправки и доставки обновляются автоматически по данным СДЭК.');
         }
 
-        if ($order->delivery_method === DeliveryMethodEnum::PICKUP && $order->status === OrderStatusEnum::READY_FOR_PICKUP
-            && $order->payment_status !== PaymentStatusEnum::PAID) {
+        if ($order->delivery_method->isPickup() && $order->status->isReadyForPickup()
+            && ! $order->payment_status->isPaid()) {
             return __('Подтвердите получение оплаты перед выдачей заказа.');
         }
 
@@ -72,7 +70,7 @@ final class OrderViewModel
             OrderStatusEnum::CONFIRMED => __('Подтвердить и начать сборку'),
             OrderStatusEnum::READY_FOR_PICKUP => __('Подготовить к выдаче'),
             OrderStatusEnum::READY_TO_SHIP => __('Подготовить к отправке'),
-            OrderStatusEnum::DELIVERED => $order->delivery_method === DeliveryMethodEnum::PICKUP ? __('Подтвердить выдачу') : __('Подтвердить доставку'),
+            OrderStatusEnum::DELIVERED => $order->delivery_method->isPickup() ? __('Подтвердить выдачу') : __('Подтвердить доставку'),
             default => $status->getLabel(),
         };
     }
@@ -84,11 +82,11 @@ final class OrderViewModel
             'to' => $status->getLabel(),
         ]);
 
-        if ($status === OrderStatusEnum::READY_TO_SHIP) {
+        if ($status->isReadyToShip()) {
             $description .= ' '.__('Будет создана заявка СДЭК. Убедитесь, что заказ собран и упакован.');
         }
 
-        if ($status === OrderStatusEnum::DELIVERED) {
+        if ($status->isDelivered()) {
             $description .= ' '.__('Подтвердите, что покупатель получил заказ.');
         }
 
@@ -99,12 +97,12 @@ final class OrderViewModel
     {
         $description = __('Заказ будет отменён. Укажите причину отмены.');
 
-        if ($order->delivery_method === DeliveryMethodEnum::CDEK) {
+        if ($order->delivery_method->isCdek()) {
             $description .= ' '.__('Будет отменена заявка СДЭК при её наличии. Отмена недоступна после движения груза.');
         }
 
-        if ($order->payment_method === PaymentMethodEnum::ONLINE) {
-            $description .= ' '.($order->payment_status === PaymentStatusEnum::PAID
+        if ($order->payment_method->isOnline()) {
+            $description .= ' '.($order->payment_status->isPaid()
                 ? __('Будет возвращена полная онлайн-оплата: :amount.', ['amount' => $order->total->format()])
                 : __('Если банк подтвердит оплату отменённого заказа, будет выполнен возврат.'));
         }
@@ -117,7 +115,7 @@ final class OrderViewModel
         $snapshot = $order->delivery_address ?? [];
         $parts = [$snapshot['city'] ?? null];
 
-        if ($order->delivery_method === DeliveryMethodEnum::COURIER && ! empty($snapshot['street'])) {
+        if ($order->delivery_method->isCourier() && ! empty($snapshot['street'])) {
             $parts[] = $snapshot['street'];
 
             foreach (['house' => __('дом'), 'building' => __('корпус'), 'entrance' => __('подъезд'), 'floor' => __('этаж'), 'apartment' => __('кв.'), 'intercom' => __('домофон')] as $field => $label) {
@@ -157,10 +155,10 @@ final class OrderViewModel
             $quantity = $order->items->sum('quantity');
         }
 
-        $canPay = $order->payment_method === PaymentMethodEnum::ONLINE && $order->status === OrderStatusEnum::NEW
+        $canPay = $order->payment_method->isOnline() && $order->status->isNew()
             && $order->cancellation_state === null && $order->payment_expires_at?->isFuture()
             && ! in_array($order->payment_status, [PaymentStatusEnum::PAID, PaymentStatusEnum::REFUNDED, PaymentStatusEnum::REFUND_PENDING, PaymentStatusEnum::REFUND_FAILED, PaymentStatusEnum::AUTHORIZED], true);
-        $canCancel = $order->status === OrderStatusEnum::NEW && $order->cancellation_state === null;
+        $canCancel = $order->status->isNew() && $order->cancellation_state === null;
         $steps = app(OrderLifecycleService::class)->stages($order);
         $position = array_search($order->status, $steps, true);
         $stages = [];
@@ -193,7 +191,7 @@ final class OrderViewModel
             'workingHours' => $order->delivery_address['working_hours'] ?? $order->delivery_address['work_time'] ?? null,
             'isCancelling' => in_array($order->cancellation_state, ['PENDING', 'FAILED'], true),
             'isActive' => ! in_array($order->status, [OrderStatusEnum::CANCELLED, OrderStatusEnum::DELIVERED], true)
-                || $order->payment_status === PaymentStatusEnum::REFUND_PENDING,
+                || $order->payment_status->isRefundPending(),
         ];
     }
 }

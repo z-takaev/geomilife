@@ -25,4 +25,19 @@ enum TbankPaymentStatusEnum: string
     case DEADLINE_EXPIRED = 'DEADLINE_EXPIRED';
     case REJECTED = 'REJECTED';
     case AUTH_FAIL = 'AUTH_FAIL';
+
+    public function is(self $type): bool
+    {
+        return $this === $type;
+    }
+
+    public function isCanceled(): bool
+    {
+        return $this->is(self::CANCELED);
+    }
+
+    public function isReversed(): bool
+    {
+        return $this->is(self::REVERSED);
+    }
 }
