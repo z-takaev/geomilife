@@ -28,8 +28,6 @@ return new class extends Migration
             $table->string('checkout_session_hash', 64)->nullable();
             $table->string('cancellation_state')->nullable()->index();
             $table->text('cancellation_reason')->nullable();
-            $table->string('cancellation_actor_type')->nullable();
-            $table->unsignedBigInteger('cancellation_actor_id')->nullable();
             $table->timestamp('cancelled_at')->nullable();
             $table->unsignedBigInteger('delivery_price');
             $table->unsignedBigInteger('total');

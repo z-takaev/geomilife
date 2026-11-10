@@ -65,7 +65,7 @@ final class OrderLifecycleService
             throw ValidationException::withMessages(['status' => 'Для отмены укажите причину отдельным действием.']);
         }
 
-        $changed = DB::transaction(function () use ($order, $status, $actor): bool {
+        $changed = DB::transaction(function () use ($order, $status): bool {
             $lockedOrder = Order::query()
                 ->lockForUpdate()
                 ->findOrFail($order->id);
@@ -80,7 +80,7 @@ final class OrderLifecycleService
                 throw ValidationException::withMessages(['status' => 'Этот переход статуса недоступен.']);
             }
 
-            $this->saveTransition($lockedOrder, $status, 'STAFF', $actor);
+            $lockedOrder->update(['status' => $status]);
             $this->notify($lockedOrder, $status->value, 'status:'.$status->value);
 
             return true;
@@ -111,7 +111,7 @@ final class OrderLifecycleService
                 return;
             }
 
-            $this->saveTransition($lockedOrder, $status, 'CDEK');
+            $lockedOrder->update(['status' => $status]);
             $this->notify($lockedOrder, $status->value, 'status:'.$status->value);
 
         });
@@ -140,8 +140,6 @@ final class OrderLifecycleService
             $lockedOrder->update([
                 'cancellation_state' => 'PENDING',
                 'cancellation_reason' => $reason,
-                'cancellation_actor_type' => $actor === null ? null : $actor::class,
-                'cancellation_actor_id' => $actor?->id,
             ]);
         });
 
@@ -172,22 +170,6 @@ final class OrderLifecycleService
         $this->completeCancellation($order);
 
         app(OrderPaymentService::class)->refund($order->fresh());
-    }
-
-    private function saveTransition(Order $order, OrderStatusEnum $status, string $source, ?FilamentUser $actor = null): void
-    {
-        $previous = $order->status;
-
-        $order->update(['status' => $status]);
-
-        $order->history()->firstOrCreate(['event_key' => 'status:'.$status->value], [
-            'from_status' => $previous->value,
-            'to_status' => $status->value,
-            'source' => $source,
-            'actor_type' => $actor === null ? null : $actor::class,
-            'actor_id' => $actor?->id,
-            'created_at' => now(),
-        ]);
     }
 
     private function notify(Order $order, string $event, string $key): void
@@ -257,23 +239,8 @@ final class OrderLifecycleService
                 return;
             }
 
-            $previous = $lockedOrder->status;
-
             $lockedOrder->update(['status' => OrderStatusEnum::CANCELLED, 'cancellation_state' => 'COMPLETED', 'cancelled_at' => now()]);
 
-            $lockedOrder->history()->firstOrCreate(['event_key' => 'status:CANCELLED'], [
-                'from_status' => $previous->value,
-                'to_status' => OrderStatusEnum::CANCELLED->value,
-                'source' => match ($lockedOrder->cancellation_actor_type) {
-                    null => 'SYSTEM',
-                    FilamentUser::class => 'STAFF',
-                    default => 'USER',
-                },
-                'actor_type' => $lockedOrder->cancellation_actor_type,
-                'actor_id' => $lockedOrder->cancellation_actor_id,
-                'reason' => $lockedOrder->cancellation_reason,
-                'created_at' => now(),
-            ]);
             $this->notify($lockedOrder, 'CANCELLED', 'status:CANCELLED');
         });
     }

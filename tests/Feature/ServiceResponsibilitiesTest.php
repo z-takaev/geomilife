@@ -64,7 +64,7 @@ it('при списании не затрагивает корзину друг�
         ->and($owner->cart->items()->sole()->quantity)->toBe(5);
 });
 
-it('фиксирует оплату при получении один раз с сотрудником в истории', function (FilamentUserRoleEnum $role): void {
+it('фиксирует оплату при получении один раз и отправляет одно событие уведомления', function (FilamentUserRoleEnum $role): void {
     $order = PaymentFixtures::order(['payment_method' => PaymentMethodEnum::PICKUP]);
     $actor = PaymentFixtures::manager();
     $actor->update(['role' => $role]);
@@ -74,10 +74,6 @@ it('фиксирует оплату при получении один раз с
     $payments->markPaidOnReceipt($order->fresh(), $actor);
 
     expect($order->fresh()->payment_status)->toBe(PaymentStatusEnum::PAID)
-        ->and($order->history()->where('event_key', 'payment-on-receipt')->count())->toBe(1);
-    $history = $order->history()->where('event_key', 'payment-on-receipt')->sole();
-    expect($history->actor_type)->toBe(FilamentUser::class)
-        ->and($history->actor_id)->toBe($actor->id)
         ->and(OrderNotificationDelivery::query()->where('order_id', $order->id)->count())->toBe(1);
     Http::assertNothingSent();
 })->with([FilamentUserRoleEnum::ADMIN, FilamentUserRoleEnum::MANAGER]);
@@ -88,8 +84,7 @@ it('запрещает ручную отметку оплаты при непо�
     expect(fn () => app(OrderPaymentService::class)->markPaidOnReceipt($order, PaymentFixtures::manager()))
         ->toThrow(ValidationException::class);
 
-    expect($order->fresh()->payment_status)->toBe(PaymentStatusEnum::UNPAID)
-        ->and($order->history()->count())->toBe(0);
+    expect($order->fresh()->payment_status)->toBe(PaymentStatusEnum::UNPAID);
 })->with([
     'онлайн-оплата' => [['payment_method' => PaymentMethodEnum::ONLINE]],
     'курьер' => [['delivery_method' => DeliveryMethodEnum::COURIER]],

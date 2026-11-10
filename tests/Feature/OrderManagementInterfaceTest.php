@@ -47,18 +47,14 @@ it('оставляет место название и вес упаковки и
         ->assertDontSee('Оплатить до');
 });
 
-it('показывает историю и разрешает сверку оплаты только администратору', function (FilamentUserRoleEnum $role): void {
+it('разрешает сверку оплаты только администратору', function (FilamentUserRoleEnum $role): void {
     $this->actingAs(fulfillmentEmployee($role), 'filament');
     $order = fulfillmentOrder();
-    $order->history()->create([
-        'event_key' => 'test-event', 'from_status' => 'NEW', 'to_status' => 'CONFIRMED',
-        'source' => 'STAFF', 'reason' => 'Закрытая история', 'created_at' => now(),
-    ]);
     $component = Livewire::test(ViewOrder::class, ['record' => $order->id]);
     if ($role === FilamentUserRoleEnum::ADMIN) {
-        $component->assertSee('История')->assertSee('Закрытая история')->assertActionVisible('checkPayment');
+        $component->assertActionVisible('checkPayment');
     } else {
-        $component->assertDontSee('История')->assertDontSee('Закрытая история')->assertActionHidden('checkPayment');
+        $component->assertActionHidden('checkPayment');
         $component->call('mountAction', 'checkPayment');
         expect($component->instance()->mountedActions)->toBeEmpty();
         Http::assertNothingSent();
@@ -77,8 +73,7 @@ it('показывает этапы и подтверждает следующи
         ->toContain('Новый → Подтверждён и собирается', 'Покупателю будет отправлено уведомление');
     expect($order->fresh()->status)->toBe(OrderStatusEnum::NEW);
     $component->callMountedAction()->assertHasNoActionErrors();
-    expect($order->fresh()->status)->toBe(OrderStatusEnum::CONFIRMED)
-        ->and($order->history()->where('to_status', 'CONFIRMED')->count())->toBe(1);
+    expect($order->fresh()->status)->toBe(OrderStatusEnum::CONFIRMED);
 })->with([FilamentUserRoleEnum::ADMIN, FilamentUserRoleEnum::MANAGER]);
 
 it('объясняет ожидание онлайн-оплаты и запрещает изменение статуса', function (): void {

@@ -32,8 +32,6 @@ final class Order extends Model
         'checkout_session_hash',
         'cancellation_state',
         'cancellation_reason',
-        'cancellation_actor_type',
-        'cancellation_actor_id',
         'cancelled_at',
         'number',
         'status',
@@ -96,10 +94,5 @@ final class Order extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(OrderDocument::class);
-    }
-
-    public function history(): HasMany
-    {
-        return $this->hasMany(OrderHistory::class);
     }
 }

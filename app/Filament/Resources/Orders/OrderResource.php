@@ -166,16 +166,6 @@ final class OrderResource extends Resource
                         ->visible(fn (OrderDocument $record): bool => filled($record->error)),
                 ])->columns(3),
             ])->visible(fn (Order $record): bool => $record->delivery_method->isCdek()),
-            Section::make('История')
-                ->visible(fn (): bool => auth('filament')->user()?->role?->isAdmin() ?? false)
-                ->schema([
-                    RepeatableEntry::make('history')->label('Изменения')->schema([
-                        TextEntry::make('created_at')->label('Время')->dateTime('d.m.Y H:i:s'),
-                        TextEntry::make('source')->label('Источник'), TextEntry::make('actor_id')->label('Сотрудник'),
-                        TextEntry::make('from_status')->label('Было'), TextEntry::make('to_status')->label('Стало'),
-                        TextEntry::make('reason')->label('Причина'),
-                    ])->columns(3),
-                ]),
         ])->columns(1);
     }
 

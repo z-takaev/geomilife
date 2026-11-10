@@ -204,7 +204,6 @@ final class CheckoutService
 
             $this->assertCurrentItems($calculation);
             $order = $this->createOrderRecord($user, $form, $calculation, $idempotencyKey);
-            $this->recordCreation($order, $user);
             $this->saveItems($order, $calculation['items']);
             $this->rememberDelivery($user, $deliveryMethod, $calculation);
 
@@ -414,19 +413,6 @@ final class CheckoutService
             'is_preorder' => $calculation['is_preorder'],
             'idempotency_key' => $idempotencyKey,
             'checkout_session_hash' => $this->sessionHash(),
-        ]);
-    }
-
-    private function recordCreation(Order $order, ?User $user): void
-    {
-        $order->history()->create([
-            'from_status' => null,
-            'to_status' => OrderStatusEnum::NEW->value,
-            'source' => $user === null ? 'GUEST' : 'USER',
-            'actor_type' => $user === null ? null : User::class,
-            'actor_id' => $user?->id,
-            'event_key' => 'created',
-            'created_at' => now(),
         ]);
     }
 

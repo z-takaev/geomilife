@@ -126,7 +126,7 @@ final class OrderPaymentService
     public function markPaidOnReceipt(Order $order, FilamentUser $actor): void
     {
         $this->assertStaff($actor);
-        DB::transaction(function () use ($order, $actor): void {
+        DB::transaction(function () use ($order): void {
             $lockedOrder = Order::query()
                 ->lockForUpdate()
                 ->findOrFail($order->id);
@@ -143,15 +143,6 @@ final class OrderPaymentService
 
             $lockedOrder->update(['payment_status' => PaymentStatusEnum::PAID]);
 
-            $lockedOrder->history()->firstOrCreate(['event_key' => 'payment-on-receipt'], [
-                'from_status' => $lockedOrder->status->value,
-                'to_status' => $lockedOrder->status->value,
-                'source' => 'STAFF',
-                'actor_type' => $actor::class,
-                'actor_id' => $actor->id,
-                'metadata' => ['payment_status' => PaymentStatusEnum::PAID->value],
-                'created_at' => now(),
-            ]);
             $this->notify($lockedOrder, 'PAYMENT_PAID', 'payment-paid:'.$lockedOrder->id);
         });
     }
@@ -195,7 +186,6 @@ final class OrderPaymentService
                 ->lockForUpdate()
                 ->findOrFail($payment->id);
             $nextStatus = $this->mapPaymentStatus($providerStatus);
-            $currentStatus = $lockedPayment->status;
 
             if ($this->isRefundUnconfirmed($lockedPayment, $nextStatus, $fromBankCheck)) {
                 $lockedPayment->update(['status' => PaymentStatusEnum::REFUND_FAILED, 'operation_state' => null, 'last_checked_at' => now()]);
@@ -212,10 +202,6 @@ final class OrderPaymentService
             $values = $this->paymentStateChanges($providerStatus, $nextStatus);
 
             $lockedPayment->update($values);
-
-            if ($nextStatus !== null && ! $nextStatus->is($currentStatus)) {
-                $this->recordPaymentChange($order, $lockedPayment, $currentStatus, $nextStatus);
-            }
 
             $this->refreshOrderPayment($order);
         });
@@ -439,21 +425,5 @@ final class OrderPaymentService
         }
 
         return $values;
-    }
-
-    private function recordPaymentChange(Order $order, Payment $payment, PaymentStatusEnum $currentStatus, PaymentStatusEnum $nextStatus): void
-    {
-        $order->history()->firstOrCreate(['event_key' => 'payment:'.$payment->id.':'.$nextStatus->value], [
-            'from_status' => $order->status->value,
-            'to_status' => $order->status->value,
-            'source' => 'TBANK',
-            'metadata' => [
-                'payment_id' => $payment->id,
-                'from_payment_status' => $currentStatus->value,
-                'to_payment_status' => $nextStatus->value,
-                'provider_status' => $payment->provider_status,
-            ],
-            'created_at' => now(),
-        ]);
     }
 }

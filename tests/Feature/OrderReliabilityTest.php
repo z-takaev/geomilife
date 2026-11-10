@@ -53,7 +53,7 @@ it('сохраняет событие при сбое постановки в о
     $this->assertDatabaseCount('jobs', 1);
 });
 
-it('откатывает статус и историю если событие не удалось сохранить', function (): void {
+it('откатывает статус если событие не удалось сохранить', function (): void {
     Notification::fake();
     $order = fulfillmentOrder();
     $event = 'eloquent.creating: '.OrderNotificationDelivery::class;
@@ -67,7 +67,6 @@ it('откатывает статус и историю если событие 
         Event::forget($event);
     }
     expect($order->fresh()->status)->toBe(OrderStatusEnum::NEW);
-    $this->assertDatabaseCount('order_histories', 0);
     $this->assertDatabaseCount('order_notification_deliveries', 0);
     Notification::assertNothingSent();
 });
