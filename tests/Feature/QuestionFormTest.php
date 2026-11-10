@@ -3,13 +3,15 @@
 declare(strict_types=1);
 
 use App\Livewire\QuestionForm;
-use App\Mail\QuestionSubmitted;
 use App\Models\Setting;
-use Illuminate\Support\Facades\Mail;
+use App\Notifications\QuestionSubmittedNotification;
+use Illuminate\Notifications\AnonymousNotifiable;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
 it('отправляет вопрос администратору и очищает форму', function (): void {
-    Mail::fake();
+    Notification::fake();
     Setting::query()->create(['admin_email' => 'admin@example.com']);
 
     Livewire::test(QuestionForm::class)
@@ -23,16 +25,26 @@ it('отправляет вопрос администратору и очища
         ->assertSet('message', '')
         ->assertDispatched('question-sent');
 
-    Mail::assertSent(QuestionSubmitted::class, function (QuestionSubmitted $mail): bool {
-        return $mail->hasTo('admin@example.com')
-            && $mail->name === 'Иван'
-            && $mail->phone === '+7 (999) 123-45-67'
-            && $mail->question === 'Когда доставят заказ?';
-    });
+    Notification::assertSentOnDemandTimes(QuestionSubmittedNotification::class, 1);
+    Notification::assertSentOnDemand(QuestionSubmittedNotification::class,
+        function (QuestionSubmittedNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool {
+            $mail = $notification->toMail($notifiable);
+
+            return $notifiable->routes['mail'] === 'admin@example.com'
+                && $channels === ['mail']
+                && $mail instanceof MailMessage
+                && $mail->subject === 'Новый вопрос с сайта'
+                && $mail->greeting === 'Новый вопрос с сайта'
+                && $mail->introLines === [
+                    'Имя: Иван',
+                    'Контактный телефон: +7 (999) 123-45-67',
+                    'Вопрос: Когда доставят заказ?',
+                ];
+        });
 });
 
 it('проверяет обязательные поля и формат телефона', function (): void {
-    Mail::fake();
+    Notification::fake();
 
     Livewire::test(QuestionForm::class)
         ->set('phone', '89991234567')
@@ -43,11 +55,11 @@ it('проверяет обязательные поля и формат тел�
             'message' => 'required',
         ]);
 
-    Mail::assertNothingSent();
+    Notification::assertNothingSent();
 });
 
 it('не отправляет вопрос без адреса администратора', function (): void {
-    Mail::fake();
+    Notification::fake();
 
     Livewire::test(QuestionForm::class)
         ->set('name', 'Иван')
@@ -56,5 +68,5 @@ it('не отправляет вопрос без адреса админист�
         ->call('submit')
         ->assertHasErrors('message');
 
-    Mail::assertNothingSent();
+    Notification::assertNothingSent();
 });

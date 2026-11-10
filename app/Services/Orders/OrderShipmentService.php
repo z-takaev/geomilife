@@ -27,9 +27,6 @@ use Throwable;
 
 final class OrderShipmentService
 {
-    /**
-     * Подключает сервис работы с API СДЭК.
-     */
     public function __construct(private readonly CdekService $cdek) {}
 
     /**

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
-use App\Mail\QuestionSubmitted;
 use App\Models\Setting;
+use App\Notifications\QuestionSubmittedNotification;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Component;
 
 final class QuestionForm extends Component
@@ -30,7 +30,7 @@ final class QuestionForm extends Component
             return;
         }
 
-        Mail::to($adminEmail)->send(new QuestionSubmitted(
+        Notification::route('mail', $adminEmail)->notify(new QuestionSubmittedNotification(
             name: $validated['name'],
             phone: $validated['phone'],
             question: $validated['message'],
