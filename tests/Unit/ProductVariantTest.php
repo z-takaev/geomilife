@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-use App\Enums\ProductUnit;
+use App\Enums\ProductUnitEnum;
 use App\Models\ProductVariant;
 use App\Support\Values\Money;
 
-it('формирует название фасовки', function (string $value, ProductUnit $unit, string $label): void {
+it('формирует название фасовки', function (string $value, ProductUnitEnum $unit, string $label): void {
     $variant = new ProductVariant(['value' => $value, 'unit' => $unit]);
 
     expect($variant->label())->toBe($label);
 })->with([
-    'граммы' => ['500.000', ProductUnit::GRAM, '500 г'],
-    'миллилитры' => ['250.500', ProductUnit::MILLILITER, '250.5 мл'],
-    'штуки' => ['1.000', ProductUnit::PIECE, '1 шт'],
+    'граммы' => ['500.000', ProductUnitEnum::GRAM, '500 г'],
+    'миллилитры' => ['250.500', ProductUnitEnum::MILLILITER, '250.5 мл'],
+    'штуки' => ['1.000', ProductUnitEnum::PIECE, '1 шт'],
 ]);
 
 it('возвращает цену со скидкой и старую цену', function (): void {

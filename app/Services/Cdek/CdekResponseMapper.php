@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace App\Services\Cdek;
 
-use App\DTO\Cdek\Responses\CdekCalculationResponseDto;
-use App\DTO\Cdek\Responses\CdekCityResponseDto;
-use App\DTO\Cdek\Responses\CdekDeliveryPointResponseDto;
-use App\DTO\Cdek\Responses\CdekOperationResponseDto;
-use App\DTO\Cdek\Responses\CdekOrderResponseDto;
-use App\DTO\Cdek\Responses\CdekPrintResponseDto;
-use App\DTO\Cdek\Responses\CdekTariffListResponseDto;
-use App\DTO\Cdek\Responses\CdekTariffResponseDto;
-use App\DTO\Cdek\Responses\CdekWebhookResponseDto;
-use App\Enums\Cdek\CdekDeliveryPointTypeEnum;
+use App\DTO\Cdek\CdekCalculateTariffResponseDto;
+use App\DTO\Cdek\CdekCityResponseDto;
+use App\DTO\Cdek\CdekDeliveryPointResponseDto;
+use App\DTO\Cdek\CdekOperationResponseDto;
+use App\DTO\Cdek\CdekOrderResponseDto;
+use App\DTO\Cdek\CdekPrintResponseDto;
+use App\DTO\Cdek\CdekWebhookResponseDto;
 use App\Enums\Cdek\CdekPrintStateEnum;
 use App\Enums\Cdek\CdekRequestStateEnum;
 use App\Services\Cdek\Exceptions\CdekApiException;
+use App\Support\Values\Money;
 use DateTimeImmutable;
 use Exception;
+use InvalidArgumentException;
+use OverflowException;
 
 final class CdekResponseMapper
 {
@@ -44,9 +44,9 @@ final class CdekResponseMapper
     {
         return array_map(function (array $point): CdekDeliveryPointResponseDto {
             $location = $this->object($point, 'location');
-            $type = CdekDeliveryPointTypeEnum::tryFrom($this->string($point, 'type'));
+            $type = $this->string($point, 'type');
 
-            if ($type === null || $type === CdekDeliveryPointTypeEnum::ALL) {
+            if ($type !== 'PVZ') {
                 throw CdekApiException::invalidResponse();
             }
 
@@ -72,35 +72,20 @@ final class CdekResponseMapper
     }
 
     /** @param array<mixed> $data */
-    public function tariffs(array $data): CdekTariffListResponseDto
+    public function calculation(array $data): CdekCalculateTariffResponseDto
     {
         $this->ensureCalculationSucceeded($data);
 
-        if (! array_key_exists('tariff_codes', $data)) {
+        $currency = strtoupper($this->string($data, 'currency'));
+
+        if ($currency !== Money::CURRENCY) {
             throw CdekApiException::invalidResponse();
         }
 
-        $tariffs = array_map(fn (array $tariff): CdekTariffResponseDto => new CdekTariffResponseDto(
-            code: $this->integer($tariff, 'tariff_code'),
-            name: $this->string($tariff, 'tariff_name'),
-            deliveryMode: $this->integer($tariff, 'delivery_mode'),
-            deliverySum: $this->number($tariff, 'delivery_sum'),
-            periodMin: $this->integer($tariff, 'period_min'),
-            periodMax: $this->integer($tariff, 'period_max'),
-        ), $this->items($data, 'tariff_codes'));
-
-        return new CdekTariffListResponseDto($tariffs, $this->issues($data, 'warnings'));
-    }
-
-    /** @param array<mixed> $data */
-    public function calculation(array $data): CdekCalculationResponseDto
-    {
-        $this->ensureCalculationSucceeded($data);
-
-        return new CdekCalculationResponseDto(
-            deliverySum: $this->number($data, 'delivery_sum'),
-            totalSum: $this->number($data, 'total_sum'),
-            currency: $this->string($data, 'currency'),
+        return new CdekCalculateTariffResponseDto(
+            deliverySum: $this->money($data, 'delivery_sum'),
+            totalSum: $this->money($data, 'total_sum'),
+            currency: $currency,
             periodMin: $this->integer($data, 'period_min'),
             periodMax: $this->integer($data, 'period_max'),
             weightCalc: $this->integer($data, 'weight_calc'),
@@ -147,7 +132,13 @@ final class CdekResponseMapper
             throw CdekApiException::invalidResponse();
         }
 
-        return new CdekOperationResponseDto($uuid, $latest['state'] ?? null, $errors, $warnings, $requests);
+        return new CdekOperationResponseDto(
+            uuid: $uuid,
+            state: $latest['state'] ?? null,
+            errors: $errors,
+            warnings: $warnings,
+            requests: $requests,
+        );
     }
 
     /** @param array<mixed> $data */
@@ -190,7 +181,13 @@ final class CdekResponseMapper
             throw CdekApiException::invalidResponse();
         }
 
-        return new CdekPrintResponseDto($operation->uuid, $state, $url, $status['dateTime'] ?? null, $operation);
+        return new CdekPrintResponseDto(
+            uuid: $operation->uuid,
+            status: $state,
+            url: $url,
+            statusDateTime: $status['dateTime'] ?? null,
+            operation: $operation,
+        );
     }
 
     /**
@@ -347,6 +344,22 @@ final class CdekResponseMapper
         }
 
         return $value;
+    }
+
+    /** @param array<mixed> $data */
+    private function money(array $data, string $key): Money
+    {
+        $value = $data[$key] ?? null;
+
+        if ((! is_int($value) && ! is_float($value)) || ! is_finite((float) $value) || $value < 0) {
+            throw CdekApiException::invalidResponse();
+        }
+
+        try {
+            return Money::fromRubles(is_int($value) ? $value : number_format($value, 2, '.', ''));
+        } catch (InvalidArgumentException|OverflowException) {
+            throw CdekApiException::invalidResponse();
+        }
     }
 
     /** @param array<mixed> $data */

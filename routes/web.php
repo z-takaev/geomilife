@@ -16,6 +16,7 @@ use App\Http\Controllers\FaqController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\OrderDocumentController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
@@ -93,10 +94,25 @@ Route::middleware('auth')->group(function (): void {
 Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/profile', ProfileController::class)->name('profile.show');
 
-    Route::controller(OrderController::class)->prefix('profile/orders')->name('orders.')->group(function (): void {
+    Route::controller(OrderController::class)->prefix('orders')->name('orders.')->whereNumber('order')->group(function (): void {
         Route::get('/', 'index')->name('index');
         Route::get('/{order}', 'show')->name('show');
+        Route::post('/{order}/cancel', 'cancel')->middleware('throttle:6,1')->name('cancel');
+        Route::post('/{order}/pay', 'pay')->middleware('throttle:6,1')->name('pay');
     });
+});
+
+Route::get('/orders/guest/{token}', [OrderController::class, 'guestShow'])
+    ->middleware('signed')->name('orders.guest.show');
+Route::post('/orders/guest/{token}/cancel', [OrderController::class, 'guestCancel'])
+    ->middleware(['signed', 'throttle:6,1'])->name('orders.guest.cancel');
+Route::post('/orders/guest/{token}/pay', [OrderController::class, 'guestPay'])
+    ->middleware(['signed', 'throttle:6,1'])->name('orders.guest.pay');
+
+Route::middleware('auth:filament')->prefix('admin/orders')->name('admin.orders.')->group(function (): void {
+    Route::get('/{order}/packing-slip', [OrderDocumentController::class, 'packingSlip'])->name('packing-slip');
+    Route::get('/{order}/cdek-waybill', [OrderDocumentController::class, 'waybill'])->name('cdek-waybill');
+    Route::get('/{order}/cdek-barcodes', [OrderDocumentController::class, 'barcodes'])->name('cdek-barcodes');
 });
 
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');

@@ -14,6 +14,9 @@ final class FavoriteService
 {
     private ?array $productIds = null;
 
+    /**
+     * Возвращает идентификаторы избранных товаров пользователя или гостя.
+     */
     public function ids(array $guestIds = []): array
     {
         return auth()->check()
@@ -21,6 +24,9 @@ final class FavoriteService
             : $this->validateGuestIds($guestIds);
     }
 
+    /**
+     * Проверяет гостевой список идентификаторов и удаляет повторы.
+     */
     public function validateGuestIds(array $ids): array
     {
         Validator::make(['ids' => $ids], ['ids' => ['array', 'max:1000'], 'ids.*' => ['integer', 'min:1']])->validate();
@@ -28,6 +34,9 @@ final class FavoriteService
         return array_values(array_unique(array_map(intval(...), $ids)));
     }
 
+    /**
+     * Возвращает идентификаторы доступных товаров из гостевого избранного.
+     */
     public function availableGuestIds(array $ids): array
     {
         $ids = $this->validateGuestIds($ids);
@@ -35,6 +44,9 @@ final class FavoriteService
         return $ids === [] ? [] : Product::query()->available()->whereKey($ids)->pluck('id')->all();
     }
 
+    /**
+     * Подготавливает доступные избранные товары для отображения.
+     */
     public function items(array $guestIds = []): Collection
     {
         $ids = $this->ids($guestIds);
@@ -56,6 +68,9 @@ final class FavoriteService
             ]);
     }
 
+    /**
+     * Добавляет доступный товар в избранное и возвращает обновлённый список идентификаторов.
+     */
     public function add(int $productId, array $guestIds = []): array
     {
         abort_unless(Product::query()->available()->whereKey($productId)->exists(), 404);
@@ -70,6 +85,9 @@ final class FavoriteService
         return $this->ids();
     }
 
+    /**
+     * Удаляет товар из избранного и возвращает обновлённый список идентификаторов.
+     */
     public function remove(int $productId, array $guestIds = []): array
     {
         if (! auth()->check()) {
@@ -82,6 +100,9 @@ final class FavoriteService
         return $this->ids();
     }
 
+    /**
+     * Проверяет, нужно ли предложить перенос гостевого избранного в профиль.
+     */
     public function shouldSuggestMerge(array $guestIds): bool
     {
         return auth()->check()
@@ -89,6 +110,9 @@ final class FavoriteService
             && $this->validateGuestIds($guestIds) !== [];
     }
 
+    /**
+     * Добавляет доступные товары из гостевого избранного в профиль пользователя.
+     */
     public function merge(array $guestIds): void
     {
         abort_unless(auth()->check(), 403);
@@ -104,6 +128,9 @@ final class FavoriteService
         $this->productIds = null;
     }
 
+    /**
+     * Запоминает отказ пользователя от переноса гостевого избранного.
+     */
     public function declineMerge(): void
     {
         abort_unless(auth()->check(), 403);

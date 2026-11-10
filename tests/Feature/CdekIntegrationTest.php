@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-use App\Actions\Cdek\SyncCdekCitiesAction;
-use App\DTO\Cdek\Responses\CdekCityResponseDto;
+use App\Actions\Cdek\UpdateDeliveryCitiesAction;
+use App\DTO\Cdek\CdekCityResponseDto;
+use App\DTO\Cdek\CdekGetDeliveryPointsRequestDto;
 use App\Models\City;
+use App\Services\Cdek\CdekResponseMapper;
 use App\Services\Cdek\CdekService;
 use App\Services\Cdek\Exceptions\CdekApiException;
 use App\Support\Values\Money;
@@ -104,8 +106,8 @@ it('обновляет справочник без дублей и сохран�
         'cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600]),
         'cdek.test/v2/location/cities*' => Http::response([['code' => 44, 'city' => 'Москва', 'region' => 'Москва'], ['code' => 137, 'city' => 'Санкт-Петербург']]),
     ]);
-    expect(app(SyncCdekCitiesAction::class)->run())->toBe(2);
-    expect(app(SyncCdekCitiesAction::class)->run())->toBe(2);
+    expect(app(UpdateDeliveryCitiesAction::class)->run())->toBe(2);
+    expect(app(UpdateDeliveryCitiesAction::class)->run())->toBe(2);
     $this->assertDatabaseCount('cities', 2);
     expect($city->fresh()->name)->toBe('Москва')->and($city->fresh()->is_active)->toBeFalse()
         ->and($city->fresh()->is_pickup_available)->toBeTrue()
@@ -118,7 +120,7 @@ it('загружает следующую страницу после полно
         'cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600]),
         'cdek.test/v2/location/cities*' => Http::sequence()->push($cities)->push([['code' => 1001, 'city' => 'Последний']]),
     ]);
-    expect(app(SyncCdekCitiesAction::class)->run())->toBe(1001);
+    expect(app(UpdateDeliveryCitiesAction::class)->run())->toBe(1001);
     $this->assertDatabaseCount('cities', 1001);
     Http::assertSent(fn (Request $request): bool => $request->method() === 'GET' && $request['page'] === 1);
 });
@@ -128,6 +130,43 @@ it('не записывает частично страницу с повреж�
         'cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600]),
         'cdek.test/v2/location/cities*' => Http::response([['code' => 44, 'city' => 'Москва'], ['code' => 'invalid', 'city' => 'Ошибка']]),
     ]);
-    expect(fn () => app(SyncCdekCitiesAction::class)->run())->toThrow(CdekApiException::class);
+    expect(fn () => app(UpdateDeliveryCitiesAction::class)->run())->toThrow(CdekApiException::class);
     $this->assertDatabaseCount('cities', 0);
 });
+
+it('всегда запрашивает только ПВЗ СДЭК', function (): void {
+    Http::fake([
+        'cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600]),
+        'cdek.test/v2/deliverypoints*' => Http::response([]),
+    ]);
+
+    app(CdekService::class)->getDeliveryPoints(new CdekGetDeliveryPointsRequestDto(cityCode: 44));
+
+    Http::assertSent(fn (Request $request): bool => str_contains($request->url(), '/deliverypoints')
+        && $request['city_code'] === 44 && $request['type'] === 'PVZ');
+});
+
+it('всегда формирует наклейки СДЭК в формате A4', function (): void {
+    Http::fake([
+        'cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600]),
+        'cdek.test/v2/print/barcodes' => Http::response(['entity' => ['uuid' => 'b778dabf-459b-4e37-85e5-402402e85f34']]),
+    ]);
+    $orderUuid = 'a778dabf-459b-4e37-85e5-402402e85f34';
+
+    app(CdekService::class)->createBarcodes($orderUuid, copyCount: 2);
+
+    Http::assertSent(fn (Request $request): bool => str_ends_with($request->url(), '/print/barcodes')
+        && $request['format'] === 'A4' && $request['copy_count'] === 2
+        && $request['orders'] === [['order_uuid' => $orderUuid]]);
+});
+
+it('отклоняет ответ СДЭК с типом пункта отличным от ПВЗ', function (string $type): void {
+    $point = [
+        'code' => 'MSK1', 'type' => $type, 'work_time' => '09:00–20:00',
+        'location' => ['city_code' => 44, 'address_full' => 'Москва, ул. Примерная, 1',
+            'latitude' => 55.75, 'longitude' => 37.61],
+    ];
+
+    expect(fn () => app(CdekResponseMapper::class)->deliveryPoints([$point]))
+        ->toThrow(CdekApiException::class);
+})->with(['POSTAMAT', 'ALL', 'UNKNOWN']);

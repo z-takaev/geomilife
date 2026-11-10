@@ -22,6 +22,12 @@ final class City extends Model
         'is_suggested',
         'is_pickup_available',
         'is_courier_available',
+        'is_cdek_excluded',
+        'door_delivery_price',
+        'pickup_name',
+        'pickup_address',
+        'pickup_working_hours',
+        'pickup_phone',
         'courier_delivery_price',
         'floor_lifting_price',
     ];
@@ -36,6 +42,8 @@ final class City extends Model
             'is_courier_available' => 'boolean',
             'courier_delivery_price' => Money::class,
             'floor_lifting_price' => Money::class,
+            'door_delivery_price' => Money::class,
+            'is_cdek_excluded' => 'boolean',
         ];
     }
 

@@ -12,6 +12,7 @@ return new class extends Migration
     {
         Schema::create('settings', function (Blueprint $table): void {
             $table->id();
+            $table->boolean('snow_enabled')->default(false);
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
             $table->string('admin_email')->nullable();
@@ -38,6 +39,8 @@ return new class extends Migration
             $table->string('banner_triple_first_image')->nullable();
             $table->string('banner_triple_second_image')->nullable();
             $table->string('banner_triple_third_image')->nullable();
+
+            $table->string('privacy_policy')->nullable();
 
             $table->timestamps();
         });

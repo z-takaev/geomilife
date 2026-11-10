@@ -69,9 +69,12 @@
                     <h4 class="tf-cart-total-text">{{ __('Итого') }}</h4>
                     <h4 class="tf-totals-total-value">{{ $total->format() }}</h4>
                 </div>
-                <div class="group-btn">
-                    <a href="{{ route('checkout') }}" class="tf-btn animate-btn w-100">{{ __('Оформить заказ') }}</a>
-                </div>
+                @if ($count > 0)
+                    <div class="group-btn">
+                        <a href="{{ route('checkout') }}"
+                            class="tf-btn animate-btn w-100">{{ __('Оформить заказ') }}</a>
+                    </div>
+                @endif
                 <div class="text-center"><button type="button"
                         class="fw-semibold text-primary link-2 text-decoration-underline"
                         data-bs-dismiss="offcanvas">{{ __('Продолжить покупки') }}</button></div>

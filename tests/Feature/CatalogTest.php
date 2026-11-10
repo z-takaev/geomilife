@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\ProductUnit;
+use App\Enums\ProductUnitEnum;
 use App\Livewire\CatalogProducts;
 use App\Models\Category;
 use App\Models\Product;
@@ -40,7 +40,7 @@ function createCatalogProduct(
     ProductVariant::query()->create([
         'product_id' => $product->getKey(),
         'sku' => 'SKU-'.$product->getKey(),
-        'unit' => ProductUnit::GRAM,
+        'unit' => ProductUnitEnum::GRAM,
         'value' => 500,
         'price' => Money::fromRubles($price),
         'old_price' => $oldPrice === null ? null : Money::fromRubles($oldPrice),
@@ -130,7 +130,7 @@ it('не объединяет условия фильтра из разных ф
     $category = createCatalogCategory('Масла', 'oils');
     $product = createCatalogProduct($category, 'Разные фасовки', 'packages', 100);
     $product->variants()->first()->update(['value' => 100]);
-    $product->variants()->create(['sku' => 'LARGE', 'unit' => ProductUnit::GRAM, 'value' => 500,
+    $product->variants()->create(['sku' => 'LARGE', 'unit' => ProductUnitEnum::GRAM, 'value' => 500,
         'price' => Money::fromRubles(1000), 'is_active' => true]);
     Livewire::test(CatalogProducts::class, ['category' => $category])
         ->set('priceTo', '200')->set('packageValues', ['GRAM|500.000'])->call('applyFilters')
@@ -167,7 +167,7 @@ it('выбирает безопасную фасовку при чужом ил�
     $product = createCatalogProduct($category, 'Масло', 'oil', 500);
     $default = $product->variants()->first();
     $otherProduct = createCatalogProduct($category, 'Другой', 'other', 900);
-    $hidden = $product->variants()->create(['sku' => 'HIDDEN', 'unit' => ProductUnit::GRAM, 'value' => 1000,
+    $hidden = $product->variants()->create(['sku' => 'HIDDEN', 'unit' => ProductUnitEnum::GRAM, 'value' => 1000,
         'price' => Money::fromRubles(10), 'is_active' => false]);
     $variantId = $selection === 'foreign' ? $otherProduct->variants()->first()->id : $hidden->id;
     $this->get(route('products.show', [$product, 'variant' => $variantId]))->assertOk()

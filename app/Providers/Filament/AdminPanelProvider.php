@@ -20,6 +20,7 @@ use App\Filament\Resources\Products\ProductResource;
 use App\Filament\Resources\Promos\PromoResource;
 use App\Filament\Resources\Reviews\ReviewResource;
 use App\Filament\Resources\Seo\SeoResource;
+use App\Filament\Resources\ShippingBoxes\ShippingBoxResource;
 use App\Filament\Resources\Users\UserResource;
 use Filament\Actions\Action;
 use Filament\Http\Middleware\Authenticate;
@@ -113,6 +114,7 @@ final class AdminPanelProvider extends PanelProvider
             NavigationGroup::make('Настройки')
                 ->items([
                     ...CityResource::getNavigationItems(),
+                    ...ShippingBoxResource::getNavigationItems(),
                     ...SeoResource::getNavigationItems(),
                     ...FilamentUserResource::getNavigationItems(),
                     ...ManageSettings::getNavigationItems(),

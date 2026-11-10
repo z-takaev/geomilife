@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\DTO\Products;
 
-use App\Support\Traits\Makeable;
-
 final readonly class CatalogFiltersDto
 {
-    use Makeable;
-
     public const array AVAILABILITY = ['in-stock', 'preorder'];
 
     public const int MAX_PRICE = 1_000_000_000;
 
+    /**
+     * @param  list<string>  $availability
+     * @param  list<string>  $packageValues
+     */
     public function __construct(
         public ?int $priceFrom = null,
         public ?int $priceTo = null,
@@ -21,6 +21,10 @@ final readonly class CatalogFiltersDto
         public array $packageValues = [],
     ) {}
 
+    /**
+     * @param  array<string, mixed>  $values
+     * @param  list<array{value: string, label: string}>  $packageOptions
+     */
     public static function fromArray(array $values, array $packageOptions = []): self
     {
         $priceFrom = self::price($values['priceFrom'] ?? null);
@@ -38,6 +42,9 @@ final readonly class CatalogFiltersDto
         );
     }
 
+    /**
+     * @return array{priceFrom: string, priceTo: string, availability: list<string>, packageValues: list<string>}
+     */
     public function toArray(): array
     {
         return [
@@ -57,6 +64,10 @@ final readonly class CatalogFiltersDto
         return (int) $value <= self::MAX_PRICE ? (int) $value : null;
     }
 
+    /**
+     * @param  list<string>  $allowed
+     * @return list<string>
+     */
     private static function allowedValues(mixed $values, array $allowed): array
     {
         return is_array($values)

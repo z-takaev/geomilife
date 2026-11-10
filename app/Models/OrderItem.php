@@ -8,6 +8,7 @@ use App\Support\Values\Money;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Validation\ValidationException;
 
 final class OrderItem extends Model
 {
@@ -23,6 +24,7 @@ final class OrderItem extends Model
         'variant_name',
         'sku',
         'price',
+        'old_price',
         'quantity',
         'total',
     ];
@@ -31,9 +33,17 @@ final class OrderItem extends Model
     {
         return [
             'price' => Money::class,
+            'old_price' => Money::class,
             'quantity' => 'integer',
             'total' => Money::class,
         ];
+    }
+
+    protected static function booted(): void
+    {
+        self::updating(static function (): void {
+            throw ValidationException::withMessages(['order' => __('Состав оформленного заказа изменять нельзя.')]);
+        });
     }
 
     public function order(): BelongsTo

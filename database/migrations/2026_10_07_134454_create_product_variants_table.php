@@ -19,6 +19,11 @@ return new class extends Migration
             $table->decimal('value', 12, 3);
             $table->unsignedBigInteger('price');
             $table->unsignedBigInteger('old_price')->nullable();
+            $table->unsignedInteger('weight')->nullable();
+            $table->unsignedInteger('length')->nullable();
+            $table->unsignedInteger('width')->nullable();
+            $table->unsignedInteger('height')->nullable();
+
             $table->boolean('is_active')->default(false);
             $table->boolean('is_preorder')->default(false);
             $table->integer('order')->default(0);
@@ -28,6 +33,7 @@ return new class extends Migration
         });
 
         DB::statement('ALTER TABLE product_variants ADD CONSTRAINT product_variants_price_check CHECK (price > 0 AND price % 100 = 0)');
+        DB::statement('ALTER TABLE product_variants ADD CONSTRAINT product_variants_transport_check CHECK ((weight IS NULL OR weight > 0) AND (length IS NULL OR length > 0) AND (width IS NULL OR width > 0) AND (height IS NULL OR height > 0))');
         DB::statement('ALTER TABLE product_variants ADD CONSTRAINT product_variants_old_price_check CHECK (old_price IS NULL OR (old_price > price AND old_price % 100 = 0))');
     }
 

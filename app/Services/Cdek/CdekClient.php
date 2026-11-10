@@ -49,6 +49,11 @@ final class CdekClient
         return $this->responseData($this->request('POST', $uri, ['json' => $data]));
     }
 
+    public function delete(string $uri): array
+    {
+        return $this->responseData($this->request('DELETE', $uri));
+    }
+
     public function download(string $uri): string
     {
         $response = $this->request('GET', $uri, accept: 'application/pdf');

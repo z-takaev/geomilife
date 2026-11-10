@@ -19,7 +19,7 @@ enum ReviewSourceEnum: string implements HasLabel
         };
     }
 
-    public function logoPath(): string
+    public function getLogoPath(): string
     {
         return match ($this) {
             self::YANDEX => 'assets/images/reviews/ya.webp',

@@ -6,14 +6,16 @@ namespace App\Http\Controllers;
 
 use App\Navigation\BreadcrumbItem;
 use App\Navigation\Breadcrumbs;
+use App\Services\Cart\CartService;
 use App\Support\Seo\Schemas\BreadcrumbSchema;
 use Illuminate\Contracts\View\View;
-use Illuminate\Http\Request;
 
 final class CheckoutController extends Controller
 {
-    public function __invoke(Request $request): View
+    public function __invoke(CartService $cart): View
     {
+        abort_if($cart->count() === 0, 404);
+
         $breadcrumbs = Breadcrumbs::make(
             BreadcrumbItem::make(__('Оформление заказа'), route('checkout')),
         );
@@ -23,13 +25,6 @@ final class CheckoutController extends Controller
             fallbackTitle: __('Оформление заказа'),
         )->schema(BreadcrumbSchema::make($breadcrumbs));
 
-        $customer = $request->user();
-        $customer?->loadMissing('city');
-        $deliveryAddress = $customer?->addresses()
-            ->with('city')
-            ->where('is_default', true)
-            ->first();
-
-        return view('checkout.index', compact('customer', 'deliveryAddress', 'breadcrumbs'));
+        return view('checkout.index', compact('breadcrumbs'));
     }
 }

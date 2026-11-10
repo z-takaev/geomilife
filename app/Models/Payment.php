@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\PaymentStatusEnum;
 use App\Support\Values\Money;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,6 +17,14 @@ final class Payment extends Model
     protected $fillable = [
         'order_id',
         'provider',
+        'bank_order_id',
+        'payment_url',
+        'provider_status',
+        'operation_state',
+        'error',
+        'refund_requested_at',
+        'refunded_at',
+        'last_checked_at',
         'transaction_id',
         'amount',
         'status',
@@ -25,6 +34,10 @@ final class Payment extends Model
     protected function casts(): array
     {
         return [
+            'status' => PaymentStatusEnum::class,
+            'refund_requested_at' => 'immutable_datetime',
+            'refunded_at' => 'immutable_datetime',
+            'last_checked_at' => 'immutable_datetime',
             'amount' => Money::class,
             'payload' => 'array',
         ];

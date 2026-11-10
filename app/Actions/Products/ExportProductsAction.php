@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Products;
 
-use App\Enums\ProductUnit;
+use App\Enums\ProductUnitEnum;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Database\Eloquent\Builder;
@@ -24,13 +24,14 @@ final class ExportProductsAction
     public const array HEADERS = [
         'Тип строки', 'ID товара', 'ID вариации', 'Название', 'Новинка', 'Хит', 'Товар активен',
         'Артикул', 'Количество (фасовка)', 'Единица', 'Цена, ₽', 'Старая цена, ₽',
-        'Вариация активна', 'Доступен по предзаказу',
+        'Вариация активна', 'Доступен по предзаказу', 'Вес, г', 'Длина, мм', 'Ширина, мм', 'Высота, мм',
     ];
 
     public const array FIELD_LABELS = [
         'name' => 'Название', 'is_new' => 'Новинка', 'is_hit' => 'Хит', 'is_active' => 'Активен',
         'sku' => 'Артикул', 'value' => 'Количество (фасовка)', 'unit' => 'Единица',
         'price' => 'Цена, ₽', 'old_price' => 'Старая цена, ₽', 'is_preorder' => 'Доступен по предзаказу',
+        'weight' => 'Вес, г', 'length' => 'Длина, мм', 'width' => 'Ширина, мм', 'height' => 'Высота, мм',
     ];
 
     public function handle(Builder $query): StreamedResponse
@@ -48,13 +49,13 @@ final class ExportProductsAction
                     }
                 }
                 $sheet->freezePane('D2');
-                $sheet->getStyle('A1:N'.max(1, $line - 1))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-                $sheet->getStyle('A1:N1')->applyFromArray([
+                $sheet->getStyle('A1:R'.max(1, $line - 1))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                $sheet->getStyle('A1:R1')->applyFromArray([
                     'font' => ['bold' => true],
                     'alignment' => ['wrapText' => true],
                 ]);
                 $sheet->getRowDimension(1)->setRowHeight(42);
-                foreach (range('A', 'N') as $column) {
+                foreach (range('A', 'R') as $column) {
                     $sheet->getColumnDimension($column)->setWidth($column === 'D' ? 45 : 20);
                 }
                 $sheet->getProtection()->setSheet(true);
@@ -96,24 +97,25 @@ final class ExportProductsAction
             : ['Вариация', (string) $record->product_id, (string) $record->id, null, null, null, null,
                 $record->sku, (float) $record->value, $record->unit->getLabel(),
                 intdiv($record->price->minorAmount(), 100), $record->old_price === null ? null : intdiv($record->old_price->minorAmount(), 100),
-                $yesNo($record->is_active), $yesNo($record->is_preorder)];
+                $yesNo($record->is_active), $yesNo($record->is_preorder),
+                $record->weight, $record->length, $record->width, $record->height];
         foreach ($values as $index => $value) {
             if ($value !== null) {
                 $sheet->getCell([$index + 1, $line])->setValueExplicit($value, is_string($value) ? DataType::TYPE_STRING : DataType::TYPE_NUMERIC);
             }
         }
-        $editable = $isProduct ? 'D'.$line.':G'.$line : 'H'.$line.':N'.$line;
+        $editable = $isProduct ? 'D'.$line.':G'.$line : 'H'.$line.':R'.$line;
         $sheet->getStyle($editable)->getProtection()->setLocked(Protection::PROTECTION_UNPROTECTED);
         $sheet->getStyle('H'.$line)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_TEXT);
         $sheet->getStyle('I'.$line)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER);
         $sheet->getStyle('K'.$line.':L'.$line)->getNumberFormat()->setFormatCode('0');
         if ($isProduct) {
-            $sheet->getStyle('A'.$line.':N'.$line)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('F8F5F2');
-            $sheet->getStyle('A'.$line.':N'.$line)->getFont()->setBold(true);
+            $sheet->getStyle('A'.$line.':R'.$line)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('F8F5F2');
+            $sheet->getStyle('A'.$line.':R'.$line)->getFont()->setBold(true);
         }
         foreach ($isProduct ? ['E', 'F', 'G'] : ['M', 'N', 'J'] as $column) {
             $options = $column === 'J'
-                ? implode(',', array_map(static fn (ProductUnit $unit): string => $unit->getLabel(), ProductUnit::cases()))
+                ? implode(',', array_map(static fn (ProductUnitEnum $unit): string => $unit->getLabel(), ProductUnitEnum::cases()))
                 : 'Да,Нет';
             $sheet->getCell($column.$line)->getDataValidation()
                 ->setType(DataValidation::TYPE_LIST)->setFormula1('"'.$options.'"')

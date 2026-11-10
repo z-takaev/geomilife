@@ -23,12 +23,14 @@ final class Address extends Model
         'floor',
         'intercom',
         'is_default',
+        'last_used_at',
     ];
 
     protected function casts(): array
     {
         return [
             'is_default' => 'boolean',
+            'last_used_at' => 'immutable_datetime',
         ];
     }
 

@@ -9,6 +9,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 final class CitiesTable
 {
@@ -64,7 +65,9 @@ final class CitiesTable
                     ->trueLabel('Доступна')
                     ->falseLabel('Недоступна'),
             ])
-            ->defaultSort('name')
+            ->defaultSort(static fn (Builder $query): Builder => $query
+                ->orderByRaw('CASE WHEN is_courier_available OR is_pickup_available THEN 0 ELSE 1 END')
+                ->orderBy('name')->orderBy('id'))
             ->emptyStateHeading('Города не найдены')
             ->recordActions([
                 EditAction::make(),

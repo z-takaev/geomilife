@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Jobs\Orders\SyncCdekShipmentJob;
+use App\Models\OrderShipment;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -26,6 +28,14 @@ final class CdekWebhookController extends Controller
             'attributes.is_reverse' => ['required', 'boolean'],
             'attributes.is_client_return' => ['required', 'boolean'],
         ]);
+
+        $shipment = OrderShipment::query()
+            ->where('uuid', $request->input('uuid'))
+            ->first();
+
+        if ($shipment !== null) {
+            SyncCdekShipmentJob::dispatch($shipment->order_id)->afterCommit();
+        }
 
         return response()->noContent(200);
     }

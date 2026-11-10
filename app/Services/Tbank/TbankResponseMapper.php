@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services\Tbank;
 
-use App\DTO\Tbank\Responses\TbankCheckOrderResponseDto;
-use App\DTO\Tbank\Responses\TbankInitPaymentResponseDto;
-use App\DTO\Tbank\Responses\TbankOrderPaymentResponseDto;
-use App\DTO\Tbank\Responses\TbankPaymentNotificationDto;
-use App\DTO\Tbank\Responses\TbankPaymentStateResponseDto;
+use App\DTO\Tbank\TbankCancelPaymentResponseDto;
+use App\DTO\Tbank\TbankCheckOrderResponseDto;
+use App\DTO\Tbank\TbankGetPaymentStateResponseDto;
+use App\DTO\Tbank\TbankInitPaymentResponseDto;
+use App\DTO\Tbank\TbankOrderPaymentDto;
+use App\DTO\Tbank\TbankPaymentNotificationDto;
 use App\Enums\Tbank\TbankPaymentStatusEnum;
 use App\Services\Tbank\Exceptions\TbankApiException;
 use App\Support\Values\Money;
@@ -32,9 +33,31 @@ final class TbankResponseMapper
         );
     }
 
-    public function paymentState(array $data): TbankPaymentStateResponseDto
+    public function cancelPayment(array $data): TbankCancelPaymentResponseDto
     {
-        return new TbankPaymentStateResponseDto(
+        $amounts = [];
+
+        foreach (['OriginalAmount', 'NewAmount'] as $key) {
+            $value = $data[$key] ?? null;
+
+            if ($value !== null && (! is_int($value) || $value < 0)) {
+                throw TbankApiException::invalidResponse();
+            }
+
+            $amounts[] = $value === null ? null : Money::fromMinor($value);
+        }
+
+        return new TbankCancelPaymentResponseDto(
+            paymentId: $this->identifier($data, 'PaymentId'),
+            status: $this->status($data),
+            originalAmount: $amounts[0],
+            newAmount: $amounts[1],
+        );
+    }
+
+    public function paymentState(array $data): TbankGetPaymentStateResponseDto
+    {
+        return new TbankGetPaymentStateResponseDto(
             paymentId: $this->identifier($data, 'PaymentId'),
             orderId: $this->string($data, 'OrderId'),
             amount: $this->amount($data),
@@ -57,14 +80,14 @@ final class TbankResponseMapper
                 throw TbankApiException::invalidResponse();
             }
 
-            $result[] = new TbankOrderPaymentResponseDto(
+            $result[] = new TbankOrderPaymentDto(
                 paymentId: $this->identifier($payment, 'PaymentId'),
                 amount: $this->amount($payment),
                 status: $this->status($payment),
             );
         }
 
-        return new TbankCheckOrderResponseDto($this->string($data, 'OrderId'), $result);
+        return new TbankCheckOrderResponseDto(orderId: $this->string($data, 'OrderId'), payments: $result);
     }
 
     public function paymentNotification(array $data): TbankPaymentNotificationDto

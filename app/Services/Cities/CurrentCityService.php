@@ -14,6 +14,9 @@ final class CurrentCityService
 {
     private array $cities = [];
 
+    /**
+     * Возвращает выбранный активный город из профиля, сессии или cookie.
+     */
     public function current(): ?City
     {
         $cityId = auth()->user()?->city_id ?? session('city.id') ?? request()->cookie('city_id');
@@ -31,6 +34,9 @@ final class CurrentCityService
         return $this->cities[$cityId];
     }
 
+    /**
+     * Сохраняет выбранный активный город в профиле, сессии и cookie.
+     */
     public function select(int $cityId): City
     {
         $city = City::query()->where('is_active', true)->findOrFail($cityId);
@@ -46,6 +52,9 @@ final class CurrentCityService
         return $city;
     }
 
+    /**
+     * Возвращает выбранный город или определяет и запоминает город по IP-адресу.
+     */
     public function detect(): ?City
     {
         $currentCity = $this->current();
@@ -55,11 +64,6 @@ final class CurrentCityService
         }
 
         $city = $this->detectByIp(request()->ip());
-        $currentCity = $this->current();
-
-        if ($currentCity !== null || auth()->user()?->city_id !== null) {
-            return $currentCity;
-        }
 
         if ($city !== null) {
             $this->remember($city);

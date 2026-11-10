@@ -77,7 +77,7 @@ final class PromoFactory extends Factory
     {
         /** @var array{title: string, excerpt: string, content: string, starts_in_days: int, duration_days: int} $promo */
         $promo = fake()->unique()->randomElement(self::PROMOS);
-        $startAt = now()->addDays($promo['starts_in_days']);
+        $startAt = today()->addDays(min(0, $promo['starts_in_days']));
 
         return [
             'title' => $promo['title'],

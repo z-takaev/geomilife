@@ -15,7 +15,7 @@
                         <select wire:model.live="sort" name="sort" aria-label="{{ __('Сортировка товаров') }}">
                             <option value="">{{ __('По умолчанию') }}</option>
                             @foreach ($sortOptions as $sortOption)
-                                <option value="{{ $sortOption->value }}">{{ __($sortOption->label()) }}</option>
+                                <option value="{{ $sortOption->value }}">{{ __($sortOption->getLabel()) }}</option>
                             @endforeach
                         </select>
                     </span>

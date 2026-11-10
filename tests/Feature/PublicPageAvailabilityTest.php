@@ -8,18 +8,18 @@ use App\Models\Page;
 use App\Models\Promo;
 use Database\Seeders\PageSeeder;
 
-it('открывает публичную страницу', function (string $routeName): void {
-    $this->get(route($routeName))->assertOk();
+it('проверяет доступность публичной страницы', function (string $routeName, int $status): void {
+    $this->get(route($routeName))->assertStatus($status);
 })->with([
-    'главная' => 'home',
-    'контакты' => 'contacts',
-    'вопросы и ответы' => 'faqs',
-    'отзывы' => 'reviews',
-    'оформление заказа' => 'checkout',
-    'список новостей' => 'news.index',
-    'список статей' => 'articles.index',
-    'список акций' => 'promos.index',
-    'карта сайта' => 'sitemap',
+    'главная' => ['home', 200],
+    'контакты' => ['contacts', 200],
+    'вопросы и ответы' => ['faqs', 200],
+    'отзывы' => ['reviews', 200],
+    'оформление заказа' => ['checkout', 404],
+    'список новостей' => ['news.index', 200],
+    'список статей' => ['articles.index', 200],
+    'список акций' => ['promos.index', 200],
+    'карта сайта' => ['sitemap', 200],
 ]);
 
 it('открывает публичную детальную страницу', function (string $modelClass, string $routeName): void {

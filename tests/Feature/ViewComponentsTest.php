@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\ProductUnit;
+use App\Enums\ProductUnitEnum;
 use App\Models\Category;
 use App\Models\City;
 use App\Models\Product;
@@ -29,7 +29,7 @@ it('открывает быстрый просмотр товара с выбр�
     ]);
     $variant = $product->variants()->create([
         'sku' => 'FLAXSEED-OIL-250',
-        'unit' => ProductUnit::MILLILITER,
+        'unit' => ProductUnitEnum::MILLILITER,
         'value' => 250,
         'price' => Money::fromRubles(890),
         'is_active' => true,

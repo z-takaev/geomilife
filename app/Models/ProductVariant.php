@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\ProductUnit;
+use App\Enums\ProductUnitEnum;
 use App\Repositories\Categories\CategoryRepository;
 use App\Support\Values\Money;
 use Illuminate\Database\Eloquent\Builder;
@@ -24,6 +24,10 @@ final class ProductVariant extends Model
         'value',
         'price',
         'old_price',
+        'weight',
+        'length',
+        'width',
+        'height',
         'is_active',
         'is_preorder',
         'order',
@@ -35,7 +39,11 @@ final class ProductVariant extends Model
             'value' => 'decimal:3',
             'price' => Money::class,
             'old_price' => Money::class,
-            'unit' => ProductUnit::class,
+            'weight' => 'integer',
+            'length' => 'integer',
+            'width' => 'integer',
+            'height' => 'integer',
+            'unit' => ProductUnitEnum::class,
             'is_active' => 'boolean',
             'is_preorder' => 'boolean',
             'order' => 'integer',

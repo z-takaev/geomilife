@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\ProductUnit;
+use App\Enums\ProductUnitEnum;
 use App\Livewire\SearchSuggestions;
 use App\Models\Category;
 use App\Models\Product;
@@ -23,7 +23,7 @@ function createSearchProduct(Category $category, string $name, string $slug, boo
     ProductVariant::query()->create([
         'product_id' => $product->getKey(),
         'sku' => 'SEARCH-'.$product->getKey(),
-        'unit' => ProductUnit::PIECE,
+        'unit' => ProductUnitEnum::PIECE,
         'value' => 1,
         'price' => Money::fromRubles(500),
         'is_active' => true,

@@ -19,8 +19,11 @@ return new class extends Migration
             $table->string('variant_name');
             $table->string('sku');
             $table->unsignedBigInteger('price');
+            $table->unsignedBigInteger('old_price')->nullable();
             $table->integer('quantity');
             $table->unsignedBigInteger('total');
+
+            $table->index('order_id');
         });
     }
 

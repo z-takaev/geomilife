@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Actions\Products\ExportProductsAction;
 use App\Actions\Products\ImportProductsAction;
 use App\Enums\FilamentUserRoleEnum;
-use App\Enums\ProductUnit;
+use App\Enums\ProductUnitEnum;
 use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Models\Category;
 use App\Models\FilamentUser;
@@ -27,9 +27,10 @@ function pricingVariant(?int $oldPrice = null): ProductVariant
     $product = Product::query()->create(['category_id' => $category->id, 'name' => 'Масло', 'is_active' => false]);
 
     return $product->variants()->create([
-        'sku' => 'PRICING', 'unit' => ProductUnit::GRAM, 'value' => 500,
+        'sku' => 'PRICING', 'unit' => ProductUnitEnum::GRAM, 'value' => 500,
         'price' => Money::fromRubles(750),
         'old_price' => $oldPrice === null ? null : Money::fromRubles($oldPrice),
+        'weight' => 550, 'length' => 70, 'width' => 70, 'height' => 120,
         'is_active' => true,
     ]);
 }
@@ -46,6 +47,7 @@ function pricingSpreadsheet(ProductVariant $variant, array $prices): string
     $sheet->fromArray([
         'Вариация', $variant->product_id, $variant->id, null, null, null, null,
         $variant->sku, 500, $variant->unit->getLabel(), $prices['price'], $prices['old_price'], 'Да', 'Нет',
+        $variant->weight, $variant->length, $variant->width, $variant->height,
     ], null, 'A2', true);
     (new Xlsx($spreadsheet))->save($path);
     $spreadsheet->disconnectWorksheets();
@@ -82,7 +84,7 @@ it('убирает скидку при очистке старой цены', fu
 it('отклоняет некорректные цены при создании вариации', function (string $price, ?string $oldPrice): void {
     $variant = pricingVariant();
     expect(fn () => DB::transaction(fn () => $variant->product->variants()->create([
-        'sku' => 'INVALID', 'unit' => ProductUnit::GRAM, 'value' => 100,
+        'sku' => 'INVALID', 'unit' => ProductUnitEnum::GRAM, 'value' => 100,
         'price' => Money::fromRubles($price),
         'old_price' => $oldPrice === null ? null : Money::fromRubles($oldPrice),
     ])))->toThrow(QueryException::class);
@@ -174,8 +176,9 @@ it('показывает ошибки цен в форме вариации', fu
     Livewire\Livewire::test(EditProduct::class, ['record' => $variant->product->getRouteKey()])
         ->fillForm([
             'variants' => ['record-'.$variant->id => [
-                'sku' => $variant->sku, 'value' => 500, 'unit' => ProductUnit::GRAM->value,
+                'sku' => $variant->sku, 'value' => 500, 'unit' => ProductUnitEnum::GRAM->value,
                 'price' => $price, 'old_price' => $oldPrice, 'is_active' => true, 'is_preorder' => false,
+                'weight' => $variant->weight, 'length' => $variant->length, 'width' => $variant->width, 'height' => $variant->height,
             ]],
         ])
         ->call('save')
@@ -209,8 +212,9 @@ it('сохраняет и очищает старую цену через фор
     Livewire\Livewire::test(EditProduct::class, ['record' => $variant->product->getRouteKey()])
         ->fillForm([
             'variants' => ['record-'.$variant->id => [
-                'sku' => $variant->sku, 'value' => 500, 'unit' => ProductUnit::GRAM->value,
+                'sku' => $variant->sku, 'value' => 500, 'unit' => ProductUnitEnum::GRAM->value,
                 'price' => 800, 'old_price' => $oldPrice, 'is_active' => true, 'is_preorder' => false,
+                'weight' => $variant->weight, 'length' => $variant->length, 'width' => $variant->width, 'height' => $variant->height,
             ]],
         ])
         ->call('save')->assertHasNoFormErrors();

@@ -6,6 +6,7 @@ use App\Http\Middleware\EnsureUserIsNotBlocked;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -15,6 +16,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        app()->afterResolving(TrustProxies::class, static function () use ($middleware): void {
+            if (app()->environment('local')) {
+                $middleware->trustProxies(at: '*');
+            }
+        });
+
         $middleware->preventRequestForgery(except: ['telegram/webhook', 'webhooks/cdek', 'webhooks/tbank']);
 
         $middleware->web(append: [

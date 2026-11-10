@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\DTO\Cdek\CdekDeliveryPointResponseDto;
 use App\Models\Category;
 use App\Models\Faq;
 use App\Models\HomeSlide;
@@ -188,6 +189,7 @@ return [
     */
 
     'serializable_classes' => [
+        CdekDeliveryPointResponseDto::class,
         Collection::class,
         AdjacencyListCollection::class,
         Category::class,

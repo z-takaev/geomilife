@@ -8,7 +8,7 @@ use App\Repositories\Products\CatalogRepository;
 use App\Services\Cart\CartService;
 use App\Services\Cities\CurrentCityService;
 use App\Services\Favorites\FavoriteService;
-use App\Services\Telegram\TelegramService;
+use App\Services\Telegram\TelegramConnectionService;
 use App\Support\Seo\SeoManager;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -25,7 +25,7 @@ final class AppServiceProvider extends ServiceProvider
     {
         $this->app->scoped(Nutgram::class, static function (): Nutgram {
             $bot = new Nutgram((string) config('telegram.bot_token'));
-            $bot->onMessage([app(TelegramService::class), 'handleMessage']);
+            $bot->onMessage([app(TelegramConnectionService::class), 'handleMessage']);
 
             return $bot;
         });

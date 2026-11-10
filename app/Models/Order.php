@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\DeliveryMethodEnum;
+use App\Enums\OrderStatusEnum;
+use App\Enums\PaymentMethodEnum;
+use App\Enums\PaymentStatusEnum;
 use App\Support\Values\Money;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Str;
 
 final class Order extends Model
 {
@@ -16,6 +22,21 @@ final class Order extends Model
 
     protected $fillable = [
         'user_id',
+        'city_id',
+        'payment_method',
+        'subtotal',
+        'delivery_details',
+        'packages',
+        'is_preorder',
+        'payment_expires_at',
+        'guest_token',
+        'idempotency_key',
+        'checkout_session_hash',
+        'cancellation_state',
+        'cancellation_reason',
+        'cancellation_actor_type',
+        'cancellation_actor_id',
+        'cancelled_at',
         'number',
         'status',
         'payment_status',
@@ -32,10 +53,32 @@ final class Order extends Model
     protected function casts(): array
     {
         return [
+            'status' => OrderStatusEnum::class,
+            'payment_status' => PaymentStatusEnum::class,
+            'payment_method' => PaymentMethodEnum::class,
+            'delivery_method' => DeliveryMethodEnum::class,
+            'subtotal' => Money::class,
+            'delivery_details' => 'array',
+            'packages' => 'array',
+            'is_preorder' => 'boolean',
+            'payment_expires_at' => 'immutable_datetime',
+            'cancelled_at' => 'immutable_datetime',
             'delivery_price' => Money::class,
             'total' => Money::class,
             'delivery_address' => 'array',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        self::creating(static function (self $order): void {
+            $order->guest_token ??= (string) Str::uuid();
+            $order->idempotency_key ??= (string) Str::uuid();
+
+            if ($order->payment_method === PaymentMethodEnum::ONLINE && $order->payment_expires_at === null) {
+                $order->payment_expires_at = now()->addMinutes((int) config('orders.payment_timeout_minutes'));
+            }
+        });
     }
 
     public function user(): BelongsTo
@@ -51,5 +94,20 @@ final class Order extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function shipment(): HasOne
+    {
+        return $this->hasOne(OrderShipment::class);
+    }
+
+    public function documents(): HasMany
+    {
+        return $this->hasMany(OrderDocument::class);
+    }
+
+    public function history(): HasMany
+    {
+        return $this->hasMany(OrderHistory::class);
     }
 }

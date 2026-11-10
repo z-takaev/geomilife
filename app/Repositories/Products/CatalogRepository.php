@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Repositories\Products;
 
 use App\DTO\Products\CatalogFiltersDto;
-use App\Enums\CatalogProductSort;
-use App\Enums\ProductUnit;
+use App\Enums\CatalogSortEnum;
+use App\Enums\ProductUnitEnum;
 use App\Models\Category;
 use App\Models\ProductVariant;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,7 +22,7 @@ final class CatalogRepository
     public function getProducts(
         ?Category $category,
         CatalogFiltersDto $filters,
-        ?CatalogProductSort $sort,
+        ?CatalogSortEnum $sort,
         int $page,
         int $additionalPages = 0,
     ): LengthAwarePaginator {
@@ -35,8 +35,8 @@ final class CatalogRepository
         $variants->selectRaw('id as catalog_variant_id, '.self::PRICE_IN_RUBLES.' as catalog_price');
 
         match ($sort) {
-            CatalogProductSort::PRICE_ASC => $variants->orderBy('catalog_price'),
-            CatalogProductSort::PRICE_DESC => $variants->orderByDesc('catalog_price'),
+            CatalogSortEnum::PRICE_ASC => $variants->orderBy('catalog_price'),
+            CatalogSortEnum::PRICE_DESC => $variants->orderByDesc('catalog_price'),
             default => null,
         };
 
@@ -59,7 +59,7 @@ final class CatalogRepository
     {
         return once(function () use ($category): array {
             $categoryIds = $this->categoryIds($category);
-            $unitOrder = array_flip(array_column(ProductUnit::cases(), 'value'));
+            $unitOrder = array_flip(array_column(ProductUnitEnum::cases(), 'value'));
 
             return ProductVariant::query()
                 ->select(['unit', 'value'])
@@ -110,14 +110,14 @@ final class CatalogRepository
         return $query;
     }
 
-    private function sortProducts(Builder $query, ?CatalogProductSort $sort): void
+    private function sortProducts(Builder $query, ?CatalogSortEnum $sort): void
     {
         match ($sort) {
-            CatalogProductSort::POPULAR => $query->orderByDesc('is_hit')->orderByDesc('products.id'),
-            CatalogProductSort::NEW => $query->orderByDesc('is_new')->orderByDesc('products.id'),
-            CatalogProductSort::PRICE_ASC => $query->orderBy('catalog_price')->orderBy('products.id'),
-            CatalogProductSort::PRICE_DESC => $query->orderByDesc('catalog_price')->orderByDesc('products.id'),
-            CatalogProductSort::NAME => $query->orderBy('name')->orderBy('products.id'),
+            CatalogSortEnum::POPULAR => $query->orderByDesc('is_hit')->orderByDesc('products.id'),
+            CatalogSortEnum::NEW => $query->orderByDesc('is_new')->orderByDesc('products.id'),
+            CatalogSortEnum::PRICE_ASC => $query->orderBy('catalog_price')->orderBy('products.id'),
+            CatalogSortEnum::PRICE_DESC => $query->orderByDesc('catalog_price')->orderByDesc('products.id'),
+            CatalogSortEnum::NAME => $query->orderBy('name')->orderBy('products.id'),
             default => $query->orderBy('products.id'),
         };
     }

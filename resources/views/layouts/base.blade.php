@@ -16,6 +16,9 @@
 
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <link rel="apple-touch-icon-precomposed" href="{{ asset('favicon.ico') }}">
+    @if (settings()?->snow_enabled)
+        <link rel="stylesheet" href="{{ asset('assets/css/snow.min.css') }}">
+    @endif
 </head>
 
 <body>
@@ -43,6 +46,13 @@
     @endguest
     @include('layouts.partials.cookie-consent')
     @include('layouts.partials.notifications')
+
+    @if (settings()?->snow_enabled)
+        <script src="{{ asset('assets/js/snow.min.js') }}"></script>
+        <script>
+            new Snow();
+        </script>
+    @endif
 
     <script src="{{ asset('assets/js/bootstrap.min.js') }}"></script>
     <script src="{{ asset('assets/js/jquery.min.js') }}"></script>

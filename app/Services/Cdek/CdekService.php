@@ -4,22 +4,23 @@ declare(strict_types=1);
 
 namespace App\Services\Cdek;
 
-use App\DTO\Cdek\Requests\CalculateDeliveryDto;
-use App\DTO\Cdek\Requests\CreateOrderDto;
-use App\DTO\Cdek\Requests\DeliveryPointsFilterDto;
-use App\DTO\Cdek\Responses\CdekCalculationResponseDto;
-use App\DTO\Cdek\Responses\CdekCityResponseDto;
-use App\DTO\Cdek\Responses\CdekDeliveryPointResponseDto;
-use App\DTO\Cdek\Responses\CdekOperationResponseDto;
-use App\DTO\Cdek\Responses\CdekOrderResponseDto;
-use App\DTO\Cdek\Responses\CdekPrintResponseDto;
-use App\DTO\Cdek\Responses\CdekTariffListResponseDto;
-use App\DTO\Cdek\Responses\CdekWebhookResponseDto;
-use App\Enums\Cdek\CdekBarcodeFormatEnum;
+use App\DTO\Cdek\CdekCalculateTariffRequestDto;
+use App\DTO\Cdek\CdekCalculateTariffResponseDto;
+use App\DTO\Cdek\CdekCityResponseDto;
+use App\DTO\Cdek\CdekCreateOrderRequestDto;
+use App\DTO\Cdek\CdekDeliveryPointResponseDto;
+use App\DTO\Cdek\CdekGetDeliveryPointsRequestDto;
+use App\DTO\Cdek\CdekOperationResponseDto;
+use App\DTO\Cdek\CdekOrderResponseDto;
+use App\DTO\Cdek\CdekPrintResponseDto;
+use App\DTO\Cdek\CdekWebhookResponseDto;
 use InvalidArgumentException;
 
 final class CdekService
 {
+    /**
+     * Подключает API-клиент СДЭК и преобразователь ответов.
+     */
     public function __construct(
         private readonly CdekClient $client,
         private readonly CdekResponseMapper $mapper,
@@ -55,30 +56,15 @@ final class CdekService
      *
      * @return list<CdekDeliveryPointResponseDto>
      */
-    public function getDeliveryPoints(DeliveryPointsFilterDto $filters): array
+    public function getDeliveryPoints(CdekGetDeliveryPointsRequestDto $filters): array
     {
         return $this->mapper->deliveryPoints($this->client->get('/v2/deliverypoints', $filters->toArray()));
     }
 
     /**
-     * Рассчитать доступные тарифы без дополнительных услуг и сохранить предупреждения СДЭК.
-     */
-    public function calculateTariffList(CalculateDeliveryDto $delivery): CdekTariffListResponseDto
-    {
-        if ($delivery->services !== null && $delivery->services !== []) {
-            throw new InvalidArgumentException('Для расчёта дополнительных услуг используйте calculateTariff().');
-        }
-
-        $data = $delivery->toArray();
-        unset($data['services']);
-
-        return $this->mapper->tariffs($this->client->post('/v2/calculator/tarifflist', $data));
-    }
-
-    /**
      * Рассчитать выбранный тариф, включая дополнительные услуги и итоговую стоимость.
      */
-    public function calculateTariff(CalculateDeliveryDto $delivery, int $tariffCode): CdekCalculationResponseDto
+    public function calculateTariff(CdekCalculateTariffRequestDto $delivery, int $tariffCode): CdekCalculateTariffResponseDto
     {
         if ($tariffCode < 1) {
             throw new InvalidArgumentException('Код тарифа должен быть больше нуля.');
@@ -93,7 +79,7 @@ final class CdekService
     /**
      * Отправить заявку на создание отправления; ACCEPTED ещё не означает успешное создание.
      */
-    public function createOrder(CreateOrderDto $order): CdekOperationResponseDto
+    public function createOrder(CdekCreateOrderRequestDto $order): CdekOperationResponseDto
     {
         return $this->mapper->operation($this->client->post('/v2/orders', $order->toArray()));
     }
@@ -104,6 +90,22 @@ final class CdekService
     public function getOrder(string $uuid): CdekOrderResponseDto
     {
         return $this->mapper->order($this->client->get('/v2/orders/'.$this->uuid($uuid)));
+    }
+
+    /**
+     * Получает отправление СДЭК по номеру заказа интернет-магазина.
+     */
+    public function findOrder(string $number): CdekOrderResponseDto
+    {
+        return $this->mapper->order($this->client->get('/v2/orders', ['im_number' => $number]));
+    }
+
+    /**
+     * Отправляет запрос на отмену отправления СДЭК по UUID.
+     */
+    public function cancelOrder(string $uuid): CdekOperationResponseDto
+    {
+        return $this->mapper->operation($this->client->delete('/v2/orders/'.$this->uuid($uuid)));
     }
 
     /**
@@ -131,15 +133,13 @@ final class CdekService
     }
 
     /**
-     * Запустить формирование наклеек одного отправления в выбранном формате.
+     * Запустить формирование наклеек одного отправления в формате A4.
      */
-    public function createBarcodes(string $orderUuid, ?CdekBarcodeFormatEnum $format = null, ?int $copyCount = null): CdekOperationResponseDto
+    public function createBarcodes(string $orderUuid, ?int $copyCount = null): CdekOperationResponseDto
     {
         $data = $this->printRequest($orderUuid, $copyCount);
 
-        if ($format !== null) {
-            $data['format'] = $format->value;
-        }
+        $data['format'] = 'A4';
 
         return $this->mapper->operation($this->client->post('/v2/print/barcodes', $data));
     }

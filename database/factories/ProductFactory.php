@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Enums\ProductUnit;
+use App\Enums\ProductUnitEnum;
 use App\Models\Category;
 use App\Models\Product;
 use App\Support\Media\FixtureImages;
@@ -45,7 +45,7 @@ final class ProductFactory extends Factory
             $variantsCount = fake()->numberBetween(1, 4);
 
             for ($order = 1; $order <= $variantsCount; $order++) {
-                $unit = fake()->randomElement(ProductUnit::cases());
+                $unit = fake()->randomElement(ProductUnitEnum::cases());
 
                 $price = fake()->numberBetween(100, 5_000);
 
@@ -53,9 +53,13 @@ final class ProductFactory extends Factory
                     'sku' => Str::upper(fake()->unique()->bothify('PRD-#####-???')),
                     'unit' => $unit,
                     'value' => match ($unit) {
-                        ProductUnit::PIECE => fake()->numberBetween(1, 12),
-                        ProductUnit::GRAM, ProductUnit::MILLILITER => fake()->numberBetween(1, 20) * 50,
+                        ProductUnitEnum::PIECE => fake()->numberBetween(1, 12),
+                        ProductUnitEnum::GRAM, ProductUnitEnum::MILLILITER => fake()->numberBetween(1, 20) * 50,
                     },
+                    'weight' => fake()->numberBetween(200, 1000),
+                    'length' => 60,
+                    'width' => 60,
+                    'height' => 150,
                     'price' => Money::fromRubles($price),
                     'old_price' => fake()->boolean(30) ? Money::fromRubles($price + fake()->numberBetween(1, 2_000)) : null,
                     'is_active' => fake()->boolean(85),

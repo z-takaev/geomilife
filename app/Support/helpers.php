@@ -17,7 +17,7 @@ if (! function_exists('current_city')) {
 if (! function_exists('settings')) {
     function settings(): ?Setting
     {
-        return once(static fn (): ?Setting => Setting::cached());
+        return Setting::cached();
     }
 }
 

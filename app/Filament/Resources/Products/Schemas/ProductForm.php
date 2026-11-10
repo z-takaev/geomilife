@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Products\Schemas;
 
-use App\Enums\ProductUnit;
+use App\Enums\ProductUnitEnum;
 use App\Filament\Forms\Components\MediaImageUpload;
 use App\Filament\Forms\Components\SlugField;
 use App\Filament\Resources\Seo\Schemas\SeoForm;
@@ -120,7 +120,7 @@ final class ProductForm
                                                     ->live(onBlur: true),
                                                 Select::make('unit')
                                                     ->label('Единица')
-                                                    ->options(ProductUnit::class)
+                                                    ->options(ProductUnitEnum::class)
                                                     ->required()
                                                     ->live(),
                                                 TextInput::make('price')
@@ -137,6 +137,7 @@ final class ProductForm
                                                     ->integer()
                                                     ->gt('price')
                                                     ->suffix('₽'),
+                                                ...self::transportFields(),
                                                 Flex::make([
                                                     Toggle::make('is_active')
                                                         ->label('Активен')
@@ -200,6 +201,17 @@ final class ProductForm
             ]);
     }
 
+    private static function transportFields(): array
+    {
+        $fields = [];
+        foreach (['weight' => ['Вес с потребительской упаковкой', 'г'], 'length' => ['Длина', 'мм'],
+            'width' => ['Ширина', 'мм'], 'height' => ['Высота', 'мм']] as $name => [$label, $unit]) {
+            $fields[] = TextInput::make($name)->label($label)->integer()->minValue(1)->required()->suffix($unit);
+        }
+
+        return $fields;
+    }
+
     private static function categoryOptions(): array
     {
         $options = [];
@@ -238,9 +250,9 @@ final class ProductForm
             ? rtrim(rtrim(number_format((float) $state['value'], 3, '.', ''), '0'), '.')
             : null;
         $unitState = $state['unit'] ?? null;
-        $unit = $unitState instanceof ProductUnit
+        $unit = $unitState instanceof ProductUnitEnum
             ? $unitState->getLabel()
-            : ProductUnit::tryFrom(is_string($unitState) ? $unitState : '')?->getLabel();
+            : ProductUnitEnum::tryFrom(is_string($unitState) ? $unitState : '')?->getLabel();
         $priceState = $state['price'] ?? null;
         $money = match (true) {
             $priceState instanceof Money => $priceState,

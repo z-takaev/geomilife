@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Orders\Pages;
 
+use App\Actions\Orders\ExportOrdersAction;
 use App\Filament\Resources\Orders\OrderResource;
-use Filament\Actions\CreateAction;
+use Filament\Actions\Action;
 use Filament\Resources\Pages\ListRecords;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class ListOrders extends ListRecords
 {
@@ -14,8 +16,7 @@ final class ListOrders extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [
-            CreateAction::make(),
-        ];
+        return [Action::make('exportExcel')->label('Экспорт в Excel')->authorize(fn (): bool => OrderResource::canViewAny())
+            ->action(fn (): StreamedResponse => app(ExportOrdersAction::class)->handle($this->getFilteredSortedTableQuery()))];
     }
 }

@@ -164,6 +164,31 @@ window.notifications = function () {
     };
 };
 
+window.checkoutSuggestions = function () {
+    return {
+        open: false,
+        show() {
+            this.open = this.$refs.searchInput.value.trim() !== '';
+        },
+        close() {
+            this.$refs.searchInput.focus();
+            this.open = false;
+        },
+        move(event, direction) {
+            this.show();
+            this.$nextTick(() => {
+                const options = [...this.$refs.searchResults.querySelectorAll('button:not([disabled])')];
+                const index = options.indexOf(event.target.closest('button'));
+                if (index === 0 && direction < 0) {
+                    this.$refs.searchInput.focus();
+                    return;
+                }
+                options[Math.max(0, Math.min(options.length - 1, index + direction))]?.focus();
+            });
+        },
+    };
+};
+
 window.citySearch = function () {
     return {
         suggestionsOpen: false,

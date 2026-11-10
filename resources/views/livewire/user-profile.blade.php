@@ -39,9 +39,9 @@
                 <div><span class="profile-eyebrow">{{ __('Доставка') }}</span>
                     <h2>{{ __('Адреса') }}</h2>
                 </div>
-                <button type="button" class="profile-button" wire:click="addAddress" data-bs-toggle="modal"
-                    data-bs-target="#profileAddressModal">{{ __('Добавить адрес') }}</button>
             </div>
+            <p class="profile-muted">
+                {{ __('Адреса сохраняются при оформлении заказа. Можно сохранить до 10 адресов.') }}</p>
             @forelse ($addresses as $address)
                 <article wire:key="address-{{ $address->id }}"
                     class="profile-address {{ $address->is_default ? 'profile-address--active' : '' }}">
@@ -58,8 +58,6 @@
                             <button type="button"
                                 wire:click="setDefaultAddress({{ $address->id }})">{{ __('Выбрать') }}</button>
                         @endunless
-                        <button type="button" wire:click="editAddress({{ $address->id }})" data-bs-toggle="modal"
-                            data-bs-target="#profileAddressModal">{{ __('Изменить') }}</button>
                         <button type="button" wire:click="deleteAddress({{ $address->id }})"
                             wire:confirm="{{ __('Удалить этот адрес?') }}">{{ __('Удалить') }}</button>
                     </div>
@@ -67,56 +65,36 @@
             @empty <p class="profile-muted">{{ __('Сохранённых адресов пока нет.') }}</p>
             @endforelse
 
-            <div class="modal modalCentered fade profile-address-modal" id="profileAddressModal" wire:ignore.self
-                tabindex="-1" aria-labelledby="profileAddressModalTitle" aria-hidden="true" x-data
-                x-on:address-saved.window="bootstrap.Modal.getOrCreateInstance($el).hide()">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h2 class="modal-title" id="profileAddressModalTitle">
-                                {{ $address_id ? __('Изменить адрес') : __('Новый адрес') }}</h2><button type="button"
-                                class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Закрыть') }}"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form wire:submit="saveAddress" class="profile-form profile-form--address">
-                                <label class="profile-form__wide">{{ __('Город') }}<select wire:model="city_id">
-                                        <option value="">{{ __('Выберите город') }}</option>
-                                        @foreach ($cities as $city)
-                                            <option value="{{ $city->id }}">
-                                                {{ $city->name }}{{ $city->region ? ', ' . $city->region : '' }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('city_id')
-                                        <small>{{ $message }}</small>
-                                    @enderror
-                                </label>
-                                <label>{{ __('Улица') }}<input type="text" wire:model="street">
-                                    @error('street')
-                                        <small>{{ $message }}</small>
-                                    @enderror
-                                </label>
-                                <label>{{ __('Дом') }}<input type="text" wire:model="house">
-                                    @error('house')
-                                        <small>{{ $message }}</small>
-                                    @enderror
-                                </label>
-                                <label>{{ __('Корпус') }}<input type="text"
-                                        wire:model="building"></label><label>{{ __('Квартира') }}<input type="text"
-                                        wire:model="apartment"></label>
-                                <label>{{ __('Подъезд') }}<input type="text"
-                                        wire:model="entrance"></label><label>{{ __('Этаж') }}<input type="text"
-                                        wire:model="floor"></label><label>{{ __('Домофон') }}<input type="text"
-                                        wire:model="intercom"></label>
-                                <label class="profile-check profile-form__wide"><input type="checkbox"
-                                        wire:model="is_default">{{ __('Сделать активным адресом и городом') }}</label>
-                                <div class="profile-form__wide profile-form__actions"><button class="profile-button"
-                                        type="submit">{{ __('Сохранить адрес') }}</button></div>
-                            </form>
-                        </div>
-                    </div>
+        </section>
+        <section class="profile-card profile-addresses">
+            <div class="profile-card__heading">
+                <div><span class="profile-eyebrow">{{ __('СДЭК') }}</span>
+                    <h2>{{ __('Пункты получения') }}</h2>
                 </div>
             </div>
+            <p class="profile-muted">
+                {{ __('Пункты сохраняются при оформлении заказа. Можно сохранить до 10 пунктов.') }}</p>
+            @forelse ($deliveryPoints as $point)
+                <article wire:key="point-{{ $point->id }}"
+                    class="profile-address {{ $point->is_default ? 'profile-address--active' : '' }}">
+                    <div><strong>{{ $point->city?->name }}, {{ $point->address }}</strong>
+                        <p>{{ $point->code }} · {{ $point->work_time }}</p>
+                        @if ($point->is_default)
+                            <span class="profile-badge">{{ __('Активный пункт') }}</span>
+                        @endif
+                    </div>
+                    <div class="profile-address__actions">
+                        @unless ($point->is_default)
+                            <button type="button"
+                                wire:click="setDefaultDeliveryPoint({{ $point->id }})">{{ __('Выбрать') }}</button>
+                        @endunless
+                        <button type="button" wire:click="deleteDeliveryPoint({{ $point->id }})"
+                            wire:confirm="{{ __('Удалить этот пункт?') }}">{{ __('Удалить') }}</button>
+                    </div>
+                </article>
+            @empty
+                <p class="profile-muted">{{ __('Сохранённых пунктов пока нет.') }}</p>
+            @endforelse
         </section>
         <section class="profile-card profile-telegram">
             <div class="profile-telegram__content">
@@ -136,8 +114,8 @@
             @elseif ($telegramBotConfigured)
                 <div class="profile-telegram__controls">
                     <span class="profile-telegram__status">{{ __('Не подключен') }}</span>
-                    <button type="button" class="profile-button" x-data="telegramConnect()"
-                        x-bind:disabled="connecting" x-on:click="connect()">{{ __('Подключить') }}</button>
+                    <button type="button" class="profile-button" x-data="telegramConnect()" x-bind:disabled="connecting"
+                        x-on:click="connect()">{{ __('Подключить') }}</button>
                 </div>
             @else
                 <div class="profile-telegram__controls">

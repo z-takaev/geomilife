@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Products;
 
-use App\Enums\ProductUnit;
+use App\Enums\ProductUnitEnum;
 use App\Filament\Resources\Products\ProductResource;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -55,9 +55,12 @@ final class ImportProductsAction
             }
             $spreadsheet = $reader->setLoadSheetsOnly('Товары')->load($path);
             $sheet = $spreadsheet->getSheetByName('Товары');
-            if ($sheet->rangeToArray('A1:N1', null, false, false)[0] !== ExportProductsAction::HEADERS) {
+            $headers = $sheet->rangeToArray('A1:'.$sheet->getHighestDataColumn().'1', null, false, false)[0];
+            $legacyHeaders = array_slice(ExportProductsAction::HEADERS, 0, 14);
+            if ($headers !== ExportProductsAction::HEADERS && $headers !== $legacyHeaders) {
                 throw ValidationException::withMessages(['file' => 'Заголовки или порядок колонок изменены. Скачайте новый экспорт.']);
             }
+            $headerColumns = array_flip($headers);
             if ($sheet->getHighestDataRow() < 2) {
                 throw ValidationException::withMessages(['file' => 'В файле нет товаров или вариаций.']);
             }
@@ -66,7 +69,7 @@ final class ImportProductsAction
                     throw ValidationException::withMessages(['file' => 'Ячейка '.$coordinate.': вместо формулы введите значение.']);
                 }
             }
-            $rows = $sheet->rangeToArray('A2:N'.$sheet->getHighestDataRow(), null, false, false);
+            $rows = $sheet->rangeToArray('A2:R'.$sheet->getHighestDataRow(), null, false, false);
         } catch (ReaderException) {
             throw ValidationException::withMessages(['file' => 'Не удалось прочитать файл XLSX.']);
         } finally {
@@ -79,7 +82,7 @@ final class ImportProductsAction
         $errors = [];
         $seen = [];
         $skus = [];
-        $units = collect(ProductUnit::cases())->mapWithKeys(static fn (ProductUnit $unit): array => [$unit->getLabel() => $unit->value])->all();
+        $units = collect(ProductUnitEnum::cases())->mapWithKeys(static fn (ProductUnitEnum $unit): array => [$unit->getLabel() => $unit->value])->all();
         foreach ($rows as $index => $cells) {
             $line = $index + 2;
             if (count(array_filter($cells, static fn (mixed $value): bool => $value !== null && $value !== '')) === 0) {
@@ -102,13 +105,19 @@ final class ImportProductsAction
                     throw ValidationException::withMessages(['file' => 'Запись уже указана в строке '.$seen[$key].'.']);
                 }
                 $seen[$key] = $line;
-                foreach ($isProduct ? range(7, 13) : range(3, 6) as $column) {
+                foreach ($isProduct ? range(7, 17) : range(3, 6) as $column) {
                     if (filled($cells[$column])) {
                         throw ValidationException::withMessages(['file' => 'Колонка «'.ExportProductsAction::HEADERS[$column].'» должна быть пустой.']);
                     }
                 }
-                $fields = $isProduct ? ['name', 'is_new', 'is_hit', 'is_active'] : ['sku', 'value', 'unit', 'price', 'old_price', 'is_active', 'is_preorder'];
+                $fields = $isProduct ? ['name', 'is_new', 'is_hit', 'is_active'] : ['sku', 'value', 'unit', 'price', 'old_price', 'is_active', 'is_preorder', 'weight', 'length', 'width', 'height'];
                 $data = array_combine($fields, array_slice($cells, $isProduct ? 3 : 7, count($fields)));
+                if (! $isProduct) {
+                    foreach (['weight', 'length', 'width', 'height'] as $field) {
+                        $label = ExportProductsAction::FIELD_LABELS[$field];
+                        $data[$field] = isset($headerColumns[$label]) ? $cells[$headerColumns[$label]] : $record->{$field};
+                    }
+                }
                 if (! $isProduct) {
                     $data['value'] = str_replace(',', '.', (string) $data['value']);
                     $data['price'] = str_replace(',', '.', (string) $data['price']);
@@ -120,6 +129,8 @@ final class ImportProductsAction
                     'unit' => ['required', Rule::in(array_keys($units))],
                     'price' => ['required', 'numeric', 'min:1', 'regex:/^\d+(?:\.0{1,2})?$/'],
                     'old_price' => ['nullable', 'numeric', 'regex:/^\d+(?:\.0{1,2})?$/', 'gt:price'], 'is_preorder' => 'required|in:Да,Нет',
+                    'weight' => 'required|integer|min:1', 'length' => 'required|integer|min:1',
+                    'width' => 'required|integer|min:1', 'height' => 'required|integer|min:1',
                 ];
                 $rules['is_active'] = 'required|in:Да,Нет';
                 Validator::make($data, $rules, attributes: ExportProductsAction::FIELD_LABELS)->validate();
@@ -142,6 +153,11 @@ final class ImportProductsAction
                         if ($data[$field] === null) {
                             throw ValidationException::withMessages(['file' => ExportProductsAction::FIELD_LABELS[$field].' превышает допустимое значение.']);
                         }
+                    }
+                }
+                foreach (['weight', 'length', 'width', 'height'] as $field) {
+                    if (isset($data[$field])) {
+                        $data[$field] = (int) $data[$field];
                     }
                 }
                 $record->fill($data);
@@ -177,7 +193,7 @@ final class ImportProductsAction
             $value === null => '—',
             in_array($field, ['is_new', 'is_hit', 'is_active', 'is_preorder'], true) => $value ? 'Да' : 'Нет',
             in_array($field, ['price', 'old_price'], true) => Money::fromMinor((int) $value)->format(),
-            $field === 'unit' => ProductUnit::from($value)->getLabel(),
+            $field === 'unit' => ProductUnitEnum::from($value)->getLabel(),
             $field === 'value' => (string) (int) $value,
             default => (string) $value,
         };

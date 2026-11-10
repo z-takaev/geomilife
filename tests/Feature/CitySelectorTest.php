@@ -7,7 +7,30 @@ use App\Models\City;
 use App\Models\User;
 use App\Services\Cities\CurrentCityService;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
+
+it('сохраняет выбранный город без запроса геолокации', function (): void {
+    $city = City::query()->create(['cdek_code' => 44, 'name' => 'Москва', 'is_active' => true]);
+    session()->put('city.id', $city->id);
+    Http::fake();
+
+    expect(app(CurrentCityService::class)->detect()?->id)->toBe($city->id);
+
+    Http::assertNothingSent();
+});
+
+it('сохраняет определённый по IP город в сессии и cookie', function (): void {
+    $city = City::query()->create(['cdek_code' => 44, 'name' => 'Москва', 'is_active' => true]);
+    request()->server->set('REMOTE_ADDR', '8.8.8.8');
+    Http::fake(['*' => Http::response(['success' => true, 'country_code' => 'RU', 'city' => 'Москва'])]);
+
+    expect(app(CurrentCityService::class)->detect()?->id)->toBe($city->id)
+        ->and(session('city.id'))->toBe($city->id)
+        ->and(Cookie::queued('city_id')->getValue())->toBe((string) $city->id);
+
+    Http::assertSentCount(1);
+});
 
 it('сохраняет выбранный город в аккаунте, сессии и cookie', function (): void {
     $user = User::query()->create(['first_name' => 'Иван', 'email' => 'buyer@example.com', 'password' => 'Password123']);

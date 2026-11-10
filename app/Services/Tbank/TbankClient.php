@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Http;
 
 final class TbankClient
 {
-    public function __construct(private readonly TbankTokenService $tokens) {}
+    public function __construct(private readonly TbankSignatureService $signatures) {}
 
     public function post(string $method, array $data): array
     {
@@ -21,7 +21,7 @@ final class TbankClient
         }
 
         $data['TerminalKey'] = $this->stringConfig('terminal_key');
-        $data['Token'] = $this->tokens->generate($data);
+        $data['Token'] = $this->signatures->generate($data);
 
         $request = Http::acceptJson();
 

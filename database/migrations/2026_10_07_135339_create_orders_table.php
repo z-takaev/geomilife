@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\PaymentMethodEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -12,11 +13,26 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('user_id')->constrained()->restrictOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('city_id')->nullable()->constrained()->nullOnDelete();
             $table->string('number')->unique();
             $table->string('status');
             $table->string('payment_status');
             $table->string('delivery_method');
+            $table->string('payment_method')->default(PaymentMethodEnum::ONLINE->value);
+            $table->unsignedBigInteger('subtotal')->default(0);
+            $table->json('delivery_details')->nullable();
+            $table->json('packages')->nullable();
+            $table->boolean('is_preorder')->default(false);
+            $table->timestamp('payment_expires_at')->nullable()->index();
+            $table->uuid('guest_token')->unique();
+            $table->uuid('idempotency_key')->unique();
+            $table->string('checkout_session_hash', 64)->nullable();
+            $table->string('cancellation_state')->nullable()->index();
+            $table->text('cancellation_reason')->nullable();
+            $table->string('cancellation_actor_type')->nullable();
+            $table->unsignedBigInteger('cancellation_actor_id')->nullable();
+            $table->timestamp('cancelled_at')->nullable();
             $table->unsignedBigInteger('delivery_price');
             $table->unsignedBigInteger('total');
             $table->string('customer_name');

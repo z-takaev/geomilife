@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('floor')->nullable();
             $table->string('intercom')->nullable();
             $table->boolean('is_default')->default(false);
+            $table->timestamp('last_used_at')->nullable()->index();
             $table->timestamps();
 
             $table->index(['user_id', 'is_default']);

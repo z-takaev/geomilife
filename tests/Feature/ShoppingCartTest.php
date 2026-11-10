@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-use App\Enums\ProductUnit;
+use App\Enums\ProductUnitEnum;
 use App\Livewire\ShoppingCart;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\User;
 use App\Services\Cart\CartService;
+use App\Services\Orders\CheckoutService;
 use App\Support\Values\Money;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -19,13 +20,30 @@ function cartVariant(bool $preorder = false, int $rubles = 890): ProductVariant
     $category = Category::query()->firstOrCreate(['slug' => 'cart'], ['name' => 'Категория', 'is_active' => true]);
     $product = Product::query()->create(['category_id' => $category->id, 'name' => 'Товар', 'slug' => (string) Str::uuid(), 'is_active' => true]);
 
-    return $product->variants()->create(['sku' => (string) Str::uuid(), 'unit' => ProductUnit::MILLILITER, 'value' => 250, 'price' => Money::fromRubles($rubles), 'is_active' => true, 'is_preorder' => $preorder]);
+    return $product->variants()->create(['sku' => (string) Str::uuid(), 'unit' => ProductUnitEnum::MILLILITER, 'value' => 250, 'price' => Money::fromRubles($rubles), 'is_active' => true, 'is_preorder' => $preorder]);
 }
 
 function cartUser(): User
 {
     return User::query()->create(['first_name' => 'Покупатель', 'email' => Str::uuid().'@example.com', 'password' => 'Password123']);
 }
+
+it('читает актуальные количества для корзины и оформления при загруженных связях пользователя', function (): void {
+    $variant = cartVariant();
+    $user = cartUser();
+    $storedCart = $user->cart()->create();
+    $storedCart->items()->create(['product_variant_id' => $variant->id, 'quantity' => 1]);
+    $user->load('cart.items');
+    $this->actingAs($user);
+    $cart = app(CartService::class);
+
+    expect($cart->quantities())->toBe([$variant->id => 1]);
+
+    $storedCart->items()->where('product_variant_id', $variant->id)->update(['quantity' => 3]);
+
+    expect($cart->quantities())->toBe([$variant->id => 3])
+        ->and(app(CheckoutService::class)->calculate([])['subtotal']->toRubles())->toBe('2670.00');
+});
 
 it('хранит гостевую корзину в сессии и считает количество и итог', function (): void {
     $variant = cartVariant();

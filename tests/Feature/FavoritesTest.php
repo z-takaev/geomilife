@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\ProductUnit;
+use App\Enums\ProductUnitEnum;
 use App\Livewire\Favorites;
 use App\Models\Category;
 use App\Models\Product;
@@ -17,7 +17,7 @@ function favoriteProduct(string $name = 'Масло'): Product
 {
     $category = Category::query()->firstOrCreate(['slug' => 'favorites'], ['name' => 'Масла', 'is_active' => true]);
     $product = Product::query()->create(['category_id' => $category->id, 'name' => $name, 'slug' => (string) Str::uuid(), 'is_active' => true]);
-    $product->variants()->create(['sku' => (string) Str::uuid(), 'unit' => ProductUnit::MILLILITER, 'value' => 250, 'price' => Money::fromRubles(890), 'is_active' => true]);
+    $product->variants()->create(['sku' => (string) Str::uuid(), 'unit' => ProductUnitEnum::MILLILITER, 'value' => 250, 'price' => Money::fromRubles(890), 'is_active' => true]);
 
     return $product;
 }

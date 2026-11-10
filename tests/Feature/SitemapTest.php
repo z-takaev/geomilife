@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\ProductUnit;
+use App\Enums\ProductUnitEnum;
 use App\Models\Article;
 use App\Models\Category;
 use App\Models\News;
@@ -39,7 +39,7 @@ it('включает в карту сайта только доступные д
     ProductVariant::query()->create([
         'product_id' => $product->getKey(),
         'sku' => 'SITEMAP-1',
-        'unit' => ProductUnit::MILLILITER,
+        'unit' => ProductUnitEnum::MILLILITER,
         'value' => 250,
         'price' => Money::fromRubles(500),
         'is_active' => true,

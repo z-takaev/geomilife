@@ -7,8 +7,10 @@ namespace App\Filament\Pages;
 use App\Filament\Forms\Components\MediaImageUpload;
 use App\Models\Setting;
 use Filament\Actions\Action;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
@@ -17,6 +19,7 @@ use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Image\Enums\Fit;
 use Spatie\Image\Image;
 
@@ -50,6 +53,12 @@ final class ManageSettings extends Page
                 Form::make([
                     Tabs::make('Конфигурация сайта')
                         ->tabs([
+                            Tab::make('Оформление')
+                                ->schema([
+                                    Toggle::make('snow_enabled')
+                                        ->label('Показывать снег на сайте')
+                                        ->helperText('Включает снег только в публичной части сайта.'),
+                                ]),
                             Tab::make('Контактная информация')
                                 ->schema([
                                     TextInput::make('phone')
@@ -89,6 +98,21 @@ final class ManageSettings extends Page
                                         ->columnSpanFull(),
                                 ])
                                 ->columns(2),
+                            Tab::make('Документы')
+                                ->schema([
+                                    FileUpload::make('privacy_policy')
+                                        ->label('Политика обработки персональных данных')
+                                        ->disk('public')
+                                        ->directory('documents/privacy-policy')
+                                        ->acceptedFileTypes(['application/pdf'])
+                                        ->maxSize(10240)
+                                        ->required()
+                                        ->previewable(false)
+                                        ->preventFilePathTampering()
+                                        ->openable()
+                                        ->downloadable()
+                                        ->helperText('Обязательный PDF-документ до 10 МБ. Замена применяется после нажатия «Сохранить».'),
+                                ]),
                             Tab::make('Футер')
                                 ->schema([
                                     TextInput::make('footer_title')
@@ -177,10 +201,17 @@ final class ManageSettings extends Page
     public function save(): void
     {
         $setting = $this->getRecord();
+        $previousDocument = $setting->privacy_policy;
         $setting->fill($this->form->getState());
         $setting->save();
 
         $this->form->record($setting)->saveRelationships();
+
+        if ($previousDocument && $previousDocument !== $setting->privacy_policy) {
+            Storage::disk('public')->delete($previousDocument);
+        }
+
+        $this->form->fill($setting->attributesToArray());
 
         Notification::make()
             ->success()

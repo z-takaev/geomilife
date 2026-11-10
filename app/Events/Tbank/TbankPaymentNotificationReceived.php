@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Tbank;
 
-use App\DTO\Tbank\Responses\TbankPaymentNotificationDto;
+use App\DTO\Tbank\TbankPaymentNotificationDto;
 use Illuminate\Foundation\Events\Dispatchable;
 
 final class TbankPaymentNotificationReceived

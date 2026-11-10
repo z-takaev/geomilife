@@ -13,6 +13,7 @@ final class DatabaseSeeder extends Seeder
         $this->call([
             FilamentUserSeeder::class,
             CitySeeder::class,
+            ShippingBoxSeeder::class,
             UserSeeder::class,
             SettingSeeder::class,
             SeoSeeder::class,

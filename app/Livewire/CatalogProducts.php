@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire;
 
 use App\DTO\Products\CatalogFiltersDto;
-use App\Enums\CatalogProductSort;
+use App\Enums\CatalogSortEnum;
 use App\Models\Category;
 use App\Repositories\Categories\CategoryRepository;
 use App\Repositories\Products\CatalogRepository;
@@ -103,7 +103,7 @@ final class CatalogProducts extends Component
         $hasMoreProducts = $products->currentPage() + $this->additionalPages < $products->lastPage();
         $catalogKey = hash('xxh128', json_encode([$this->appliedFilters, $this->sort, $products->currentPage()]));
         $packageOptions = $this->packageOptions();
-        $sortOptions = CatalogProductSort::cases();
+        $sortOptions = CatalogSortEnum::cases();
         $categories = $this->category === null
             ? $categoryRepository->getActiveCatalog()
             : $categoryRepository->getActiveChildren($this->category);
@@ -178,9 +178,9 @@ final class CatalogProducts extends Component
             ? [] : app(CatalogRepository::class)->getPackageOptions($this->category));
     }
 
-    private function normalizeSort(): ?CatalogProductSort
+    private function normalizeSort(): ?CatalogSortEnum
     {
-        $sort = CatalogProductSort::tryFrom($this->sort);
+        $sort = CatalogSortEnum::tryFrom($this->sort);
 
         if ($sort === null && $this->sort !== '') {
             $this->reset('sort');

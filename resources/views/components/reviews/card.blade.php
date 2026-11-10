@@ -6,7 +6,7 @@
 ]) @if ($expandable) data-review-card-expandable @endif>
     <header class="home-review-meta">
         @if ($review->source !== null)
-            <img class="home-review-source-logo" src="{{ asset($review->source->logoPath()) }}"
+            <img class="home-review-source-logo" src="{{ asset($review->source->getLogoPath()) }}"
                 alt="{{ __($review->source->getLabel()) }}">
         @endif
         <span class="home-review-rating" aria-label="{{ __('Рейтинг: :rating из 5', ['rating' => $review->rating]) }}">

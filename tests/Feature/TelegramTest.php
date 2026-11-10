@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 use App\Livewire\UserProfile;
 use App\Models\User;
-use App\Services\Telegram\TelegramService;
+use App\Services\Telegram\TelegramConnectionService;
 use Livewire\Livewire;
 use SergiX44\Nutgram\Nutgram;
 
 it('создает новую ссылку подключения и делает предыдущий токен недействительным', function (): void {
     config(['telegram.bot_username' => '@test_bot', 'telegram.bot_token' => 'test-token']);
     $user = User::query()->create(['first_name' => 'Иван', 'email' => 'buyer@example.com', 'password' => 'Password123']);
-    $service = app(TelegramService::class);
+    $service = app(TelegramConnectionService::class);
     $url = $service->createConnectionUrl($user);
     $token = $user->fresh()->telegram_link_token;
     expect($token)->toHaveLength(64)->and($url)->toBe('https://t.me/test_bot?start='.$token);
@@ -58,7 +58,7 @@ it('подключает Telegram одноразовым токеном толь
     $token = str_repeat('a', 64);
     $user->forceFill(['telegram_link_token' => $token])->save();
     $bot = Nutgram::fake();
-    $bot->onMessage([app(TelegramService::class), 'handleMessage']);
+    $bot->onMessage([app(TelegramConnectionService::class), 'handleMessage']);
     $bot->hearMessage(['text' => '/start '.$token, 'chat' => ['id' => 123, 'type' => 'private'], 'from' => ['id' => 123, 'username' => 'buyer']])->reply();
     expect($user->fresh()->telegram_chat_id)->toBe(123)
         ->and($user->fresh()->telegram_username)->toBe('buyer')
@@ -73,7 +73,7 @@ it('не подключает уведомления из группового �
     $token = str_repeat('a', 64);
     $user->forceFill(['telegram_link_token' => $token])->save();
     $bot = Nutgram::fake();
-    $bot->onMessage([app(TelegramService::class), 'handleMessage']);
+    $bot->onMessage([app(TelegramConnectionService::class), 'handleMessage']);
     $bot->hearMessage(['text' => '/start '.$token, 'chat' => ['id' => -123, 'type' => 'group']])->reply();
     expect($user->fresh()->telegram_chat_id)->toBeNull()
         ->and($user->fresh()->telegram_link_token)->toBe($token);

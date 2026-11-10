@@ -8,6 +8,7 @@ use App\Support\Media\ImageMimeTypes;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -38,6 +39,8 @@ final class Setting extends Model implements HasMedia
      * @var list<string>
      */
     protected $fillable = [
+        'snow_enabled',
+        'privacy_policy',
         'phone',
         'email',
         'admin_email',
@@ -55,6 +58,13 @@ final class Setting extends Model implements HasMedia
         'story_description',
         'story_video_url',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'snow_enabled' => 'boolean',
+        ];
+    }
 
     protected static function booted(): void
     {
@@ -99,6 +109,11 @@ final class Setting extends Model implements HasMedia
                 ->with('media')
                 ->first(),
         );
+    }
+
+    public function privacyPolicyUrl(): string
+    {
+        return $this->privacy_policy ? Storage::disk('public')->url($this->privacy_policy) : '';
     }
 
     public function storyVideoEmbedUrl(): ?string
