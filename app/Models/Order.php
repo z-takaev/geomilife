@@ -29,7 +29,6 @@ final class Order extends Model
         'packages',
         'is_preorder',
         'payment_expires_at',
-        'guest_token',
         'idempotency_key',
         'checkout_session_hash',
         'cancellation_state',
@@ -72,7 +71,6 @@ final class Order extends Model
     protected static function booted(): void
     {
         self::creating(static function (self $order): void {
-            $order->guest_token ??= (string) Str::uuid();
             $order->idempotency_key ??= (string) Str::uuid();
 
             if (($order->payment_method?->isOnline() ?? false) && $order->payment_expires_at === null) {

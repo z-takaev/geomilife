@@ -6,7 +6,6 @@ use App\Support\Values\Money;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
-use Illuminate\Support\Facades\URL;
 use Tests\Support\CheckoutFixtures;
 
 beforeEach(function (): void {
@@ -59,7 +58,7 @@ it('показывает бесплатную и платную доставку
         ->assertSee('<dd>'.$label.'</dd>', false);
 })->with([[0, 'бесплатно'], [350, '350 ₽']]);
 
-it('скрывает причину отмены от покупателя и гостя', function (): void {
+it('скрывает причину отмены от покупателя', function (): void {
     $user = CheckoutFixtures::user();
     $order = CheckoutFixtures::order($user, [
         'status' => 'CANCELLED',
@@ -70,9 +69,4 @@ it('скрывает причину отмены от покупателя и г
         ->assertSee('Заказ отменён.')
         ->assertDontSee($order->cancellation_reason);
 
-    $url = URL::temporarySignedRoute('orders.guest.show', now()->addDay(), ['token' => $order->guest_token]);
-    $this->get($url)->assertOk()
-        ->assertSee('Заказ отменён.')
-        ->assertDontSee($order->cancellation_reason)
-        ->assertViewHas('breadcrumbs', fn ($breadcrumbs): bool => array_column($breadcrumbs->items(), 'label') === ['Главная', 'Детали заказа']);
 });

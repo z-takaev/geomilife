@@ -63,10 +63,10 @@ it('объясняет менеджерам причину техническо�
     ['CANCELLATION_REJECTED', 'СДЭК отклонил отмену отправления. Требуется проверка.'],
 ]);
 
-it('сохраняет защищённую ссылку в письме покупателю', function (): void {
+it('не добавляет ссылку доступа в письмо о заказе без владельца', function (): void {
     $notification = new OrderUpdateNotification(fulfillmentOrder(), 'CREATED');
     $mail = $notification->toMail(new AnonymousNotifiable);
 
-    expect($mail->actionUrl)->toContain('signature=')
+    expect($mail->actionUrl)->toBeNull()
         ->and(implode(' ', $mail->introLines))->toContain('Ваш заказ принят.');
 });

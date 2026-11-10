@@ -7,6 +7,7 @@ use App\Livewire\Checkout;
 use App\Models\Order;
 use App\Services\Cart\CartService;
 use App\Support\Values\Money;
+use Illuminate\Http\Client\Factory;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
@@ -58,8 +59,7 @@ it('оформляет гостевой самовывоз по актуальн
         ->and($item->old_price->toRubles())->toBe('1000.00')
         ->and($item->quantity)->toBe(2)
         ->and($item->total->toRubles())->toBe('1500.00')
-        ->and($order->customer_name)->toBe('Анна Петрова')
-        ->and($order->guest_token)->not->toBeEmpty();
+        ->and($order->customer_name)->toBe('Анна Петрова');
     $this->assertDatabaseHas('orders', ['id' => $order->getKey(), 'status' => 'NEW', 'payment_method' => PaymentMethodEnum::PICKUP->value]);
     $this->assertDatabaseCount('users', 0);
     expect(app(CartService::class)->quantities())->toBe([]);
@@ -301,4 +301,53 @@ it('не предлагает СДЭК для города без действи
 
     Livewire::test(Checkout::class)->call('selectCity', $city->id)
         ->assertViewHas('availableDeliveryMethods', fn (array $methods): bool => ! array_key_exists('CDEK', $methods));
+});
+
+it('не хранит токен гостевого доступа к заказу', function (): void {
+    expect(Schema::hasColumn('orders', 'guest_token'))->toBeFalse();
+});
+
+it('после гостевого оформления показывает подтверждение без ссылки на заказ', function (): void {
+    $city = CheckoutFixtures::city();
+    app(CartService::class)->add(CheckoutFixtures::variant()->getKey(), 1);
+
+    CheckoutFixtures::form($city)->call('placeOrder')->assertHasNoErrors()->assertRedirect(route('home'));
+
+    $this->get(route('home'))->assertOk()->assertSee('Ваш заказ принят. Подтверждение отправлено на указанный email.');
+});
+
+it('после оформления владельцем открывает заказ в личном кабинете', function (): void {
+    $this->actingAs(CheckoutFixtures::user());
+    $city = CheckoutFixtures::city();
+    app(CartService::class)->add(CheckoutFixtures::variant()->getKey(), 1);
+    $component = CheckoutFixtures::form($city)->call('placeOrder')->assertHasNoErrors();
+
+    $component->assertRedirect(route('orders.show', Order::query()->sole()));
+});
+
+it('гость переходит к оплате в банке без гостевой страницы заказа', function (): void {
+    $city = CheckoutFixtures::city();
+    app(CartService::class)->add(CheckoutFixtures::variant()->getKey(), 1);
+
+    CheckoutFixtures::form($city, ['payment_method' => PaymentMethodEnum::ONLINE->value])
+        ->call('placeOrder')->assertHasNoErrors()
+        ->assertRedirect('https://tbank.checkout.test/payment/731000001');
+});
+
+it('при ошибке оплаты гостю не предлагают недоступную страницу заказа', function (): void {
+    Http::swap(new Factory);
+    Http::preventStrayRequests();
+    Http::fake(['tbank.checkout.test/*' => Http::response([
+        'Success' => false, 'ErrorCode' => '999', 'Message' => 'Ошибка банка',
+    ])]);
+    $city = CheckoutFixtures::city();
+    app(CartService::class)->add(CheckoutFixtures::variant()->getKey(), 1);
+
+    CheckoutFixtures::form($city, ['payment_method' => PaymentMethodEnum::ONLINE->value])
+        ->call('placeOrder')->assertHasNoErrors()->assertRedirect(route('home'));
+
+    $this->get(route('home'))->assertOk()
+        ->assertSee('Заказ сохранён, но открыть оплату не удалось. Свяжитесь с нами для уточнения оплаты.')
+        ->assertDontSee('Повторите оплату на странице заказа.');
+    $this->assertDatabaseCount('orders', 1);
 });

@@ -152,7 +152,6 @@ final class CheckoutFixtures
             'customer_email' => $user?->email ?? 'guest@example.com',
             'delivery_address' => ['city' => 'Владикавказ', 'address' => 'Мира, 15'],
             'delivery_details' => [],
-            'guest_token' => (string) Str::uuid(),
             'idempotency_key' => (string) Str::uuid(),
             'is_preorder' => false,
         ], $attributes));

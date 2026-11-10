@@ -62,13 +62,17 @@
 <h2>{{ __('Что дальше') }}</h2>
 <p>{{ $presentation['nextStep'] }}</p>
 
+@if ($actionUrl)
 <x-mail::button :url="$actionUrl">{{ __('Открыть заказ') }}</x-mail::button>
+@endif
 
 <p>{{ __('Спасибо за заказ в GeoMiLife!') }}</p>
 
+@if ($actionUrl)
 <x-slot:subcopy>
 {{ __('Если кнопка не открывается, перейдите по ссылке:') }}
 <span class="break-all">[{{ $actionUrl }}]({{ $actionUrl }})</span>
 </x-slot:subcopy>
+@endif
 </x-mail::message>
 {{-- prettier-ignore-end --}}

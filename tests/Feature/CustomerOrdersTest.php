@@ -6,7 +6,6 @@ use App\Support\Values\Money;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
-use Illuminate\Support\Facades\URL;
 use Tests\Support\CheckoutFixtures;
 
 beforeEach(function (): void {
@@ -67,24 +66,21 @@ it('чужая детальная страница недоступна даже
     $this->get(route('orders.index'))->assertDontSee($foreign->number)->assertDontSee($guest->number);
 });
 
-it('гость видит один заказ по подписанной ссылке без служебных данных', function (): void {
-    $order = CheckoutFixtures::order(null, ['delivery_details' => ['internal_error' => 'SECRET-INTERNAL-API-ERROR']]);
-    $other = CheckoutFixtures::order();
-    $url = URL::temporarySignedRoute('orders.guest.show', now()->addDays(30), ['token' => $order->guest_token]);
+it('гость не получает список и детали заказа без авторизации', function (): void {
+    $order = CheckoutFixtures::order(CheckoutFixtures::user());
 
-    $this->get($url)->assertOk()->assertSee($order->number)->assertDontSee($other->number)
-        ->assertDontSee('SECRET-INTERNAL-API-ERROR');
+    $this->getJson(route('orders.index'))->assertUnauthorized();
+    $this->getJson(route('orders.show', $order))->assertUnauthorized();
 });
 
-it('гостевой доступ запрещён без подписи с истёкшей подписью или подменённым токеном', function (): void {
+it('старые гостевые ссылки не предоставляют доступ к заказу и действиям', function (): void {
     $order = CheckoutFixtures::order();
-    $other = CheckoutFixtures::order();
-    $valid = URL::temporarySignedRoute('orders.guest.show', now()->addDays(30), ['token' => $order->guest_token]);
-    $expired = URL::temporarySignedRoute('orders.guest.show', now()->subMinute(), ['token' => $order->guest_token]);
+    $path = '/orders/guest/старый-токен?expires=9999999999&signature=old';
 
-    $this->get(route('orders.guest.show', ['token' => $order->guest_token]))->assertForbidden();
-    $this->get($expired)->assertForbidden();
-    $this->get(str_replace($order->guest_token, $other->guest_token, $valid))->assertForbidden();
+    $this->get($path)->assertNotFound();
+    $this->post('/orders/guest/старый-токен/cancel')->assertNotFound();
+    $this->post('/orders/guest/старый-токен/pay')->assertNotFound();
+    expect($order->fresh()->status->value)->toBe('NEW');
 });
 
 it('владелец может отменить только новый заказ и не может отменить чужой', function (): void {
@@ -100,17 +96,4 @@ it('владелец может отменить только новый зак�
     $this->assertDatabaseHas('orders', ['id' => $confirmed->getKey(), 'status' => 'CONFIRMED']);
     $this->assertDatabaseHas('orders', ['id' => $foreign->getKey(), 'status' => 'NEW']);
     Http::assertNothingSent();
-});
-
-it('гость отменяет только новый заказ по подписанной ссылке', function (): void {
-    $order = CheckoutFixtures::order();
-    $confirmed = CheckoutFixtures::order(null, ['status' => 'CONFIRMED']);
-    $url = URL::temporarySignedRoute('orders.guest.cancel', now()->addDays(30), ['token' => $order->guest_token]);
-    $forbidden = URL::temporarySignedRoute('orders.guest.cancel', now()->addDays(30), ['token' => $confirmed->guest_token]);
-
-    $this->post(route('orders.guest.cancel', ['token' => $order->guest_token]))->assertForbidden();
-    $this->post($url, ['reason' => 'Не нужен'])->assertRedirect();
-    $this->post($forbidden, ['reason' => 'Не нужен'])->assertForbidden();
-    $this->assertDatabaseHas('orders', ['id' => $order->getKey(), 'status' => 'CANCELLED']);
-    $this->assertDatabaseHas('orders', ['id' => $confirmed->getKey(), 'status' => 'CONFIRMED']);
 });

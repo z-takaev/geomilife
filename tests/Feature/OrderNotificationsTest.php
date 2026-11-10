@@ -84,7 +84,7 @@ it('не создаёт повторных уведомлений при пов�
     Notification::assertSentOnDemandTimes(OrderUpdateNotification::class, 2);
 });
 
-it('письмо содержит номер заказа, понятное событие и защищённую ссылку без служебных данных', function (): void {
+it('письмо гостю содержит номер заказа и событие без ссылки доступа', function (): void {
     $order = notificationOrder();
     app(OrderNotificationService::class)->send($order, 'REFUNDED', 'refund-1');
 
@@ -96,8 +96,7 @@ it('письмо содержит номер заказа, понятное со
             $mail = $notification->toMail($notifiable);
             expect($mail->subject)->toContain('NOTIFY-001')
                 ->and(implode(' ', $mail->introLines))->toContain('возврат')
-                ->and($mail->actionUrl)->toContain('signature=')
-                ->and($mail->actionUrl)->not->toContain('/admin/');
+                ->and($mail->actionUrl)->toBeNull();
 
             return true;
         });
@@ -142,11 +141,11 @@ it('включает сохранённый состав и сведения з�
         expect($body)->toContain('NOTIFY-001', $order->created_at->format('d.m.Y'),
             'Крем из оформленного заказа', '250 мл', 'SNAPSHOT-250', '600 ₽', '2 × 600 ₽',
             '1 200 ₽', '350 ₽', '1 550 ₽', $order->customer_name, $order->customer_phone,
-            $order->customer_email, 'Позвоните перед выдачей', 'Открыть заказ', 'signature=')
-            ->not->toContain('Новое название каталога', '9 999 ₽', '<script>', '600.00');
+            $order->customer_email, 'Позвоните перед выдачей')
+            ->not->toContain('Новое название каталога', '9 999 ₽', '<script>', '600.00', 'Открыть заказ', 'signature=', 'Оплатить заказ можно на странице заказа');
     }
 
-    $this->get($mail->actionUrl)->assertOk();
+    expect($mail->actionUrl)->toBeNull();
 });
 
 it('показывает способ получения и адрес из заказа', function (string $method, array $address, array $expected): void {
@@ -165,8 +164,8 @@ it('показывает способ получения и адрес из за
         ['СДЭК', 'ул. Тверская, 15', 'MSK123', '09:00–20:00', 'Трек-номер появится после подготовки отправления']],
 ]);
 
-it('показывает инструкции только для доступной онлайн-оплаты', function (string $method, string $status, bool $expired, bool $canPay): void {
-    $order = notificationOrder();
+it('показывает инструкции только для доступной онлайн-оплаты владельца', function (string $method, string $status, bool $expired, bool $canPay): void {
+    $order = notificationOrder(CheckoutFixtures::user());
     $order->update([
         'payment_method' => $method,
         'payment_status' => $status,
@@ -213,4 +212,15 @@ it('оставляет уведомления об изменениях коро
 
     expect((string) $mail->render())->toContain('1234567890')
         ->not->toContain('Товары в заказе', 'Комментарий к заказу');
+});
+
+it('ссылка из письма владельцу требует входа и проверяет владельца заказа', function (): void {
+    $user = CheckoutFixtures::user();
+    $order = notificationOrder($user);
+    $mail = (new OrderUpdateNotification($order, 'CREATED'))->toMail(new AnonymousNotifiable);
+
+    expect($mail->actionUrl)->toBe(route('orders.show', $order));
+    $this->getJson($mail->actionUrl)->assertUnauthorized();
+    $this->actingAs(CheckoutFixtures::user())->get($mail->actionUrl)->assertNotFound();
+    $this->actingAs($user)->get($mail->actionUrl)->assertOk();
 });

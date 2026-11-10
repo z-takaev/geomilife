@@ -17,7 +17,6 @@ use App\Services\Orders\OrderNotificationService;
 use App\Services\Orders\OrderPaymentService;
 use App\Services\Tbank\Exceptions\TbankApiException;
 use App\Support\Values\Money;
-use App\ViewModel\Orders\OrderViewModel;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -266,11 +265,23 @@ final class Checkout extends Component
                 }
             } catch (TbankApiException|ValidationException $exception) {
                 report($exception);
-                session()->flash('order_message', __('Заказ сохранён. Повторите оплату на странице заказа.'));
+                session()->flash('order_message', $existing->user_id !== null
+                    ? __('Заказ сохранён. Повторите оплату на странице заказа.')
+                    : __('Заказ сохранён, но открыть оплату не удалось. Свяжитесь с нами для уточнения оплаты.'));
             }
         }
 
-        $this->redirect(OrderViewModel::url($existing));
+        if ($existing->user_id !== null) {
+            $this->redirect(route('orders.show', $existing));
+
+            return;
+        }
+
+        if (! session()->has('order_message')) {
+            session()->flash('order_message', __('Ваш заказ принят. Подтверждение отправлено на указанный email.'));
+        }
+
+        $this->redirect(route('home'));
     }
 
     public function render(): View

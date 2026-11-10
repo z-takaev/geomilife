@@ -102,13 +102,6 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     });
 });
 
-Route::get('/orders/guest/{token}', [OrderController::class, 'guestShow'])
-    ->middleware('signed')->name('orders.guest.show');
-Route::post('/orders/guest/{token}/cancel', [OrderController::class, 'guestCancel'])
-    ->middleware(['signed', 'throttle:6,1'])->name('orders.guest.cancel');
-Route::post('/orders/guest/{token}/pay', [OrderController::class, 'guestPay'])
-    ->middleware(['signed', 'throttle:6,1'])->name('orders.guest.pay');
-
 Route::middleware('auth:filament')->prefix('admin/orders')->name('admin.orders.')->group(function (): void {
     Route::get('/{order}/packing-slip', [OrderDocumentController::class, 'packingSlip'])->name('packing-slip');
     Route::get('/{order}/cdek-waybill', [OrderDocumentController::class, 'waybill'])->name('cdek-waybill');

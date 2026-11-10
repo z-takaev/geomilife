@@ -13,6 +13,11 @@
 @endpush
 
 @section('content')
+    @if (session('order_message'))
+        <div class="container">
+            <div class="checkout-info" role="status">{{ session('order_message') }}</div>
+        </div>
+    @endif
     @include('home.partials.main-slider')
     @include('home.partials.benefits')
     @include('home.partials.featured-categories')

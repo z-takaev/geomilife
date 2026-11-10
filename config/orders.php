@@ -5,7 +5,6 @@ declare(strict_types=1);
 return [
     'payment_timeout_minutes' => 60,
     'reconciliation_stale_minutes' => 2,
-    'guest_access_days' => 30,
     'saved_locations_limit' => 10,
     'cdek' => [
         'tariff_code' => 136,

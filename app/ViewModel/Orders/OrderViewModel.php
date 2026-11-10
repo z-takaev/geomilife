@@ -8,8 +8,6 @@ use App\Enums\Orders\OrderStatusEnum;
 use App\Enums\Orders\PaymentStatusEnum;
 use App\Models\Order;
 use App\Services\Orders\OrderLifecycleService;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\URL;
 
 final class OrderViewModel
 {
@@ -135,15 +133,6 @@ final class OrderViewModel
         return $order->delivery_method->getLabel();
     }
 
-    public static function url(Order $order): string
-    {
-        if ($order->user_id !== null) {
-            return route('orders.show', $order);
-        }
-
-        return URL::temporarySignedRoute('orders.guest.show', now()->addDays((int) config('orders.guest_access_days')), ['token' => $order->guest_token]);
-    }
-
     public static function confirmation(Order $order): array
     {
         $presentation = self::data($order);
@@ -167,7 +156,7 @@ final class OrderViewModel
         ];
     }
 
-    public static function data(Order $order, bool $isGuest = false): array
+    public static function data(Order $order): array
     {
         $order->loadMissing('shipment');
 
@@ -178,10 +167,10 @@ final class OrderViewModel
             $quantity = $order->items->sum('quantity');
         }
 
-        $canPay = $order->payment_method->isOnline() && $order->status->isNew()
+        $canPay = $order->user_id !== null && $order->payment_method->isOnline() && $order->status->isNew()
             && $order->cancellation_state === null && $order->payment_expires_at?->isFuture()
             && ! in_array($order->payment_status, [PaymentStatusEnum::PAID, PaymentStatusEnum::REFUNDED, PaymentStatusEnum::REFUND_PENDING, PaymentStatusEnum::REFUND_FAILED, PaymentStatusEnum::AUTHORIZED], true);
-        $canCancel = $order->status->isNew() && $order->cancellation_state === null;
+        $canCancel = $order->user_id !== null && $order->status->isNew() && $order->cancellation_state === null;
         $steps = app(OrderLifecycleService::class)->stages($order);
         $position = array_search($order->status, $steps, true);
         $stages = [];
@@ -189,16 +178,6 @@ final class OrderViewModel
         foreach ($steps as $index => $step) {
             $stages[] = ['label' => $step->getLabel(), 'done' => $position !== false && $index <= $position];
         }
-
-        $actionParameters = $isGuest ? ['token' => $order->guest_token] : ['order' => $order->id];
-        $expiresAt = now()->addDays((int) config('orders.guest_access_days'));
-
-        if ($isGuest && request()->has('expires')) {
-            $expiresAt = Carbon::createFromTimestamp((int) request('expires'));
-        }
-
-        $payUrl = $isGuest ? URL::temporarySignedRoute('orders.guest.pay', $expiresAt, $actionParameters) : route('orders.pay', $actionParameters);
-        $cancelUrl = $isGuest ? URL::temporarySignedRoute('orders.guest.cancel', $expiresAt, $actionParameters) : route('orders.cancel', $actionParameters);
 
         return [
             'deliveryLabel' => self::deliveryLabel($order),
@@ -208,8 +187,8 @@ final class OrderViewModel
             'canPay' => (bool) $canPay,
             'canCancel' => $canCancel,
             'stages' => $stages,
-            'payUrl' => $payUrl,
-            'cancelUrl' => $cancelUrl,
+            'payUrl' => route('orders.pay', $order),
+            'cancelUrl' => route('orders.cancel', $order),
             'quantity' => $quantity,
             'workingHours' => $order->delivery_address['working_hours'] ?? $order->delivery_address['work_time'] ?? null,
             'isCancelling' => in_array($order->cancellation_state, ['PENDING', 'FAILED'], true),

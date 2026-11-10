@@ -38,3 +38,9 @@ it('требует подтверждённый email для действий с
     $this->actingAs($user)->post('/orders/'.$order->getRouteKey().'/'.$action)
         ->assertRedirect(route('verification.notice'));
 })->with(['cancel', 'pay']);
+
+it('не регистрирует маршруты гостевого просмотра оплаты и отмены заказа', function (): void {
+    foreach (['show', 'pay', 'cancel'] as $action) {
+        expect(Route::has('orders.guest.'.$action))->toBeFalse();
+    }
+});

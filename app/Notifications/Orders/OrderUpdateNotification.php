@@ -12,7 +12,6 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\URL;
 
 final class OrderUpdateNotification extends Notification implements ShouldQueue
 {
@@ -46,9 +45,13 @@ final class OrderUpdateNotification extends Notification implements ShouldQueue
             ->subject(__('Заказ №:number — :event', ['number' => $this->order->number, 'event' => $this->message()]))
             ->greeting(__('Здравствуйте!'))
             ->line($this->message())
-            ->line(__('Заказ №:number, сумма :total.', ['number' => $this->order->number, 'total' => $this->order->total->format()]))
-            ->action(__('Открыть заказ'), $this->url())
-            ->line(__('Спасибо за заказ в GeoMiLife!'));
+            ->line(__('Заказ №:number, сумма :total.', ['number' => $this->order->number, 'total' => $this->order->total->format()]));
+
+        if ($this->order->user_id !== null) {
+            $mail->action(__('Открыть заказ'), route('orders.show', $this->order));
+        }
+
+        $mail->line(__('Спасибо за заказ в GeoMiLife!'));
 
         if ($this->event === 'CREATED' && $this->audience === 'BUYER') {
             $this->order->loadMissing('items');
@@ -93,11 +96,5 @@ final class OrderUpdateNotification extends Notification implements ShouldQueue
             'PAYMENT_RECONCILE_FAILED' => __('Не удалось сверить платёж с банком. Требуется проверка.'),
             default => OrderStatusEnum::tryFrom($this->event)?->getLabel() ?? __('Обновление заказа. Проверьте состояние в личном кабинете.'),
         };
-    }
-
-    private function url(): string
-    {
-        return URL::temporarySignedRoute('orders.guest.show',
-            now()->addDays((int) config('orders.guest_access_days')), ['token' => $this->order->guest_token]);
     }
 }
