@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Filament\Widgets;
 
-use Carbon\CarbonImmutable;
+use App\Services\Dashboard\DashboardMetricsService;
+use App\Support\Values\Money;
 use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
-use Illuminate\Support\Facades\Validator;
 
 final class SalesOverview extends StatsOverviewWidget
 {
@@ -23,65 +23,23 @@ final class SalesOverview extends StatsOverviewWidget
 
     protected ?string $heading = 'Основные метрики';
 
-    protected ?string $description = 'Демонстрационные значения, не связанные с реальными заказами.';
-
-    /**
-     * @return array<Stat>
-     */
     protected function getStats(): array
     {
-        $days = $this->getPeriodDays();
-        $orders = $days === null ? null : $days * 24;
-        $periodLabel = match ($this->pageFilters['period'] ?? 'day') {
-            'week' => 'За последние 7 дней',
-            'month' => 'С начала текущего месяца',
-            'custom' => $days === null ? 'Укажите корректные даты: начало не позже конца, без будущих дат' : 'За выбранный период, включая обе даты',
-            default => 'За сегодня',
-        };
+        $service = app(DashboardMetricsService::class);
+        $filters = $this->pageFilters ?? [];
+        $metrics = $service->overview($filters);
 
         return [
-            Stat::make('Количество заказов', $orders === null ? '—' : number_format($orders, 0, ',', ' '))
-                ->description($periodLabel)
+            Stat::make('Количество заказов', $metrics === null ? '—' : number_format($metrics['orders'], 0, ',', ' '))
                 ->icon(Heroicon::OutlinedShoppingBag)
                 ->color('primary'),
-            Stat::make('Выручка', $orders === null ? '—' : number_format($orders * 3250, 0, ',', ' ').' ₽')
-                ->description($periodLabel)
+            Stat::make('Выручка', $metrics === null ? '—' : Money::fromMinor($metrics['revenue'])->format())
                 ->icon(Heroicon::OutlinedBanknotes)
                 ->color('success'),
-            Stat::make('Средний чек', '3 250 ₽')
-                ->description('По всем заказам за всё время')
+            Stat::make('Средний чек', $metrics === null ? '—' : Money::fromMinor($metrics['average'])->format())
                 ->icon(Heroicon::OutlinedReceiptPercent),
-            Stat::make('Доля повторных покупок', '28 %')
-                ->description('Повторные заказы / все заказы за всё время')
+            Stat::make('Доля повторных покупок', $metrics === null ? '—' : str_replace('.', ',', (string) $metrics['repeatPercentage']).' %')
                 ->icon(Heroicon::OutlinedArrowPath),
         ];
-    }
-
-    private function getPeriodDays(): ?int
-    {
-        $period = $this->pageFilters['period'] ?? 'day';
-
-        if ($period !== 'custom') {
-            return match ($period) {
-                'week' => 7,
-                'month' => now()->day,
-                default => 1,
-            };
-        }
-
-        $dates = [
-            'startDate' => $this->pageFilters['startDate'] ?? null,
-            'endDate' => $this->pageFilters['endDate'] ?? null,
-        ];
-
-        if (Validator::make($dates, [
-            'startDate' => ['required', 'date_format:Y-m-d', 'before_or_equal:today'],
-            'endDate' => ['required', 'date_format:Y-m-d', 'after_or_equal:startDate', 'before_or_equal:today'],
-        ])->fails()) {
-            return null;
-        }
-
-        return (int) CarbonImmutable::parse($dates['startDate'])
-            ->diffInDays(CarbonImmutable::parse($dates['endDate'])) + 1;
     }
 }

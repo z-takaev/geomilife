@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Widgets;
 
+use App\Services\Dashboard\DashboardMetricsService;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
@@ -23,21 +24,7 @@ final class TopProducts extends TableWidget
     {
         return $table
             ->heading('Самые продаваемые товары')
-            ->description('За всё время, по количеству проданных единиц. Товары и значения — демонстрационные.')
-            ->records(function (): array {
-                $limit = (int) ($this->pageFilters['topLimit'] ?? 10) === 20 ? 20 : 10;
-                $products = [];
-
-                foreach (range(1, $limit) as $position) {
-                    $products[$position] = [
-                        'position' => $position,
-                        'name' => 'Демонстрационный товар '.$position,
-                        'quantity' => 420 - ($position - 1) * 18,
-                    ];
-                }
-
-                return $products;
-            })
+            ->records(fn (): array => app(DashboardMetricsService::class)->topProducts($this->pageFilters ?? []))
             ->columns([
                 TextColumn::make('position')->label('Место'),
                 TextColumn::make('name')->label('Товар')->wrap(),

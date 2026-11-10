@@ -19,7 +19,7 @@ use Illuminate\Auth\Access\Response;
 
 final class ShippingBoxResource extends Resource
 {
-    private const int MAX_SHIPPING_BOXES = 7;
+    private const int MAX_SHIPPING_BOXES = 10;
 
     protected static ?string $model = ShippingBox::class;
 

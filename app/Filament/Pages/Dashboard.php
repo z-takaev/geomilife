@@ -20,30 +20,28 @@ final class Dashboard extends BaseDashboard
     {
         return $schema->components([
             Section::make('Обзор продаж')
-                ->description('Демонстрационные данные.')
+                ->description('Все показатели за выбранный период по дате создания заказа.')
                 ->schema([
                     Select::make('period')
-                        ->label('Период заказов и выручки')
+                        ->label('Период')
                         ->options([
                             'day' => 'Сегодня',
                             'week' => 'Последние 7 дней',
                             'month' => 'Текущий месяц',
+                            'all' => 'За всё время',
                             'custom' => 'Произвольный период',
                         ])
                         ->default('day')
                         ->selectablePlaceholder(false)
                         ->live(),
-                    Select::make('topLimit')
-                        ->label('Самые продаваемые товары')
-                        ->options([10 => 'Топ-10', 20 => 'Топ-20'])
-                        ->default(10)
-                        ->selectablePlaceholder(false),
+
                     DatePicker::make('startDate')
                         ->label('Начало периода')
                         ->default(now()->startOfMonth()->toDateString())
                         ->maxDate(now())
                         ->required()
                         ->visible(fn (Get $get): bool => $get('period') === 'custom'),
+
                     DatePicker::make('endDate')
                         ->label('Конец периода')
                         ->default(now()->toDateString())
