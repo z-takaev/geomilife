@@ -24,11 +24,11 @@ it('размещает действия с заказом вне профиля 
         ->and($route->gatherMiddleware())->toContain('auth', 'verified', 'throttle:6,1');
 
     $this->post('/profile/orders/123/'.$action)->assertNotFound();
-})->with(['cancel', 'pay']);
+})->with(['cancel']);
 
 it('требует авторизацию для действий с заказом', function (string $action): void {
     $this->postJson('/orders/123/'.$action)->assertUnauthorized();
-})->with(['cancel', 'pay']);
+})->with(['cancel']);
 
 it('требует подтверждённый email для действий с заказом', function (string $action): void {
     $user = CheckoutFixtures::user();
@@ -37,7 +37,7 @@ it('требует подтверждённый email для действий с
 
     $this->actingAs($user)->post('/orders/'.$order->getRouteKey().'/'.$action)
         ->assertRedirect(route('verification.notice'));
-})->with(['cancel', 'pay']);
+})->with(['cancel']);
 
 it('не регистрирует маршруты гостевого просмотра оплаты и отмены заказа', function (): void {
     foreach (['show', 'pay', 'cancel'] as $action) {

@@ -98,7 +98,6 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
         Route::get('/', 'index')->name('index');
         Route::get('/{order}', 'show')->name('show');
         Route::post('/{order}/cancel', 'cancel')->middleware('throttle:6,1')->name('cancel');
-        Route::post('/{order}/pay', 'pay')->middleware('throttle:6,1')->name('pay');
     });
 });
 

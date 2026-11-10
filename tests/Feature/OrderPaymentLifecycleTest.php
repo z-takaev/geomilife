@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Enums\Orders\PaymentMethodEnum;
-use App\Models\Order;
 use App\Services\Orders\OrderPaymentService;
 use App\Services\Tbank\Exceptions\TbankApiException;
 use Illuminate\Http\Client\Request;
@@ -42,42 +41,10 @@ it('инициирует онлайн оплату нового заказа н�
     Http::assertSent(fn (Request $request): bool => str_ends_with($request->url(), '/Init')
         && $request['Amount'] === 135000
         && ! array_key_exists('Receipt', $request->data())
-        && new DateTimeImmutable($request['RedirectDueDate']) == $order->payment_expires_at);
+        && ! array_key_exists('RedirectDueDate', $request->data()));
 });
 
-it('возвращает существующую активную попытку вместо второго платежа', function (): void {
-    $order = PaymentFixtures::order();
-    $payment = PaymentFixtures::payment($order);
-    Http::fake(['bank.test/v2/GetState' => Http::response(PaymentFixtures::state($payment, 'NEW'))]);
-
-    $reused = app(OrderPaymentService::class)->start($order);
-
-    expect($reused->id)->toBe($payment->id)
-        ->and($order->payments()->count())->toBe(1);
-    Http::assertNotSent(fn (Request $request): bool => str_ends_with($request->url(), '/Init'));
-});
-
-it('повторяет отклонённую оплату в том же заказе без продления срока', function (): void {
-    $order = PaymentFixtures::order();
-    $originalExpiry = $order->payment_expires_at;
-    $previous = PaymentFixtures::payment($order, ['status' => 'FAILED', 'provider_status' => 'REJECTED']);
-    $this->travel(15)->minutes();
-    Http::fake(fn (Request $request) => Http::response(str_ends_with($request->url(), '/GetState')
-        ? PaymentFixtures::state($previous, 'REJECTED')
-        : ['Success' => true, 'ErrorCode' => '0', 'PaymentId' => '100002',
-            'OrderId' => $request['OrderId'], 'Amount' => 135000, 'Status' => 'NEW',
-            'PaymentURL' => 'https://bank.test/pay/100002']));
-
-    $retry = app(OrderPaymentService::class)->start($order);
-
-    expect($retry->id)->not->toBe($previous->id)
-        ->and($retry->bank_order_id)->not->toBe($previous->bank_order_id)
-        ->and($order->payments()->count())->toBe(2)
-        ->and(Order::query()->count())->toBe(1)
-        ->and($order->fresh()->payment_expires_at->equalTo($originalExpiry))->toBeTrue();
-});
-
-it('не инициирует просроченный оплаченный отменённый или офлайн заказ', function (array $attributes): void {
+it('не инициирует оплаченный отменённый или офлайн заказ', function (array $attributes): void {
     $order = PaymentFixtures::order($attributes);
     Http::fake();
 
@@ -89,15 +56,6 @@ it('не инициирует просроченный оплаченный от
     'отменённый' => [['status' => 'CANCELLED']],
     'при получении' => [['payment_method' => PaymentMethodEnum::PICKUP->value]],
 ]);
-
-it('запрещает повторную оплату после истечения часа от создания заказа', function (): void {
-    $order = PaymentFixtures::order(['payment_expires_at' => now()->subSecond()]);
-    Http::fake();
-
-    expect(fn () => app(OrderPaymentService::class)->start($order))->toThrow(ValidationException::class);
-
-    Http::assertNotSent(fn (Request $request): bool => str_ends_with($request->url(), '/Init'));
-});
 
 it('ошибка банка не удаляет созданный заказ и не меняет его итог', function (): void {
     $order = PaymentFixtures::order();
@@ -172,40 +130,38 @@ it('сбой другой попытки не отменяет уже подтв
     expect(PaymentFixtures::value($order->fresh()->payment_status))->toBe('PAID');
 });
 
-it('автоотмена через час предварительно сверяет банк и не касается оплаты при получении', function (): void {
-    $order = PaymentFixtures::order(['payment_expires_at' => now()->subSecond()]);
+it('сверяет отменённый банком платёж без автоматической отмены заказа', function (): void {
+    $order = PaymentFixtures::order();
     $payment = PaymentFixtures::payment($order);
-    $offline = PaymentFixtures::order(['payment_method' => PaymentMethodEnum::PICKUP->value, 'payment_expires_at' => now()->subHour()]);
-    $recent = PaymentFixtures::order();
     Http::fake(['bank.test/v2/GetState' => Http::response(PaymentFixtures::state($payment, 'DEADLINE_EXPIRED'))]);
 
-    $this->artisan('orders:expire')->assertSuccessful();
+    app(OrderPaymentService::class)->sync($payment);
 
-    expect(PaymentFixtures::value($order->fresh()->status))->toBe('CANCELLED')
-        ->and(PaymentFixtures::value($offline->fresh()->status))->toBe('NEW')
-        ->and(PaymentFixtures::value($recent->fresh()->status))->toBe('NEW');
+    expect(PaymentFixtures::value($order->fresh()->status))->toBe('NEW')
+        ->and(PaymentFixtures::value($order->fresh()->payment_status))->toBe('CANCELLED');
     Http::assertSent(fn (Request $request): bool => str_ends_with($request->url(), '/GetState') && $request['PaymentId'] === '100001');
 });
 
-it('не отменяет просроченный заказ если банк подтвердил оплату', function (): void {
-    $order = PaymentFixtures::order(['payment_expires_at' => now()->subSecond()]);
+it('при сверке сохраняет подтверждённую банком оплату', function (): void {
+    $order = PaymentFixtures::order();
     $payment = PaymentFixtures::payment($order);
     Http::fake(['bank.test/v2/GetState' => Http::response(PaymentFixtures::state($payment, 'CONFIRMED'))]);
 
-    $this->artisan('orders:expire')->assertSuccessful();
+    app(OrderPaymentService::class)->sync($payment);
 
     expect(PaymentFixtures::value($order->fresh()->status))->toBe('NEW')
         ->and(PaymentFixtures::value($order->fresh()->payment_status))->toBe('PAID');
 });
 
-it('недоступность банка при просрочке не объявляет заказ неоплаченным и отменённым', function (): void {
-    $order = PaymentFixtures::order(['payment_expires_at' => now()->subSecond()]);
-    PaymentFixtures::payment($order);
+it('недоступность банка при сверке не меняет статус заказа и оплаты', function (): void {
+    $order = PaymentFixtures::order();
+    $payment = PaymentFixtures::payment($order);
     Http::fake(['bank.test/*' => Http::failedConnection()]);
 
-    $this->artisan('orders:expire')->assertSuccessful();
+    expect(fn () => app(OrderPaymentService::class)->sync($payment))->toThrow(TbankApiException::class);
 
-    expect(PaymentFixtures::value($order->fresh()->status))->toBe('NEW');
+    expect(PaymentFixtures::value($order->fresh()->status))->toBe('NEW')
+        ->and(PaymentFixtures::value($order->fresh()->payment_status))->toBe('UNPAID');
 });
 
 it('позднюю оплату отменённого заказа возвращает полностью без восстановления', function (): void {
@@ -224,7 +180,7 @@ it('позднюю оплату отменённого заказа возвра
         && $request['Amount'] === 135000 && ! array_key_exists('Receipt', $request->data()));
 });
 
-it('после таймаута инициализации сверяет банковский заказ перед повтором и не создаёт второй платёж', function (): void {
+it('после таймаута инициализации восстанавливает платёж сверкой без повторной оплаты', function (): void {
     $order = PaymentFixtures::order();
     Http::fake(['bank.test/v2/Init' => Http::failedConnection()]);
 
@@ -262,7 +218,8 @@ it('после таймаута инициализации сверяет бан
         ]);
     });
 
-    $recovered = app(OrderPaymentService::class)->start($order->fresh());
+    app(OrderPaymentService::class)->sync($pending);
+    $recovered = $pending->fresh();
 
     expect($recovered->id)->toBe($pending->id)
         ->and($recovered->bank_order_id)->toBe($bankOrderId)

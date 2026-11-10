@@ -337,7 +337,7 @@
                         <label class="checkout-payment-option"><input type="radio" wire:model.live="payment_method"
                                 value="{{ \App\Enums\Orders\PaymentMethodEnum::ONLINE->value }}"><span
                                 class="checkout-payment-option__check"
-                                aria-hidden="true"></span><span><strong>{{ \App\Enums\Orders\PaymentMethodEnum::ONLINE->getLabel() }}</strong><small>{{ __('На защищённой странице Т-Банка. Оплатите в течение часа после оформления.') }}</small></span></label>
+                                aria-hidden="true"></span><span><strong>{{ \App\Enums\Orders\PaymentMethodEnum::ONLINE->getLabel() }}</strong><small>{{ __('На защищённой странице Т-Банка. Оплата сразу при оформлении.') }}</small></span></label>
                         @if ($delivery_method === \App\Enums\Orders\DeliveryMethodEnum::PICKUP->value)
                             <label class="checkout-payment-option"><input type="radio"
                                     wire:model.live="payment_method"

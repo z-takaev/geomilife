@@ -43,10 +43,6 @@
                         <div class="customer-order-card__actions"><a href="{{ route('orders.show', $order) }}"
                                 class="order-text-button">{{ __('Подробнее о заказе') }} <span
                                     aria-hidden="true">→</span></a>
-                            @if ($presentations[$order->id]['canPay'])
-                                <form method="post" action="{{ $presentations[$order->id]['payUrl'] }}">@csrf<button
-                                        type="submit" class="tf-btn">{{ __('Оплатить') }}</button></form>
-                            @endif
                         </div>
                     </article>
                 @empty

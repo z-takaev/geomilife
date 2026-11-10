@@ -57,7 +57,6 @@ final class PaymentFixtures
             'customer_phone' => '+79991234567',
             'customer_email' => 'buyer@example.test',
             'delivery_address' => ['city' => 'Владикавказ', 'address' => 'Тестовая, 1'],
-            'payment_expires_at' => now()->addHour(),
         ], $attributes));
     }
 

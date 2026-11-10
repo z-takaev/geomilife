@@ -16506,8 +16506,7 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
     cursor: pointer;
 }
 
-.order-preorder,
-.order-payment-deadline {
+.order-preorder {
     margin: 16px 0;
     line-height: 1.6;
     color: var(--text-secondary);

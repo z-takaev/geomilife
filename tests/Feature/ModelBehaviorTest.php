@@ -58,16 +58,12 @@ it('исключает недоступные варианты из выборк
     expect(ProductVariant::query()->available()->pluck('id')->all())->toBe($expected);
 })->with(['variant', 'product', 'category']);
 
-it('задаёт ключ идемпотентности и стандартный срок оплаты при создании заказа', function (): void {
+it('задаёт ключ идемпотентности при создании заказа', function (): void {
     $this->freezeSecond();
     $order = CheckoutFixtures::order(attributes: [
         'idempotency_key' => null,
         'payment_method' => 'ONLINE',
     ]);
 
-    expect(Str::isUuid($order->idempotency_key))->toBeTrue()
-        ->and($order->payment_expires_at->equalTo(now()->addMinutes((int) config('orders.payment_timeout_minutes'))))->toBeTrue();
-
-    $offlineOrder = CheckoutFixtures::order();
-    expect($offlineOrder->payment_expires_at)->toBeNull();
+    expect(Str::isUuid($order->idempotency_key))->toBeTrue();
 });

@@ -15,6 +15,4 @@ Schedule::call(fn () => app(OrderNotificationService::class)
     ->everyMinute()
     ->withoutOverlapping();
 
-Schedule::command('orders:expire')->everyMinute()->withoutOverlapping();
-
 Schedule::command('orders:reconcile')->everyMinute()->withoutOverlapping();

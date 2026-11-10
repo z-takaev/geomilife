@@ -254,7 +254,7 @@ final class Checkout extends Component
             $this->dispatch('cart-updated', count: app(CartService::class)->count());
         }
 
-        if ($existing->payment_method->isOnline()) {
+        if ($existing->wasRecentlyCreated && $existing->payment_method->isOnline()) {
             try {
                 $payment = app(OrderPaymentService::class)->start($existing);
 
@@ -265,9 +265,7 @@ final class Checkout extends Component
                 }
             } catch (TbankApiException|ValidationException $exception) {
                 report($exception);
-                session()->flash('order_message', $existing->user_id !== null
-                    ? __('Заказ сохранён. Повторите оплату на странице заказа.')
-                    : __('Заказ сохранён, но открыть оплату не удалось. Свяжитесь с нами для уточнения оплаты.'));
+                session()->flash('order_message', __('Заказ сохранён, но открыть оплату не удалось. Свяжитесь с нами для уточнения оплаты.'));
             }
         }
 

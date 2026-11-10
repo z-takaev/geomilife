@@ -16,7 +16,6 @@ use App\Models\Payment;
 use App\Services\Tbank\Exceptions\TbankApiException;
 use App\Services\Tbank\TbankService;
 use App\Support\Traits\Orders\ValidatesOrderManagement;
-use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -26,16 +25,9 @@ final class OrderPaymentService
 
     public function __construct(private readonly TbankService $bank) {}
 
-    /**
-     * Создаёт или возобновляет попытку онлайн-оплаты заказа.
-     */
     public function start(Order $order): Payment
     {
-        [$payment, $created] = $this->claimPaymentAttempt($order);
-
-        if (! $created) {
-            return $this->resumePayment($order, $payment);
-        }
+        $payment = $this->claimPaymentAttempt($order);
 
         $this->initializePayment($order, $payment);
 
@@ -302,10 +294,10 @@ final class OrderPaymentService
 
     private function assertPayable(Order $order): void
     {
-        if (! $order->payment_method->isOnline() || $order->status->isCancelled()
+        if (! $order->payment_method->isOnline() || ! $order->status->isNew()
             || $order->payment_status->isPaid()
             || $order->cancellation_state !== null
-            || $order->payment_expires_at === null || $order->payment_expires_at->lte(now())) {
+            || $order->payments()->exists()) {
             throw ValidationException::withMessages(['payment' => 'Оплата этого заказа недоступна.']);
         }
     }
@@ -320,55 +312,24 @@ final class OrderPaymentService
         app(OrderNotificationService::class)->send($order->fresh(), $event, $key);
     }
 
-    private function claimPaymentAttempt(Order $order): array
+    private function claimPaymentAttempt(Order $order): Payment
     {
-        return DB::transaction(function () use ($order): array {
+        return DB::transaction(function () use ($order): Payment {
             $lockedOrder = Order::query()
                 ->lockForUpdate()
                 ->findOrFail($order->id);
             $this->assertPayable($lockedOrder);
-            $existing = $lockedOrder->payments()
-                ->whereIn('status', [PaymentStatusEnum::PENDING, PaymentStatusEnum::AUTHORIZED, PaymentStatusEnum::PAID])
-                ->latest('id')->first();
-
-            if ($existing !== null) {
-                return [$existing, false];
-            }
-
-            $attempt = $lockedOrder->payments()->count() + 1;
             $payment = $lockedOrder->payments()->create([
                 'provider' => 'TBANK',
-                'bank_order_id' => $lockedOrder->number.'-'.$attempt,
+                'bank_order_id' => $lockedOrder->number.'-1',
                 'amount' => $lockedOrder->total,
                 'status' => PaymentStatusEnum::PENDING,
                 'provider_status' => TbankPaymentStatusEnum::NEW->value,
                 'operation_state' => 'INITIATING',
             ]);
 
-            return [$payment, true];
+            return $payment;
         });
-    }
-
-    private function resumePayment(Order $order, Payment $payment): Payment
-    {
-        if ($payment->transaction_id === null) {
-            if ($payment->operation_state === 'INITIATING'
-                && $payment->updated_at->gt(now()->subMinutes((int) config('orders.reconciliation_stale_minutes')))) {
-                return $payment;
-            }
-
-            $this->recoverInitialization($payment);
-        } else {
-            $this->sync($payment);
-        }
-
-        $payment->refresh();
-
-        if (in_array($payment->status, [PaymentStatusEnum::FAILED, PaymentStatusEnum::CANCELLED], true)) {
-            return $this->start($order->fresh());
-        }
-
-        return $payment;
     }
 
     private function initializePayment(Order $order, Payment $payment): void
@@ -379,7 +340,6 @@ final class OrderPaymentService
                 amount: $payment->amount,
                 description: 'Заказ '.$order->number,
                 notificationUrl: $this->secureRoute('tbank.webhook'),
-                redirectDueDate: new DateTimeImmutable($order->payment_expires_at->toIso8601String()),
             ));
 
             $payment->update([

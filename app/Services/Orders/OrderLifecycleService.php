@@ -120,21 +120,15 @@ final class OrderLifecycleService
     /**
      * Проверяет возможность отмены заказа и запускает её выполнение.
      */
-    public function cancel(Order $order, User|FilamentUser|null $actor, string $reason = '', bool $onlyIfUnpaid = false, bool $onlyIfNew = false): void
+    public function cancel(Order $order, User|FilamentUser|null $actor, string $reason = '', bool $onlyIfNew = false): void
     {
-        DB::transaction(function () use ($order, $actor, $reason, $onlyIfUnpaid, $onlyIfNew): void {
+        DB::transaction(function () use ($order, $actor, $reason, $onlyIfNew): void {
             $lockedOrder = Order::query()
                 ->lockForUpdate()
                 ->findOrFail($order->id);
 
             if ($onlyIfNew && ! $lockedOrder->status->isNew()) {
                 throw new AuthorizationException;
-            }
-
-            if ($onlyIfUnpaid && (! $lockedOrder->payment_method->isOnline()
-                || ! $lockedOrder->status->isNew() || $lockedOrder->payment_status->isPaid()
-                || $lockedOrder->payment_expires_at === null || $lockedOrder->payment_expires_at->gt(now()))) {
-                return;
             }
 
             $this->assertCancellationAllowed($lockedOrder, $actor, $reason);

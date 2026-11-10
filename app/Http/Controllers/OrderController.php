@@ -9,8 +9,6 @@ use App\Models\User;
 use App\Navigation\BreadcrumbItem;
 use App\Navigation\Breadcrumbs;
 use App\Services\Orders\OrderLifecycleService;
-use App\Services\Orders\OrderPaymentService;
-use App\Services\Tbank\Exceptions\TbankApiException;
 use App\Support\Seo\Schemas\BreadcrumbSchema;
 use App\ViewModel\Orders\OrderViewModel;
 use Illuminate\Contracts\View\View;
@@ -72,34 +70,10 @@ final class OrderController extends Controller
         return redirect()->route('orders.show', $order)->with('order_message', __('Запрос отмены принят. Состояние возврата отображается в заказе.'));
     }
 
-    public function pay(Request $request, Order $order): RedirectResponse
-    {
-        abort_unless($order->user_id === $request->user()->id, 404);
-
-        return $this->startPayment($order);
-    }
-
     private function cancelOrder(Request $request, Order $order, User $actor): void
     {
         abort_unless($order->status->isNew() && $order->cancellation_state === null, 403);
         $values = $request->validate(['reason' => ['nullable', 'string', 'max:1000']]);
         app(OrderLifecycleService::class)->cancel($order, $actor, $values['reason'] ?? __('Отмена покупателем'), onlyIfNew: true);
-    }
-
-    private function startPayment(Order $order): RedirectResponse
-    {
-        try {
-            $payment = app(OrderPaymentService::class)->start($order);
-
-            if (blank($payment->payment_url)) {
-                return redirect()->route('orders.show', $order)->with('order_message', __('Проверяем состояние платежа. Повторите попытку позже; заказ сохранён.'));
-            }
-
-            return redirect()->away($payment->payment_url);
-        } catch (TbankApiException $exception) {
-            report($exception);
-
-            return redirect()->route('orders.show', $order)->with('order_message', __('Не удалось открыть оплату. Заказ сохранён, повторите попытку позже.'));
-        }
     }
 }

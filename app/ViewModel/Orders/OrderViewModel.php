@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\ViewModel\Orders;
 
 use App\Enums\Orders\OrderStatusEnum;
-use App\Enums\Orders\PaymentStatusEnum;
 use App\Models\Order;
 use App\Services\Orders\OrderLifecycleService;
 
@@ -141,7 +140,6 @@ final class OrderViewModel
 
         return $presentation + [
             'createdAtLabel' => $order->created_at->timezone($timezone)->format($dateFormat),
-            'paymentDeadlineLabel' => $order->payment_expires_at?->timezone($timezone)->format($dateFormat).' ('.$timezone.')',
             'deliveryHint' => match (true) {
                 $order->is_preorder => __('Точные сроки доставки согласовываются отдельно с менеджером'),
                 $order->delivery_method->isPickup() => __('Приходите после уведомления о готовности. Время получения согласует менеджер.'),
@@ -149,7 +147,6 @@ final class OrderViewModel
                 default => __('Трек-номер появится после подготовки отправления.'),
             },
             'nextStep' => match (true) {
-                $presentation['canPay'] => __('Оплатить заказ можно на странице заказа. После подтверждения оплаты мы приступим к обработке.'),
                 $order->payment_method->isOnline() && ! $order->payment_status->isPaid() => self::processingHint($order),
                 default => __('Мы сообщим вам об изменении статуса заказа отдельным письмом.'),
             },
@@ -167,9 +164,6 @@ final class OrderViewModel
             $quantity = $order->items->sum('quantity');
         }
 
-        $canPay = $order->user_id !== null && $order->payment_method->isOnline() && $order->status->isNew()
-            && $order->cancellation_state === null && $order->payment_expires_at?->isFuture()
-            && ! in_array($order->payment_status, [PaymentStatusEnum::PAID, PaymentStatusEnum::REFUNDED, PaymentStatusEnum::REFUND_PENDING, PaymentStatusEnum::REFUND_FAILED, PaymentStatusEnum::AUTHORIZED], true);
         $canCancel = $order->user_id !== null && $order->status->isNew() && $order->cancellation_state === null;
         $steps = app(OrderLifecycleService::class)->stages($order);
         $position = array_search($order->status, $steps, true);
@@ -184,10 +178,8 @@ final class OrderViewModel
             'deliveryPriceLabel' => $order->delivery_price->minorAmount() === 0 ? __('бесплатно') : $order->delivery_price->format(),
             'addressLabel' => self::address($order),
             'paymentLabel' => $order->payment_method->getLabel(),
-            'canPay' => (bool) $canPay,
             'canCancel' => $canCancel,
             'stages' => $stages,
-            'payUrl' => route('orders.pay', $order),
             'cancelUrl' => route('orders.cancel', $order),
             'quantity' => $quantity,
             'workingHours' => $order->delivery_address['working_hours'] ?? $order->delivery_address['work_time'] ?? null,

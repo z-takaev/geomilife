@@ -9,21 +9,12 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Tests\Support\CheckoutFixtures;
 
-it('сохраняет способ оплаты и восстанавливает его как enum', function (): void {
-    $order = CheckoutFixtures::order(attributes: ['payment_method' => PaymentMethodEnum::PICKUP]);
+it('сохраняет способ оплаты и восстанавливает его как enum', function (PaymentMethodEnum $method): void {
+    $order = CheckoutFixtures::order(attributes: ['payment_method' => $method]);
 
-    expect($order->fresh()->payment_method)->toBe(PaymentMethodEnum::PICKUP)
-        ->and($order->payment_expires_at)->toBeNull();
-    $this->assertDatabaseHas('orders', ['id' => $order->id, 'payment_method' => 'PICKUP']);
-});
-
-it('задаёт срок онлайн-оплаты при создании заказа', function (): void {
-    $this->travelTo(now()->startOfSecond());
-    $order = CheckoutFixtures::order(attributes: ['payment_method' => PaymentMethodEnum::ONLINE]);
-
-    expect($order->fresh()->payment_method)->toBe(PaymentMethodEnum::ONLINE)
-        ->and($order->payment_expires_at->equalTo(now()->addMinutes((int) config('orders.payment_timeout_minutes'))))->toBeTrue();
-});
+    expect($order->fresh()->payment_method)->toBe($method);
+    $this->assertDatabaseHas('orders', ['id' => $order->id, 'payment_method' => $method->value]);
+})->with(PaymentMethodEnum::cases());
 
 it('предоставляет подписи способов оплаты', function (): void {
     expect(PaymentMethodEnum::ONLINE->getLabel())->toBe('Картой онлайн')

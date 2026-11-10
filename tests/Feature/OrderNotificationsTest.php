@@ -164,29 +164,22 @@ it('показывает способ получения и адрес из за
         ['СДЭК', 'ул. Тверская, 15', 'MSK123', '09:00–20:00', 'Трек-номер появится после подготовки отправления']],
 ]);
 
-it('показывает инструкции только для доступной онлайн-оплаты владельца', function (string $method, string $status, bool $expired, bool $canPay): void {
+it('не предлагает отложенную оплату в письме о создании заказа', function (string $method, string $status): void {
     $order = notificationOrder(CheckoutFixtures::user());
     $order->update([
         'payment_method' => $method,
         'payment_status' => $status,
-        'payment_expires_at' => $expired ? now()->subMinute() : now()->addMinutes(20),
     ]);
     $mail = (new OrderUpdateNotification($order, 'CREATED'))->toMail(new AnonymousNotifiable);
     $body = (string) $mail->render();
 
-    expect($body)->toContain($order->payment_method->getLabel(), $order->payment_status->getLabel());
-    if ($canPay) {
-        expect($body)->toContain('Оплатите до', $order->payment_expires_at->format('d.m.Y H:i'),
-            'Оплатить заказ можно на странице заказа');
-    } else {
-        expect($body)->not->toContain('Оплатите до', 'Оплатить заказ можно на странице заказа');
-    }
+    expect($body)->toContain($order->payment_method->getLabel(), $order->payment_status->getLabel())
+        ->not->toContain('Оплатите до', 'Оплатить заказ можно на странице заказа');
 })->with([
-    ['ONLINE', 'UNPAID', false, true],
-    ['ONLINE', 'PAID', false, false],
-    ['ONLINE', 'AUTHORIZED', false, false],
-    ['ONLINE', 'UNPAID', true, false],
-    ['PICKUP', 'UNPAID', false, false],
+    ['ONLINE', 'UNPAID'],
+    ['ONLINE', 'PAID'],
+    ['ONLINE', 'AUTHORIZED'],
+    ['PICKUP', 'UNPAID'],
 ]);
 
 it('обозначает предзаказ и скрывает незаполненные необязательные сведения', function (): void {

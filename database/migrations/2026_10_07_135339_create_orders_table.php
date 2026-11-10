@@ -24,7 +24,6 @@ return new class extends Migration
             $table->json('delivery_details')->nullable();
             $table->json('packages')->nullable();
             $table->boolean('is_preorder')->default(false);
-            $table->timestamp('payment_expires_at')->nullable()->index();
             $table->uuid('idempotency_key')->unique();
             $table->string('checkout_session_hash', 64)->nullable();
             $table->string('cancellation_state')->nullable()->index();

@@ -28,7 +28,6 @@ final class Order extends Model
         'delivery_details',
         'packages',
         'is_preorder',
-        'payment_expires_at',
         'idempotency_key',
         'checkout_session_hash',
         'cancellation_state',
@@ -60,7 +59,6 @@ final class Order extends Model
             'delivery_details' => 'array',
             'packages' => 'array',
             'is_preorder' => 'boolean',
-            'payment_expires_at' => 'immutable_datetime',
             'cancelled_at' => 'immutable_datetime',
             'delivery_price' => Money::class,
             'total' => Money::class,
@@ -72,10 +70,6 @@ final class Order extends Model
     {
         self::creating(static function (self $order): void {
             $order->idempotency_key ??= (string) Str::uuid();
-
-            if (($order->payment_method?->isOnline() ?? false) && $order->payment_expires_at === null) {
-                $order->payment_expires_at = now()->addMinutes((int) config('orders.payment_timeout_minutes'));
-            }
         });
     }
 

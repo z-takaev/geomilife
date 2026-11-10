@@ -131,13 +131,6 @@
                     <div class="checkout-summary__total">
                         <span>{{ __('Итого') }}</span><strong>{{ $order->total->format() }}</strong>
                     </div>
-                    @if ($presentation['canPay'])
-                        <p class="order-payment-deadline">
-                            {{ __('Оплатите до :time. После истечения срока неоплаченный заказ отменяется автоматически.', ['time' => $order->payment_expires_at->timezone(config('app.timezone'))->format('d.m.Y H:i')]) }}
-                        </p>
-                        <form method="post" action="{{ $presentation['payUrl'] }}">@csrf<button class="tf-btn w-100"
-                                type="submit">{{ __('Оплатить заказ') }}</button></form>
-                    @endif
                     @if ($order->status->isCancelled())
                         <p class="order-muted">{{ __('Заказ отменён.') }}</p>
                     @endif

@@ -32,10 +32,6 @@
 <h2>{{ __('Оплата') }}</h2>
 <p>{{ __('Способ оплаты: :method', ['method' => $presentation['paymentLabel']]) }}<br>
 {{ __('Статус оплаты: :status', ['status' => $order->payment_status->getLabel()]) }}</p>
-@if ($presentation['canPay'])
-<p>{{ __('Оплатите до :time. После истечения срока неоплаченный заказ отменяется автоматически.', ['time' => $presentation['paymentDeadlineLabel']]) }}
-</p>
-@endif
 
 <h2>{{ __('Получение заказа') }}</h2>
 <p><strong>{{ $presentation['deliveryLabel'] }}</strong><br>{{ $presentation['addressLabel'] }}</p>
