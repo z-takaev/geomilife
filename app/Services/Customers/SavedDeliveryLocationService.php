@@ -74,7 +74,7 @@ final class SavedDeliveryLocationService
     /**
      * Выбирает сохранённый адрес по умолчанию и обновляет город пользователя.
      */
-    public function selectAddress(User $user, int $id): Address
+    public function setDefaultAddress(User $user, int $id): Address
     {
         return DB::transaction(function () use ($user, $id): Address {
             $this->lockUser($user);
@@ -95,13 +95,13 @@ final class SavedDeliveryLocationService
         DB::transaction(function () use ($user, $id): void {
             $this->lockUser($user);
             $address = $user->addresses()->findOrFail($id);
-            $active = $address->is_default;
+            $wasDefault = $address->is_default;
             $address->delete();
 
-            if ($active) {
-                $next = $this->orderByRecent($user->addresses()->getQuery())->first();
-                $next?->update(['is_default' => true]);
-                $user->update(['city_id' => $next?->city_id]);
+            if ($wasDefault) {
+                $replacementAddress = $this->orderByRecent($user->addresses()->getQuery())->first();
+                $replacementAddress?->update(['is_default' => true]);
+                $user->update(['city_id' => $replacementAddress?->city_id]);
             }
         });
     }
@@ -109,7 +109,7 @@ final class SavedDeliveryLocationService
     /**
      * Выбирает сохранённый пункт СДЭК пользователя по умолчанию.
      */
-    public function selectDeliveryPoint(User $user, int $id): void
+    public function setDefaultDeliveryPoint(User $user, int $id): void
     {
         DB::transaction(function () use ($user, $id): void {
             $this->lockUser($user);
@@ -127,10 +127,10 @@ final class SavedDeliveryLocationService
         DB::transaction(function () use ($user, $id): void {
             $this->lockUser($user);
             $point = $user->savedDeliveryPoints()->findOrFail($id);
-            $active = $point->is_default;
+            $wasDefault = $point->is_default;
             $point->delete();
 
-            if ($active) {
+            if ($wasDefault) {
                 $this->orderByRecent($user->savedDeliveryPoints()->getQuery())->first()?->update(['is_default' => true]);
             }
         });

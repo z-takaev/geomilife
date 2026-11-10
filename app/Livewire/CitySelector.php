@@ -18,7 +18,7 @@ final class CitySelector extends Component
 
     public function detect(CurrentCityService $currentCityService): void
     {
-        $city = $currentCityService->detect();
+        $city = $currentCityService->getOrDetect();
 
         if ($city !== null) {
             $this->dispatch('city-detected', id: $city->getKey(), name: $city->name);

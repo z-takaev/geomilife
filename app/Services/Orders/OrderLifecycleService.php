@@ -57,7 +57,7 @@ final class OrderLifecycleService
     /**
      * Переводит заказ в разрешённый статус сотрудником и запускает связанные действия.
      */
-    public function transition(Order $order, OrderStatusEnum $status, FilamentUser $actor): void
+    public function advanceStatus(Order $order, OrderStatusEnum $status, FilamentUser $actor): void
     {
         $this->assertStaff($actor);
 
@@ -94,7 +94,7 @@ final class OrderLifecycleService
     /**
      * Обновляет статус заказа по данным об отправке или вручении СДЭК.
      */
-    public function applyShipmentStatus(Order $order, OrderStatusEnum $status): void
+    public function updateStatusFromShipment(Order $order, OrderStatusEnum $status): void
     {
         if (! in_array($status, [OrderStatusEnum::SHIPPED, OrderStatusEnum::DELIVERED], true)) {
             return;
@@ -154,7 +154,7 @@ final class OrderLifecycleService
         $order->refresh();
 
         if ($order->status->isCancelled()) {
-            app(OrderPaymentService::class)->refund($order);
+            app(OrderPaymentService::class)->cancelOrRefundPayments($order);
 
             return;
         }
@@ -169,12 +169,12 @@ final class OrderLifecycleService
 
         $this->completeCancellation($order);
 
-        app(OrderPaymentService::class)->refund($order->fresh());
+        app(OrderPaymentService::class)->cancelOrRefundPayments($order->fresh());
     }
 
     private function notify(Order $order, string $event, string $key): void
     {
-        app(OrderNotificationService::class)->send($order->fresh(), $event, $key);
+        app(OrderNotificationService::class)->queue($order->fresh(), $event, $key);
     }
 
     private function assertCancellationAllowed(Order $order, User|FilamentUser|null $actor, string $reason): void
@@ -203,7 +203,7 @@ final class OrderLifecycleService
     private function cancelShipment(Order $order): bool
     {
         try {
-            if (! app(OrderShipmentService::class)->cancel($order)) {
+            if (! app(CdekShipmentService::class)->cancel($order)) {
                 return false;
             }
         } catch (ValidationException $exception) {

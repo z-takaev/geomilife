@@ -6,8 +6,8 @@ use App\Enums\Orders\OrderStatusEnum;
 use App\Jobs\Orders\CreateCdekShipmentJob;
 use App\Models\OrderShipment;
 use App\Models\Setting;
+use App\Services\Orders\CdekShipmentService;
 use App\Services\Orders\OrderLifecycleService;
-use App\Services\Orders\OrderShipmentService;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
@@ -36,11 +36,11 @@ it('не создаёт заявку при подтверждении и ста
     $employee = fulfillmentEmployee();
     $statuses = app(OrderLifecycleService::class);
 
-    $statuses->transition($order, OrderStatusEnum::CONFIRMED, $employee);
+    $statuses->advanceStatus($order, OrderStatusEnum::CONFIRMED, $employee);
     Queue::assertNotPushed(CreateCdekShipmentJob::class);
     Http::assertNothingSent();
 
-    $statuses->transition($order->fresh(), OrderStatusEnum::READY_TO_SHIP, $employee);
+    $statuses->advanceStatus($order->fresh(), OrderStatusEnum::READY_TO_SHIP, $employee);
 
     Queue::assertPushed(CreateCdekShipmentJob::class, fn ($job): bool => $job->orderId === $order->id);
     expect(fulfillmentValue($order->fresh()->status))->toBe('READY_TO_SHIP');
@@ -50,10 +50,10 @@ it('использует тот же этап готовности для пре
     $order = fulfillmentOrder(['is_preorder' => true]);
     $employee = fulfillmentEmployee();
     $statuses = app(OrderLifecycleService::class);
-    $statuses->transition($order, OrderStatusEnum::CONFIRMED, $employee);
+    $statuses->advanceStatus($order, OrderStatusEnum::CONFIRMED, $employee);
     Queue::assertNotPushed(CreateCdekShipmentJob::class);
 
-    $statuses->transition($order->fresh(), OrderStatusEnum::READY_TO_SHIP, $employee);
+    $statuses->advanceStatus($order->fresh(), OrderStatusEnum::READY_TO_SHIP, $employee);
 
     Queue::assertPushed(CreateCdekShipmentJob::class);
 });
@@ -67,7 +67,7 @@ it('отправляет тариф 136 внешние размеры с окр�
         'cdek.test/v2/orders' => Http::response(fulfillmentCdekResponse($uuid, state: 'ACCEPTED'), 202),
     ]);
 
-    app(OrderShipmentService::class)->create($order);
+    app(CdekShipmentService::class)->create($order);
 
     Http::assertSent(function (Request $request) use ($order): bool {
         return $request->method() === 'POST' && str_ends_with($request->url(), '/v2/orders')
@@ -97,7 +97,7 @@ it('не повторяет создание заявки после приня�
         'cdek.test/v2/orders/'.$uuid => Http::response(fulfillmentCdekResponse($uuid)),
         'cdek.test/v2/print/*' => Http::response(['entity' => ['uuid' => '22222222-2222-4222-8222-222222222222']]),
     ]);
-    $service = app(OrderShipmentService::class);
+    $service = app(CdekShipmentService::class);
     $service->create($order);
     $service->create($order->fresh());
 
@@ -109,7 +109,7 @@ it('не повторяет создание заявки после приня�
 it('не начинает перевозку для неподходящего статуса оплаты или способа получения', function (array $attributes): void {
     $order = fulfillmentOrder($attributes);
 
-    expect(fn () => app(OrderShipmentService::class)->create($order))->toThrow(ValidationException::class);
+    expect(fn () => app(CdekShipmentService::class)->create($order))->toThrow(ValidationException::class);
     Http::assertNothingSent();
 })->with([
     'только подтверждён' => [['status' => 'CONFIRMED']],
@@ -128,7 +128,7 @@ it('не считает создание заявки и прибытие в п�
         'cdek.test/v2/print/*' => Http::response(['entity' => ['uuid' => '22222222-2222-4222-8222-222222222222']]),
     ]);
 
-    app(OrderShipmentService::class)->sync($order);
+    app(CdekShipmentService::class)->sync($order);
 
     expect(fulfillmentValue($order->fresh()->status))->toBe($expectedStatus)
         ->and($order->fresh()->shipment->cdek_number)->toBe('0000123456');
@@ -148,7 +148,7 @@ it('не изменяет отменённый заказ после запоз�
         'cdek.test/v2/orders/'.$uuid => Http::response(fulfillmentCdekResponse($uuid, 'DELIVERED')),
     ]);
 
-    app(OrderShipmentService::class)->sync($order);
+    app(CdekShipmentService::class)->sync($order);
 
     expect(fulfillmentValue($order->fresh()->status))->toBe('CANCELLED');
 });

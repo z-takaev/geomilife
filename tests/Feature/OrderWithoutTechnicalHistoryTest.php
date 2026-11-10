@@ -38,10 +38,10 @@ it('оформляет и обрабатывает самовывоз без т�
     $order = Order::query()->sole();
     $actor = PaymentFixtures::manager();
     $lifecycle = app(OrderLifecycleService::class);
-    $lifecycle->transition($order, OrderStatusEnum::CONFIRMED, $actor);
-    $lifecycle->transition($order->fresh(), OrderStatusEnum::READY_FOR_PICKUP, $actor);
-    app(OrderPaymentService::class)->markPaidOnReceipt($order->fresh(), $actor);
-    $lifecycle->transition($order->fresh(), OrderStatusEnum::DELIVERED, $actor);
+    $lifecycle->advanceStatus($order, OrderStatusEnum::CONFIRMED, $actor);
+    $lifecycle->advanceStatus($order->fresh(), OrderStatusEnum::READY_FOR_PICKUP, $actor);
+    app(OrderPaymentService::class)->markPickupPaid($order->fresh(), $actor);
+    $lifecycle->advanceStatus($order->fresh(), OrderStatusEnum::DELIVERED, $actor);
 
     expect($order->fresh()->status)->toBe(OrderStatusEnum::DELIVERED)
         ->and($order->fresh()->payment_status)->toBe(PaymentStatusEnum::PAID)

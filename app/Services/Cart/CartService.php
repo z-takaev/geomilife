@@ -241,26 +241,26 @@ final class CartService
     {
         abort_unless(auth()->check(), 403);
 
-        $guestItems = session(self::SESSION_KEY, []);
+        $guestQuantities = session(self::SESSION_KEY, []);
 
         $accountQuantities = $this->quantities();
 
-        $variants = ProductVariant::query()->with('product')->whereKey(array_keys($guestItems))
+        $variants = ProductVariant::query()->with('product')->whereKey(array_keys($guestQuantities))
             ->available()->get();
 
         foreach ($variants as $variant) {
             $this->assertCompatible($variant, $accountQuantities);
-            $quantity = (int) ($accountQuantities[$variant->id] ?? 0) + (int) $guestItems[$variant->id];
+            $quantity = (int) ($accountQuantities[$variant->id] ?? 0) + (int) $guestQuantities[$variant->id];
             $this->validateQuantity($quantity);
             $accountQuantities[$variant->id] = $quantity;
         }
 
-        DB::transaction(function () use ($variants, $guestItems): void {
+        DB::transaction(function () use ($variants, $guestQuantities): void {
             $cart = auth()->user()->cart()->firstOrCreate([]);
 
             foreach ($variants as $variant) {
                 $item = $cart->items()->firstOrCreate(['product_variant_id' => $variant->id], ['quantity' => 0]);
-                $item->increment('quantity', (int) $guestItems[$variant->id]);
+                $item->increment('quantity', (int) $guestQuantities[$variant->id]);
             }
         });
 

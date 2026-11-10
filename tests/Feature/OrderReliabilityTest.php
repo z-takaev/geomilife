@@ -10,10 +10,10 @@ use App\Models\OrderDocument;
 use App\Models\OrderNotificationDelivery;
 use App\Models\OrderShipment;
 use App\Services\Cdek\Exceptions\CdekApiException;
+use App\Services\Orders\CdekShipmentService;
 use App\Services\Orders\OrderDocumentService;
 use App\Services\Orders\OrderLifecycleService;
 use App\Services\Orders\OrderNotificationService;
-use App\Services\Orders\OrderShipmentService;
 use Illuminate\Http\Client\Request;
 use Illuminate\Queue\Events\JobQueueing;
 use Illuminate\Support\Facades\DB;
@@ -38,7 +38,7 @@ it('сохраняет событие при сбое постановки в о
         throw new RuntimeException('Очередь недоступна');
     });
     try {
-        app(OrderLifecycleService::class)->transition($order, OrderStatusEnum::CONFIRMED, fulfillmentEmployee());
+        app(OrderLifecycleService::class)->advanceStatus($order, OrderStatusEnum::CONFIRMED, fulfillmentEmployee());
     } catch (RuntimeException) {
     } finally {
         Event::forget(JobQueueing::class);
@@ -61,7 +61,7 @@ it('откатывает статус если событие не удалос�
         throw new RuntimeException('Запись события не удалась');
     });
     try {
-        expect(fn () => app(OrderLifecycleService::class)->transition($order, OrderStatusEnum::CONFIRMED, fulfillmentEmployee()))
+        expect(fn () => app(OrderLifecycleService::class)->advanceStatus($order, OrderStatusEnum::CONFIRMED, fulfillmentEmployee()))
             ->toThrow(RuntimeException::class);
     } finally {
         Event::forget($event);
@@ -156,8 +156,8 @@ it('применяет ответ СДЭК атомарно и игнориру�
         'refactoring.cdek.test/v2/orders/*' => Http::sequence()->push($responses[0])->push($responses[1]),
     ]);
     try {
-        app(OrderShipmentService::class)->sync($order);
-        app(OrderShipmentService::class)->sync($order);
+        app(CdekShipmentService::class)->sync($order);
+        app(CdekShipmentService::class)->sync($order);
     } finally {
         Event::forget($event);
     }
@@ -187,7 +187,7 @@ it('не ставит документы после конкурентного �
         'refactoring.cdek.test/v2/orders/*' => Http::response(fulfillmentCdekResponse($shipment->uuid)),
     ]);
     try {
-        app(OrderShipmentService::class)->sync($order);
+        app(CdekShipmentService::class)->sync($order);
     } finally {
         Event::forget($event);
     }

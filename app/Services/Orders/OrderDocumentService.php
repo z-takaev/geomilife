@@ -156,7 +156,7 @@ final class OrderDocumentService
                 'state' => $exception instanceof CdekApiException && ($exception->statusCode === null || $exception->statusCode >= 500) ? 'CREATING' : 'INVALID',
                 'error' => $exception->getMessage(),
             ]);
-            app(OrderNotificationService::class)->send($order, 'DOCUMENT_FAILED', 'document-failed:'.$type.':'.hash('sha256', $exception->getMessage()));
+            app(OrderNotificationService::class)->queue($order, 'DOCUMENT_FAILED', 'document-failed:'.$type.':'.hash('sha256', $exception->getMessage()));
             throw $exception;
         }
     }

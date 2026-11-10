@@ -18,7 +18,7 @@ final class OrderNotificationService
     /**
      * Регистрирует событие заказа и ставит уведомления в очередь после фиксации транзакции.
      */
-    public function send(Order $order, string $event, string $eventKey): void
+    public function queue(Order $order, string $event, string $eventKey): void
     {
         $eventRecord = OrderNotificationDelivery::query()->firstOrCreate(
             ['order_id' => $order->id, 'event_key' => hash('sha256', $eventKey)],

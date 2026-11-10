@@ -70,8 +70,8 @@ it('фиксирует оплату при получении один раз и
     $actor->update(['role' => $role]);
     $payments = app(OrderPaymentService::class);
 
-    $payments->markPaidOnReceipt($order, $actor);
-    $payments->markPaidOnReceipt($order->fresh(), $actor);
+    $payments->markPickupPaid($order, $actor);
+    $payments->markPickupPaid($order->fresh(), $actor);
 
     expect($order->fresh()->payment_status)->toBe(PaymentStatusEnum::PAID)
         ->and(OrderNotificationDelivery::query()->where('order_id', $order->id)->count())->toBe(1);
@@ -81,7 +81,7 @@ it('фиксирует оплату при получении один раз и
 it('запрещает ручную отметку оплаты при неподходящем состоянии заказа', function (array $attributes): void {
     $order = PaymentFixtures::order(array_replace(['payment_method' => PaymentMethodEnum::PICKUP], $attributes));
 
-    expect(fn () => app(OrderPaymentService::class)->markPaidOnReceipt($order, PaymentFixtures::manager()))
+    expect(fn () => app(OrderPaymentService::class)->markPickupPaid($order, PaymentFixtures::manager()))
         ->toThrow(ValidationException::class);
 
     expect($order->fresh()->payment_status)->toBe(PaymentStatusEnum::UNPAID);
@@ -97,7 +97,7 @@ it('не позволяет несохранённому сотруднику п
     $order = PaymentFixtures::order(['payment_method' => PaymentMethodEnum::PICKUP]);
     $actor = new FilamentUser(['role' => FilamentUserRoleEnum::MANAGER]);
 
-    expect(fn () => app(OrderPaymentService::class)->markPaidOnReceipt($order, $actor))
+    expect(fn () => app(OrderPaymentService::class)->markPickupPaid($order, $actor))
         ->toThrow(AuthorizationException::class);
 
     expect($order->fresh()->payment_status)->toBe(PaymentStatusEnum::UNPAID);

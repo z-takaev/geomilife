@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
-final class OrderShipmentService
+final class CdekShipmentService
 {
     public function __construct(private readonly CdekService $cdek) {}
 
@@ -89,8 +89,8 @@ final class OrderShipmentService
             return;
         }
 
-        $remote = $this->cdek->getOrder($shipment->uuid);
-        $this->applyShipmentState($order, $shipment, $remote);
+        $cdekOrder = $this->cdek->getOrder($shipment->uuid);
+        $this->applyShipmentState($order, $shipment, $cdekOrder);
     }
 
     /**
@@ -117,7 +117,7 @@ final class OrderShipmentService
         }
 
         try {
-            $remote = $this->cdek->getOrder($shipment->uuid);
+            $cdekOrder = $this->cdek->getOrder($shipment->uuid);
         } catch (CdekApiException $exception) {
             if ($exception->statusCode === 404 && $shipment->operation_state === 'CANCELLING') {
                 $shipment->update(['operation_state' => 'CANCELLED', 'error' => null, 'last_checked_at' => now()]);
@@ -127,7 +127,7 @@ final class OrderShipmentService
             throw $exception;
         }
 
-        foreach ($remote->operation->requests as $request) {
+        foreach ($cdekOrder->operation->requests as $request) {
             if ($request['type'] === 'DELETE' && $request['state']->isSuccessful()) {
                 $shipment->update(['operation_state' => 'CANCELLED', 'error' => null, 'last_checked_at' => now()]);
 
@@ -135,17 +135,17 @@ final class OrderShipmentService
             }
         }
 
-        if (in_array($remote->statusCode, ['REMOVED', 'DELETED', 'CANCELLED', 'CANCELED'], true)) {
+        if (in_array($cdekOrder->statusCode, ['REMOVED', 'DELETED', 'CANCELLED', 'CANCELED'], true)) {
             $shipment->update(['operation_state' => 'CANCELLED', 'error' => null, 'last_checked_at' => now()]);
 
             return true;
         }
 
-        if ($remote->statusCode === null) {
+        if ($cdekOrder->statusCode === null) {
             return false;
         }
 
-        if ($remote->statusCode !== 'CREATED') {
+        if ($cdekOrder->statusCode !== 'CREATED') {
             throw ValidationException::withMessages(['status' => __('В СДЭК началось движение груза. Отмена заказа недоступна.')]);
         }
 
@@ -244,7 +244,7 @@ final class OrderShipmentService
     private function recoverShipment(Order $order, OrderShipment $shipment): bool
     {
         try {
-            $remote = $this->cdek->findOrder($order->number);
+            $cdekOrder = $this->cdek->findOrder($order->number);
         } catch (CdekApiException $exception) {
             if ($exception->statusCode === 404) {
                 $sentAt = $shipment->payload['request_sent_at'] ?? $shipment->last_checked_at?->toIso8601String() ?? $shipment->created_at?->toIso8601String();
@@ -258,19 +258,19 @@ final class OrderShipmentService
             throw $exception;
         }
 
-        if ($remote->uuid === null) {
+        if ($cdekOrder->uuid === null) {
             return false;
         }
 
-        $shipment->update(['uuid' => $remote->uuid]);
-        $this->applyShipmentState($order, $shipment, $remote);
+        $shipment->update(['uuid' => $cdekOrder->uuid]);
+        $this->applyShipmentState($order, $shipment, $cdekOrder);
 
         return true;
     }
 
-    private function applyShipmentState(Order $order, OrderShipment $shipment, CdekOrderResponseDto $remote): void
+    private function applyShipmentState(Order $order, OrderShipment $shipment, CdekOrderResponseDto $cdekOrder): void
     {
-        DB::transaction(function () use ($order, $shipment, $remote): void {
+        DB::transaction(function () use ($order, $shipment, $cdekOrder): void {
             $order = Order::query()
                 ->lockForUpdate()
                 ->findOrFail($order->id);
@@ -278,13 +278,13 @@ final class OrderShipmentService
                 ->lockForUpdate()
                 ->findOrFail($shipment->id);
 
-            if ($remote->statusDateTime !== null && $shipment->status_at !== null && $remote->statusDateTime < $shipment->status_at) {
+            if ($cdekOrder->statusDateTime !== null && $shipment->status_at !== null && $cdekOrder->statusDateTime < $shipment->status_at) {
                 return;
             }
 
-            $shipment->update($this->shipmentChanges($shipment, $remote));
+            $shipment->update($this->shipmentChanges($shipment, $cdekOrder));
 
-            $status = match ($remote->statusCode) {
+            $status = match ($cdekOrder->statusCode) {
                 'RECEIVED_AT_SHIPMENT_WAREHOUSE', 'ACCEPTED_AT_PICK_UP_POINT', 'READY_FOR_DELIVERY', 'TAKEN_BY_COURIER',
                 'ACCEPTED_AT_TRANSIT_WAREHOUSE', 'ACCEPTED_AT_DELIVERY_WAREHOUSE', 'SENT_TO_TRANSIT_CITY', 'SENT_TO_DELIVERY_CITY' => OrderStatusEnum::SHIPPED,
                 'DELIVERED' => OrderStatusEnum::DELIVERED,
@@ -292,12 +292,12 @@ final class OrderShipmentService
             };
 
             if ($status !== null) {
-                app(OrderLifecycleService::class)->applyShipmentStatus($order, $status);
+                app(OrderLifecycleService::class)->updateStatusFromShipment($order, $status);
             }
 
             $order->refresh();
 
-            if ($this->canPrepareDocuments($order, $shipment, $remote)) {
+            if ($this->canPrepareDocuments($order, $shipment, $cdekOrder)) {
                 PrepareCdekDocumentsJob::dispatch($order->id)->afterCommit();
             }
         });
@@ -305,7 +305,7 @@ final class OrderShipmentService
 
     private function notifyFailure(Order $order, string $message): void
     {
-        app(OrderNotificationService::class)->send($order, 'SHIPPING_FAILED', 'shipping-failed:'.hash('sha256', $message));
+        app(OrderNotificationService::class)->queue($order, 'SHIPPING_FAILED', 'shipping-failed:'.hash('sha256', $message));
     }
 
     private function claimCreation(Order $order, CdekCreateOrderRequestDto $request): OrderShipment
@@ -361,26 +361,26 @@ final class OrderShipmentService
         }
     }
 
-    private function shipmentChanges(OrderShipment $shipment, CdekOrderResponseDto $remote): array
+    private function shipmentChanges(OrderShipment $shipment, CdekOrderResponseDto $cdekOrder): array
     {
         return [
-            'uuid' => $remote->uuid ?? $shipment->uuid,
-            'cdek_number' => $remote->cdekNumber ?? $shipment->cdek_number,
-            'status' => $remote->statusCode ?? $shipment->status,
-            'status_at' => $remote->statusDateTime ?? $shipment->status_at,
-            'request_state' => $remote->operation->state?->value,
+            'uuid' => $cdekOrder->uuid ?? $shipment->uuid,
+            'cdek_number' => $cdekOrder->cdekNumber ?? $shipment->cdek_number,
+            'status' => $cdekOrder->statusCode ?? $shipment->status,
+            'status_at' => $cdekOrder->statusDateTime ?? $shipment->status_at,
+            'request_state' => $cdekOrder->operation->state?->value,
             'operation_state' => in_array($shipment->operation_state, ['CANCELLING', 'CANCELLED', 'CANCEL_FAILED'], true)
                 ? $shipment->operation_state
-                : ($remote->operation->errors !== [] ? 'FAILED'
-                    : (($remote->operation->state?->isSuccessful() ?? false) ? 'REGISTERED' : 'REGISTERING')),
-            'error' => $remote->operation->errors[0]['message'] ?? null,
+                : ($cdekOrder->operation->errors !== [] ? 'FAILED'
+                    : (($cdekOrder->operation->state?->isSuccessful() ?? false) ? 'REGISTERED' : 'REGISTERING')),
+            'error' => $cdekOrder->operation->errors[0]['message'] ?? null,
             'last_checked_at' => now(),
         ];
     }
 
-    private function canPrepareDocuments(Order $order, OrderShipment $shipment, CdekOrderResponseDto $remote): bool
+    private function canPrepareDocuments(Order $order, OrderShipment $shipment, CdekOrderResponseDto $cdekOrder): bool
     {
-        return ($remote->operation->state?->isSuccessful() ?? false) && $remote->operation->errors === []
+        return ($cdekOrder->operation->state?->isSuccessful() ?? false) && $cdekOrder->operation->errors === []
                         && ! $order->status->isCancelled() && $order->cancellation_state === null
                         && ! in_array($shipment->operation_state, ['CANCELLING', 'CANCELLED', 'CANCEL_FAILED'], true);
     }

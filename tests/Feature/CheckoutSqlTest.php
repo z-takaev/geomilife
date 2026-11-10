@@ -109,7 +109,7 @@ it('обновляет итог оплаты без загрузки payload и�
     });
     Http::fake(['bank.test/v2/GetState' => Http::response(PaymentFixtures::state($payment, 'CONFIRMED'))]);
 
-    app(OrderPaymentService::class)->sync($payment);
+    app(OrderPaymentService::class)->syncPayment($payment);
 
     expect($order->fresh()->payment_status)->toBe(PaymentStatusEnum::PAID)
         ->and($loadedHistoricalPayloads)->toBe(0);
@@ -132,7 +132,7 @@ it('не перечитывает один заказ подряд без изм
             $payment->amount, TbankPaymentStatusEnum::NEW, true, '0',
         ));
     } else {
-        app(OrderPaymentService::class)->sync($payment);
+        app(OrderPaymentService::class)->syncPayment($payment);
     }
 
     $queries = DB::getQueryLog();

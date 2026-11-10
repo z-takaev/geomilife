@@ -41,11 +41,11 @@ final class Category extends Model implements HasMedia, Seoable
     protected static function booted(): void
     {
         self::saved(static function (): void {
-            app(CategoryRepository::class)->forget();
+            app(CategoryRepository::class)->clearCatalogCache();
         });
 
         self::deleted(static function (): void {
-            app(CategoryRepository::class)->forget();
+            app(CategoryRepository::class)->clearCatalogCache();
         });
     }
 

@@ -8,7 +8,7 @@ use App\DTO\Cdek\CdekCityResponseDto;
 use App\Models\City;
 use App\Services\Cdek\CdekService;
 
-final class UpdateDeliveryCitiesAction
+final class SyncDeliveryCitiesAction
 {
     private const int PAGE_SIZE = 1000;
 

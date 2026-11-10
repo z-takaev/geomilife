@@ -85,7 +85,7 @@ final class CategoryRepository
             ->get(['id', 'name', 'slug']);
     }
 
-    public function forget(): void
+    public function clearCatalogCache(): void
     {
         Cache::memo()->forget((string) config('cache.items.catalog_categories.key'));
     }

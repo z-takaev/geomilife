@@ -42,7 +42,7 @@ it('читает актуальные количества для корзины
     $storedCart->items()->where('product_variant_id', $variant->id)->update(['quantity' => 3]);
 
     expect($cart->quantities())->toBe([$variant->id => 3])
-        ->and(app(CheckoutService::class)->calculate([])['subtotal']->toRubles())->toBe('2670.00');
+        ->and(app(CheckoutService::class)->calculateOrder([])['subtotal']->toRubles())->toBe('2670.00');
 });
 
 it('хранит гостевую корзину в сессии и считает количество и итог', function (): void {

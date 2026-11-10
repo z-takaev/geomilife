@@ -37,7 +37,7 @@ final class CheckoutService
     /**
      * Возвращает доступные способы получения заказа для города.
      */
-    public function deliveryMethods(?City $city): array
+    public function availableDeliveryMethods(?City $city): array
     {
         if ($city === null || ! $city->is_active) {
             return [];
@@ -63,7 +63,7 @@ final class CheckoutService
     /**
      * Рассчитывает состав, доставку и итоговую стоимость заказа по данным формы.
      */
-    public function calculate(array $form): array
+    public function calculateOrder(array $form): array
     {
         $cartData = $this->calculateCart();
         $items = $cartData['items'];
@@ -92,7 +92,7 @@ final class CheckoutService
             } elseif ($deliveryMethod === DeliveryMethodEnum::COURIER->value) {
                 ['delivery' => $deliveryPrice, 'details' => $deliveryDetails, 'address' => $deliveryAddress] = $this->calculateCourier($city, $form);
                 $address += $deliveryAddress;
-            } elseif ($deliveryMethod === DeliveryMethodEnum::CDEK->value && array_key_exists(DeliveryMethodEnum::CDEK->value, $this->deliveryMethods($city))) {
+            } elseif ($deliveryMethod === DeliveryMethodEnum::CDEK->value && array_key_exists(DeliveryMethodEnum::CDEK->value, $this->availableDeliveryMethods($city))) {
                 [
                     'delivery' => $deliveryPrice,
                     'details' => $deliveryDetails,
@@ -141,7 +141,7 @@ final class CheckoutService
     /**
      * Находит заказ текущего покупателя по ключу идемпотентности.
      */
-    public function findOrder(string $idempotencyKey): ?Order
+    public function findPlacedOrder(string $idempotencyKey): ?Order
     {
         $query = Order::query()->where('idempotency_key', $idempotencyKey);
 
@@ -159,11 +159,11 @@ final class CheckoutService
      */
     public function placeOrder(array $form, string $idempotencyKey, int $quotedTotalMinor): Order
     {
-        if ($existing = $this->findOrder($idempotencyKey)) {
+        if ($existing = $this->findPlacedOrder($idempotencyKey)) {
             return $existing;
         }
 
-        $calculation = $this->calculate($form);
+        $calculation = $this->calculateOrder($form);
         $saved = session('checkout.quotes.'.$idempotencyKey);
 
         if (! is_array($saved) || $quotedTotalMinor !== ($saved['total_minor'] ?? null)
@@ -174,7 +174,7 @@ final class CheckoutService
         $city = $calculation['city'];
         $deliveryMethod = $form['delivery_method'];
 
-        if ($city === null || ! array_key_exists($deliveryMethod, $this->deliveryMethods($city))) {
+        if ($city === null || ! array_key_exists($deliveryMethod, $this->availableDeliveryMethods($city))) {
             throw ValidationException::withMessages(['delivery_method' => __('Выбранный способ получения недоступен.')]);
         }
 
@@ -194,7 +194,7 @@ final class CheckoutService
 
             DB::select('SELECT pg_advisory_xact_lock(hashtext(?))', ['checkout:'.$idempotencyKey]);
 
-            if ($existing = $this->findOrder($idempotencyKey)) {
+            if ($existing = $this->findPlacedOrder($idempotencyKey)) {
                 return $existing;
             }
 
@@ -208,7 +208,7 @@ final class CheckoutService
             $this->rememberDelivery($user, $deliveryMethod, $calculation);
 
             app(CartService::class)->removeOrderedItems($calculation['items']);
-            $this->notifications->send($order, 'CREATED', 'created:'.$order->id);
+            $this->notifications->queue($order, 'CREATED', 'created:'.$order->id);
 
             return $order;
         });

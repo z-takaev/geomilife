@@ -18,7 +18,7 @@ it('предоставляет подписи способов доставки'
 it('ограничивает способы доставки настройками города', function (): void {
     $city = CheckoutFixtures::city(['is_courier_available' => false, 'is_cdek_excluded' => true]);
 
-    expect(app(CheckoutService::class)->deliveryMethods($city))->toBe([
+    expect(app(CheckoutService::class)->availableDeliveryMethods($city))->toBe([
         DeliveryMethodEnum::PICKUP->value => DeliveryMethodEnum::PICKUP->getLabel(),
     ]);
 });

@@ -70,7 +70,7 @@ it('менеджер отменяет оплаченный заказ и воз�
     $manager = PaymentFixtures::manager();
 
     app(OrderLifecycleService::class)->cancel($order, $manager, 'По просьбе покупателя');
-    app(OrderPaymentService::class)->refund($order->fresh());
+    app(OrderPaymentService::class)->cancelOrRefundPayments($order->fresh());
 
     expect(PaymentFixtures::value($order->fresh()->status))->toBe('CANCELLED')
         ->and(PaymentFixtures::value($order->fresh()->payment_status))->toBe('REFUNDED')
@@ -195,7 +195,7 @@ it('ошибка банковского возврата не восстанав
     expect(PaymentFixtures::value($order->fresh()->status))->toBe('CANCELLED')
         ->and(PaymentFixtures::value($order->fresh()->payment_status))->toBe('REFUND_FAILED');
 
-    app(OrderPaymentService::class)->refund($order->fresh());
+    app(OrderPaymentService::class)->cancelOrRefundPayments($order->fresh());
 
     expect(PaymentFixtures::value($order->fresh()->status))->toBe('CANCELLED')
         ->and(PaymentFixtures::value($order->fresh()->payment_status))->toBe('REFUNDED');

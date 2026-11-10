@@ -35,7 +35,7 @@ final class DashboardMetricsService
 
         $revenue = (int) $sales->revenue;
 
-        $repeatCount = $paidOrders->whereNotNull('user_id')
+        $repeatOrderCount = $paidOrders->whereNotNull('user_id')
             ->whereExists(function (QueryBuilder $query): void {
                 $query->selectRaw('1')->from('orders as previous')
                     ->whereColumn('previous.user_id', 'orders.user_id')
@@ -54,7 +54,7 @@ final class DashboardMetricsService
             'orders' => $orderCount,
             'revenue' => $revenue,
             'average' => $paidCount === 0 ? 0 : (int) round($revenue / $paidCount),
-            'repeatPercentage' => $paidCount === 0 ? 0.0 : round($repeatCount / $paidCount * 100, 1),
+            'repeatPercentage' => $paidCount === 0 ? 0.0 : round($repeatOrderCount / $paidCount * 100, 1),
         ];
     }
 

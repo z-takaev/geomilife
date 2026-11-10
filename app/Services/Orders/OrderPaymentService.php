@@ -25,14 +25,14 @@ final class OrderPaymentService
 
     public function __construct(private readonly TbankService $bank) {}
 
-    public function start(Order $order): Payment
+    public function startOnlinePayment(Order $order): Payment
     {
         $payment = $this->claimPaymentAttempt($order);
 
         $this->initializePayment($order, $payment);
 
         if ($order->fresh()->status->isCancelled()) {
-            $this->refund($order);
+            $this->cancelOrRefundPayments($order);
             $payment->update(['payment_url' => null]);
         }
 
@@ -42,7 +42,7 @@ final class OrderPaymentService
     /**
      * Сверяет платёж с Т-Банком и при необходимости возвращает оплату отменённого заказа.
      */
-    public function sync(Payment $payment, bool $refundIfCancelled = true): void
+    public function syncPayment(Payment $payment, bool $refundIfCancelled = true): void
     {
         $payment->refresh();
 
@@ -62,7 +62,7 @@ final class OrderPaymentService
 
         if ($refundIfCancelled && $order->status->isCancelled()
             && in_array($payment->fresh()->status, [PaymentStatusEnum::PAID, PaymentStatusEnum::AUTHORIZED], true)) {
-            $this->refund($order);
+            $this->cancelOrRefundPayments($order);
         }
     }
 
@@ -100,14 +100,14 @@ final class OrderPaymentService
 
         if ($order->status->isCancelled()
             && in_array($payment->fresh()->status, [PaymentStatusEnum::PAID, PaymentStatusEnum::AUTHORIZED], true)) {
-            $this->refund($order);
+            $this->cancelOrRefundPayments($order);
         }
     }
 
     /**
      * Запускает отмену платежей или возврат оплаты отменённого онлайн-заказа.
      */
-    public function refund(Order $order): void
+    public function cancelOrRefundPayments(Order $order): void
     {
         $order->refresh();
 
@@ -123,7 +123,7 @@ final class OrderPaymentService
     /**
      * Фиксирует оплату при самовывозе с проверкой прав сотрудника.
      */
-    public function markPaidOnReceipt(Order $order, FilamentUser $actor): void
+    public function markPickupPaid(Order $order, FilamentUser $actor): void
     {
         $this->assertStaff($actor);
         DB::transaction(function () use ($order): void {
@@ -295,7 +295,7 @@ final class OrderPaymentService
 
     private function notify(Order $order, string $event, string $key): void
     {
-        app(OrderNotificationService::class)->send($order->fresh(), $event, $key);
+        app(OrderNotificationService::class)->queue($order->fresh(), $event, $key);
     }
 
     private function claimPaymentAttempt(Order $order): Payment
@@ -350,7 +350,7 @@ final class OrderPaymentService
         $cancelRequested = false;
 
         try {
-            $this->sync($payment, refundIfCancelled: false);
+            $this->syncPayment($payment, refundIfCancelled: false);
             $payment->refresh();
 
             if (! in_array($payment->status, [PaymentStatusEnum::PENDING, PaymentStatusEnum::PAID,

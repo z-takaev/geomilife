@@ -9,10 +9,10 @@ use App\Enums\Orders\OrderStatusEnum;
 use App\Enums\Orders\PaymentStatusEnum;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Services\Orders\CdekShipmentService;
 use App\Services\Orders\OrderLifecycleService;
 use App\Services\Orders\OrderNotificationService;
 use App\Services\Orders\OrderPaymentService;
-use App\Services\Orders\OrderShipmentService;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -41,7 +41,7 @@ final class ReconcileOrdersCommand extends Command
                         $statuses->resumeCancellation($order);
                     } catch (Throwable $exception) {
                         report($exception);
-                        app(OrderNotificationService::class)->send($order, 'CANCELLATION_FAILED',
+                        app(OrderNotificationService::class)->queue($order, 'CANCELLATION_FAILED',
                             'cancel-reconcile-error:'.$order->id.':'.now()->format('Y-m-d-H'));
                     }
                 }
@@ -59,15 +59,15 @@ final class ReconcileOrdersCommand extends Command
             })->chunkById(100, function ($attempts) use ($payments): void {
                 foreach ($attempts as $payment) {
                     try {
-                        $payments->sync($payment);
+                        $payments->syncPayment($payment);
                         $order = $payment->order()->useWritePdo()->firstOrFail();
 
                         if ($order->status->isCancelled()) {
-                            $payments->refund($order);
+                            $payments->cancelOrRefundPayments($order);
                         }
                     } catch (Throwable $exception) {
                         report($exception);
-                        app(OrderNotificationService::class)->send($payment->order, 'PAYMENT_RECONCILE_FAILED',
+                        app(OrderNotificationService::class)->queue($payment->order, 'PAYMENT_RECONCILE_FAILED',
                             'payment-reconcile-error:'.$payment->id.':'.now()->format('Y-m-d-H'));
                     }
                 }
@@ -87,7 +87,7 @@ final class ReconcileOrdersCommand extends Command
             })->with('shipment')->chunkById(100, function ($orders): void {
                 foreach ($orders as $order) {
                     try {
-                        $shipments = app(OrderShipmentService::class);
+                        $shipments = app(CdekShipmentService::class);
                         if ($order->status->isReadyToShip()
                             && ($order->shipment === null || $order->shipment->operation_state === 'ABSENT')) {
                             $shipments->create($order);
@@ -96,7 +96,7 @@ final class ReconcileOrdersCommand extends Command
                         }
                     } catch (Throwable $exception) {
                         report($exception);
-                        app(OrderNotificationService::class)->send($order, 'SHIPPING_FAILED',
+                        app(OrderNotificationService::class)->queue($order, 'SHIPPING_FAILED',
                             'shipment-check:'.$order->id.':'.now()->format('Y-m-d-H'));
                     }
                 }

@@ -54,12 +54,12 @@ final class ProductVariant extends Model
     {
         self::saved(static function (self $variant): void {
             if ($variant->wasRecentlyCreated || $variant->wasChanged(['product_id', 'is_active'])) {
-                app(CategoryRepository::class)->forget();
+                app(CategoryRepository::class)->clearCatalogCache();
             }
         });
 
         self::deleted(static function (): void {
-            app(CategoryRepository::class)->forget();
+            app(CategoryRepository::class)->clearCatalogCache();
         });
     }
 

@@ -32,7 +32,7 @@ it('инициирует онлайн оплату нового заказа н�
         'Status' => 'NEW', 'PaymentURL' => 'https://bank.test/pay/100001',
     ]));
 
-    $payment = app(OrderPaymentService::class)->start($order);
+    $payment = app(OrderPaymentService::class)->startOnlinePayment($order);
 
     expect($payment->order_id)->toBe($order->id)
         ->and($payment->amount->minorAmount())->toBe(135000)
@@ -48,7 +48,7 @@ it('не инициирует оплаченный отменённый или �
     $order = PaymentFixtures::order($attributes);
     Http::fake();
 
-    expect(fn () => app(OrderPaymentService::class)->start($order))->toThrow(ValidationException::class);
+    expect(fn () => app(OrderPaymentService::class)->startOnlinePayment($order))->toThrow(ValidationException::class);
 
     Http::assertNotSent(fn (Request $request): bool => str_ends_with($request->url(), '/Init'));
 })->with([
@@ -62,7 +62,7 @@ it('ошибка банка не удаляет созданный заказ и
     Http::fake(['bank.test/*' => Http::failedConnection()]);
 
     try {
-        app(OrderPaymentService::class)->start($order);
+        app(OrderPaymentService::class)->startOnlinePayment($order);
     } catch (TbankApiException) {
     }
 
@@ -135,7 +135,7 @@ it('сверяет отменённый банком платёж без авт�
     $payment = PaymentFixtures::payment($order);
     Http::fake(['bank.test/v2/GetState' => Http::response(PaymentFixtures::state($payment, 'DEADLINE_EXPIRED'))]);
 
-    app(OrderPaymentService::class)->sync($payment);
+    app(OrderPaymentService::class)->syncPayment($payment);
 
     expect(PaymentFixtures::value($order->fresh()->status))->toBe('NEW')
         ->and(PaymentFixtures::value($order->fresh()->payment_status))->toBe('CANCELLED');
@@ -147,7 +147,7 @@ it('при сверке сохраняет подтверждённую банк
     $payment = PaymentFixtures::payment($order);
     Http::fake(['bank.test/v2/GetState' => Http::response(PaymentFixtures::state($payment, 'CONFIRMED'))]);
 
-    app(OrderPaymentService::class)->sync($payment);
+    app(OrderPaymentService::class)->syncPayment($payment);
 
     expect(PaymentFixtures::value($order->fresh()->status))->toBe('NEW')
         ->and(PaymentFixtures::value($order->fresh()->payment_status))->toBe('PAID');
@@ -158,7 +158,7 @@ it('недоступность банка при сверке не меняет 
     $payment = PaymentFixtures::payment($order);
     Http::fake(['bank.test/*' => Http::failedConnection()]);
 
-    expect(fn () => app(OrderPaymentService::class)->sync($payment))->toThrow(TbankApiException::class);
+    expect(fn () => app(OrderPaymentService::class)->syncPayment($payment))->toThrow(TbankApiException::class);
 
     expect(PaymentFixtures::value($order->fresh()->status))->toBe('NEW')
         ->and(PaymentFixtures::value($order->fresh()->payment_status))->toBe('UNPAID');
@@ -185,7 +185,7 @@ it('после таймаута инициализации восстанавл�
     Http::fake(['bank.test/v2/Init' => Http::failedConnection()]);
 
     try {
-        app(OrderPaymentService::class)->start($order);
+        app(OrderPaymentService::class)->startOnlinePayment($order);
     } catch (TbankApiException) {
     }
 
@@ -218,7 +218,7 @@ it('после таймаута инициализации восстанавл�
         ]);
     });
 
-    app(OrderPaymentService::class)->sync($pending);
+    app(OrderPaymentService::class)->syncPayment($pending);
     $recovered = $pending->fresh();
 
     expect($recovered->id)->toBe($pending->id)

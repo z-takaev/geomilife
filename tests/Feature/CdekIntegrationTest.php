@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Actions\Cdek\UpdateDeliveryCitiesAction;
+use App\Actions\Cdek\SyncDeliveryCitiesAction;
 use App\DTO\Cdek\CdekCityResponseDto;
 use App\DTO\Cdek\CdekGetDeliveryPointsRequestDto;
 use App\Models\City;
@@ -106,8 +106,8 @@ it('обновляет справочник без дублей и сохран�
         'cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600]),
         'cdek.test/v2/location/cities*' => Http::response([['code' => 44, 'city' => 'Москва', 'region' => 'Москва'], ['code' => 137, 'city' => 'Санкт-Петербург']]),
     ]);
-    expect(app(UpdateDeliveryCitiesAction::class)->run())->toBe(2);
-    expect(app(UpdateDeliveryCitiesAction::class)->run())->toBe(2);
+    expect(app(SyncDeliveryCitiesAction::class)->run())->toBe(2);
+    expect(app(SyncDeliveryCitiesAction::class)->run())->toBe(2);
     $this->assertDatabaseCount('cities', 2);
     expect($city->fresh()->name)->toBe('Москва')->and($city->fresh()->is_active)->toBeFalse()
         ->and($city->fresh()->is_pickup_available)->toBeTrue()
@@ -120,7 +120,7 @@ it('загружает следующую страницу после полно
         'cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600]),
         'cdek.test/v2/location/cities*' => Http::sequence()->push($cities)->push([['code' => 1001, 'city' => 'Последний']]),
     ]);
-    expect(app(UpdateDeliveryCitiesAction::class)->run())->toBe(1001);
+    expect(app(SyncDeliveryCitiesAction::class)->run())->toBe(1001);
     $this->assertDatabaseCount('cities', 1001);
     Http::assertSent(fn (Request $request): bool => $request->method() === 'GET' && $request['page'] === 1);
 });
@@ -130,7 +130,7 @@ it('не записывает частично страницу с повреж�
         'cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600]),
         'cdek.test/v2/location/cities*' => Http::response([['code' => 44, 'city' => 'Москва'], ['code' => 'invalid', 'city' => 'Ошибка']]),
     ]);
-    expect(fn () => app(UpdateDeliveryCitiesAction::class)->run())->toThrow(CdekApiException::class);
+    expect(fn () => app(SyncDeliveryCitiesAction::class)->run())->toThrow(CdekApiException::class);
     $this->assertDatabaseCount('cities', 0);
 });
 

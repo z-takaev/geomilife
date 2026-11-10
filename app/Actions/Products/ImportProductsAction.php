@@ -23,7 +23,7 @@ final class ImportProductsAction
     public function handle(string $path): int
     {
         return DB::transaction(function () use ($path): int {
-            $changes = $this->read($path);
+            $changes = $this->collectChanges($path);
             foreach ($changes as $change) {
                 $change['record']->save();
             }
@@ -34,7 +34,7 @@ final class ImportProductsAction
 
     public function preview(string $path): string
     {
-        $changes = $this->read($path);
+        $changes = $this->collectChanges($path);
 
         return 'Будет обновлено записей: '.$changes->count()."\n\n".$changes->map(function (array $change): string {
             $record = $change['record'];
@@ -44,7 +44,7 @@ final class ImportProductsAction
         })->implode("\n\n");
     }
 
-    private function read(string $path): Collection
+    private function collectChanges(string $path): Collection
     {
         [$rows, $headerColumns] = $this->readSpreadsheet($path);
 

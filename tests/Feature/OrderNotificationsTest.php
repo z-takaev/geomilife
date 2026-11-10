@@ -43,7 +43,7 @@ it('направляет уведомление на email получателя 
         'first_name' => 'Владелец', 'email' => 'profile@example.test', 'password' => 'password',
     ]);
     $order = notificationOrder($user);
-    app(OrderNotificationService::class)->send($order, 'CREATED', 'created');
+    app(OrderNotificationService::class)->queue($order, 'CREATED', 'created');
 
     Notification::assertSentOnDemand(OrderUpdateNotification::class,
         fn (OrderUpdateNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notification->audience === 'BUYER'
@@ -57,7 +57,7 @@ it('добавляет Telegram покупателя только при вкл�
         'first_name' => 'Владелец', 'email' => 'profile@example.test', 'password' => 'password',
         'telegram_chat_id' => '1234567', 'telegram_notifications_enabled' => $enabled,
     ]);
-    app(OrderNotificationService::class)->send(notificationOrder($user), 'CREATED', 'created');
+    app(OrderNotificationService::class)->queue(notificationOrder($user), 'CREATED', 'created');
 
     Notification::assertSentOnDemand(OrderUpdateNotification::class,
         fn (OrderUpdateNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notification->audience === 'BUYER'
@@ -65,7 +65,7 @@ it('добавляет Telegram покупателя только при вкл�
 })->with([true, false]);
 
 it('уведомляет менеджеров о новом заказе и не отправляет Telegram гостю', function (): void {
-    app(OrderNotificationService::class)->send(notificationOrder(), 'CREATED', 'created');
+    app(OrderNotificationService::class)->queue(notificationOrder(), 'CREATED', 'created');
 
     Notification::assertSentOnDemand(OrderUpdateNotification::class,
         fn (OrderUpdateNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notification->audience === 'MANAGER'
@@ -78,15 +78,15 @@ it('уведомляет менеджеров о новом заказе и не
 it('не создаёт повторных уведомлений при повторной обработке одного бизнес-события', function (): void {
     $order = notificationOrder();
     $service = app(OrderNotificationService::class);
-    $service->send($order, 'CREATED', 'created');
-    $service->send($order, 'CREATED', 'created');
+    $service->queue($order, 'CREATED', 'created');
+    $service->queue($order, 'CREATED', 'created');
 
     Notification::assertSentOnDemandTimes(OrderUpdateNotification::class, 2);
 });
 
 it('письмо гостю содержит номер заказа и событие без ссылки доступа', function (): void {
     $order = notificationOrder();
-    app(OrderNotificationService::class)->send($order, 'REFUNDED', 'refund-1');
+    app(OrderNotificationService::class)->queue($order, 'REFUNDED', 'refund-1');
 
     Notification::assertSentOnDemand(OrderUpdateNotification::class,
         function (OrderUpdateNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool {

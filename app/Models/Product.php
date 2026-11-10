@@ -47,12 +47,12 @@ final class Product extends Model implements HasMedia, Seoable
     {
         self::saved(static function (self $product): void {
             if ($product->wasRecentlyCreated || $product->wasChanged(['category_id', 'is_active'])) {
-                app(CategoryRepository::class)->forget();
+                app(CategoryRepository::class)->clearCatalogCache();
             }
         });
 
         self::deleted(static function (): void {
-            app(CategoryRepository::class)->forget();
+            app(CategoryRepository::class)->clearCatalogCache();
         });
     }
 

@@ -15,7 +15,7 @@ it('сохраняет выбранный город без запроса ге�
     session()->put('city.id', $city->id);
     Http::fake();
 
-    expect(app(CurrentCityService::class)->detect()?->id)->toBe($city->id);
+    expect(app(CurrentCityService::class)->getOrDetect()?->id)->toBe($city->id);
 
     Http::assertNothingSent();
 });
@@ -25,7 +25,7 @@ it('сохраняет определённый по IP город в сесси
     request()->server->set('REMOTE_ADDR', '8.8.8.8');
     Http::fake(['*' => Http::response(['success' => true, 'country_code' => 'RU', 'city' => 'Москва'])]);
 
-    expect(app(CurrentCityService::class)->detect()?->id)->toBe($city->id)
+    expect(app(CurrentCityService::class)->getOrDetect()?->id)->toBe($city->id)
         ->and(session('city.id'))->toBe($city->id)
         ->and(Cookie::queued('city_id')->getValue())->toBe((string) $city->id);
 

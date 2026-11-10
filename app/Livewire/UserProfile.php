@@ -46,7 +46,7 @@ final class UserProfile extends Component
 
     public function setDefaultAddress(int $addressId): void
     {
-        app(SavedDeliveryLocationService::class)->selectAddress(auth()->user(), $addressId);
+        app(SavedDeliveryLocationService::class)->setDefaultAddress(auth()->user(), $addressId);
         $this->dispatch('notify', message: __('Активный адрес обновлен.'), type: 'success');
     }
 
@@ -57,7 +57,7 @@ final class UserProfile extends Component
 
     public function setDefaultDeliveryPoint(int $pointId): void
     {
-        app(SavedDeliveryLocationService::class)->selectDeliveryPoint(auth()->user(), $pointId);
+        app(SavedDeliveryLocationService::class)->setDefaultDeliveryPoint(auth()->user(), $pointId);
         $this->dispatch('notify', message: __('Активный пункт обновлён.'), type: 'success');
     }
 

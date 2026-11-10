@@ -55,7 +55,7 @@ final class CurrentCityService
     /**
      * Возвращает выбранный город или определяет и запоминает город по IP-адресу.
      */
-    public function detect(): ?City
+    public function getOrDetect(): ?City
     {
         $currentCity = $this->current();
 

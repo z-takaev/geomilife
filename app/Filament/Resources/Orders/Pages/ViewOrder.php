@@ -9,9 +9,9 @@ use App\Enums\Orders\PaymentStatusEnum;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Jobs\Orders\CreateCdekShipmentJob;
 use App\Jobs\Orders\PrepareCdekDocumentsJob;
+use App\Services\Orders\CdekShipmentService;
 use App\Services\Orders\OrderLifecycleService;
 use App\Services\Orders\OrderPaymentService;
-use App\Services\Orders\OrderShipmentService;
 use App\ViewModel\Orders\OrderViewModel;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -37,7 +37,7 @@ final class ViewOrder extends ViewRecord
                 ->modalSubmitActionLabel('Подтвердить')
                 ->requiresConfirmation()
                 ->visible(fn (): bool => $this->nextStatus() === $status)
-                ->action(fn () => $this->perform(fn () => app(OrderLifecycleService::class)->transition($this->getRecord(), $status, auth('filament')->user())));
+                ->action(fn () => $this->perform(fn () => app(OrderLifecycleService::class)->advanceStatus($this->getRecord(), $status, auth('filament')->user())));
         }
 
         return [
@@ -54,7 +54,7 @@ final class ViewOrder extends ViewRecord
                     && $this->getRecord()->payment_method->isPickup()
                     && ! $this->getRecord()->payment_status->isPaid()
                     && ! in_array($this->getRecord()->status, [OrderStatusEnum::CANCELLED, OrderStatusEnum::DELIVERED], true))
-                ->action(fn () => $this->perform(fn () => app(OrderPaymentService::class)->markPaidOnReceipt($this->getRecord(), auth('filament')->user()))),
+                ->action(fn () => $this->perform(fn () => app(OrderPaymentService::class)->markPickupPaid($this->getRecord(), auth('filament')->user()))),
 
         ];
     }
@@ -89,7 +89,7 @@ final class ViewOrder extends ViewRecord
                     ->modalSubmitActionLabel('Сверить оплату')
                     ->action(fn () => $this->perform(function (): void {
                         foreach ($this->getRecord()->payments as $payment) {
-                            app(OrderPaymentService::class)->sync($payment);
+                            app(OrderPaymentService::class)->syncPayment($payment);
                         }
                     })),
 
@@ -99,12 +99,12 @@ final class ViewOrder extends ViewRecord
                     ->visible(fn (): bool => $this->getRecord()->status->isCancelled()
                         && in_array($this->getRecord()->payment_status, [PaymentStatusEnum::REFUND_PENDING, PaymentStatusEnum::REFUND_FAILED, PaymentStatusEnum::PAID], true)
                         && $this->getRecord()->payment_method->isOnline())
-                    ->action(fn () => $this->perform(fn () => app(OrderPaymentService::class)->refund($this->getRecord()))),
+                    ->action(fn () => $this->perform(fn () => app(OrderPaymentService::class)->cancelOrRefundPayments($this->getRecord()))),
 
                 Action::make('checkShipment')
                     ->label('Проверить СДЭК')
                     ->visible(fn (): bool => $this->getRecord()->shipment !== null)
-                    ->action(fn () => $this->perform(fn () => app(OrderShipmentService::class)->sync($this->getRecord()))),
+                    ->action(fn () => $this->perform(fn () => app(CdekShipmentService::class)->sync($this->getRecord()))),
 
                 Action::make('retryShipment')
                     ->label('Повторить регистрацию СДЭК')

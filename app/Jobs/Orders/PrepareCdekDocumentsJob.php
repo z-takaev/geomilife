@@ -34,7 +34,7 @@ final class PrepareCdekDocumentsJob implements ShouldQueue
                 if ($this->pollAttempt < 10) {
                     self::dispatch($order->id, $this->pollAttempt + 1)->delay(now()->addSeconds(30))->afterCommit();
                 } else {
-                    app(OrderNotificationService::class)->send($order, 'DOCUMENT_FAILED', 'document-preparation-delayed');
+                    app(OrderNotificationService::class)->queue($order, 'DOCUMENT_FAILED', 'document-preparation-delayed');
                 }
             }
         }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Jobs\Orders;
 
 use App\Models\Order;
-use App\Services\Orders\OrderShipmentService;
+use App\Services\Orders\CdekShipmentService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
@@ -22,7 +22,7 @@ final class SyncCdekShipmentJob implements ShouldQueue
         return [30, 120, 600];
     }
 
-    public function handle(OrderShipmentService $service): void
+    public function handle(CdekShipmentService $service): void
     {
         $order = Order::query()->find($this->orderId);
 

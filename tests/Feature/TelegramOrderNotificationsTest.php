@@ -30,7 +30,7 @@ it('сообщает менеджерам о новом заказе отдел�
     expect($notification->toTelegram(new AnonymousNotifiable))
         ->toBe("Заказ №{$order->number}\nПоступил новый заказ.\nСумма: {$order->total->format()}\n{$order->customer_name}\n{$order->customer_phone}");
 
-    app(OrderNotificationService::class)->send($order, 'CREATED', 'created');
+    app(OrderNotificationService::class)->queue($order, 'CREATED', 'created');
     Notification::assertSentOnDemandTimes(OrderUpdateNotification::class, 2);
     Notification::assertSentOnDemand(OrderUpdateNotification::class,
         fn (OrderUpdateNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notification->audience === 'MANAGER'
@@ -38,7 +38,7 @@ it('сообщает менеджерам о новом заказе отдел�
 });
 
 it('уведомляет о последующих статусах только покупателя', function (string $event): void {
-    app(OrderNotificationService::class)->send(fulfillmentOrder(), $event, $event);
+    app(OrderNotificationService::class)->queue(fulfillmentOrder(), $event, $event);
 
     Notification::assertSentOnDemandTimes(OrderUpdateNotification::class, 1);
     Notification::assertSentOnDemand(OrderUpdateNotification::class,
@@ -46,7 +46,7 @@ it('уведомляет о последующих статусах только
 })->with(['PAYMENT_PAID', 'PAID', 'CONFIRMED', 'READY_FOR_PICKUP', 'READY_TO_SHIP', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED']);
 
 it('сохраняет сообщения менеджерам об ошибках', function (string $event): void {
-    app(OrderNotificationService::class)->send(fulfillmentOrder(), $event, $event);
+    app(OrderNotificationService::class)->queue(fulfillmentOrder(), $event, $event);
 
     Notification::assertSentOnDemandTimes(OrderUpdateNotification::class, 1);
     Notification::assertSentOnDemand(OrderUpdateNotification::class,

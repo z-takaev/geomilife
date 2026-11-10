@@ -43,7 +43,7 @@ it('не создаёт новую попытку оплаты существу�
     $order = PaymentFixtures::order();
     PaymentFixtures::payment($order, ['status' => $status]);
 
-    expect(fn () => app(OrderPaymentService::class)->start($order))->toThrow(ValidationException::class);
+    expect(fn () => app(OrderPaymentService::class)->startOnlinePayment($order))->toThrow(ValidationException::class);
     expect($order->payments()->count())->toBe(1);
     Http::assertNothingSent();
 })->with(['PENDING', 'FAILED', 'CANCELLED', 'AUTHORIZED']);
