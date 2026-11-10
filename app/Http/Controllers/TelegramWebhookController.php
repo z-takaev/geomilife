@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Webhooks\TelegramWebhookRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use SergiX44\Nutgram\Nutgram;
@@ -17,7 +18,7 @@ final class TelegramWebhookController extends Controller
         abort_if($secret === '' || blank(config('telegram.bot_token')), 503);
         abort_unless(hash_equals($secret, (string) $request->header('X-Telegram-Bot-Api-Secret-Token')), 403);
 
-        $request->validate(['update_id' => ['required', 'integer']]);
+        app(TelegramWebhookRequest::class);
 
         $bot = app(Nutgram::class);
         $bot->setRunningMode(Webhook::class);

@@ -53,6 +53,17 @@ it('проверяет формат входящего webhook после про
         ->assertUnprocessable()->assertJsonValidationErrors('update_id');
 });
 
+it('проверяет конфигурацию и секрет до проверки обязательного поля webhook', function (): void {
+    config(['telegram.bot_token' => '', 'telegram.webhook_secret' => 'secret']);
+    $this->postJson(route('telegram.webhook'))->assertServiceUnavailable();
+
+    config(['telegram.bot_token' => 'token']);
+    $this->postJson(route('telegram.webhook'))->assertForbidden();
+
+    $this->postJson(route('telegram.webhook'), [], ['X-Telegram-Bot-Api-Secret-Token' => 'secret'])
+        ->assertUnprocessable()->assertJsonValidationErrors('update_id');
+});
+
 it('подключает Telegram одноразовым токеном только в личном чате', function (): void {
     $user = User::query()->create(['first_name' => 'Иван', 'email' => 'buyer@example.com', 'password' => 'Password123']);
     $token = str_repeat('a', 64);

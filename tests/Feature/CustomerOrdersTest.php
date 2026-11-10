@@ -97,3 +97,27 @@ it('владелец может отменить только новый зак�
     $this->assertDatabaseHas('orders', ['id' => $foreign->getKey(), 'status' => 'NEW']);
     Http::assertNothingSent();
 });
+
+it('проверяет владельца и состояние заказа до валидации причины отмены', function (): void {
+    $user = CheckoutFixtures::user();
+    $new = CheckoutFixtures::order($user);
+    $confirmed = CheckoutFixtures::order($user, ['status' => 'CONFIRMED']);
+    $pending = CheckoutFixtures::order($user, ['cancellation_state' => 'PENDING']);
+    $foreign = CheckoutFixtures::order(CheckoutFixtures::user());
+    $payload = ['reason' => str_repeat('а', 1001)];
+
+    $this->actingAs($user)->postJson(route('orders.cancel', $foreign), $payload)->assertNotFound();
+    $this->postJson(route('orders.cancel', $confirmed), $payload)->assertForbidden();
+    $this->postJson(route('orders.cancel', $pending), $payload)->assertForbidden();
+    $this->postJson(route('orders.cancel', $new), $payload)->assertUnprocessable()->assertJsonValidationErrors('reason');
+    $this->assertDatabaseHas('orders', ['id' => $new->id, 'status' => 'NEW', 'cancellation_state' => null]);
+});
+
+it('использует причину по умолчанию при отмене заказа без причины', function (): void {
+    $user = CheckoutFixtures::user();
+    $order = CheckoutFixtures::order($user);
+
+    $this->actingAs($user)->post(route('orders.cancel', $order))->assertRedirect(route('orders.show', $order));
+
+    $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'CANCELLED', 'cancellation_reason' => __('Отмена покупателем')]);
+});
