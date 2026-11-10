@@ -54,11 +54,10 @@ final class SavedDeliveryLocationService
     {
         return DB::transaction(function () use ($user, $city, $point): SavedDeliveryPoint {
             $this->lockUser($user);
-            $query = $this->savedPoints($user);
+            $query = $user->savedDeliveryPoints();
             $saved = (clone $query)->firstOrNew(['code' => $point->code]);
             $query->update(['is_default' => false]);
             $saved->fill([
-                'user_id' => $user->getKey(),
                 'city_id' => $city->getKey(),
                 'type' => $point->type,
                 'address' => $point->address,
@@ -66,7 +65,7 @@ final class SavedDeliveryLocationService
                 'is_default' => true,
                 'last_used_at' => now(),
             ])->save();
-            $this->removeOverflow($this->savedPoints($user), $saved->getKey());
+            $this->removeOverflow($user->savedDeliveryPoints()->getQuery(), $saved->getKey());
 
             return $saved;
         });
@@ -114,8 +113,8 @@ final class SavedDeliveryLocationService
     {
         DB::transaction(function () use ($user, $id): void {
             $this->lockUser($user);
-            $point = $this->savedPoints($user)->findOrFail($id);
-            $this->savedPoints($user)->update(['is_default' => false]);
+            $point = $user->savedDeliveryPoints()->findOrFail($id);
+            $user->savedDeliveryPoints()->update(['is_default' => false]);
             $point->update(['is_default' => true]);
         });
     }
@@ -127,12 +126,12 @@ final class SavedDeliveryLocationService
     {
         DB::transaction(function () use ($user, $id): void {
             $this->lockUser($user);
-            $point = $this->savedPoints($user)->findOrFail($id);
+            $point = $user->savedDeliveryPoints()->findOrFail($id);
             $active = $point->is_default;
             $point->delete();
 
             if ($active) {
-                $this->orderByRecent($this->savedPoints($user))->first()?->update(['is_default' => true]);
+                $this->orderByRecent($user->savedDeliveryPoints()->getQuery())->first()?->update(['is_default' => true]);
             }
         });
     }
@@ -143,11 +142,6 @@ final class SavedDeliveryLocationService
             ->whereKey($user->getKey())
             ->lockForUpdate()
             ->firstOrFail();
-    }
-
-    private function savedPoints(User $user): Builder
-    {
-        return SavedDeliveryPoint::query()->where('user_id', $user->getKey());
     }
 
     private function orderByRecent(Builder $query): Builder

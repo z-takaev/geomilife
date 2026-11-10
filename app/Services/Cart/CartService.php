@@ -43,7 +43,7 @@ final class CartService
         }
 
         $variants = ProductVariant::query()->with('product.media')->whereKey(array_keys($quantities))
-            ->where('is_active', true)->whereHas('product', static fn ($query) => $query->available())->get();
+            ->available()->get();
         $items = [];
 
         foreach ($variants as $variant) {
@@ -95,8 +95,7 @@ final class CartService
         $variant = ProductVariant::query()
             ->with('product')
             ->whereKey($variantId)
-            ->where('is_active', true)
-            ->whereHas('product', static fn ($query) => $query->available())
+            ->available()
             ->firstOrFail();
 
         $quantities = $this->quantities();
@@ -247,7 +246,7 @@ final class CartService
         $accountQuantities = $this->quantities();
 
         $variants = ProductVariant::query()->with('product')->whereKey(array_keys($guestItems))
-            ->where('is_active', true)->whereHas('product', static fn ($query) => $query->available())->get();
+            ->available()->get();
 
         foreach ($variants as $variant) {
             $this->assertCompatible($variant, $accountQuantities);

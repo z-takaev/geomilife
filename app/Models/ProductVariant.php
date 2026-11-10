@@ -78,6 +78,11 @@ final class ProductVariant extends Model
         $query->where('is_active', true);
     }
 
+    public function scopeAvailable(Builder $query): void
+    {
+        $query->active()->whereHas('product', static fn (Builder $query): Builder => $query->available());
+    }
+
     public function label(): string
     {
         $value = rtrim(rtrim($this->value, '0'), '.');

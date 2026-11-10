@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Events\Tbank\TbankPaymentNotificationReceived;
+use App\Services\Orders\OrderPaymentService;
 use App\Services\Tbank\TbankService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -13,7 +13,7 @@ use JsonException;
 
 final class TbankWebhookController extends Controller
 {
-    public function __invoke(Request $request, TbankService $tbank): Response
+    public function __invoke(Request $request, TbankService $tbank, OrderPaymentService $payments): Response
     {
         abort_unless($request->isJson(), 415);
 
@@ -27,7 +27,7 @@ final class TbankWebhookController extends Controller
             throw ValidationException::withMessages(['notification' => 'Ожидается JSON-объект уведомления Т-Банка.']);
         }
 
-        TbankPaymentNotificationReceived::dispatch($tbank->parsePaymentNotification($data));
+        $payments->handleBankNotification($tbank->parsePaymentNotification($data));
 
         return response('OK', 200)->header('Content-Type', 'text/plain; charset=UTF-8');
     }

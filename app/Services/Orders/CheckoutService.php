@@ -11,7 +11,6 @@ use App\DTO\Cdek\CdekLocationDto;
 use App\DTO\Cdek\CdekPackageDto;
 use App\Enums\Orders\DeliveryMethodEnum;
 use App\Enums\Orders\OrderStatusEnum;
-use App\Enums\Orders\PaymentMethodEnum;
 use App\Enums\Orders\PaymentStatusEnum;
 use App\Models\City;
 use App\Models\Order;
@@ -241,7 +240,7 @@ final class CheckoutService
         $variants = ProductVariant::query()
             ->with('product.media')
             ->whereKey(array_keys($quantities))
-            ->where('is_active', true)->whereHas('product', static fn ($query) => $query->available())->get();
+            ->available()->get();
 
         if ($variants->count() !== count($quantities) || $variants->pluck('is_preorder')->unique()->count() > 1) {
             throw ValidationException::withMessages(['cart' => __('Состав корзины изменился. Проверьте доступность товаров.')]);
@@ -368,7 +367,7 @@ final class CheckoutService
             ->lockForUpdate()
             ->get();
         $variants = ProductVariant::query()->whereKey(array_column($items, 'product_variant_id'))
-            ->where('is_active', true)->whereHas('product', static fn ($query) => $query->available())
+            ->available()
             ->orderBy('id')->lockForUpdate()->get()->keyBy('id');
 
         foreach ($items as $item) {
@@ -413,8 +412,6 @@ final class CheckoutService
             'packages' => $calculation['packages'],
             'comment' => $form['comment'] ?? null,
             'is_preorder' => $calculation['is_preorder'],
-            'payment_expires_at' => $form['payment_method'] === PaymentMethodEnum::ONLINE->value ? now()->addMinutes((int) config('orders.payment_timeout_minutes')) : null,
-            'guest_token' => (string) Str::uuid(),
             'idempotency_key' => $idempotencyKey,
             'checkout_session_hash' => $this->sessionHash(),
         ]);

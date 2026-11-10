@@ -134,6 +134,80 @@ it('импортирует целые цены и позволяет очист�
         ->and($variant->fresh()->old_price?->toRubles())->toBe($oldPrice === null ? null : '1200.00');
 })->with([1200, null]);
 
+it('предпросмотр импорта не сохраняет изменения', function (): void {
+    Gate::before(static fn (): bool => true);
+    $variant = pricingVariant();
+    $path = pricingSpreadsheet($variant, ['price' => 800, 'old_price' => 1000]);
+
+    expect(app(ImportProductsAction::class)->preview($path))->toContain('Будет обновлено записей: 1', '750 ₽ → 800 ₽')
+        ->and($variant->fresh()->price->toRubles())->toBe('750.00');
+});
+
+it('импортирует прежний формат Excel без изменения габаритов', function (): void {
+    Gate::before(static fn (): bool => true);
+    $variant = pricingVariant();
+    $path = pricingSpreadsheet($variant, ['price' => 800, 'old_price' => null]);
+    $spreadsheet = IOFactory::load($path);
+    try {
+        $spreadsheet->getActiveSheet()->removeColumn('O', 4);
+        (new Xlsx($spreadsheet))->save($path);
+    } finally {
+        $spreadsheet->disconnectWorksheets();
+    }
+
+    expect(app(ImportProductsAction::class)->handle($path))->toBe(1)
+        ->and($variant->fresh()->price->toRubles())->toBe('800.00')
+        ->and($variant->fresh()->only(['weight', 'length', 'width', 'height']))
+        ->toBe($variant->only(['weight', 'length', 'width', 'height']));
+});
+
+it('собирает ошибки разных строк и не сохраняет корректные изменения при ошибках импорта', function (): void {
+    Gate::before(static fn (): bool => true);
+    $variant = pricingVariant();
+    $path = pricingSpreadsheet($variant, ['price' => 800, 'old_price' => null]);
+    $spreadsheet = IOFactory::load($path);
+    try {
+        $spreadsheet->getActiveSheet()->fromArray([
+            ['Товар', 999999998, null, 'Отсутствующий товар', 'Нет', 'Нет', 'Нет'],
+            ['Товар', 999999999, null, 'Другой отсутствующий товар', 'Нет', 'Нет', 'Нет'],
+        ], null, 'A3');
+        (new Xlsx($spreadsheet))->save($path);
+    } finally {
+        $spreadsheet->disconnectWorksheets();
+    }
+
+    try {
+        app(ImportProductsAction::class)->handle($path);
+        $this->fail('Импорт должен отклонить строки с отсутствующими товарами.');
+    } catch (ValidationException $exception) {
+        expect($exception->errors()['file'])->toHaveCount(2)
+            ->and(implode(' ', $exception->errors()['file']))->toContain('Строка 3:', 'Строка 4:');
+    }
+
+    expect($variant->fresh()->price->toRubles())->toBe('750.00');
+});
+
+it('отклоняет формулы и повторные строки Excel без сохранения', function (bool $formula): void {
+    Gate::before(static fn (): bool => true);
+    $variant = pricingVariant();
+    $path = pricingSpreadsheet($variant, ['price' => 800, 'old_price' => null]);
+    $spreadsheet = IOFactory::load($path);
+    try {
+        $sheet = $spreadsheet->getActiveSheet();
+        if ($formula) {
+            $sheet->setCellValue('K2', '=400+400');
+        } else {
+            $sheet->fromArray($sheet->rangeToArray('A2:R2'), null, 'A3');
+        }
+        (new Xlsx($spreadsheet))->save($path);
+    } finally {
+        $spreadsheet->disconnectWorksheets();
+    }
+
+    expect(fn () => app(ImportProductsAction::class)->handle($path))->toThrow(ValidationException::class)
+        ->and($variant->fresh()->price->toRubles())->toBe('750.00');
+})->with([true, false]);
+
 it('отклоняет некорректные цены в Excel без сохранения', function (int|float $price, int|float $oldPrice): void {
     Gate::before(static fn (): bool => true);
     $variant = pricingVariant();

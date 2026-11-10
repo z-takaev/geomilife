@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
-use App\Models\SavedDeliveryPoint;
 use App\Services\Customers\SavedDeliveryLocationService;
 use App\Services\Telegram\TelegramConnectionService;
 use Illuminate\Contracts\View\View;
@@ -87,7 +86,7 @@ final class UserProfile extends Component
     {
         $user = auth()->user();
         $addresses = $user->addresses()->with('city')->orderByDesc('is_default')->latest()->get();
-        $deliveryPoints = SavedDeliveryPoint::query()->where('user_id', $user->getKey())->with('city')->orderByDesc('is_default')->latest()->get();
+        $deliveryPoints = $user->savedDeliveryPoints()->with('city')->orderByDesc('is_default')->latest()->get();
         $telegramBotConfigured = $telegramService->isConfigured();
 
         return view('livewire.user-profile', compact('user', 'addresses', 'deliveryPoints', 'telegramBotConfigured'));

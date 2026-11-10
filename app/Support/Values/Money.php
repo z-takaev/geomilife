@@ -94,20 +94,6 @@ final readonly class Money implements Castable
         return new self($this->minorAmount * $quantity);
     }
 
-    public function discountedBy(int $percent): self
-    {
-        if ($percent < 0 || $percent > 100) {
-            throw new InvalidArgumentException('Размер скидки должен быть от 0 до 100 процентов.');
-        }
-
-        $multiplier = 100 - $percent;
-        $wholePart = intdiv($this->minorAmount, 100) * $multiplier;
-        $remainder = $this->minorAmount % 100;
-        $roundedRemainder = intdiv($remainder * $multiplier + 50, 100);
-
-        return new self($wholePart + $roundedRemainder);
-    }
-
     public function equals(self $money): bool
     {
         return $this->minorAmount === $money->minorAmount;

@@ -32,10 +32,6 @@ it('складывает, умножает и сравнивает денежн�
     expect($result->equals(Money::fromRubles(300)))->toBeTrue();
 });
 
-it('рассчитывает скидку с округлением до копейки', function (): void {
-    expect(Money::fromRubles('99.99')->discountedBy(15)->toRubles())->toBe('84.99');
-});
-
 it('форматирует цену целым количеством рублей', function (): void {
     expect(Money::fromRubles('1499.50')->format())->toBe('1 500 ₽');
 });
@@ -61,13 +57,8 @@ it('возвращает null при безопасном разборе нев�
     expect(Money::tryFromRubles($value))->toBeNull();
 })->with(['invalid', '-1', '10.001', '999999999999999999999999']);
 
-it('обрабатывает крайние скидки и отклоняет проценты вне диапазона', function (): void {
-    $money = Money::fromRubles('99.99');
-    expect($money->discountedBy(0)->toRubles())->toBe('99.99')
-        ->and($money->discountedBy(100)->toRubles())->toBe('0.00')
-        ->and($money->multiply(0)->toRubles())->toBe('0.00');
-    expect(fn () => $money->discountedBy(-1))->toThrow(InvalidArgumentException::class);
-    expect(fn () => $money->discountedBy(101))->toThrow(InvalidArgumentException::class);
+it('возвращает нулевую сумму при умножении на ноль', function (): void {
+    expect(Money::fromRubles('99.99')->multiply(0)->toRubles())->toBe('0.00');
 });
 
 it('форматирует максимальную сумму без переполнения', function (): void {

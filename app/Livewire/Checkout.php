@@ -8,7 +8,6 @@ use App\Enums\Orders\DeliveryMethodEnum;
 use App\Enums\Orders\PaymentMethodEnum;
 use App\Models\Address;
 use App\Models\City;
-use App\Models\SavedDeliveryPoint;
 use App\Models\Setting;
 use App\Services\Cart\CartService;
 use App\Services\Cdek\Exceptions\CdekApiException;
@@ -94,8 +93,7 @@ final class Checkout extends Component
         $this->last_name = $user?->last_name ?? '';
         $this->phone = $user?->phone ?? '';
         $this->email = $user?->email ?? '';
-        $point = $user === null ? null : SavedDeliveryPoint::query()
-            ->where('user_id', $user->id)->where('is_default', true)
+        $point = $user?->savedDeliveryPoints()->where('is_default', true)
             ->whereHas('city', static fn ($query) => $query->where('is_active', true)->where('is_cdek_excluded', false)->where('cdek_code', '>', 0))
             ->first();
 
@@ -165,11 +163,7 @@ final class Checkout extends Component
 
     public function clearAddress(): void
     {
-        $this->address_id = null;
-        $this->street = '';
-        $this->house = '';
-        $this->building = $this->apartment = $this->entrance = $this->floor = $this->intercom = null;
-        $this->delivery_to_door = false;
+        $this->resetAddress();
         $this->recalculate();
     }
 
@@ -182,9 +176,7 @@ final class Checkout extends Component
 
     public function clearDeliveryPoint(): void
     {
-        $this->delivery_point_code = '';
-        $this->saved_delivery_point_id = null;
-        $this->delivery_point_search = '';
+        $this->resetDeliveryPoint();
         $this->recalculate();
     }
 
@@ -199,8 +191,7 @@ final class Checkout extends Component
     public function selectSavedDeliveryPoint(int $pointId): void
     {
         abort_unless(auth()->check(), 403);
-        $point = SavedDeliveryPoint::query()
-            ->where('user_id', auth()->id())
+        $point = auth()->user()->savedDeliveryPoints()
             ->findOrFail($pointId);
         $this->city_id = $point->city_id;
         $this->city_search = $point->city?->name ?? '';
@@ -231,15 +222,13 @@ final class Checkout extends Component
             ]);
             session()->put('checkout.presentation.'.$this->idempotency_key, $this->calculationData($calculation));
         } catch (ValidationException $exception) {
-            session()->forget('checkout.quotes.'.$this->idempotency_key);
-            session()->put('checkout.presentation.'.$this->idempotency_key.'.delivery_ready', false);
+            $this->invalidateQuote();
 
             foreach ($exception->errors() as $field => $messages) {
                 $this->addError($field, $messages[0]);
             }
         } catch (CdekApiException $exception) {
-            session()->forget('checkout.quotes.'.$this->idempotency_key);
-            session()->put('checkout.presentation.'.$this->idempotency_key.'.delivery_ready', false);
+            $this->invalidateQuote();
             $this->addError('quote', __(self::CDEK_QUOTE_ERROR));
             app(OrderNotificationService::class)->notifyQuoteError($this->city_id ?? 0);
             report($exception);
@@ -317,12 +306,7 @@ final class Checkout extends Component
             ['name' => 'apartment', 'label' => __('Квартира / офис'), 'required' => true],
             ['name' => 'intercom', 'label' => __('Домофон'), 'required' => false],
         ];
-        $savedPoints = auth()
-            ->check() ? SavedDeliveryPoint::query()
-            ->where('user_id', auth()->id())
-            ->with('city')
-            ->orderByDesc('is_default')
-            ->get() : collect();
+        $savedPoints = auth()->user()?->savedDeliveryPoints()->with('city')->orderByDesc('is_default')->get() ?? collect();
 
         $doorDeliveryPrice = ($city?->door_delivery_price ?? Money::fromMinor(0))->format();
         $floorLiftingPrice = ($city?->floor_lifting_price ?? Money::fromMinor(0))->format();
@@ -441,6 +425,22 @@ final class Checkout extends Component
         }
     }
 
+    private function resetAddress(): void
+    {
+        $this->reset('address_id', 'street', 'house', 'building', 'apartment', 'entrance', 'floor', 'intercom', 'delivery_to_door');
+    }
+
+    private function resetDeliveryPoint(): void
+    {
+        $this->reset('delivery_point_code', 'saved_delivery_point_id', 'delivery_point_search');
+    }
+
+    private function invalidateQuote(): void
+    {
+        session()->forget('checkout.quotes.'.$this->idempotency_key);
+        session()->put('checkout.presentation.'.$this->idempotency_key.'.delivery_ready', false);
+    }
+
     private function handleCityChange(): void
     {
         $city = $this->selectedCity();
@@ -449,13 +449,8 @@ final class Checkout extends Component
             $this->city_search = $city->name;
         }
 
-        $this->delivery_point_code = '';
-        $this->saved_delivery_point_id = null;
-        $this->delivery_point_search = '';
-        $this->address_id = null;
-        $this->street = $this->house = '';
-        $this->building = $this->apartment = $this->entrance = $this->floor = $this->intercom = null;
-        $this->delivery_to_door = false;
+        $this->resetDeliveryPoint();
+        $this->resetAddress();
         $methods = app(CheckoutService::class)->deliveryMethods($this->selectedCity());
 
         if (! array_key_exists($this->delivery_method, $methods)) {
@@ -478,8 +473,7 @@ final class Checkout extends Component
         }
 
         if ($this->delivery_method === DeliveryMethodEnum::CDEK->value && auth()->check()) {
-            $point = SavedDeliveryPoint::query()
-                ->where('user_id', auth()->id())
+            $point = auth()->user()->savedDeliveryPoints()
                 ->where('is_default', true)
                 ->where('city_id', $this->city_id)
                 ->first();

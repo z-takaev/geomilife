@@ -12,6 +12,7 @@ use App\Models\Setting;
 use App\Models\ShippingBox;
 use App\Services\Cart\CartService;
 use App\Services\Customers\SavedDeliveryLocationService;
+use App\Support\Values\Money;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -26,6 +27,31 @@ it('возвращает ошибку при прямом переходе к о
 it('открывает оформление с товарами в корзине', function (): void {
     app(CartService::class)->add(CheckoutFixtures::variant()->id, 1);
     $this->get(route('checkout'))->assertOk();
+});
+
+it('очищает адрес и ПВЗ при смене города без потери контактов получателя', function (): void {
+    app(CartService::class)->add(CheckoutFixtures::variant()->id, 1);
+    $city = CheckoutFixtures::city();
+    $otherCity = CheckoutFixtures::city();
+    $component = CheckoutFixtures::form($city, [
+        'street' => 'Мира', 'house' => '10', 'building' => '1', 'entrance' => '2',
+        'floor' => '3', 'apartment' => '4', 'intercom' => '5', 'delivery_to_door' => true,
+        'delivery_point_code' => 'OLD', 'delivery_point_search' => 'Старый пункт',
+    ]);
+
+    $component->call('clearAddress')
+        ->assertSet('street', '')->assertSet('house', '')
+        ->assertSet('building', null)->assertSet('entrance', null)->assertSet('floor', null)
+        ->assertSet('apartment', null)->assertSet('intercom', null)->assertSet('delivery_to_door', false)
+        ->assertSet('delivery_point_code', 'OLD');
+
+    $component->set('street', 'Новая')->set('house', '20')->call('selectCity', $otherCity->id)
+        ->assertSet('city_id', $otherCity->id)
+        ->assertSet('street', '')->assertSet('house', '')
+        ->assertSet('delivery_point_code', '')->assertSet('delivery_point_search', '')
+        ->assertSet('saved_delivery_point_id', null)->assertSet('address_id', null)
+        ->assertSet('first_name', 'Анна')->assertSet('email', 'recipient@example.com')
+        ->assertViewHas('total', fn ($total): bool => $total->equals(Money::fromRubles(890)));
 });
 
 it('не запрашивает подсказки городов до трёх символов', function (): void {
