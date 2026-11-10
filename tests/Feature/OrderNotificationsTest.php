@@ -9,8 +9,10 @@ use App\Notifications\Orders\DeliveryQuoteErrorNotification;
 use App\Notifications\Orders\OrderUpdateNotification;
 use App\Services\Orders\OrderNotificationService;
 use App\Support\Values\Money;
+use Illuminate\Mail\Markdown;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Support\Facades\Notification;
+use Tests\Support\CheckoutFixtures;
 
 function notificationOrder(?User $user = null): Order
 {
@@ -110,4 +112,105 @@ it('уведомляет менеджеров об ошибке расчёта �
     Notification::assertSentOnDemand(DeliveryQuoteErrorNotification::class,
         fn ($notification, array $channels, AnonymousNotifiable $notifiable): bool => $notifiable->routes['telegram'] === '-1001234567890'
             && str_contains($notification->toTelegram($notifiable), '44'));
+});
+
+it('включает сохранённый состав и сведения заказа в html и текстовое подтверждение', function (): void {
+    $order = notificationOrder();
+    $order->update([
+        'delivery_price' => Money::fromRubles(350),
+        'total' => Money::fromRubles(1550),
+        'comment' => 'Позвоните перед выдачей <script>alert(1)</script>',
+    ]);
+    $variant = CheckoutFixtures::variant();
+    $order->items()->create([
+        'product_id' => $variant->product_id,
+        'product_variant_id' => $variant->id,
+        'product_name' => 'Крем из оформленного заказа',
+        'variant_name' => '250 мл',
+        'sku' => 'SNAPSHOT-250',
+        'price' => Money::fromRubles(600),
+        'quantity' => 2,
+        'total' => Money::fromRubles(1200),
+    ]);
+    $variant->product->update(['name' => 'Новое название каталога']);
+    $variant->update(['price' => Money::fromRubles(9999)]);
+    $mail = (new OrderUpdateNotification($order->fresh(), 'CREATED'))->toMail(new AnonymousNotifiable);
+    $html = (string) $mail->render();
+    $plain = (string) app(Markdown::class)->renderText($mail->markdown, $mail->data());
+
+    foreach ([$html, $plain] as $body) {
+        expect($body)->toContain('NOTIFY-001', $order->created_at->format('d.m.Y'),
+            'Крем из оформленного заказа', '250 мл', 'SNAPSHOT-250', '600 ₽', '2 × 600 ₽',
+            '1 200 ₽', '350 ₽', '1 550 ₽', $order->customer_name, $order->customer_phone,
+            $order->customer_email, 'Позвоните перед выдачей', 'Открыть заказ', 'signature=')
+            ->not->toContain('Новое название каталога', '9 999 ₽', '<script>', '600.00');
+    }
+
+    $this->get($mail->actionUrl)->assertOk();
+});
+
+it('показывает способ получения и адрес из заказа', function (string $method, array $address, array $expected): void {
+    $order = notificationOrder();
+    $order->update(['delivery_method' => $method, 'delivery_address' => $address]);
+    $mail = (new OrderUpdateNotification($order, 'CREATED'))->toMail(new AnonymousNotifiable);
+
+    expect((string) $mail->render())->toContain(...$expected)
+        ->toContain('бесплатно');
+})->with([
+    'самовывоз' => ['PICKUP', ['city' => 'Владикавказ', 'address' => 'ул. Мира, 10', 'working_hours' => '10:00–19:00'],
+        ['Самовывоз', 'ул. Мира, 10', '10:00–19:00', 'Приходите после уведомления о готовности']],
+    'курьер' => ['COURIER', ['city' => 'Владикавказ', 'street' => 'ул. Ленина', 'house' => '5', 'apartment' => '12'],
+        ['Курьер', 'ул. Ленина', 'дом 5', 'кв. 12', 'Время доставки согласует менеджер']],
+    'сдэк' => ['CDEK', ['city' => 'Москва', 'address' => 'ул. Тверская, 15', 'code' => 'MSK123', 'work_time' => '09:00–20:00'],
+        ['СДЭК', 'ул. Тверская, 15', 'MSK123', '09:00–20:00', 'Трек-номер появится после подготовки отправления']],
+]);
+
+it('показывает инструкции только для доступной онлайн-оплаты', function (string $method, string $status, bool $expired, bool $canPay): void {
+    $order = notificationOrder();
+    $order->update([
+        'payment_method' => $method,
+        'payment_status' => $status,
+        'payment_expires_at' => $expired ? now()->subMinute() : now()->addMinutes(20),
+    ]);
+    $mail = (new OrderUpdateNotification($order, 'CREATED'))->toMail(new AnonymousNotifiable);
+    $body = (string) $mail->render();
+
+    expect($body)->toContain($order->payment_method->getLabel(), $order->payment_status->getLabel());
+    if ($canPay) {
+        expect($body)->toContain('Оплатите до', $order->payment_expires_at->format('d.m.Y H:i'),
+            'Оплатить заказ можно на странице заказа');
+    } else {
+        expect($body)->not->toContain('Оплатите до', 'Оплатить заказ можно на странице заказа');
+    }
+})->with([
+    ['ONLINE', 'UNPAID', false, true],
+    ['ONLINE', 'PAID', false, false],
+    ['ONLINE', 'AUTHORIZED', false, false],
+    ['ONLINE', 'UNPAID', true, false],
+    ['PICKUP', 'UNPAID', false, false],
+]);
+
+it('обозначает предзаказ и скрывает незаполненные необязательные сведения', function (): void {
+    $order = notificationOrder();
+    $order->update(['is_preorder' => true]);
+    $body = (string) (new OrderUpdateNotification($order, 'CREATED'))->toMail(new AnonymousNotifiable)->render();
+
+    expect($body)->toContain('Предзаказ', 'Точные сроки доставки согласовываются отдельно с менеджером')
+        ->not->toContain('Комментарий к заказу', 'График:', 'Пункт:');
+});
+
+it('отображает разделы письма как html без блоков исходного кода', function (): void {
+    $mail = (new OrderUpdateNotification(notificationOrder(), 'CREATED'))->toMail(new AnonymousNotifiable);
+
+    expect((string) $mail->render())->toContain('<h2', 'Товары в заказе')
+        ->not->toContain('<pre', '&lt;h2&gt;', '&lt;p&gt;');
+});
+
+it('оставляет уведомления об изменениях короткими и добавляет трек-номер при отправке', function (): void {
+    $order = notificationOrder();
+    $order->shipment()->create(['cdek_number' => '1234567890']);
+    $mail = (new OrderUpdateNotification($order, 'SHIPPED'))->toMail(new AnonymousNotifiable);
+
+    expect((string) $mail->render())->toContain('1234567890')
+        ->not->toContain('Товары в заказе', 'Комментарий к заказу');
 });

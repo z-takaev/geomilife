@@ -144,6 +144,29 @@ final class OrderViewModel
         return URL::temporarySignedRoute('orders.guest.show', now()->addDays((int) config('orders.guest_access_days')), ['token' => $order->guest_token]);
     }
 
+    public static function confirmation(Order $order): array
+    {
+        $presentation = self::data($order);
+        $dateFormat = 'd.m.Y H:i';
+        $timezone = config('app.timezone');
+
+        return $presentation + [
+            'createdAtLabel' => $order->created_at->timezone($timezone)->format($dateFormat),
+            'paymentDeadlineLabel' => $order->payment_expires_at?->timezone($timezone)->format($dateFormat).' ('.$timezone.')',
+            'deliveryHint' => match (true) {
+                $order->is_preorder => __('Точные сроки доставки согласовываются отдельно с менеджером'),
+                $order->delivery_method->isPickup() => __('Приходите после уведомления о готовности. Время получения согласует менеджер.'),
+                $order->delivery_method->isCourier() => __('Время доставки согласует менеджер.'),
+                default => __('Трек-номер появится после подготовки отправления.'),
+            },
+            'nextStep' => match (true) {
+                $presentation['canPay'] => __('Оплатить заказ можно на странице заказа. После подтверждения оплаты мы приступим к обработке.'),
+                $order->payment_method->isOnline() && ! $order->payment_status->isPaid() => self::processingHint($order),
+                default => __('Мы сообщим вам об изменении статуса заказа отдельным письмом.'),
+            },
+        ];
+    }
+
     public static function data(Order $order, bool $isGuest = false): array
     {
         $order->loadMissing('shipment');

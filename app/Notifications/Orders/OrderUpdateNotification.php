@@ -7,6 +7,7 @@ namespace App\Notifications\Orders;
 use App\Enums\Orders\OrderStatusEnum;
 use App\Models\Order;
 use App\Notifications\Channels\TelegramChannel;
+use App\ViewModel\Orders\OrderViewModel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -41,13 +42,28 @@ final class OrderUpdateNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
+        $mail = (new MailMessage)
             ->subject(__('Заказ №:number — :event', ['number' => $this->order->number, 'event' => $this->message()]))
             ->greeting(__('Здравствуйте!'))
             ->line($this->message())
             ->line(__('Заказ №:number, сумма :total.', ['number' => $this->order->number, 'total' => $this->order->total->format()]))
             ->action(__('Открыть заказ'), $this->url())
             ->line(__('Спасибо за заказ в GeoMiLife!'));
+
+        if ($this->event === 'CREATED' && $this->audience === 'BUYER') {
+            $this->order->loadMissing('items');
+
+            return $mail->markdown('mail.orders.created', [
+                'order' => $this->order,
+                'presentation' => OrderViewModel::confirmation($this->order),
+            ]);
+        }
+
+        if ($this->event === 'SHIPPED' && filled($this->order->shipment?->cdek_number)) {
+            $mail->line(__('Трек-номер СДЭК: :number', ['number' => $this->order->shipment->cdek_number]));
+        }
+
+        return $mail;
     }
 
     public function toTelegram(object $notifiable): string
