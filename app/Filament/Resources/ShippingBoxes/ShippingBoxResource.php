@@ -15,9 +15,12 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Auth\Access\Response;
 
 final class ShippingBoxResource extends Resource
 {
+    private const int MAX_SHIPPING_BOXES = 7;
+
     protected static ?string $model = ShippingBox::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
@@ -29,6 +32,19 @@ final class ShippingBoxResource extends Resource
     protected static ?string $pluralModelLabel = 'Коробки';
 
     protected static ?string $recordTitleAttribute = 'name';
+
+    public static function getCreateAuthorizationResponse(): Response
+    {
+        $response = parent::getCreateAuthorizationResponse();
+
+        if ($response->denied()) {
+            return $response;
+        }
+
+        return ShippingBox::query()->count() < self::MAX_SHIPPING_BOXES
+            ? $response
+            : Response::deny(__('Нельзя добавить больше :limit упаковок.', ['limit' => self::MAX_SHIPPING_BOXES]));
+    }
 
     public static function form(Schema $schema): Schema
     {
