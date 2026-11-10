@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\PaymentMethodEnum;
+use App\Enums\Orders\PaymentMethodEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;

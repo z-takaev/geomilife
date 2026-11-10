@@ -9,10 +9,10 @@ use App\DTO\Cdek\CdekDeliveryPointResponseDto;
 use App\DTO\Cdek\CdekGetDeliveryPointsRequestDto;
 use App\DTO\Cdek\CdekLocationDto;
 use App\DTO\Cdek\CdekPackageDto;
-use App\Enums\DeliveryMethodEnum;
-use App\Enums\OrderStatusEnum;
-use App\Enums\PaymentMethodEnum;
-use App\Enums\PaymentStatusEnum;
+use App\Enums\Orders\DeliveryMethodEnum;
+use App\Enums\Orders\OrderStatusEnum;
+use App\Enums\Orders\PaymentMethodEnum;
+use App\Enums\Orders\PaymentStatusEnum;
 use App\Models\City;
 use App\Models\Order;
 use App\Models\Product;
@@ -29,9 +29,6 @@ use Illuminate\Validation\ValidationException;
 
 final class CheckoutService
 {
-    /**
-     * Подключает сервисы сохранения адресов, упаковки и уведомлений.
-     */
     public function __construct(
         private readonly SavedDeliveryLocationService $locations,
         private readonly OrderPackingService $packing,

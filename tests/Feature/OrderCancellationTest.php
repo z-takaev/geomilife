@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\PaymentMethodEnum;
+use App\Enums\Orders\PaymentMethodEnum;
 use App\Models\OrderShipment;
 use App\Services\Orders\OrderLifecycleService;
 use App\Services\Orders\OrderPaymentService;

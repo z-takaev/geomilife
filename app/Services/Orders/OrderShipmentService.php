@@ -10,7 +10,7 @@ use App\DTO\Cdek\CdekOrderItemDto;
 use App\DTO\Cdek\CdekOrderPackageDto;
 use App\DTO\Cdek\CdekOrderResponseDto;
 use App\DTO\Cdek\CdekPaymentDto;
-use App\Enums\OrderStatusEnum;
+use App\Enums\Orders\OrderStatusEnum;
 use App\Jobs\Orders\CreateCdekShipmentJob;
 use App\Jobs\Orders\PrepareCdekDocumentsJob;
 use App\Jobs\Orders\SyncCdekShipmentJob;

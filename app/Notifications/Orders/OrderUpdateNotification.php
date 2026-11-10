@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Notifications\Orders;
 
-use App\Enums\OrderStatusEnum;
+use App\Enums\Orders\OrderStatusEnum;
 use App\Models\Order;
 use App\Notifications\Channels\TelegramChannel;
 use Illuminate\Bus\Queueable;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\PaymentMethodEnum;
+use App\Enums\Orders\PaymentMethodEnum;
 use App\Models\Order;
 use App\Models\User;
 use App\Notifications\Orders\DeliveryQuoteErrorNotification;

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\DTO\Cdek\CdekDeliveryPointResponseDto;
-use App\Enums\DeliveryMethodEnum;
-use App\Enums\PaymentMethodEnum;
-use App\Enums\ProductUnitEnum;
+use App\Enums\Orders\DeliveryMethodEnum;
+use App\Enums\Orders\PaymentMethodEnum;
+use App\Enums\Products\ProductUnitEnum;
 use App\Livewire\Checkout;
 use App\Models\Category;
 use App\Models\City;

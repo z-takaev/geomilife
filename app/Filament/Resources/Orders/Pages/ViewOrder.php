@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Orders\Pages;
 
-use App\Enums\OrderStatusEnum;
-use App\Enums\PaymentStatusEnum;
+use App\Enums\Orders\OrderStatusEnum;
+use App\Enums\Orders\PaymentStatusEnum;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Jobs\Orders\CreateCdekShipmentJob;
 use App\Jobs\Orders\PrepareCdekDocumentsJob;

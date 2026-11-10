@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\FilamentUserRoleEnum;
+use App\Enums\Filament\FilamentUserRoleEnum;
 use App\Filament\Pages\ManageSettings;
 use App\Models\FilamentUser;
 use App\Models\Setting;

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\DTO\Cdek\CdekDeliveryPointResponseDto;
-use App\Enums\PaymentMethodEnum;
+use App\Enums\Orders\PaymentMethodEnum;
 use App\Livewire\Checkout;
 use App\Models\Order;
 use App\Models\ProductVariant;

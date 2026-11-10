@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\DTO\Tbank\TbankPaymentNotificationDto;
-use App\Enums\PaymentStatusEnum;
+use App\Enums\Orders\PaymentStatusEnum;
 use App\Enums\Tbank\TbankPaymentStatusEnum;
 use App\Models\Order;
 use App\Models\OrderItem;

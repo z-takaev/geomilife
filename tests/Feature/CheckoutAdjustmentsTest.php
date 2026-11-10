@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Enums\FilamentUserRoleEnum;
-use App\Enums\PaymentMethodEnum;
+use App\Enums\Filament\FilamentUserRoleEnum;
+use App\Enums\Orders\PaymentMethodEnum;
 use App\Filament\Pages\ManageSettings;
 use App\Livewire\Checkout;
 use App\Livewire\ShoppingCart;

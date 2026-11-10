@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Enums\OrderStatusEnum;
-use App\Enums\PaymentMethodEnum;
+use App\Enums\Orders\OrderStatusEnum;
+use App\Enums\Orders\PaymentMethodEnum;
 use App\Jobs\Orders\PrepareCdekDocumentsJob;
 use App\Models\Order;
 use App\Models\OrderDocument;

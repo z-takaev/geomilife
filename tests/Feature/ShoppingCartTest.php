@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\ProductUnitEnum;
+use App\Enums\Products\ProductUnitEnum;
 use App\Livewire\ShoppingCart;
 use App\Models\Category;
 use App\Models\Product;

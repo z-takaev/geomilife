@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\PaymentMethodEnum;
+use App\Enums\Orders\PaymentMethodEnum;
 use App\Livewire\Checkout;
 use App\Models\ShippingBox;
 use App\Services\Cart\CartService;

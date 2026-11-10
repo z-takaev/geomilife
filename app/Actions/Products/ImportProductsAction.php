@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Products;
 
-use App\Enums\ProductUnitEnum;
+use App\Enums\Products\ProductUnitEnum;
 use App\Filament\Resources\Products\ProductResource;
 use App\Models\Product;
 use App\Models\ProductVariant;

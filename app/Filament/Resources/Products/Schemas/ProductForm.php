@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Products\Schemas;
 
-use App\Enums\ProductUnitEnum;
+use App\Enums\Products\ProductUnitEnum;
 use App\Filament\Forms\Components\MediaImageUpload;
 use App\Filament\Forms\Components\SlugField;
 use App\Filament\Resources\Seo\Schemas\SeoForm;

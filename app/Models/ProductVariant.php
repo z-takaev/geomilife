@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\ProductUnitEnum;
+use App\Enums\Products\ProductUnitEnum;
 use App\Repositories\Categories\CategoryRepository;
 use App\Support\Values\Money;
 use Illuminate\Database\Eloquent\Builder;

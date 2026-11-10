@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
-use App\Enums\DeliveryMethodEnum;
-use App\Enums\PaymentMethodEnum;
+use App\Enums\Orders\DeliveryMethodEnum;
+use App\Enums\Orders\PaymentMethodEnum;
 use App\Models\Address;
 use App\Models\City;
 use App\Models\SavedDeliveryPoint;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\FilamentUsers\Pages;
 
-use App\Enums\FilamentUserRoleEnum;
+use App\Enums\Filament\FilamentUserRoleEnum;
 use App\Filament\Resources\FilamentUsers\FilamentUserResource;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Arr;

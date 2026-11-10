@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Repositories\Products;
 
 use App\DTO\Products\CatalogFiltersDto;
-use App\Enums\CatalogSortEnum;
-use App\Enums\ProductUnitEnum;
+use App\Enums\Catalog\CatalogSortEnum;
+use App\Enums\Products\ProductUnitEnum;
 use App\Models\Category;
 use App\Models\ProductVariant;
 use Illuminate\Database\Eloquent\Builder;

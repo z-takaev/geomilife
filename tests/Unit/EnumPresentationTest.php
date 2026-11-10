@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Enums\CatalogSortEnum;
-use App\Enums\ReviewSourceEnum;
+use App\Enums\Catalog\CatalogSortEnum;
+use App\Enums\Reviews\ReviewSourceEnum;
 use Filament\Support\Contracts\HasLabel;
 
 it('предоставляет подписи сортировки через контракт Filament', function (CatalogSortEnum $sort, string $label): void {

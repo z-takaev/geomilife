@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Enums\DeliveryMethodEnum;
-use App\Enums\FilamentUserRoleEnum;
-use App\Enums\PaymentMethodEnum;
+use App\Enums\Filament\FilamentUserRoleEnum;
+use App\Enums\Orders\DeliveryMethodEnum;
+use App\Enums\Orders\PaymentMethodEnum;
 use App\Models\FilamentUser;
 use App\Models\Order;
 use App\Models\Payment;

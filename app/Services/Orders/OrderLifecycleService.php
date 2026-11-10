@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Orders;
 
-use App\Enums\DeliveryMethodEnum;
-use App\Enums\OrderStatusEnum;
+use App\Enums\Orders\DeliveryMethodEnum;
+use App\Enums\Orders\OrderStatusEnum;
 use App\Jobs\Orders\CreateCdekShipmentJob;
 use App\Models\FilamentUser;
 use App\Models\Order;

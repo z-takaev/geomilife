@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 use App\Enums\Cdek\CdekPrintStateEnum;
 use App\Enums\Cdek\CdekRequestStateEnum;
-use App\Enums\DeliveryMethodEnum;
-use App\Enums\FilamentUserRoleEnum;
-use App\Enums\OrderStatusEnum;
-use App\Enums\PaymentMethodEnum;
-use App\Enums\PaymentStatusEnum;
+use App\Enums\Filament\FilamentUserRoleEnum;
+use App\Enums\Orders\DeliveryMethodEnum;
+use App\Enums\Orders\OrderStatusEnum;
+use App\Enums\Orders\PaymentMethodEnum;
+use App\Enums\Orders\PaymentStatusEnum;
 use App\Enums\Tbank\TbankPaymentStatusEnum;
 
 it('сравнивает все варианты одного enum через is', function (string $enumClass): void {

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Orders\Tables;
 
-use App\Enums\DeliveryMethodEnum;
-use App\Enums\OrderStatusEnum;
-use App\Enums\PaymentStatusEnum;
+use App\Enums\Orders\DeliveryMethodEnum;
+use App\Enums\Orders\OrderStatusEnum;
+use App\Enums\Orders\PaymentStatusEnum;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\IconColumn;

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Actions\Orders\ExportOrdersAction;
-use App\Enums\FilamentUserRoleEnum;
+use App\Enums\Filament\FilamentUserRoleEnum;
 use App\Filament\Resources\Cities\Pages\ListCities;
 use App\Filament\Resources\Orders\Pages\ListOrders;
 use App\Models\City;

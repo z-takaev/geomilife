@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\ViewModel\Orders;
 
-use App\Enums\OrderStatusEnum;
-use App\Enums\PaymentStatusEnum;
+use App\Enums\Orders\OrderStatusEnum;
+use App\Enums\Orders\PaymentStatusEnum;
 use App\Models\Order;
 use App\Services\Orders\OrderLifecycleService;
 use Illuminate\Support\Carbon;

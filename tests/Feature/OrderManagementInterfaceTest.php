@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Enums\FilamentUserRoleEnum;
-use App\Enums\OrderStatusEnum;
-use App\Enums\PaymentMethodEnum;
+use App\Enums\Filament\FilamentUserRoleEnum;
+use App\Enums\Orders\OrderStatusEnum;
+use App\Enums\Orders\PaymentMethodEnum;
 use App\Filament\Resources\Orders\Pages\ListOrders;
 use App\Filament\Resources\Orders\Pages\ViewOrder;
 use App\Jobs\Orders\CreateCdekShipmentJob;

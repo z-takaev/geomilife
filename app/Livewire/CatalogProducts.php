@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire;
 
 use App\DTO\Products\CatalogFiltersDto;
-use App\Enums\CatalogSortEnum;
+use App\Enums\Catalog\CatalogSortEnum;
 use App\Models\Category;
 use App\Repositories\Categories\CategoryRepository;
 use App\Repositories\Products\CatalogRepository;

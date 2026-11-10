@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\DeliveryMethodEnum;
+use App\Enums\Orders\DeliveryMethodEnum;
 use App\Services\Cart\CartService;
 use App\Services\Orders\CheckoutService;
 use Filament\Support\Contracts\HasLabel;

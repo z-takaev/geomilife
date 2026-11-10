@@ -17,9 +17,6 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 final class TbankService
 {
-    /**
-     * Подключает API-клиент, преобразователь ответов и сервис подписи Т-Банка.
-     */
     public function __construct(
         private readonly TbankClient $client,
         private readonly TbankResponseMapper $mapper,

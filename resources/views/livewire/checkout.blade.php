@@ -169,14 +169,14 @@
                     @if ($city && $delivery_method !== '')
                         <div class="checkout-address checkout-delivery-details"
                             wire:key="delivery-details-{{ $city_id }}-{{ $delivery_method }}">
-                            @if ($delivery_method === \App\Enums\DeliveryMethodEnum::PICKUP->value)
+                            @if ($delivery_method === \App\Enums\Orders\DeliveryMethodEnum::PICKUP->value)
                                 <div class="checkout-info"><strong>{{ $city->pickup_name }}</strong>
                                     <p>{{ $city->pickup_address }}</p>
                                     <p>{{ $city->pickup_working_hours }}</p>
                                     <p>{{ $city->pickup_phone }}</p>
                                     <small>{{ __('Приходите после уведомления о готовности. Время получения согласует менеджер.') }}</small>
                                 </div>
-                            @elseif ($delivery_method === \App\Enums\DeliveryMethodEnum::COURIER->value)
+                            @elseif ($delivery_method === \App\Enums\Orders\DeliveryMethodEnum::COURIER->value)
                                 <div class="checkout-address__heading">
                                     <i class="icon icon-MapPin" aria-hidden="true"></i>
                                     <h5>{{ __('Адрес доставки') }}</h5>
@@ -246,7 +246,7 @@
                                         </p>
                                     </div>
                                 @endif
-                            @elseif ($delivery_method === \App\Enums\DeliveryMethodEnum::CDEK->value)
+                            @elseif ($delivery_method === \App\Enums\Orders\DeliveryMethodEnum::CDEK->value)
                                 <div class="checkout-address__heading">
                                     <i class="icon icon-MapPin" aria-hidden="true"></i>
                                     <h5>{{ __('Пункт получения СДЭК') }}</h5>
@@ -335,15 +335,15 @@
                     </div>
                     <div class="checkout-payment-options">
                         <label class="checkout-payment-option"><input type="radio" wire:model.live="payment_method"
-                                value="{{ \App\Enums\PaymentMethodEnum::ONLINE->value }}"><span
+                                value="{{ \App\Enums\Orders\PaymentMethodEnum::ONLINE->value }}"><span
                                 class="checkout-payment-option__check"
-                                aria-hidden="true"></span><span><strong>{{ \App\Enums\PaymentMethodEnum::ONLINE->getLabel() }}</strong><small>{{ __('На защищённой странице Т-Банка. Оплатите в течение часа после оформления.') }}</small></span></label>
-                        @if ($delivery_method === \App\Enums\DeliveryMethodEnum::PICKUP->value)
+                                aria-hidden="true"></span><span><strong>{{ \App\Enums\Orders\PaymentMethodEnum::ONLINE->getLabel() }}</strong><small>{{ __('На защищённой странице Т-Банка. Оплатите в течение часа после оформления.') }}</small></span></label>
+                        @if ($delivery_method === \App\Enums\Orders\DeliveryMethodEnum::PICKUP->value)
                             <label class="checkout-payment-option"><input type="radio"
                                     wire:model.live="payment_method"
-                                    value="{{ \App\Enums\PaymentMethodEnum::PICKUP->value }}"><span
+                                    value="{{ \App\Enums\Orders\PaymentMethodEnum::PICKUP->value }}"><span
                                     class="checkout-payment-option__check"
-                                    aria-hidden="true"></span><span><strong>{{ \App\Enums\PaymentMethodEnum::PICKUP->getLabel() }}</strong><small>{{ __('Оплата в точке самовывоза') }}</small></span></label>
+                                    aria-hidden="true"></span><span><strong>{{ \App\Enums\Orders\PaymentMethodEnum::PICKUP->getLabel() }}</strong><small>{{ __('Оплата в точке самовывоза') }}</small></span></label>
                         @endif
                     </div>
                 </section>

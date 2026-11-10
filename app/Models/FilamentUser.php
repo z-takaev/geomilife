@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\FilamentUserRoleEnum;
+use App\Enums\Filament\FilamentUserRoleEnum;
 use Filament\Models\Contracts\FilamentUser as FilamentUserContract;
 use Filament\Panel;
 use Illuminate\Foundation\Auth\User as Authenticatable;

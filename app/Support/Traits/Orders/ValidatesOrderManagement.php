@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Traits\Orders;
 
-use App\Enums\FilamentUserRoleEnum;
+use App\Enums\Filament\FilamentUserRoleEnum;
 use App\Models\FilamentUser;
 use App\Models\Order;
 use Illuminate\Auth\Access\AuthorizationException;

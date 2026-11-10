@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Enums\ReviewSourceEnum;
+use App\Enums\Reviews\ReviewSourceEnum;
 use App\Models\Review;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

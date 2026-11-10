@@ -7,8 +7,8 @@ namespace App\Services\Orders;
 use App\DTO\Tbank\TbankCancelPaymentRequestDto;
 use App\DTO\Tbank\TbankInitPaymentRequestDto;
 use App\DTO\Tbank\TbankPaymentNotificationDto;
-use App\Enums\OrderStatusEnum;
-use App\Enums\PaymentStatusEnum;
+use App\Enums\Orders\OrderStatusEnum;
+use App\Enums\Orders\PaymentStatusEnum;
 use App\Enums\Tbank\TbankPaymentStatusEnum;
 use App\Models\FilamentUser;
 use App\Models\Order;
@@ -24,9 +24,6 @@ final class OrderPaymentService
 {
     use ValidatesOrderManagement;
 
-    /**
-     * Подключает сервис работы с платежами Т-Банка.
-     */
     public function __construct(private readonly TbankService $bank) {}
 
     /**

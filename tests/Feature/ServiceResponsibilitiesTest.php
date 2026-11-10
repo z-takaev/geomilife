@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Enums\DeliveryMethodEnum;
-use App\Enums\FilamentUserRoleEnum;
-use App\Enums\PaymentMethodEnum;
-use App\Enums\PaymentStatusEnum;
+use App\Enums\Filament\FilamentUserRoleEnum;
+use App\Enums\Orders\DeliveryMethodEnum;
+use App\Enums\Orders\PaymentMethodEnum;
+use App\Enums\Orders\PaymentStatusEnum;
 use App\Models\FilamentUser;
 use App\Models\OrderNotificationDelivery;
 use App\Services\Cart\CartService;

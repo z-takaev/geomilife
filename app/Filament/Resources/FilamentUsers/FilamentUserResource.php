@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\FilamentUsers;
 
-use App\Enums\FilamentUserRoleEnum;
+use App\Enums\Filament\FilamentUserRoleEnum;
 use App\Filament\Resources\FilamentUsers\Pages\CreateFilamentUser;
 use App\Filament\Resources\FilamentUsers\Pages\EditFilamentUser;
 use App\Filament\Resources\FilamentUsers\Pages\ListFilamentUsers;

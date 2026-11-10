@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use App\Actions\Products\ExportProductsAction;
 use App\Actions\Products\ImportProductsAction;
-use App\Enums\FilamentUserRoleEnum;
-use App\Enums\ProductUnitEnum;
+use App\Enums\Filament\FilamentUserRoleEnum;
+use App\Enums\Products\ProductUnitEnum;
 use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Models\Category;
 use App\Models\FilamentUser;

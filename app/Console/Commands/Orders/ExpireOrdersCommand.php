@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Orders;
 
-use App\Enums\OrderStatusEnum;
-use App\Enums\PaymentMethodEnum;
-use App\Enums\PaymentStatusEnum;
+use App\Enums\Orders\OrderStatusEnum;
+use App\Enums\Orders\PaymentMethodEnum;
+use App\Enums\Orders\PaymentStatusEnum;
 use App\Models\Order;
 use App\Services\Orders\OrderLifecycleService;
 use App\Services\Orders\OrderNotificationService;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\OrderStatusEnum;
+use App\Enums\Orders\OrderStatusEnum;
 use App\Jobs\Orders\CreateCdekShipmentJob;
 use App\Models\OrderShipment;
 use App\Models\Setting;
