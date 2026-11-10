@@ -22,11 +22,11 @@ final class CityResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMapPin;
 
-    protected static ?string $navigationLabel = 'Города';
+    protected static ?string $navigationLabel = 'Города доставки';
 
-    protected static ?string $modelLabel = 'город';
+    protected static ?string $modelLabel = 'город доставки';
 
-    protected static ?string $pluralModelLabel = 'Города';
+    protected static ?string $pluralModelLabel = 'Города доставки';
 
     protected static bool $hasTitleCaseModelLabel = false;
 
