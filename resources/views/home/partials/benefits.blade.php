@@ -4,61 +4,21 @@
             data-space-md="20" data-space="15" data-pagination="1" data-pagination-sm="2" data-pagination-md="3"
             data-pagination-lg="5">
             <div class="swiper-wrapper">
-                <div class="swiper-slide">
-                    <div class="wg-benefit wow fadeInLeft">
-                        <div class="ic-wrap">
-                            <i class="icon icon-Plant"></i>
-                        </div>
-                        <div class="benefit-infor">
-                            <h4 class="benefit_name text-primary">{{ __('Натуральные продукты') }}</h4>
-                            <p class="benefit_sub">{{ __('Мёд, масла, орехи и травы') }}</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="swiper-slide">
-                    <div class="wg-benefit wow fadeInLeft" data-wow-delay="0.1s">
-                        <div class="ic-wrap">
-                            <i class="icon icon-farmer"></i>
-                        </div>
-                        <div class="benefit-infor">
-                            <h4 class="benefit_name text-primary">{{ __('Своё производство') }}</h4>
-                            <p class="benefit_sub">{{ __('Знаем состав и контролируем каждый этап') }}</p>
+                @foreach (settings()?->benefits ?? [] as $benefit)
+                    <div class="swiper-slide">
+                        <div class="wg-benefit wow fadeInLeft"
+                            @if (!$loop->first) data-wow-delay="{{ $loop->index / 10 }}s" @endif>
+                            <div class="ic-wrap">
+                                <i
+                                    class="icon {{ ['icon-Plant', 'icon-farmer', 'icon-Truck', 'icon-Invoice', 'icon-Certificate'][$loop->index] }}"></i>
+                            </div>
+                            <div class="benefit-infor">
+                                <h4 class="benefit_name text-primary">{{ __($benefit['title']) }}</h4>
+                                <p class="benefit_sub">{{ __($benefit['description']) }}</p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="swiper-slide">
-                    <div class="wg-benefit wow fadeInLeft" data-wow-delay="0.2s">
-                        <div class="ic-wrap">
-                            <i class="icon icon-Truck"></i>
-                        </div>
-                        <div class="benefit-infor">
-                            <h4 class="benefit_name text-primary">{{ __('Доставка СДЭК') }}</h4>
-                            <p class="benefit_sub">{{ __('Отправляем заказы по всей России') }}</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="swiper-slide">
-                    <div class="wg-benefit wow fadeInLeft" data-wow-delay="0.3s">
-                        <div class="ic-wrap">
-                            <i class="icon icon-Invoice"></i>
-                        </div>
-                        <div class="benefit-infor">
-                            <h4 class="benefit_name text-primary">{{ __('Оплата картой') }}</h4>
-                            <p class="benefit_sub">{{ __('Безопасная оплата через Т-Банк') }}</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="swiper-slide">
-                    <div class="wg-benefit wow fadeInLeft" data-wow-delay="0.4s">
-                        <div class="ic-wrap">
-                            <i class="icon icon-Certificate"></i>
-                        </div>
-                        <div class="benefit-infor">
-                            <h4 class="benefit_name text-primary">{{ __('Документы о качестве') }}</h4>
-                            <p class="benefit_sub">{{ __('Все сертификаты доступны на сайте') }}</p>
-                        </div>
-                    </div>
-                </div>
+                @endforeach
             </div>
             <div class="sw-dot-default style-small tf-sw-pagination d-xl-none"></div>
         </div>

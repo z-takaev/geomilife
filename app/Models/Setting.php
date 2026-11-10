@@ -40,6 +40,7 @@ final class Setting extends Model implements HasMedia
      */
     protected $fillable = [
         'snow_enabled',
+        'benefits',
         'privacy_policy',
         'phone',
         'email',
@@ -63,6 +64,7 @@ final class Setting extends Model implements HasMedia
     {
         return [
             'snow_enabled' => 'boolean',
+            'benefits' => 'array',
         ];
     }
 

@@ -8,6 +8,7 @@ use App\Filament\Forms\Components\MediaImageUpload;
 use App\Models\Setting;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -58,6 +59,28 @@ final class ManageSettings extends Page
                                     Toggle::make('snow_enabled')
                                         ->label('Показывать снег на сайте')
                                         ->helperText('Включает снег только в публичной части сайта.'),
+                                ]),
+                            Tab::make('Преимущества')
+                                ->schema([
+                                    Repeater::make('benefits')
+                                        ->label('Преимущества на главной странице')
+                                        ->schema([
+                                            TextInput::make('title')
+                                                ->label('Заголовок')
+                                                ->required()
+                                                ->maxLength(255),
+                                            Textarea::make('description')
+                                                ->label('Описание')
+                                                ->required()
+                                                ->maxLength(1000)
+                                                ->rows(3),
+                                        ])
+                                        ->addable(false)
+                                        ->deletable(false)
+                                        ->reorderable(false)
+                                        ->required()
+                                        ->minItems(5)
+                                        ->maxItems(5),
                                 ]),
                             Tab::make('Контактная информация')
                                 ->schema([

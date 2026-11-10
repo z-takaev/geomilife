@@ -17,6 +17,7 @@ use App\Models\ProductVariant;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\Values\Money;
+use Database\Seeders\SettingSeeder;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -31,7 +32,10 @@ final class CheckoutFixtures
         $path = 'documents/privacy-policy/policy.pdf';
         Storage::disk('public')->put($path, '%PDF-1.4 тестовый документ');
 
-        return Setting::query()->updateOrCreate([], ['privacy_policy' => $path]);
+        return Setting::query()->updateOrCreate([], [
+            'privacy_policy' => $path,
+            'benefits' => SettingSeeder::DEFAULT_BENEFITS,
+        ]);
     }
 
     public static function city(array $attributes = []): City

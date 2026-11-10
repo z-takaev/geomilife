@@ -12,6 +12,14 @@ use Spatie\Image\Image;
 
 final class SettingSeeder extends Seeder
 {
+    public const array DEFAULT_BENEFITS = [
+        ['title' => 'Натуральные продукты', 'description' => 'Мёд, масла, орехи и травы'],
+        ['title' => 'Своё производство', 'description' => 'Знаем состав и контролируем каждый этап'],
+        ['title' => 'Доставка СДЭК', 'description' => 'Отправляем заказы по всей России'],
+        ['title' => 'Оплата картой', 'description' => 'Безопасная оплата через Т-Банк'],
+        ['title' => 'Документы о качестве', 'description' => 'Все сертификаты доступны на сайте'],
+    ];
+
     /**
      * @var array<string, string>
      */
@@ -34,6 +42,7 @@ final class SettingSeeder extends Seeder
     public function run(): void
     {
         $setting = Setting::query()->updateOrCreate([], [
+            'benefits' => self::DEFAULT_BENEFITS,
             'phone' => '+7 (988) 873-10-20',
             'email' => 'geomilife@bk.ru',
             'admin_email' => 'geomilife@bk.ru',

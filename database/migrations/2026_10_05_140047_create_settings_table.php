@@ -13,6 +13,7 @@ return new class extends Migration
         Schema::create('settings', function (Blueprint $table): void {
             $table->id();
             $table->boolean('snow_enabled')->default(false);
+            $table->json('benefits')->nullable();
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
             $table->string('admin_email')->nullable();
