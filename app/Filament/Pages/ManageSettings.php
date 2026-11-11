@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
-use App\Filament\Forms\Components\MediaImageUpload;
+use App\Filament\Forms\Components\SpatieMediaLibrary;
 use App\Models\Setting;
+use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
@@ -29,7 +30,7 @@ use Spatie\Image\Image;
  */
 final class ManageSettings extends Page
 {
-    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
 
     protected static ?string $navigationLabel = 'Конфигурация сайта';
 
@@ -49,6 +50,8 @@ final class ManageSettings extends Page
 
     public function mount(): void
     {
+        abort_unless(self::canAccess(), 403);
+
         $this->form->fill($this->getRecord()->attributesToArray());
     }
 
@@ -59,12 +62,69 @@ final class ManageSettings extends Page
                 Form::make([
                     Tabs::make('Конфигурация сайта')
                         ->tabs([
-                            Tab::make('Оформление')
+                            Tab::make('Контактная информация')
                                 ->schema([
-                                    Toggle::make('snow_enabled')
-                                        ->label('Показывать снег на сайте')
-                                        ->helperText('Включает снег только в публичной части сайта.'),
-                                ]),
+                                    TextInput::make('phone')
+                                        ->label('Телефон')
+                                        ->tel()
+                                        ->mask('+7 (999) 999-99-99')
+                                        ->required()
+                                        ->regex('/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/'),
+                                    TextInput::make('email')
+                                        ->label('Email')
+                                        ->email()
+                                        ->required()
+                                        ->maxLength(50),
+                                    TextInput::make('admin_email')
+                                        ->label('Email администратора')
+                                        ->helperText('На этот адрес будут приходить письма с сайта.')
+                                        ->email()
+                                        ->required()
+                                        ->maxLength(50),
+
+                                    Textarea::make('address')
+                                        ->label('Адрес')
+                                        ->required()
+                                        ->maxLength(100)
+                                        ->rows(2)
+                                        ->columnSpanFull(),
+                                    Textarea::make('working_hours')
+                                        ->label('Режим работы')
+                                        ->required()
+                                        ->maxLength(100)
+                                        ->rows(2)
+                                        ->columnSpanFull(),
+
+                                    TextInput::make('instagram_url')
+                                        ->label('Instagram')
+                                        ->url()
+                                        ->maxLength(2048),
+                                    TextInput::make('youtube_url')
+                                        ->label('YouTube')
+                                        ->url()
+                                        ->maxLength(2048),
+                                    TextInput::make('vk_url')
+                                        ->label('ВКонтакте')
+                                        ->url()
+                                        ->maxLength(2048),
+                                    TextInput::make('telegram_url')
+                                        ->label('Telegram')
+                                        ->url()
+                                        ->maxLength(2048),
+                                    TextInput::make('whatsapp_url')
+                                        ->label('WhatsApp')
+                                        ->url()
+                                        ->maxLength(2048),
+
+                                    TextInput::make('yandex_map_id')
+                                        ->label('Яндекс Карта')
+                                        ->helperText('Укажите идентификатор после constructor: в ссылке из конструктора Яндекс Карт.')
+                                        ->maxLength(64)
+                                        ->regex('/\A[a-f0-9]{64}\z/')
+                                        ->columnSpanFull(),
+                                ])
+                                ->columns(2),
+
                             Tab::make('Преимущества')
                                 ->schema([
                                     Repeater::make('benefits')
@@ -73,61 +133,142 @@ final class ManageSettings extends Page
                                             TextInput::make('title')
                                                 ->label('Заголовок')
                                                 ->required()
-                                                ->maxLength(255),
+                                                ->maxLength(50)
+                                                ->live(onBlur: true),
                                             Textarea::make('description')
                                                 ->label('Описание')
                                                 ->required()
-                                                ->maxLength(1000)
-                                                ->rows(3),
+                                                ->maxLength(100)
+                                                ->rows(2),
                                         ])
+                                        ->itemLabel(static fn (array $state): string => $state['title'] ?? '')
                                         ->addable(false)
                                         ->deletable(false)
                                         ->reorderable(false)
+                                        ->collapsible()
+                                        ->collapsed()
                                         ->required()
                                         ->minItems(5)
                                         ->maxItems(5),
                                 ]),
-                            Tab::make('Контактная информация')
+
+                            Tab::make('Наша история')
                                 ->schema([
-                                    TextInput::make('phone')
-                                        ->label('Телефон')
-                                        ->tel()
-                                        ->mask('+7 (999) 999-99-99')
-                                        ->placeholder('+7 (988) 375-75-55')
-                                        ->required()
-                                        ->regex('/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/'),
-                                    TextInput::make('email')
-                                        ->label('Email')
-                                        ->email()
-                                        ->required()
-                                        ->maxLength(255),
-                                    TextInput::make('admin_email')
-                                        ->label('Email администратора')
-                                        ->helperText('На этот адрес будут приходить вопросы с сайта.')
-                                        ->email()
-                                        ->required()
-                                        ->maxLength(255),
-                                    Textarea::make('address')
-                                        ->label('Адрес')
-                                        ->required()
-                                        ->maxLength(1000)
-                                        ->rows(3)
+                                    TextInput::make('story_title')
+                                        ->label('Заголовок')
+                                        ->maxLength(100),
+                                    TextInput::make('story_video_url')
+                                        ->label('Ссылка на видео')
+                                        ->helperText('Прямая ссылка на VK Видео')
+                                        ->url()
+                                        ->maxLength(2048),
+                                    Textarea::make('story_description')
+                                        ->label('Описание')
+                                        ->maxLength(500)
+                                        ->rows(6)
                                         ->columnSpanFull(),
-                                    Textarea::make('working_hours')
-                                        ->label('Режим работы')
-                                        ->required()
-                                        ->maxLength(1000)
-                                        ->rows(3)
-                                        ->columnSpanFull(),
-                                    TextInput::make('yandex_map_id')
-                                        ->label('Идентификатор Яндекс Карты')
-                                        ->helperText('Укажите идентификатор после constructor: в ссылке из конструктора Яндекс Карт.')
-                                        ->maxLength(64)
-                                        ->regex('/\A[a-f0-9]{64}\z/')
-                                        ->columnSpanFull(),
+                                    SpatieMediaLibrary::make('story_image')
+                                        ->label('Изображение')
+                                        ->collection('story_image')
+                                        ->maxFiles(1)
+                                        ->maxSize(5120)
+                                        ->processImage(
+                                            static fn (Image $image): Image => $image->fit(Fit::Crop, 1800, 1200),
+                                        )
+                                        ->helperText('Рекомендуемый размер: 1800×1200 пикселей.'),
                                 ])
                                 ->columns(2),
-                            Tab::make('Документы')
+
+                            Tab::make('Баннеры')
+                                ->schema([
+                                    SpatieMediaLibrary::make('banner_wide_image')
+                                        ->label('Широкий баннер')
+                                        ->collection('banner_wide_image')
+                                        ->maxFiles(1)
+                                        ->maxSize(5120)
+                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 1290, 200))
+                                        ->helperText('Рекомендуемый размер: 1290×200 пикселей.'),
+                                    SpatieMediaLibrary::make('banner_wide_mobile_image')
+                                        ->label('Широкий баннер — мобильное изображение')
+                                        ->collection('banner_wide_mobile_image')
+                                        ->maxFiles(1)
+                                        ->maxSize(5120)
+                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 750, 360))
+                                        ->helperText('Рекомендуемый размер: 750×360 пикселей.'),
+                                    SpatieMediaLibrary::make('banner_double_first_image')
+                                        ->label('Двойной баннер — первое изображение')
+                                        ->collection('banner_double_first_image')
+                                        ->maxFiles(1)
+                                        ->maxSize(5120)
+                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 635, 180))
+                                        ->helperText('Рекомендуемый размер: 635×180 пикселей.'),
+                                    SpatieMediaLibrary::make('banner_double_first_mobile_image')
+                                        ->label('Двойной баннер — первое мобильное изображение')
+                                        ->collection('banner_double_first_mobile_image')
+                                        ->maxFiles(1)
+                                        ->maxSize(5120)
+                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 750, 360))
+                                        ->helperText('Рекомендуемый размер: 750×360 пикселей.'),
+                                    SpatieMediaLibrary::make('banner_double_second_image')
+                                        ->label('Двойной баннер — второе изображение')
+                                        ->collection('banner_double_second_image')
+                                        ->maxFiles(1)
+                                        ->maxSize(5120)
+                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 635, 180))
+                                        ->helperText('Рекомендуемый размер: 635×180 пикселей.'),
+                                    SpatieMediaLibrary::make('banner_double_second_mobile_image')
+                                        ->label('Двойной баннер — второе мобильное изображение')
+                                        ->collection('banner_double_second_mobile_image')
+                                        ->maxFiles(1)
+                                        ->maxSize(5120)
+                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 750, 360))
+                                        ->helperText('Рекомендуемый размер: 750×360 пикселей.'),
+                                    SpatieMediaLibrary::make('banner_triple_first_image')
+                                        ->label('Тройной баннер — первое изображение')
+                                        ->collection('banner_triple_first_image')
+                                        ->maxFiles(1)
+                                        ->maxSize(5120)
+                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 417, 200))
+                                        ->helperText('Рекомендуемый размер: 417×200 пикселей.'),
+                                    SpatieMediaLibrary::make('banner_triple_first_mobile_image')
+                                        ->label('Тройной баннер — первое мобильное изображение')
+                                        ->collection('banner_triple_first_mobile_image')
+                                        ->maxFiles(1)
+                                        ->maxSize(5120)
+                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 750, 360))
+                                        ->helperText('Рекомендуемый размер: 750×360 пикселей.'),
+                                    SpatieMediaLibrary::make('banner_triple_second_image')
+                                        ->label('Тройной баннер — второе изображение')
+                                        ->collection('banner_triple_second_image')
+                                        ->maxFiles(1)
+                                        ->maxSize(5120)
+                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 417, 200))
+                                        ->helperText('Рекомендуемый размер: 417×200 пикселей.'),
+                                    SpatieMediaLibrary::make('banner_triple_second_mobile_image')
+                                        ->label('Тройной баннер — второе мобильное изображение')
+                                        ->collection('banner_triple_second_mobile_image')
+                                        ->maxFiles(1)
+                                        ->maxSize(5120)
+                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 750, 360))
+                                        ->helperText('Рекомендуемый размер: 750×360 пикселей.'),
+                                    SpatieMediaLibrary::make('banner_triple_third_image')
+                                        ->label('Тройной баннер — третье изображение')
+                                        ->collection('banner_triple_third_image')
+                                        ->maxFiles(1)
+                                        ->maxSize(5120)
+                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 417, 200))
+                                        ->helperText('Рекомендуемый размер: 417×200 пикселей.'),
+                                    SpatieMediaLibrary::make('banner_triple_third_mobile_image')
+                                        ->label('Тройной баннер — третье мобильное изображение')
+                                        ->collection('banner_triple_third_mobile_image')
+                                        ->maxFiles(1)
+                                        ->maxSize(5120)
+                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 750, 360))
+                                        ->helperText('Рекомендуемый размер: 750×360 пикселей.'),
+                                ])
+                                ->columns(2),
+
+                            Tab::make('Общее')
                                 ->schema([
                                     FileUpload::make('privacy_policy')
                                         ->label('Политика обработки персональных данных')
@@ -140,72 +281,19 @@ final class ManageSettings extends Page
                                         ->preventFilePathTampering()
                                         ->openable()
                                         ->downloadable()
-                                        ->helperText('Обязательный PDF-документ до 10 МБ. Замена применяется после нажатия «Сохранить».'),
-                                ]),
-                            Tab::make('Футер')
-                                ->schema([
+                                        ->helperText('Обязательный PDF-документ до 10 МБ.')
+                                        ->columnSpanFull(),
                                     TextInput::make('footer_title')
-                                        ->label('Заголовок')
-                                        ->maxLength(255),
+                                        ->label('Заголовок футера')
+                                        ->maxLength(50),
                                     Textarea::make('footer_description')
-                                        ->label('Описание')
-                                        ->maxLength(2000)
-                                        ->rows(4)
+                                        ->label('Описание футера')
+                                        ->maxLength(100)
+                                        ->rows(3)
                                         ->columnSpanFull(),
-                                    TextInput::make('instagram_url')
-                                        ->label('Instagram')
-                                        ->url()
-                                        ->maxLength(2048),
-                                    TextInput::make('youtube_url')
-                                        ->label('YouTube')
-                                        ->url()
-                                        ->maxLength(2048),
-                                    TextInput::make('vk_url')
-                                        ->label('VK')
-                                        ->url()
-                                        ->maxLength(2048),
-                                    TextInput::make('telegram_url')
-                                        ->label('Telegram')
-                                        ->url()
-                                        ->maxLength(2048),
-                                    TextInput::make('whatsapp_url')
-                                        ->label('WhatsApp')
-                                        ->url()
-                                        ->maxLength(2048),
-                                ])
-                                ->columns(2),
-                            Tab::make('Наша история')
-                                ->schema([
-                                    TextInput::make('story_title')
-                                        ->label('Заголовок')
-                                        ->maxLength(255),
-                                    TextInput::make('story_video_url')
-                                        ->label('Ссылка на видео')
-                                        ->helperText('Можно указать прямую ссылку VK Видео, например: https://vkvideo.ru/video-130698013_456241587')
-                                        ->url()
-                                        ->maxLength(2048),
-                                    Textarea::make('story_description')
-                                        ->label('Описание')
-                                        ->maxLength(5000)
-                                        ->rows(6)
-                                        ->columnSpanFull(),
-                                    self::storyImageUpload(),
-                                ])
-                                ->columns(2),
-                            Tab::make('Баннеры')
-                                ->schema([
-                                    self::bannerUpload('banner_wide_image', 'Широкий баннер', 1290, 200, columnSpanFull: true),
-                                    self::bannerUpload('banner_wide_mobile_image', 'Широкий баннер — мобильное изображение', 750, 360, columnSpanFull: true),
-                                    self::bannerUpload('banner_double_first_image', 'Двойной баннер — первое изображение', 635, 180),
-                                    self::bannerUpload('banner_double_first_mobile_image', 'Двойной баннер — первое мобильное изображение', 750, 360),
-                                    self::bannerUpload('banner_double_second_image', 'Двойной баннер — второе изображение', 635, 180),
-                                    self::bannerUpload('banner_double_second_mobile_image', 'Двойной баннер — второе мобильное изображение', 750, 360),
-                                    self::bannerUpload('banner_triple_first_image', 'Тройной баннер — первое изображение', 417, 200),
-                                    self::bannerUpload('banner_triple_first_mobile_image', 'Тройной баннер — первое мобильное изображение', 750, 360),
-                                    self::bannerUpload('banner_triple_second_image', 'Тройной баннер — второе изображение', 417, 200),
-                                    self::bannerUpload('banner_triple_second_mobile_image', 'Тройной баннер — второе мобильное изображение', 750, 360),
-                                    self::bannerUpload('banner_triple_third_image', 'Тройной баннер — третье изображение', 417, 200),
-                                    self::bannerUpload('banner_triple_third_mobile_image', 'Тройной баннер — третье мобильное изображение', 750, 360),
+                                    Toggle::make('snow_enabled')
+                                        ->label('Режим снега')
+                                        ->helperText('Включает снег в публичной части сайта.'),
                                 ])
                                 ->columns(2),
                         ])
@@ -231,13 +319,8 @@ final class ManageSettings extends Page
     {
         $setting = $this->getRecord();
         $previousDocument = $setting->privacy_policy;
-        $isNew = ! $setting->exists;
         $setting->fill($this->form->getState());
         $setting->save();
-
-        if ($isNew) {
-            $this->form->record($setting)->saveRelationships();
-        }
 
         if ($previousDocument && $previousDocument !== $setting->privacy_policy) {
             Storage::disk('public')->delete($previousDocument);
@@ -251,63 +334,8 @@ final class ManageSettings extends Page
             ->send();
     }
 
-    private static function imageUpload(
-        string $collection,
-        string $label,
-        int $width,
-        int $height,
-        bool $columnSpanFull = false,
-    ): MediaImageUpload {
-        $upload = MediaImageUpload::make($collection)
-            ->label($label)
-            ->collection($collection)
-            ->maxFiles(1)
-            ->maxSize(5120)
-            ->processImage(static fn (Image $image): Image => $image)
-            ->helperText("Рекомендуемый размер: {$width}×{$height} пикселей.");
-
-        if ($columnSpanFull) {
-            $upload->columnSpanFull();
-        }
-
-        return $upload;
-    }
-
-    private static function bannerUpload(
-        string $collection,
-        string $label,
-        int $width,
-        int $height,
-        bool $columnSpanFull = false,
-    ): MediaImageUpload {
-        $upload = self::imageUpload(
-            $collection,
-            $label,
-            $width,
-            $height,
-            $columnSpanFull,
-        );
-
-        return $upload->processImage(
-            static fn (Image $image): Image => $image->fit(Fit::Crop, $width, $height),
-        );
-    }
-
-    private static function storyImageUpload(): MediaImageUpload
-    {
-        return self::imageUpload(
-            'story_image',
-            'Изображение',
-            1800,
-            1200,
-            columnSpanFull: true,
-        )->processImage(
-            static fn (Image $image): Image => $image->fit(Fit::Crop, 1800, 1200),
-        );
-    }
-
     private function getRecord(): Setting
     {
-        return $this->setting ??= Setting::query()->firstOrNew();
+        return $this->setting ??= Setting::query()->sole();
     }
 }

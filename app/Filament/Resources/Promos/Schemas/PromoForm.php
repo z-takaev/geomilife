@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Promos\Schemas;
 
-use App\Filament\Forms\Components\MediaImageUpload;
 use App\Filament\Forms\Components\SlugField;
+use App\Filament\Forms\Components\SpatieMediaLibrary;
 use App\Filament\Resources\Seo\Schemas\SeoForm;
 use App\Support\Media\ImageMimeTypes;
 use Filament\Forms\Components\DatePicker;
@@ -24,7 +24,7 @@ final class PromoForm
     {
         return $schema
             ->components([
-                MediaImageUpload::make('image')
+                SpatieMediaLibrary::make('image')
                     ->label('Изображение')
                     ->collection('image')
                     ->required()

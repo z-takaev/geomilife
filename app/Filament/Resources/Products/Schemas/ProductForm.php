@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Products\Schemas;
 
 use App\Enums\Products\ProductUnitEnum;
-use App\Filament\Forms\Components\MediaImageUpload;
 use App\Filament\Forms\Components\SlugField;
+use App\Filament\Forms\Components\SpatieMediaLibrary;
 use App\Filament\Resources\ProductAttributes\ProductAttributeResource;
 use App\Filament\Resources\Seo\Schemas\SeoForm;
 use App\Models\Category;
@@ -41,14 +41,14 @@ final class ProductForm
                     ->tabs([
                         Tab::make('Основное')
                             ->schema([
-                                MediaImageUpload::make('image')
+                                SpatieMediaLibrary::make('image')
                                     ->label('Главное изображение')
                                     ->collection('image')
                                     ->required()
                                     ->maxFiles(1)
                                     ->processImage(static fn (Image $image): Image => $image->fit(Fit::Fill, 1200, 1200, backgroundColor: '#ffffff'))
                                     ->helperText('Рекомендуемый размер: 1200×1200 пикселей.'),
-                                MediaImageUpload::make('gallery')
+                                SpatieMediaLibrary::make('gallery')
                                     ->label('Галерея')
                                     ->collection('gallery')
                                     ->multiple()

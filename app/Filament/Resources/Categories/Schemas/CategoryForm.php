@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Categories\Schemas;
 
-use App\Filament\Forms\Components\MediaImageUpload;
 use App\Filament\Forms\Components\SlugField;
+use App\Filament\Forms\Components\SpatieMediaLibrary;
 use App\Filament\Resources\Seo\Schemas\SeoForm;
 use App\Models\Category;
 use Filament\Forms\Components\Select;
@@ -24,7 +24,7 @@ final class CategoryForm
     {
         return $schema
             ->components([
-                MediaImageUpload::make('image')
+                SpatieMediaLibrary::make('image')
                     ->label('Изображение')
                     ->collection('image')
                     ->required()

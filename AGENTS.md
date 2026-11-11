@@ -22,7 +22,7 @@
 - После изменения миграций, связей, аксессоров, мутаторов или query scope моделей повторно генерировать IDE-подсказки командой `sail artisan ide-helper:models --nowrite`.
 - Директория `/template` в корне проекта содержит исходный HTML-шаблон для верстки сайта. Использовать его как основу, переносить нужные элементы в Laravel/Blade/Livewire и адаптировать под требования проекта.
 - Всю работу с загрузкой изображений выполнять через `spatie/laravel-medialibrary`.
-- Для загрузки изображений в Filament всегда использовать `App\Filament\Forms\Components\MediaImageUpload`.
+- Для загрузки изображений в Filament всегда использовать `App\Filament\Forms\Components\SpatieMediaLibrary`.
 - Для установки и сброса проекта при необходимости использовать команды `sail artisan project:install` и `sail artisan project:refresh` соответственно. По умолчанию фабрики не запускаются; для заполнения базы тестовыми данными передавать опцию `--factories`. Запускать команды только после явного подтверждения пользователя.
 - При создании новых страниц обязательно добавлять их в `app/Http/Controllers/SitemapController.php` и подключать к модулю SEO.
 - Коммиты в git всегда оформлять по Conventional Commits.

@@ -9,6 +9,8 @@ use App\Models\Setting;
 use Database\Seeders\SettingSeeder;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Repeater;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
@@ -42,7 +44,9 @@ afterEach(function (): void {
 it('показывает пять исходных преимуществ на сайте и в форме без создания и удаления', function (): void {
     Livewire::test(ManageSettings::class)
         ->assertFormFieldExists('benefits', fn (Repeater $field): bool => ! $field->isAddable()
-            && ! $field->isDeletable() && ! $field->isReorderable())
+            && ! $field->isDeletable() && ! $field->isReorderable()
+            && $field->isCollapsible() && $field->isCollapsed()
+            && $field->hasItemLabels())
         ->assertSchemaStateSet(['benefits' => SettingSeeder::DEFAULT_BENEFITS]);
 
     Auth::shouldUse('web');
@@ -50,6 +54,46 @@ it('показывает пять исходных преимуществ на �
     foreach (SettingSeeder::DEFAULT_BENEFITS as $benefit) {
         $response->assertSee($benefit['title'])->assertSee($benefit['description']);
     }
+});
+
+it('располагает настройки по пяти табам начиная с контактной информации', function (): void {
+    $component = Livewire::test(ManageSettings::class);
+    $tabs = collect($component->instance()->form->getFlatComponents(withHidden: true))
+        ->first(static fn (object $component): bool => $component instanceof Tabs);
+
+    expect($tabs)->toBeInstanceOf(Tabs::class)
+        ->and($tabs->getActiveTab())->toBe(1)
+        ->and($tabs->isTabPersisted())->toBeTrue();
+
+    $tabFields = collect($tabs->getChildSchema()->getComponents(withHidden: true))
+        ->mapWithKeys(static fn (Tab $tab): array => [
+            (string) $tab->getLabel() => array_keys($tab->getChildSchema()->getFlatComponents(withHidden: true)),
+        ]);
+
+    expect($tabFields->keys()->all())->toBe([
+        'Контактная информация',
+        'Преимущества',
+        'Наша история',
+        'Баннеры',
+        'Общее',
+    ])->and($tabFields['Контактная информация'])->toContain(
+        'phone',
+        'email',
+        'admin_email',
+        'address',
+        'working_hours',
+        'yandex_map_id',
+        'instagram_url',
+        'youtube_url',
+        'vk_url',
+        'telegram_url',
+        'whatsapp_url',
+    )->and($tabFields['Общее'])->toContain(
+        'snow_enabled',
+        'footer_title',
+        'footer_description',
+        'privacy_policy',
+    );
 });
 
 it('сохраняет тексты пяти преимуществ и выводит изменения на главной с обновлением кеша', function (): void {

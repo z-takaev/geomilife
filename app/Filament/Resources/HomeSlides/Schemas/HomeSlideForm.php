@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\HomeSlides\Schemas;
 
-use App\Filament\Forms\Components\MediaImageUpload;
+use App\Filament\Forms\Components\SpatieMediaLibrary;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
@@ -43,9 +43,9 @@ final class HomeSlideForm
             ]);
     }
 
-    private static function imageUpload(string $collection, string $label, int $width, int $height): MediaImageUpload
+    private static function imageUpload(string $collection, string $label, int $width, int $height): SpatieMediaLibrary
     {
-        return MediaImageUpload::make($collection)
+        return SpatieMediaLibrary::make($collection)
             ->label($label)
             ->collection($collection)
             ->required()

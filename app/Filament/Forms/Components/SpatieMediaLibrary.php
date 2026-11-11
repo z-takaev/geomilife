@@ -21,7 +21,7 @@ use Spatie\Image\Image;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-final class MediaImageUpload extends SpatieMediaLibraryFileUpload
+final class SpatieMediaLibrary extends SpatieMediaLibraryFileUpload
 {
     protected ?Closure $imageProcessing = null;
 
@@ -74,7 +74,7 @@ final class MediaImageUpload extends SpatieMediaLibraryFileUpload
             ->acceptedFileTypes(ImageMimeTypes::ALLOWED)
             ->maxSize(12288);
 
-        $this->saveUploadedFileUsing(static function (MediaImageUpload $component, TemporaryUploadedFile $file, ?Model $record): ?string {
+        $this->saveUploadedFileUsing(static function (SpatieMediaLibrary $component, TemporaryUploadedFile $file, ?Model $record): ?string {
             if (! $record instanceof HasMedia) {
                 return null;
             }
@@ -111,7 +111,7 @@ final class MediaImageUpload extends SpatieMediaLibraryFileUpload
             return $media->uuid;
         });
 
-        $this->saveRelationshipsUsing(static function (MediaImageUpload $component): void {
+        $this->saveRelationshipsUsing(static function (SpatieMediaLibrary $component): void {
             $component->saveUploadedFiles();
 
             // После сохранения значения содержат UUID медиа, ключи новых загрузок — временные UUID.
