@@ -8,7 +8,6 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 final class FaqsTable
@@ -24,18 +23,6 @@ final class FaqsTable
                     ->label('Активен')
                     ->boolean()
                     ->sortable(),
-                TextColumn::make('updated_at')
-                    ->label('Обновлён')
-                    ->dateTime('d.m.Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
-                TernaryFilter::make('is_active')
-                    ->label('Активность')
-                    ->placeholder('Все вопросы')
-                    ->trueLabel('Активные')
-                    ->falseLabel('Неактивные'),
             ])
             ->defaultSort('order')
             ->reorderable('order')
@@ -43,6 +30,7 @@ final class FaqsTable
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),
-            ]);
+            ])
+            ->paginated(false);
     }
 }

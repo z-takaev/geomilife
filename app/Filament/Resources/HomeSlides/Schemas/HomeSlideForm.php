@@ -18,11 +18,33 @@ final class HomeSlideForm
     {
         return $schema
             ->components([
-                self::imageUpload('desktop_image', 'Изображение для компьютера', 1920, 720),
-                self::imageUpload('mobile_image', 'Изображение для телефона', 1448, 1086),
+                SpatieMediaLibrary::make('desktop_image')
+                    ->label('Изображение для компьютера')
+                    ->collection('desktop_image')
+                    ->required()
+                    ->maxFiles(1)
+                    ->helperText('Рекомендуемый размер: 1920×720 пикселей.')
+                    ->processImage(static fn (Image $image): Image => $image->fit(
+                        Fit::Fill,
+                        1920,
+                        720,
+                        backgroundColor: '#000',
+                    )),
+                SpatieMediaLibrary::make('mobile_image')
+                    ->label('Изображение для телефона')
+                    ->collection('mobile_image')
+                    ->required()
+                    ->maxFiles(1)
+                    ->helperText('Рекомендуемый размер: 1448×1086 пикселей.')
+                    ->processImage(static fn (Image $image): Image => $image->fit(
+                        Fit::Fill,
+                        1448,
+                        1086,
+                        backgroundColor: '#000',
+                    )),
                 TextInput::make('link_url')
                     ->label('Ссылка')
-                    ->helperText('Необязательно. Например: /catalog, #catalog или https://example.com.')
+                    ->helperText('Например: /catalog, #catalog или https://example.com.')
                     ->string()
                     ->maxLength(2048)
                     ->rules([
@@ -41,21 +63,5 @@ final class HomeSlideForm
                     ->label('Активен')
                     ->columnSpanFull(),
             ]);
-    }
-
-    private static function imageUpload(string $collection, string $label, int $width, int $height): SpatieMediaLibrary
-    {
-        return SpatieMediaLibrary::make($collection)
-            ->label($label)
-            ->collection($collection)
-            ->required()
-            ->maxFiles(1)
-            ->helperText("Рекомендуемый размер: {$width}×{$height} пикселей.")
-            ->processImage(static fn (Image $image): Image => $image->fit(
-                Fit::Fill,
-                $width,
-                $height,
-                backgroundColor: '#000',
-            ));
     }
 }

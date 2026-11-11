@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Forms;
 
+use App\Support\Phone\PhoneFormat;
 use Livewire\Form;
 
 final class QuestionSubmissionForm extends Form
@@ -21,7 +22,7 @@ final class QuestionSubmissionForm extends Form
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'phone' => ['required', 'string', 'regex:/^\\+7 \\(\\d{3}\\) \\d{3}-\\d{2}-\\d{2}$/'],
+            'phone' => ['required', 'string', 'regex:'.PhoneFormat::FORMATTED_PATTERN],
             'message' => ['required', 'string', 'max:5000'],
         ];
     }

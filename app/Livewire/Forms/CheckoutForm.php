@@ -9,6 +9,7 @@ use App\Enums\Orders\PaymentMethodEnum;
 use App\Models\City;
 use App\Models\Setting;
 use App\Services\Orders\CheckoutService;
+use App\Support\Phone\PhoneFormat;
 use Illuminate\Validation\Rule;
 use Livewire\Form;
 
@@ -71,7 +72,7 @@ final class CheckoutForm extends Form
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
             'phone' => ['required', 'string', function (string $attribute, mixed $value, \Closure $fail): void {
-                if (! preg_match('/^\+7\d{10}$/', app(CheckoutService::class)->normalizePhone((string) $value))) {
+                if (! preg_match(PhoneFormat::COMPACT_PATTERN, app(CheckoutService::class)->normalizePhone((string) $value))) {
                     $fail(__('Укажите корректный телефон в формате +7XXXXXXXXXX.'));
                 }
             }],

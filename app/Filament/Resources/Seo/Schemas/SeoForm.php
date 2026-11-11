@@ -30,7 +30,6 @@ final class SeoForm
     private static function section(bool $showPage = false): Section
     {
         return Section::make('Поисковая оптимизация')
-            ->description('Пустой SEO-заголовок будет заполнен заголовком страницы. Для пустого SEO-описания используется значение по умолчанию.')
             ->schema([
                 ...($showPage ? [
                     TextEntry::make('path')
@@ -42,10 +41,11 @@ final class SeoForm
                 TextInput::make('title')
                     ->label('SEO-заголовок')
                     ->helperText('Рекомендуемая длина — около 60 символов.')
-                    ->maxLength(255),
+                    ->maxLength(100),
                 Textarea::make('description')
                     ->label('SEO-описание')
                     ->helperText('Рекомендуемая длина — около 160 символов.')
+                    ->maxLength(200)
                     ->rows(4),
             ])
             ->columnSpanFull();

@@ -115,8 +115,8 @@ final class AdminPanelProvider extends PanelProvider
                 ->items([
                     ...self::navigationItems(CityResource::class),
                     ...self::navigationItems(ShippingBoxResource::class),
-                    ...self::navigationItems(SeoResource::class),
                     ...self::navigationItems(FilamentUserResource::class),
+                    ...self::navigationItems(SeoResource::class),
                     ...self::navigationItems(ManageSettings::class),
                 ]),
         ]);

@@ -63,6 +63,24 @@ it('сохраняет все настройки доставки города',
     }
 });
 
+it('показывает блоки доставки только при активных способах получения', function (): void {
+    $city = CheckoutFixtures::city([
+        'is_pickup_available' => false,
+        'is_courier_available' => false,
+    ]);
+    $component = Livewire::test(EditCity::class, ['record' => $city->id])
+        ->assertSchemaComponentHidden('pickup-fields')
+        ->assertSchemaComponentHidden('courier-fields');
+
+    $component->fillForm(['is_pickup_available' => true])
+        ->assertSchemaComponentVisible('pickup-fields')
+        ->assertSchemaComponentHidden('courier-fields');
+
+    $component->fillForm(['is_courier_available' => true])
+        ->assertSchemaComponentVisible('pickup-fields')
+        ->assertSchemaComponentVisible('courier-fields');
+});
+
 it('проверяет реквизиты доставки в форме города', function (string $field, mixed $value, string $rule): void {
     $city = CheckoutFixtures::city();
     Livewire::test(EditCity::class, ['record' => $city->id])->fillForm([$field => $value])

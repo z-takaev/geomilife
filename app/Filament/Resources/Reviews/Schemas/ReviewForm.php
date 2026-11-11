@@ -21,7 +21,7 @@ final class ReviewForm
                 TextInput::make('author_name')
                     ->label('Имя комментатора')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(50),
                 DatePicker::make('reviewed_at')
                     ->label('Дата отзыва')
                     ->required(),

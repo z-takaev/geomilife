@@ -18,32 +18,19 @@ final class ReviewsTable
         return $table
             ->columns([
                 TextColumn::make('author_name')
-                    ->label('Имя комментатора')
+                    ->label('Комментатор')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('text')
-                    ->label('Текст отзыва')
-                    ->limit(80)
-                    ->wrap(),
                 TextColumn::make('rating')
                     ->label('Рейтинг')
                     ->sortable(),
                 TextColumn::make('source')
                     ->label('Источник')
                     ->placeholder('Не указан'),
-                TextColumn::make('reviewed_at')
-                    ->label('Дата отзыва')
-                    ->date('d.m.Y')
-                    ->sortable(),
                 IconColumn::make('is_active')
                     ->label('Активен')
                     ->boolean()
                     ->sortable(),
-                TextColumn::make('updated_at')
-                    ->label('Обновлён')
-                    ->dateTime('d.m.Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 TernaryFilter::make('is_active')
@@ -52,11 +39,11 @@ final class ReviewsTable
                     ->trueLabel('Активные')
                     ->falseLabel('Неактивные'),
             ])
-            ->defaultSort('reviewed_at', 'desc')
             ->emptyStateHeading('Отзывы не найдены')
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),
-            ]);
+            ])
+            ->searchable(false);
     }
 }

@@ -19,29 +19,14 @@ final class HomeSlidesTable
         return $table
             ->columns([
                 SpatieMediaLibraryImageColumn::make('desktop_image')
-                    ->label('Для компьютера')
+                    ->label('Изображение')
                     ->collection('desktop_image')
                     ->imageWidth(160)
-                    ->imageHeight(60),
-                SpatieMediaLibraryImageColumn::make('mobile_image')
-                    ->label('Для телефона')
-                    ->collection('mobile_image')
-                    ->imageWidth(80)
                     ->imageHeight(60),
                 IconColumn::make('is_active')
                     ->label('Активен')
                     ->boolean()
                     ->sortable(),
-                TextColumn::make('created_at')
-                    ->label('Создан')
-                    ->dateTime('d.m.Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->label('Обновлён')
-                    ->dateTime('d.m.Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('order')
             ->reorderable('order')
@@ -56,6 +41,7 @@ final class HomeSlidesTable
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),
-            ]);
+            ])
+            ->paginated(false);
     }
 }

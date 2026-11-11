@@ -18,11 +18,13 @@ final class FaqForm
             ->components([
                 TextInput::make('question')
                     ->label('Вопрос')
+                    ->maxLength(200)
                     ->required()
                     ->columnSpanFull(),
                 RichEditor::make('answer')
                     ->label('Ответ')
                     ->required()
+                    ->maxLength(9999)
                     ->fileAttachmentsAcceptedFileTypes(ImageMimeTypes::ALLOWED)
                     ->preventFileAttachmentPathTampering()
                     ->resizableImages()

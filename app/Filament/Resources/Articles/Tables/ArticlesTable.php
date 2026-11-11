@@ -29,23 +29,14 @@ final class ArticlesTable
                     ->searchable()
                     ->sortable()
                     ->wrap(),
-                TextColumn::make('slug')
-                    ->label('ЧПУ')
-                    ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('published_at')
-                    ->label('Опубликована')
+                    ->label('Дата публикации')
                     ->date('d.m.Y')
                     ->sortable(),
                 IconColumn::make('is_active')
                     ->label('Активна')
                     ->boolean()
                     ->sortable(),
-                TextColumn::make('updated_at')
-                    ->label('Обновлена')
-                    ->dateTime('d.m.Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 TernaryFilter::make('is_active')
@@ -54,7 +45,6 @@ final class ArticlesTable
                     ->trueLabel('Активные')
                     ->falseLabel('Неактивные'),
             ])
-            ->defaultSort('published_at', 'desc')
             ->emptyStateHeading('Статьи не найдены')
             ->recordActions([
                 EditAction::make(),

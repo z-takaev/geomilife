@@ -41,11 +41,6 @@ final class PromosTable
                     ->label('Активна')
                     ->boolean()
                     ->sortable(),
-                TextColumn::make('updated_at')
-                    ->label('Обновлена')
-                    ->dateTime('d.m.Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 TernaryFilter::make('is_active')
@@ -54,7 +49,6 @@ final class PromosTable
                     ->trueLabel('Активные')
                     ->falseLabel('Неактивные'),
             ])
-            ->defaultSort('start_at', 'desc')
             ->emptyStateHeading('Акции не найдены')
             ->recordActions([
                 EditAction::make(),

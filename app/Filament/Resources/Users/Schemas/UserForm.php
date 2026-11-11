@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use App\Support\Phone\PhoneFormat;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -41,7 +42,7 @@ final class UserForm
                 TextInput::make('phone')
                     ->label('Телефон')
                     ->tel()
-                    ->mask('+7 (999) 999-99-99')
+                    ->mask(PhoneFormat::MASK)
                     ->unique(ignoreRecord: true)
                     ->maxLength(255),
                 TextInput::make('password')

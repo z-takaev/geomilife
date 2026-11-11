@@ -20,16 +20,10 @@ final class SeoTable
                     ->url(static fn (Seo $record): ?string => $record->url)
                     ->openUrlInNewTab()
                     ->placeholder('Страница недоступна'),
-                TextColumn::make('title')
-                    ->label('SEO-заголовок')
-                    ->searchable(),
-                TextColumn::make('description')
-                    ->label('SEO-описание')
-                    ->limit(80)
-                    ->searchable(),
             ])
             ->recordActions([
                 EditAction::make(),
-            ]);
+            ])
+            ->paginated(false);
     }
 }

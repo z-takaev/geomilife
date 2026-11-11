@@ -6,6 +6,7 @@ namespace App\Filament\Pages;
 
 use App\Filament\Forms\Components\SpatieMediaLibrary;
 use App\Models\Setting;
+use App\Support\Phone\PhoneFormat;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
@@ -69,9 +70,9 @@ final class ManageSettings extends Page
                                     TextInput::make('phone')
                                         ->label('Телефон')
                                         ->tel()
-                                        ->mask('+7 (999) 999-99-99')
+                                        ->mask(PhoneFormat::MASK)
                                         ->required()
-                                        ->regex('/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/'),
+                                        ->regex(PhoneFormat::FORMATTED_PATTERN),
                                     TextInput::make('email')
                                         ->label('Email')
                                         ->email()
@@ -306,13 +307,13 @@ final class ManageSettings extends Page
                                         ->disk('public')
                                         ->directory('documents/privacy-policy')
                                         ->acceptedFileTypes(['application/pdf'])
-                                        ->maxSize(10240)
+                                        ->maxSize(5120)
                                         ->required()
                                         ->previewable(false)
                                         ->preventFilePathTampering()
                                         ->openable()
                                         ->downloadable()
-                                        ->helperText('Обязательный PDF-документ до 10 МБ.')
+                                        ->helperText('Обязательный PDF-документ до 5 МБ.')
                                         ->columnSpanFull(),
                                     TextInput::make('footer_title')
                                         ->label('Заголовок футера')

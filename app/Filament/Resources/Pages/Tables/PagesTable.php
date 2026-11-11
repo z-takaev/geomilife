@@ -41,6 +41,7 @@ final class PagesTable
             ->emptyStateHeading('Целевые страницы не найдены')
             ->recordActions([
                 EditAction::make(),
-            ]);
+            ])
+            ->paginated(false);
     }
 }

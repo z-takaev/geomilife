@@ -17,12 +17,12 @@ final class FilamentUserForm
                 TextInput::make('name')
                     ->label('Имя')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(50),
                 TextInput::make('email')
                     ->label('Email')
                     ->email()
                     ->required()
-                    ->maxLength(255)
+                    ->maxLength(50)
                     ->unique(ignoreRecord: true),
                 TextInput::make('password')
                     ->label('Пароль')

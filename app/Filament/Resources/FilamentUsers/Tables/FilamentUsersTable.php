@@ -33,6 +33,8 @@ final class FilamentUsersTable
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),
-            ]);
+            ])
+            ->searchable(false)
+            ->paginated(false);
     }
 }
