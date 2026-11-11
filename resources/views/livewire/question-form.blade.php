@@ -9,10 +9,10 @@
                 <label for="question-name" class="tf-lable cl-text-main">
                     {{ __('Имя') }}<span class="text-primary">*</span>
                 </label>
-                <input type="text" id="question-name" name="name" wire:model="name"
+                <input type="text" id="question-name" name="name" wire:model="form.name"
                     placeholder="{{ __('Введите ваше имя') }}" autocomplete="name" maxlength="255" required
                     @class(['is-invalid' => $errors->has('name')])>
-                @error('name')
+                @error('form.name')
                     <span class="invalid-feedback d-block">{{ $message }}</span>
                 @enderror
             </fieldset>
@@ -21,10 +21,10 @@
                 <label for="question-phone" class="tf-lable cl-text-main">
                     {{ __('Контактный телефон') }}<span class="text-primary">*</span>
                 </label>
-                <input type="tel" id="question-phone" name="phone" wire:model="phone"
+                <input type="tel" id="question-phone" name="phone" wire:model="form.phone"
                     placeholder="{{ __('+7 (___) ___-__-__') }}" autocomplete="tel" inputmode="tel" maxlength="18"
                     data-phone-mask required @class(['is-invalid' => $errors->has('phone')])>
-                @error('phone')
+                @error('form.phone')
                     <span class="invalid-feedback d-block">{{ $message }}</span>
                 @enderror
             </fieldset>
@@ -33,9 +33,9 @@
                 <label for="question-message" class="tf-lable cl-text-main">
                     {{ __('Ваш вопрос') }}<span class="text-primary">*</span>
                 </label>
-                <textarea id="question-message" name="message" wire:model="message" placeholder="{{ __('Напишите ваш вопрос') }}"
+                <textarea id="question-message" name="message" wire:model="form.message" placeholder="{{ __('Напишите ваш вопрос') }}"
                     maxlength="5000" required @class(['is-invalid' => $errors->has('message')])></textarea>
-                @error('message')
+                @error('form.message')
                     <span class="invalid-feedback d-block">{{ $message }}</span>
                 @enderror
             </fieldset>

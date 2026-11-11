@@ -27,20 +27,20 @@
         <div class="catalog-price-range">
             <label>
                 <span>{{ __('От') }}</span>
-                <input type="number" wire:model="priceFrom" name="price_from" min="0"
+                <input type="number" wire:model="form.priceFrom" name="price_from" min="0"
                     placeholder="{{ __('0') }}">
             </label>
             <span class="catalog-price-range__separator" aria-hidden="true"></span>
             <label>
                 <span>{{ __('До') }}</span>
-                <input type="number" wire:model="priceTo" name="price_to" min="0"
+                <input type="number" wire:model="form.priceTo" name="price_to" min="0"
                     placeholder="{{ __('10 000') }}">
             </label>
         </div>
-        @error('priceFrom')
+        @error('form.priceFrom')
             <span class="catalog-filter-error">{{ $message }}</span>
         @enderror
-        @error('priceTo')
+        @error('form.priceTo')
             <span class="catalog-filter-error">{{ $message }}</span>
         @enderror
     </fieldset>
@@ -49,12 +49,12 @@
         <legend>{{ __('Наличие') }}</legend>
         <div class="catalog-filter-options">
             <label class="catalog-filter-option" for="{{ $filterIdPrefix }}-availability-in-stock">
-                <input id="{{ $filterIdPrefix }}-availability-in-stock" type="checkbox" wire:model="availability"
+                <input id="{{ $filterIdPrefix }}-availability-in-stock" type="checkbox" wire:model="form.availability"
                     name="availability[]" value="in-stock">
                 <span>{{ __('В наличии') }}</span>
             </label>
             <label class="catalog-filter-option" for="{{ $filterIdPrefix }}-availability-preorder">
-                <input id="{{ $filterIdPrefix }}-availability-preorder" type="checkbox" wire:model="availability"
+                <input id="{{ $filterIdPrefix }}-availability-preorder" type="checkbox" wire:model="form.availability"
                     name="availability[]" value="preorder">
                 <span>{{ __('Под заказ') }}</span>
             </label>
@@ -69,7 +69,8 @@
                     <label class="catalog-filter-option"
                         for="{{ $filterIdPrefix }}-package-value-{{ $index }}">
                         <input id="{{ $filterIdPrefix }}-package-value-{{ $index }}" type="checkbox"
-                            wire:model="packageValues" name="package_values[]" value="{{ $packageOption['value'] }}">
+                            wire:model="form.packageValues" name="package_values[]"
+                            value="{{ $packageOption['value'] }}">
                         <span>{{ $packageOption['label'] }}</span>
                     </label>
                 @endforeach

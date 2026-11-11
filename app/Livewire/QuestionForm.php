@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use App\Livewire\Forms\QuestionSubmissionForm;
 use App\Models\Setting;
 use App\Notifications\QuestionSubmittedNotification;
 use Illuminate\Contracts\View\View;
@@ -12,19 +13,15 @@ use Livewire\Component;
 
 final class QuestionForm extends Component
 {
-    public string $name = '';
-
-    public string $phone = '';
-
-    public string $message = '';
+    public QuestionSubmissionForm $form;
 
     public function submit(): void
     {
-        $validated = $this->validate();
+        $validated = $this->form->validate();
         $adminEmail = Setting::cached()?->admin_email;
 
         if (blank($adminEmail)) {
-            $this->addError('message', __('Не удалось отправить вопрос. Попробуйте позже.'));
+            $this->form->addError('message', __('Не удалось отправить вопрос. Попробуйте позже.'));
             $this->dispatch('notify', message: __('Не удалось отправить вопрос. Попробуйте позже.'), type: 'error');
 
             return;
@@ -36,7 +33,7 @@ final class QuestionForm extends Component
             question: $validated['message'],
         ));
 
-        $this->reset(['name', 'phone', 'message']);
+        $this->form->reset();
         $this->resetValidation();
         $this->dispatch('question-sent');
         $this->dispatch('notify', message: __('Ваш вопрос отправлен.'), type: 'success');
@@ -45,29 +42,5 @@ final class QuestionForm extends Component
     public function render(): View
     {
         return view('livewire.question-form');
-    }
-
-    /**
-     * @return array<string, list<string>>
-     */
-    protected function rules(): array
-    {
-        return [
-            'name' => ['required', 'string', 'max:255'],
-            'phone' => ['required', 'string', 'regex:/^\\+7 \\(\\d{3}\\) \\d{3}-\\d{2}-\\d{2}$/'],
-            'message' => ['required', 'string', 'max:5000'],
-        ];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function validationAttributes(): array
-    {
-        return [
-            'name' => __('имя'),
-            'phone' => __('контактный телефон'),
-            'message' => __('вопрос'),
-        ];
     }
 }

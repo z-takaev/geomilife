@@ -7,24 +7,24 @@
                 </div>
             </div>
             <form wire:submit="saveProfile" class="profile-form">
-                <label>{{ __('Имя') }}<input type="text" wire:model="first_name" autocomplete="given-name">
-                    @error('first_name')
+                <label>{{ __('Имя') }}<input type="text" wire:model="form.first_name" autocomplete="given-name">
+                    @error('form.first_name')
                         <small>{{ $message }}</small>
                     @enderror
                 </label>
-                <label>{{ __('Фамилия') }}<input type="text" wire:model="last_name" autocomplete="family-name">
-                    @error('last_name')
+                <label>{{ __('Фамилия') }}<input type="text" wire:model="form.last_name" autocomplete="family-name">
+                    @error('form.last_name')
                         <small>{{ $message }}</small>
                     @enderror
                 </label>
-                <label>{{ __('Дата рождения') }}<input type="date" wire:model="birth_date">
-                    @error('birth_date')
+                <label>{{ __('Дата рождения') }}<input type="date" wire:model="form.birth_date">
+                    @error('form.birth_date')
                         <small>{{ $message }}</small>
                     @enderror
                 </label>
-                <label>{{ __('Телефон') }}<input type="tel" wire:model="phone" autocomplete="tel"
+                <label>{{ __('Телефон') }}<input type="tel" wire:model="form.phone" autocomplete="tel"
                         placeholder="{{ __('+7 (___) ___-__-__') }}" inputmode="tel" maxlength="18" data-phone-mask>
-                    @error('phone')
+                    @error('form.phone')
                         <small>{{ $message }}</small>
                     @enderror
                 </label>

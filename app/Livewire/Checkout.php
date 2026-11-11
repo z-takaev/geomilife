@@ -6,6 +6,7 @@ namespace App\Livewire;
 
 use App\Enums\Orders\DeliveryMethodEnum;
 use App\Enums\Orders\PaymentMethodEnum;
+use App\Livewire\Forms\CheckoutForm;
 use App\Models\Address;
 use App\Models\City;
 use App\Models\Setting;
@@ -20,7 +21,6 @@ use App\Support\Values\Money;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
@@ -28,43 +28,9 @@ final class Checkout extends Component
 {
     private const string CDEK_QUOTE_ERROR = 'Не удалось рассчитать СДЭК. Повторите попытку или выберите другой способ получения.';
 
-    public string $first_name = '';
-
-    public string $last_name = '';
-
-    public string $phone = '';
-
-    public string $email = '';
-
-    public ?int $city_id = null;
+    public CheckoutForm $form;
 
     public string $city_search = '';
-
-    public string $delivery_method = '';
-
-    public string $payment_method = PaymentMethodEnum::ONLINE->value;
-
-    public ?int $address_id = null;
-
-    public string $street = '';
-
-    public string $house = '';
-
-    public ?string $building = null;
-
-    public ?string $apartment = null;
-
-    public ?string $entrance = null;
-
-    public ?string $floor = null;
-
-    public ?string $intercom = null;
-
-    public bool $delivery_to_door = false;
-
-    public string $comment = '';
-
-    public bool $agreement = false;
 
     public bool $checkout_attempted = false;
 
@@ -76,8 +42,6 @@ final class Checkout extends Component
 
     public ?int $quoted_total_minor = null;
 
-    public string $delivery_point_code = '';
-
     public string $delivery_point_search = '';
 
     public ?int $saved_delivery_point_id = null;
@@ -88,10 +52,10 @@ final class Checkout extends Component
     {
         $this->idempotency_key = (string) Str::uuid();
         $user = auth()->user();
-        $this->first_name = $user?->first_name ?? '';
-        $this->last_name = $user?->last_name ?? '';
-        $this->phone = $user?->phone ?? '';
-        $this->email = $user?->email ?? '';
+        $this->form->first_name = $user?->first_name ?? '';
+        $this->form->last_name = $user?->last_name ?? '';
+        $this->form->phone = $user?->phone ?? '';
+        $this->form->email = $user?->email ?? '';
         $point = $user?->savedDeliveryPoints()->where('is_default', true)
             ->whereHas('city', static fn ($query) => $query->where('is_active', true)->where('is_cdek_excluded', false)->where('cdek_code', '>', 0))
             ->first();
@@ -102,48 +66,44 @@ final class Checkout extends Component
             return;
         }
 
-        $this->city_id = $cities->current()?->id;
-        $city = $this->selectedCity();
+        $this->form->city_id = $cities->current()?->id;
+        $city = $this->form->selectedCity();
         $this->city_search = $city?->name ?? '';
-        $this->delivery_method = (string) array_key_first(app(CheckoutService::class)->availableDeliveryMethods($city));
-        $this->updated('delivery_method');
+        $this->form->delivery_method = (string) array_key_first(app(CheckoutService::class)->availableDeliveryMethods($city));
+        $this->handleFormChange('delivery_method');
     }
 
-    public function updated(string $property): void
+    public function updatedOtherRecipient(): void
     {
-        if ($property === 'other_recipient') {
-            $this->switchRecipient();
-        }
+        $this->switchRecipient();
+    }
 
-        if ($property === 'city_search' && $this->city_id !== null && $this->city_search !== $this->selectedCity()?->name) {
-            $this->city_id = null;
-            $this->updated('city_id');
+    public function updatedCitySearch(): void
+    {
+        if ($this->form->city_id !== null && $this->city_search !== $this->form->selectedCity()?->name) {
+            $this->form->city_id = null;
+            $this->handleFormChange('city_id');
         }
+    }
 
-        if ($property === 'city_id') {
-            $this->handleCityChange();
-        }
-
-        if ($property === 'delivery_method') {
-            $this->handleDeliveryChange();
-        }
-
-        if (in_array($property, ['city_id', 'delivery_method', 'payment_method', 'street', 'house', 'building', 'apartment', 'entrance', 'floor', 'intercom', 'delivery_to_door'], true)) {
-            $this->recalculate();
+    public function updatedForm(mixed $value, ?string $field): void
+    {
+        if ($field !== null) {
+            $this->handleFormChange($field);
         }
     }
 
     public function selectCity(int $id, ?string $name = null): void
     {
-        $this->city_id = City::query()
+        $this->form->city_id = City::query()
             ->where('is_active', true)
             ->findOrFail($id)->id;
-        $this->updated('city_id');
+        $this->handleFormChange('city_id');
     }
 
     public function useDetectedCity(int $id, ?string $name = null): void
     {
-        if ($this->city_id === null) {
+        if ($this->form->city_id === null) {
             $this->selectCity($id);
         }
     }
@@ -153,10 +113,10 @@ final class Checkout extends Component
         abort_unless(auth()->check(), 403);
         $address = auth()->user()->addresses()->with('city')->findOrFail($addressId);
         $this->fillAddress($address);
-        $this->city_id = $address->city_id;
+        $this->form->city_id = $address->city_id;
         $this->city_search = $address->city?->name ?? '';
-        $this->delivery_method = DeliveryMethodEnum::COURIER->value;
-        $this->payment_method = PaymentMethodEnum::ONLINE->value;
+        $this->form->delivery_method = DeliveryMethodEnum::COURIER->value;
+        $this->form->payment_method = PaymentMethodEnum::ONLINE->value;
         $this->recalculate();
     }
 
@@ -168,7 +128,7 @@ final class Checkout extends Component
 
     public function selectDeliveryPoint(string $code): void
     {
-        $this->delivery_point_code = $code;
+        $this->form->delivery_point_code = $code;
         $this->saved_delivery_point_id = null;
         $this->recalculate();
     }
@@ -182,9 +142,9 @@ final class Checkout extends Component
     public function chooseAnotherDeliveryPoint(CurrentCityService $cities): void
     {
         $city = $cities->current() ?? $cities->getOrDetect();
-        $this->city_id = $city?->id;
+        $this->form->city_id = $city?->id;
         $this->city_search = $city?->name ?? '';
-        $this->updated('city_id');
+        $this->handleFormChange('city_id');
     }
 
     public function selectSavedDeliveryPoint(int $pointId): void
@@ -192,11 +152,11 @@ final class Checkout extends Component
         abort_unless(auth()->check(), 403);
         $point = auth()->user()->savedDeliveryPoints()
             ->findOrFail($pointId);
-        $this->city_id = $point->city_id;
+        $this->form->city_id = $point->city_id;
         $this->city_search = $point->city?->name ?? '';
-        $this->delivery_method = DeliveryMethodEnum::CDEK->value;
-        $this->payment_method = PaymentMethodEnum::ONLINE->value;
-        $this->delivery_point_code = $point->code;
+        $this->form->delivery_method = DeliveryMethodEnum::CDEK->value;
+        $this->form->payment_method = PaymentMethodEnum::ONLINE->value;
+        $this->form->delivery_point_code = $point->code;
         $this->saved_delivery_point_id = $point->id;
         $this->delivery_point_search = '';
         $this->recalculate();
@@ -210,10 +170,10 @@ final class Checkout extends Component
             return;
         }
 
-        $this->resetValidation(['cart', 'quote', 'quoted_total_minor', 'delivery_point_code']);
+        $this->resetValidation(['cart', 'quote', 'quoted_total_minor', 'form.delivery_point_code']);
 
         try {
-            $calculation = app(CheckoutService::class)->calculateOrder($this->formData());
+            $calculation = app(CheckoutService::class)->calculateOrder($this->form->orderData());
             $this->quoted_total_minor = $calculation['total']->minorAmount();
             session()->put('checkout.quotes.'.$this->idempotency_key, [
                 'fingerprint' => $calculation['fingerprint'],
@@ -223,13 +183,13 @@ final class Checkout extends Component
         } catch (ValidationException $exception) {
             $this->invalidateQuote();
 
-            foreach ($exception->errors() as $field => $messages) {
+            foreach ($this->orderErrors($exception) as $field => $messages) {
                 $this->addError($field, $messages[0]);
             }
         } catch (CdekApiException $exception) {
             $this->invalidateQuote();
             $this->addError('quote', __(self::CDEK_QUOTE_ERROR));
-            app(OrderNotificationService::class)->notifyQuoteError($this->city_id ?? 0);
+            app(OrderNotificationService::class)->notifyQuoteError($this->form->city_id ?? 0);
             report($exception);
         }
     }
@@ -244,7 +204,9 @@ final class Checkout extends Component
             $this->validate();
 
             try {
-                $order = $service->placeOrder($this->formData(), $this->idempotency_key, $this->quoted_total_minor ?? -1);
+                $order = $service->placeOrder($this->form->orderData(), $this->idempotency_key, $this->quoted_total_minor ?? -1);
+            } catch (ValidationException $exception) {
+                throw ValidationException::withMessages($this->orderErrors($exception));
             } catch (CdekApiException $exception) {
                 report($exception);
 
@@ -290,11 +252,11 @@ final class Checkout extends Component
         $deliveryPrice = Money::fromMinor($checkoutData['delivery_minor'] ?? 0);
         $total = Money::fromMinor($checkoutData['total_minor'] ?? 0);
         $isPreorder = $checkoutData['is_preorder'] ?? false;
-        $deliveryReady = ($checkoutData['delivery_ready'] ?? false) && ! $this->getErrorBag()->has('quote') && ! $this->getErrorBag()->has('delivery_point_code');
+        $deliveryReady = ($checkoutData['delivery_ready'] ?? false) && ! $this->getErrorBag()->has('quote') && ! $this->getErrorBag()->has('form.delivery_point_code');
         $points = collect($checkoutData['points'] ?? []);
-        $selectedDeliveryPoint = $points->firstWhere('code', $this->delivery_point_code);
+        $selectedDeliveryPoint = $points->firstWhere('code', $this->form->delivery_point_code);
         $deliveryPoints = $this->pointSuggestions($points);
-        $city = $this->selectedCity();
+        $city = $this->form->selectedCity();
         $availableDeliveryMethods = app(CheckoutService::class)->availableDeliveryMethods($city);
         $cities = $this->citySuggestions();
         $addresses = auth()->user()?->addresses()->with('city')->orderByDesc('is_default')->get() ?? collect();
@@ -326,46 +288,34 @@ final class Checkout extends Component
 
     protected function rules(): array
     {
-        return [
-            'first_name' => ['required', 'string', 'max:100'],
-            'last_name' => ['required', 'string', 'max:100'],
-            'phone' => ['required', 'string', function (string $attribute, mixed $value, \Closure $fail): void {
-                if (! preg_match('/^\+7\d{10}$/', app(CheckoutService::class)->normalizePhone((string) $value))) {
-                    $fail(__('Укажите корректный телефон в формате +7XXXXXXXXXX.'));
-                }
-            }],
-            'email' => ['required', 'email', 'max:255'],
-            'city_id' => ['required', 'integer', Rule::exists('cities', 'id')->where('is_active', true)],
-            'delivery_method' => ['required', Rule::in(array_keys(app(CheckoutService::class)->availableDeliveryMethods($this->selectedCity())))],
-            'payment_method' => ['required', Rule::enum(PaymentMethodEnum::class)->only($this->delivery_method === DeliveryMethodEnum::PICKUP->value ? PaymentMethodEnum::cases() : [PaymentMethodEnum::ONLINE])],
-            'agreement' => Setting::cached()?->privacy_policy ? ['accepted'] : ['boolean'],
-            'delivery_point_code' => [Rule::requiredIf($this->delivery_method === DeliveryMethodEnum::CDEK->value), 'string', 'max:255'],
-            'idempotency_key' => ['required', 'uuid'],
-            'address_id' => ['nullable', Rule::exists('addresses', 'id')->where('user_id', auth()->id() ?? 0)],
-            'street' => [Rule::requiredIf($this->delivery_method === DeliveryMethodEnum::COURIER->value), 'nullable', 'string', 'max:255'],
-            'house' => [Rule::requiredIf($this->delivery_method === DeliveryMethodEnum::COURIER->value), 'nullable', 'string', 'max:255'],
-            'building' => ['nullable', 'string', 'max:100'],
-            'entrance' => ['nullable', 'string', 'max:100'],
-            'floor' => $this->delivery_method === DeliveryMethodEnum::COURIER->value && $this->delivery_to_door ? ['required', 'integer', 'min:1', 'max:200'] : ['nullable'],
-            'apartment' => [Rule::requiredIf($this->delivery_method === DeliveryMethodEnum::COURIER->value && $this->delivery_to_door), 'nullable', 'string', 'max:100'],
-            'intercom' => ['nullable', 'string', 'max:100'],
-            'delivery_to_door' => ['boolean'],
-            'comment' => ['nullable', 'string', 'max:2000'],
-        ];
+        return ['idempotency_key' => ['required', 'uuid']];
     }
 
-    protected function messages(): array
+    private function handleFormChange(string $field): void
     {
-        $city = $this->selectedCity();
-        $noDeliveryMethods = $city !== null && app(CheckoutService::class)->availableDeliveryMethods($city) === [];
+        if ($field === 'city_id') {
+            $this->handleCityChange();
+        }
 
-        return [
-            'city_id.required' => __('Выберите город для доставки.'),
-            'delivery_method.required' => $noDeliveryMethods ? __('В этом городе нет доступных способов доставки.') : __('Выберите способ доставки.'),
-            'delivery_method.in' => $noDeliveryMethods ? __('В этом городе нет доступных способов доставки.') : __('Выбранный способ доставки недоступен.'),
-            'delivery_point_code.required' => __('Выберите пункт выдачи.'),
-            'agreement.accepted' => __('Необходимо согласиться с политикой обработки персональных данных.'),
-        ];
+        if ($field === 'delivery_method') {
+            $this->handleDeliveryChange();
+        }
+
+        if (in_array($field, ['city_id', 'delivery_method', 'payment_method', 'street', 'house', 'building', 'apartment', 'entrance', 'floor', 'intercom', 'delivery_to_door'], true)) {
+            $this->recalculate();
+        }
+    }
+
+    private function orderErrors(ValidationException $exception): array
+    {
+        $formFields = $this->form->all();
+        $errors = [];
+
+        foreach ($exception->errors() as $field => $messages) {
+            $errors[array_key_exists($field, $formFields) ? 'form.'.$field : $field] = $messages;
+        }
+
+        return $errors;
     }
 
     private function switchRecipient(): void
@@ -378,21 +328,21 @@ final class Checkout extends Component
 
         foreach (['first_name', 'last_name', 'phone', 'email'] as $field) {
             if ($this->other_recipient) {
-                $this->{$field} = $this->other_recipient_contacts[$field] ?? '';
+                $this->form->{$field} = $this->other_recipient_contacts[$field] ?? '';
             } else {
-                $this->other_recipient_contacts[$field] = $this->{$field};
-                $this->{$field} = $user->{$field} ?? '';
+                $this->other_recipient_contacts[$field] = $this->form->{$field};
+                $this->form->{$field} = $user->{$field} ?? '';
             }
         }
 
-        $this->resetValidation(['first_name', 'last_name', 'phone', 'email']);
+        $this->form->resetValidation(['first_name', 'last_name', 'phone', 'email']);
     }
 
     private function calculationData(array $calculation): array
     {
         $points = [];
 
-        if ($this->delivery_method === DeliveryMethodEnum::CDEK->value && array_key_exists(DeliveryMethodEnum::CDEK->value, app(CheckoutService::class)->availableDeliveryMethods($calculation['city']))) {
+        if ($this->form->delivery_method === DeliveryMethodEnum::CDEK->value && array_key_exists(DeliveryMethodEnum::CDEK->value, app(CheckoutService::class)->availableDeliveryMethods($calculation['city']))) {
             foreach (app(CheckoutService::class)->deliveryPoints($calculation['city'], $calculation['packages']) as $point) {
                 $points[] = ['code' => $point->code, 'address' => $point->address, 'work_time' => $point->workTime, 'type' => $point->type];
             }
@@ -407,41 +357,29 @@ final class Checkout extends Component
             'is_preorder' => $calculation['is_preorder'],
             'points' => $points,
             'delivery_ready' => $calculation['city'] !== null
-                && array_key_exists($this->delivery_method, app(CheckoutService::class)->availableDeliveryMethods($calculation['city']))
-                && ($this->delivery_method !== DeliveryMethodEnum::CDEK->value || $calculation['point'] !== null),
+                && array_key_exists($this->form->delivery_method, app(CheckoutService::class)->availableDeliveryMethods($calculation['city']))
+                && ($this->form->delivery_method !== DeliveryMethodEnum::CDEK->value || $calculation['point'] !== null),
         ];
-    }
-
-    private function formData(): array
-    {
-        return array_intersect_key(get_object_vars($this), array_flip([
-            'first_name', 'last_name', 'phone', 'email', 'city_id', 'delivery_method', 'payment_method', 'address_id',
-            'street', 'house', 'building', 'apartment', 'entrance', 'floor', 'intercom', 'delivery_to_door', 'comment', 'delivery_point_code',
-        ]));
-    }
-
-    private function selectedCity(): ?City
-    {
-        return $this->city_id === null ? null : City::query()->find($this->city_id);
     }
 
     private function fillAddress(Address $address): void
     {
-        $this->address_id = $address->id;
+        $this->form->address_id = $address->id;
 
         foreach (['street', 'house', 'building', 'apartment', 'entrance', 'floor', 'intercom'] as $field) {
-            $this->{$field} = $address->{$field} ?? (in_array($field, ['street', 'house'], true) ? '' : null);
+            $this->form->{$field} = $address->{$field} ?? (in_array($field, ['street', 'house'], true) ? '' : null);
         }
     }
 
     private function resetAddress(): void
     {
-        $this->reset('address_id', 'street', 'house', 'building', 'apartment', 'entrance', 'floor', 'intercom', 'delivery_to_door');
+        $this->form->reset('address_id', 'street', 'house', 'building', 'apartment', 'entrance', 'floor', 'intercom', 'delivery_to_door');
     }
 
     private function resetDeliveryPoint(): void
     {
-        $this->reset('delivery_point_code', 'saved_delivery_point_id', 'delivery_point_search');
+        $this->form->reset('delivery_point_code');
+        $this->reset('saved_delivery_point_id', 'delivery_point_search');
     }
 
     private function invalidateQuote(): void
@@ -452,7 +390,7 @@ final class Checkout extends Component
 
     private function handleCityChange(): void
     {
-        $city = $this->selectedCity();
+        $city = $this->form->selectedCity();
 
         if ($city !== null) {
             $this->city_search = $city->name;
@@ -460,35 +398,35 @@ final class Checkout extends Component
 
         $this->resetDeliveryPoint();
         $this->resetAddress();
-        $methods = app(CheckoutService::class)->availableDeliveryMethods($this->selectedCity());
+        $methods = app(CheckoutService::class)->availableDeliveryMethods($this->form->selectedCity());
 
-        if (! array_key_exists($this->delivery_method, $methods)) {
-            $this->delivery_method = (string) array_key_first($methods);
+        if (! array_key_exists($this->form->delivery_method, $methods)) {
+            $this->form->delivery_method = (string) array_key_first($methods);
         }
     }
 
     private function handleDeliveryChange(): void
     {
-        if ($this->delivery_method !== DeliveryMethodEnum::PICKUP->value) {
-            $this->payment_method = PaymentMethodEnum::ONLINE->value;
+        if ($this->form->delivery_method !== DeliveryMethodEnum::PICKUP->value) {
+            $this->form->payment_method = PaymentMethodEnum::ONLINE->value;
         }
 
-        if ($this->delivery_method === DeliveryMethodEnum::COURIER->value && auth()->check()) {
-            $address = auth()->user()->addresses()->where('is_default', true)->where('city_id', $this->city_id)->first();
+        if ($this->form->delivery_method === DeliveryMethodEnum::COURIER->value && auth()->check()) {
+            $address = auth()->user()->addresses()->where('is_default', true)->where('city_id', $this->form->city_id)->first();
 
             if ($address !== null) {
                 $this->fillAddress($address);
             }
         }
 
-        if ($this->delivery_method === DeliveryMethodEnum::CDEK->value && auth()->check()) {
+        if ($this->form->delivery_method === DeliveryMethodEnum::CDEK->value && auth()->check()) {
             $point = auth()->user()->savedDeliveryPoints()
                 ->where('is_default', true)
-                ->where('city_id', $this->city_id)
+                ->where('city_id', $this->form->city_id)
                 ->first();
 
             if ($point !== null) {
-                $this->delivery_point_code = $point->code;
+                $this->form->delivery_point_code = $point->code;
                 $this->saved_delivery_point_id = $point->id;
             }
         }

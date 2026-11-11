@@ -4,41 +4,30 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use App\Livewire\Forms\UserProfileForm;
 use App\Services\Customers\SavedDeliveryLocationService;
 use App\Services\Telegram\TelegramConnectionService;
 use Illuminate\Contracts\View\View;
-use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 final class UserProfile extends Component
 {
-    public string $first_name = '';
-
-    public string $last_name = '';
-
-    public ?string $birth_date = null;
-
-    public ?string $phone = null;
+    public UserProfileForm $form;
 
     public function mount(): void
     {
         $user = auth()->user();
 
-        $this->first_name = $user->first_name;
-        $this->last_name = $user->last_name ?? '';
-        $this->birth_date = $user->birth_date?->format('Y-m-d');
-        $this->phone = $user->phone;
+        $this->form->first_name = $user->first_name;
+        $this->form->last_name = $user->last_name ?? '';
+        $this->form->birth_date = $user->birth_date?->format('Y-m-d');
+        $this->form->phone = $user->phone;
     }
 
     public function saveProfile(): void
     {
         $user = auth()->user();
-        $validated = $this->validate([
-            'first_name' => ['required', 'string', 'max:255'],
-            'last_name' => ['nullable', 'string', 'max:255'],
-            'birth_date' => ['nullable', 'date', 'before:today'],
-            'phone' => ['nullable', 'string', 'max:255', Rule::unique('users', 'phone')->ignore($user->getKey())],
-        ]);
+        $validated = $this->form->validate();
 
         $user->update($validated);
         $this->dispatch('notify', message: __('Данные профиля сохранены.'), type: 'success');

@@ -19,9 +19,9 @@ it('не содержит методов добавления и редакти�
 })->with(['editAddress', 'saveAddress', 'addAddress']);
 
 it('сохраняет профиль текущего пользователя', function (): void {
-    Livewire::test(UserProfile::class)->assertSet('first_name', 'Иван')
-        ->set('first_name', 'Пётр')->set('last_name', 'Петров')
-        ->set('birth_date', '1990-01-01')->set('phone', '+79991234567')
+    Livewire::test(UserProfile::class)->assertSet('form.first_name', 'Иван')
+        ->set('form.first_name', 'Пётр')->set('form.last_name', 'Петров')
+        ->set('form.birth_date', '1990-01-01')->set('form.phone', '+79991234567')
         ->call('saveProfile')->assertHasNoErrors();
     expect($this->user->fresh()->only(['first_name', 'last_name', 'phone']))->toBe([
         'first_name' => 'Пётр', 'last_name' => 'Петров', 'phone' => '+79991234567',
@@ -30,9 +30,9 @@ it('сохраняет профиль текущего пользователя'
 
 it('не сохраняет профиль с чужим телефоном или будущей датой рождения', function (): void {
     User::query()->create(['first_name' => 'Другой', 'email' => 'other@example.com', 'password' => 'Password123', 'phone' => '+79991234567']);
-    Livewire::test(UserProfile::class)->set('first_name', 'Пётр')
-        ->set('phone', '+79991234567')->set('birth_date', today()->addDay()->toDateString())
-        ->call('saveProfile')->assertHasErrors(['phone' => 'unique', 'birth_date' => 'before']);
+    Livewire::test(UserProfile::class)->set('form.first_name', 'Пётр')
+        ->set('form.phone', '+79991234567')->set('form.birth_date', today()->addDay()->toDateString())
+        ->call('saveProfile')->assertHasErrors(['form.phone' => 'unique', 'form.birth_date' => 'before']);
     expect($this->user->fresh()->first_name)->toBe('Иван');
 });
 

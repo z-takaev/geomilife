@@ -126,7 +126,7 @@ it('выбирает ПВЗ после повторного чтения из к
     CheckoutFixtures::form($city, ['delivery_method' => 'CDEK', 'payment_method' => PaymentMethodEnum::ONLINE->value])
         ->call('selectDeliveryPoint', 'MSK1')
         ->assertHasNoErrors()
-        ->assertSet('delivery_point_code', 'MSK1')
+        ->assertSet('form.delivery_point_code', 'MSK1')
         ->assertSet('quoted_total_minor', 124000)
         ->call('recalculate')->assertHasNoErrors();
 });
@@ -152,7 +152,7 @@ it('ищет ПВЗ по всему списку и показывает все 
         ->call('selectDeliveryPoint', 'MSK12')->assertHasNoErrors()
         ->set('delivery_point_search', '')
         ->assertViewHas('deliveryPoints', fn ($points): bool => $points->isEmpty())
-        ->assertSet('delivery_point_code', 'MSK12');
+        ->assertSet('form.delivery_point_code', 'MSK12');
 });
 
 it('восстанавливает расчёт после выбора недоступного ПВЗ и сохраняет выбор при очистке поиска', function (): void {
@@ -162,7 +162,7 @@ it('восстанавливает расчёт после выбора недо
     fakeCdekCheckout(44, 350);
 
     CheckoutFixtures::form($city, ['delivery_method' => 'CDEK', 'payment_method' => PaymentMethodEnum::ONLINE->value])
-        ->call('selectDeliveryPoint', 'UNAVAILABLE')->assertHasErrors(['delivery_point_code'])
+        ->call('selectDeliveryPoint', 'UNAVAILABLE')->assertHasErrors(['form.delivery_point_code'])
         ->call('selectDeliveryPoint', 'MSK1')->assertHasNoErrors()
         ->set('delivery_point_search', '')
         ->assertViewHas('selectedDeliveryPoint', fn ($point): bool => $point['code'] === 'MSK1')

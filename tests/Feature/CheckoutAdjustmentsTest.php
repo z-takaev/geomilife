@@ -36,21 +36,21 @@ it('очищает адрес и ПВЗ при смене города без п
     $component = CheckoutFixtures::form($city, [
         'street' => 'Мира', 'house' => '10', 'building' => '1', 'entrance' => '2',
         'floor' => '3', 'apartment' => '4', 'intercom' => '5', 'delivery_to_door' => true,
-        'delivery_point_code' => 'OLD', 'delivery_point_search' => 'Старый пункт',
-    ]);
+        'delivery_point_code' => 'OLD',
+    ])->set('delivery_point_search', 'Старый пункт');
 
     $component->call('clearAddress')
-        ->assertSet('street', '')->assertSet('house', '')
-        ->assertSet('building', null)->assertSet('entrance', null)->assertSet('floor', null)
-        ->assertSet('apartment', null)->assertSet('intercom', null)->assertSet('delivery_to_door', false)
-        ->assertSet('delivery_point_code', 'OLD');
+        ->assertSet('form.street', '')->assertSet('form.house', '')
+        ->assertSet('form.building', null)->assertSet('form.entrance', null)->assertSet('form.floor', null)
+        ->assertSet('form.apartment', null)->assertSet('form.intercom', null)->assertSet('form.delivery_to_door', false)
+        ->assertSet('form.delivery_point_code', 'OLD');
 
-    $component->set('street', 'Новая')->set('house', '20')->call('selectCity', $otherCity->id)
-        ->assertSet('city_id', $otherCity->id)
-        ->assertSet('street', '')->assertSet('house', '')
-        ->assertSet('delivery_point_code', '')->assertSet('delivery_point_search', '')
-        ->assertSet('saved_delivery_point_id', null)->assertSet('address_id', null)
-        ->assertSet('first_name', 'Анна')->assertSet('email', 'recipient@example.com')
+    $component->set('form.street', 'Новая')->set('form.house', '20')->call('selectCity', $otherCity->id)
+        ->assertSet('form.city_id', $otherCity->id)
+        ->assertSet('form.street', '')->assertSet('form.house', '')
+        ->assertSet('form.delivery_point_code', '')->assertSet('delivery_point_search', '')
+        ->assertSet('saved_delivery_point_id', null)->assertSet('form.address_id', null)
+        ->assertSet('form.first_name', 'Анна')->assertSet('form.email', 'recipient@example.com')
         ->assertViewHas('total', fn ($total): bool => $total->equals(Money::fromRubles(890)));
 });
 
@@ -69,17 +69,17 @@ it('сохраняет введённого другого получателя 
     $user = CheckoutFixtures::user();
     $this->actingAs($user);
     Livewire::test(Checkout::class)
-        ->set('other_recipient', true)->assertSet('first_name', '')->assertSet('email', '')
-        ->set('first_name', 'Анна')->set('email', 'anna@example.com')
-        ->set('other_recipient', false)->assertSet('first_name', $user->first_name)->assertSet('email', $user->email)
-        ->set('other_recipient', true)->assertSet('first_name', 'Анна')->assertSet('email', 'anna@example.com');
+        ->set('other_recipient', true)->assertSet('form.first_name', '')->assertSet('form.email', '')
+        ->set('form.first_name', 'Анна')->set('form.email', 'anna@example.com')
+        ->set('other_recipient', false)->assertSet('form.first_name', $user->first_name)->assertSet('form.email', $user->email)
+        ->set('other_recipient', true)->assertSet('form.first_name', 'Анна')->assertSet('form.email', 'anna@example.com');
 });
 
 it('требует квартиру при доставке до двери и оставляет корпус необязательным', function (): void {
     $city = CheckoutFixtures::city();
     app(CartService::class)->add(CheckoutFixtures::variant()->id, 1);
     CheckoutFixtures::form($city, ['delivery_method' => 'COURIER', 'payment_method' => PaymentMethodEnum::ONLINE->value, 'street' => 'Мира', 'house' => '1', 'delivery_to_door' => true, 'floor' => '1'])
-        ->call('placeOrder')->assertHasErrors(['apartment'])->assertHasNoErrors(['building']);
+        ->call('placeOrder')->assertHasErrors(['form.apartment'])->assertHasNoErrors(['form.building']);
 });
 
 it('объясняет причину недоступности оформления', function (): void {
@@ -100,11 +100,11 @@ it('автоматически выбирает основной ПВЗ друг
     ShippingBox::query()->create(['name' => 'Коробка', 'length' => 100, 'width' => 100, 'height' => 100, 'weight' => 10, 'is_active' => true]);
     app(CartService::class)->add(CheckoutFixtures::variant(['weight' => 200, 'length' => 10, 'width' => 10, 'height' => 10])->id, 1);
     Livewire::test(Checkout::class)
-        ->assertSet('city_id', $city->id)->assertSet('saved_delivery_point_id', $point->id)
+        ->assertSet('form.city_id', $city->id)->assertSet('saved_delivery_point_id', $point->id)
         ->assertViewHas('selectedDeliveryPoint', fn ($point): bool => $point['code'] === 'MSK100')
         ->assertViewHas('deliveryReady', true)
-        ->assertSet('delivery_method', 'CDEK')->assertSeeHtml('id="checkout-city"')
-        ->call('clearDeliveryPoint')->assertSet('delivery_point_code', '')->assertSet('saved_delivery_point_id', null)
+        ->assertSet('form.delivery_method', 'CDEK')->assertSeeHtml('id="checkout-city"')
+        ->call('clearDeliveryPoint')->assertSet('form.delivery_point_code', '')->assertSet('saved_delivery_point_id', null)
         ->assertSeeHtml('id="checkout-city"');
     expect($point->fresh())->not->toBeNull();
     expect($user->fresh()->city_id)->not->toBe($city->id);

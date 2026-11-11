@@ -28,7 +28,7 @@ it('отклоняет недопустимый способ оплаты при
     app(CartService::class)->add(CheckoutFixtures::variant()->id, 1);
 
     CheckoutFixtures::form($city, ['delivery_method' => $delivery, 'payment_method' => $payment])
-        ->call('placeOrder')->assertHasErrors(['payment_method']);
+        ->call('placeOrder')->assertHasErrors(['form.payment_method']);
 
     expect(Order::query()->count())->toBe(0);
 })->with([

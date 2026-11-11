@@ -39,7 +39,7 @@ it('не сохраняет адрес из незавершённой или н
     app(CartService::class)->add(CheckoutFixtures::variant()->getKey(), 1);
     $component = CheckoutFixtures::form($this->city, ['delivery_method' => 'COURIER', 'payment_method' => PaymentMethodEnum::ONLINE->value, 'street' => 'Мира', 'house' => '10']);
     $this->assertDatabaseCount('addresses', 0);
-    $component->set('agreement', false)->call('placeOrder')->assertHasErrors(['agreement']);
+    $component->set('form.agreement', false)->call('placeOrder')->assertHasErrors(['form.agreement']);
     $this->assertDatabaseCount('addresses', 0);
 });
 
@@ -47,8 +47,8 @@ it('подставляет активный адрес и позволяет в�
     $active = $this->user->addresses()->create(CheckoutFixtures::address($this->city, ['house' => '1', 'is_default' => true]));
     $other = $this->user->addresses()->create(CheckoutFixtures::address($this->city, ['house' => '2']));
     app(CartService::class)->add(CheckoutFixtures::variant()->getKey(), 1);
-    Livewire::test(Checkout::class)->set('delivery_method', 'COURIER')->assertSet('address_id', $active->getKey())
-        ->call('selectAddress', $other->getKey())->assertSet('house', '2');
+    Livewire::test(Checkout::class)->set('form.delivery_method', 'COURIER')->assertSet('form.address_id', $active->getKey())
+        ->call('selectAddress', $other->getKey())->assertSet('form.house', '2');
     expect($active->fresh()->is_default)->toBeTrue()->and($other->fresh()->is_default)->toBeFalse();
 });
 
@@ -56,7 +56,7 @@ it('при выборе адреса другого города меняет г
     $otherCity = CheckoutFixtures::city(['name' => 'Другой город']);
     $address = $this->user->addresses()->create(CheckoutFixtures::address($otherCity));
     app(CartService::class)->add(CheckoutFixtures::variant()->getKey(), 1);
-    CheckoutFixtures::form($this->city)->call('selectAddress', $address->getKey())->assertSet('city_id', $otherCity->getKey());
+    CheckoutFixtures::form($this->city)->call('selectAddress', $address->getKey())->assertSet('form.city_id', $otherCity->getKey());
     expect($this->user->fresh()->city_id)->toBe($this->city->getKey());
 });
 

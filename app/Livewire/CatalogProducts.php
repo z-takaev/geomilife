@@ -6,12 +6,12 @@ namespace App\Livewire;
 
 use App\DTO\Products\CatalogFiltersDto;
 use App\Enums\Catalog\CatalogSortEnum;
+use App\Livewire\Forms\CatalogFiltersForm;
 use App\Models\Category;
 use App\Repositories\Categories\CategoryRepository;
 use App\Repositories\Products\CatalogRepository;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -21,13 +21,7 @@ final class CatalogProducts extends Component
 
     public ?Category $category = null;
 
-    public string $priceFrom = '';
-
-    public string $priceTo = '';
-
-    public array $availability = [];
-
-    public array $packageValues = [];
+    public CatalogFiltersForm $form;
 
     public array $appliedFilters = [
         'priceFrom' => '',
@@ -44,7 +38,7 @@ final class CatalogProducts extends Component
     {
         $this->category = $category;
         $this->normalizeFilters();
-        $this->fill($this->appliedFilters);
+        $this->form->fill($this->appliedFilters);
     }
 
     public function updatingPaginators(): void
@@ -61,24 +55,22 @@ final class CatalogProducts extends Component
     public function updatedAppliedFilters(): void
     {
         $this->normalizeFilters();
-        $this->fill($this->appliedFilters);
+        $this->form->fill($this->appliedFilters);
         $this->resetValidation();
     }
 
     public function applyFilters(): void
     {
         $this->resetValidation();
-        $values = $this->validate();
+        $values = $this->form->validateFilters($this->packageOptions());
 
-        if ($this->priceFrom !== '' && $this->priceTo !== '' && (int) $this->priceFrom > (int) $this->priceTo) {
-            $this->addError('priceTo', __('Максимальная цена должна быть не меньше минимальной.'));
-
+        if ($values === null) {
             return;
         }
 
         $this->appliedFilters = $values;
         $this->normalizeFilters();
-        $this->fill($this->appliedFilters);
+        $this->form->fill($this->appliedFilters);
         $this->resetCatalogPage();
         $this->dispatch('catalog-filters-applied');
     }
@@ -86,7 +78,7 @@ final class CatalogProducts extends Component
     public function resetFilters(): void
     {
         $this->appliedFilters = (new CatalogFiltersDto)->toArray();
-        $this->fill($this->appliedFilters);
+        $this->form->fill($this->appliedFilters);
         $this->reset('sort');
         $this->resetValidation();
         $this->resetCatalogPage();
@@ -123,18 +115,6 @@ final class CatalogProducts extends Component
             'appliedFilters.packageValues' => ['as' => 'package_values', 'except' => [], 'history' => true],
             'sort' => ['except' => '', 'history' => true],
             'additionalPages' => ['as' => 'more', 'except' => 0, 'history' => true],
-        ];
-    }
-
-    protected function rules(): array
-    {
-        return [
-            'priceFrom' => ['nullable', 'integer', 'min:0', 'max:'.CatalogFiltersDto::MAX_PRICE],
-            'priceTo' => ['nullable', 'integer', 'min:0', 'max:'.CatalogFiltersDto::MAX_PRICE],
-            'availability' => ['array', 'max:2'],
-            'availability.*' => [Rule::in(CatalogFiltersDto::AVAILABILITY)],
-            'packageValues' => ['array'],
-            'packageValues.*' => ['string', Rule::in(array_column($this->packageOptions(), 'value'))],
         ];
     }
 

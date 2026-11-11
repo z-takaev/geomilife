@@ -92,11 +92,12 @@
                                     for="checkout-{{ $field['name'] }}">{{ $field['label'] }} <span
                                         class="checkout-field__required" aria-hidden="true"></span></label>
                                 <input id="checkout-{{ $field['name'] }}" type="{{ $field['type'] }}"
-                                    wire:model.blur="{{ $field['name'] }}" autocomplete="{{ $field['autocomplete'] }}"
+                                    wire:model.blur="form.{{ $field['name'] }}"
+                                    autocomplete="{{ $field['autocomplete'] }}"
                                     placeholder="{{ $field['placeholder'] }}"
                                     @if ($field['name'] === 'phone') data-phone-mask inputmode="tel" maxlength="18" @endif
                                     required>
-                                @error($field['name'])
+                                @error('form.' . $field['name'])
                                     <small class="checkout-field-error">{{ $message }}</small>
                                 @enderror
                             </fieldset>
@@ -134,7 +135,7 @@
                                 @forelse ($cities as $option)
                                     <li wire:key="checkout-city-{{ $option->id }}">
                                         <button type="button" role="option"
-                                            aria-selected="{{ $city_id === $option->id ? 'true' : 'false' }}"
+                                            aria-selected="{{ $form->city_id === $option->id ? 'true' : 'false' }}"
                                             wire:click="selectCity({{ $option->id }})" x-on:click="open = false"
                                             wire:loading.attr="disabled" wire:target="city_search, selectCity">
                                             <span>{{ $option->name }}</span>
@@ -149,14 +150,14 @@
                                 @endforelse
                             </ul>
                         </div>
-                        @error('city_id')
+                        @error('form.city_id')
                             <small class="checkout-field-error">{{ $message }}</small>
                         @enderror
                     </fieldset>
                     <div class="checkout-delivery-options">
                         @foreach ($availableDeliveryMethods as $value => $label)
                             <label class="checkout-delivery-option"><input type="radio"
-                                    wire:model.live="delivery_method" value="{{ $value }}"><span
+                                    wire:model.live="form.delivery_method" value="{{ $value }}"><span
                                     class="checkout-delivery-option__content"><span
                                         class="checkout-delivery-option__icon" aria-hidden="true"><i
                                             class="icon {{ $value === 'PICKUP' ? 'icon-Storefront' : ($value === 'COURIER' ? 'icon-Truck' : 'icon-package') }}"></i></span><span
@@ -166,17 +167,17 @@
                         @endforeach
                     </div>
 
-                    @if ($city && $delivery_method !== '')
+                    @if ($city && $form->delivery_method !== '')
                         <div class="checkout-address checkout-delivery-details"
-                            wire:key="delivery-details-{{ $city_id }}-{{ $delivery_method }}">
-                            @if ($delivery_method === \App\Enums\Orders\DeliveryMethodEnum::PICKUP->value)
+                            wire:key="delivery-details-{{ $form->city_id }}-{{ $form->delivery_method }}">
+                            @if ($form->delivery_method === \App\Enums\Orders\DeliveryMethodEnum::PICKUP->value)
                                 <div class="checkout-info"><strong>{{ $city->pickup_name }}</strong>
                                     <p>{{ $city->pickup_address }}</p>
                                     <p>{{ $city->pickup_working_hours }}</p>
                                     <p>{{ $city->pickup_phone }}</p>
                                     <small>{{ __('Приходите после уведомления о готовности. Время получения согласует менеджер.') }}</small>
                                 </div>
-                            @elseif ($delivery_method === \App\Enums\Orders\DeliveryMethodEnum::COURIER->value)
+                            @elseif ($form->delivery_method === \App\Enums\Orders\DeliveryMethodEnum::COURIER->value)
                                 <div class="checkout-address__heading">
                                     <i class="icon icon-MapPin" aria-hidden="true"></i>
                                     <h5>{{ __('Адрес доставки') }}</h5>
@@ -185,7 +186,7 @@
                                     <div class="checkout-saved-options">
                                         @foreach ($addresses as $address)
                                             <button type="button"
-                                                class="checkout-saved-option {{ $address_id === $address->id ? 'is-selected' : '' }}"
+                                                class="checkout-saved-option {{ $form->address_id === $address->id ? 'is-selected' : '' }}"
                                                 wire:click="selectAddress({{ $address->id }})">{{ $address->city?->name }},
                                                 {{ $address->street }},
                                                 {{ $address->house }}</button>
@@ -204,19 +205,19 @@
                                                 @endif
                                             </label>
                                             <input id="checkout-{{ $field['name'] }}" type="text"
-                                                wire:model.blur="{{ $field['name'] }}" @required($field['required'])>
-                                            @error($field['name'])
+                                                wire:model.blur="form.{{ $field['name'] }}" @required($field['required'])>
+                                            @error('form.' . $field['name'])
                                                 <small class="checkout-field-error">{{ $message }}</small>
                                             @enderror
                                         </fieldset>
                                     @endforeach
                                 </div>
                                 <label class="checkout-door-option"><input type="checkbox"
-                                        wire:model.live="delivery_to_door"><span>{{ __('Доставка до двери') }}</span></label>
+                                        wire:model.live="form.delivery_to_door"><span>{{ __('Доставка до двери') }}</span></label>
                                 <p class="checkout-field-hint">
                                     {{ __('Доставка до двери: :price. Подъём выше первого этажа оплачивается дополнительно.', ['price' => $doorDeliveryPrice]) }}
                                 </p>
-                                @if ($delivery_to_door)
+                                @if ($form->delivery_to_door)
                                     <div class="checkout-door-fields">
                                         <div class="checkout-form-grid">
                                             @foreach ($doorFields as $field)
@@ -228,14 +229,14 @@
                                                         @endif
                                                     </label><input id="checkout-{{ $field['name'] }}"
                                                         type="{{ $field['name'] === 'floor' ? 'number' : 'text' }}"
-                                                        wire:model.live.blur="{{ $field['name'] }}"
+                                                        wire:model.live.blur="form.{{ $field['name'] }}"
                                                         @if ($field['name'] === 'floor') min="1" max="200" step="1" inputmode="numeric" @endif
                                                         @required($field['required'])>
                                                     @if ($field['name'] === 'floor')
                                                         <small
                                                             class="checkout-field-hint">{{ __(':price за этаж, начиная со второго. Первый этаж — бесплатно.', ['price' => $floorLiftingPrice]) }}</small>
                                                     @endif
-                                                    @error($field['name'])
+                                                    @error('form.' . $field['name'])
                                                         <small class="checkout-field-error">{{ $message }}</small>
                                                     @enderror
                                                 </fieldset>
@@ -246,7 +247,7 @@
                                         </p>
                                     </div>
                                 @endif
-                            @elseif ($delivery_method === \App\Enums\Orders\DeliveryMethodEnum::CDEK->value)
+                            @elseif ($form->delivery_method === \App\Enums\Orders\DeliveryMethodEnum::CDEK->value)
                                 <div class="checkout-address__heading">
                                     <i class="icon icon-MapPin" aria-hidden="true"></i>
                                     <h5>{{ __('Пункт получения СДЭК') }}</h5>
@@ -289,7 +290,7 @@
                                                 @forelse ($deliveryPoints as $point)
                                                     <li wire:key="point-{{ $point['code'] }}">
                                                         <button type="button" role="option"
-                                                            aria-selected="{{ $delivery_point_code === $point['code'] ? 'true' : 'false' }}"
+                                                            aria-selected="{{ $form->delivery_point_code === $point['code'] ? 'true' : 'false' }}"
                                                             wire:click="selectDeliveryPoint(@js($point['code']))"
                                                             x-on:click="open = false" wire:loading.attr="disabled"
                                                             wire:target="delivery_point_search, selectDeliveryPoint">
@@ -320,7 +321,7 @@
                     @endif
                     <fieldset class="checkout-field checkout-field--comment"><label
                             for="checkout-comment">{{ __('Комментарий к заказу') }}</label>
-                        <textarea id="checkout-comment" wire:model.blur="comment"
+                        <textarea id="checkout-comment" wire:model.blur="form.comment"
                             placeholder="{{ __('Например, позвонить перед доставкой') }}"></textarea>
                     </fieldset>
                 </section>
@@ -334,13 +335,14 @@
                         </div>
                     </div>
                     <div class="checkout-payment-options">
-                        <label class="checkout-payment-option"><input type="radio" wire:model.live="payment_method"
+                        <label class="checkout-payment-option"><input type="radio"
+                                wire:model.live="form.payment_method"
                                 value="{{ \App\Enums\Orders\PaymentMethodEnum::ONLINE->value }}"><span
                                 class="checkout-payment-option__check"
                                 aria-hidden="true"></span><span><strong>{{ \App\Enums\Orders\PaymentMethodEnum::ONLINE->getLabel() }}</strong><small>{{ __('На защищённой странице Т-Банка. Оплата сразу при оформлении.') }}</small></span></label>
-                        @if ($delivery_method === \App\Enums\Orders\DeliveryMethodEnum::PICKUP->value)
+                        @if ($form->delivery_method === \App\Enums\Orders\DeliveryMethodEnum::PICKUP->value)
                             <label class="checkout-payment-option"><input type="radio"
-                                    wire:model.live="payment_method"
+                                    wire:model.live="form.payment_method"
                                     value="{{ \App\Enums\Orders\PaymentMethodEnum::PICKUP->value }}"><span
                                     class="checkout-payment-option__check"
                                     aria-hidden="true"></span><span><strong>{{ \App\Enums\Orders\PaymentMethodEnum::PICKUP->getLabel() }}</strong><small>{{ __('Оплата в точке самовывоза') }}</small></span></label>
@@ -370,7 +372,7 @@
                     @endif
                 </div>
                 @if ($privacyPolicyUrl)
-                    <label class="checkout-agreement"><input type="checkbox" wire:model="agreement"
+                    <label class="checkout-agreement"><input type="checkbox" wire:model="form.agreement"
                             class="tf-check style-4 radius-3" required><span>{{ __('Соглашаюсь с') }} <a
                                 href="{{ $privacyPolicyUrl }}" target="_blank"
                                 rel="noopener">{{ __('политикой обработки персональных данных') }}</a></span></label>

@@ -17,7 +17,7 @@ use Tests\Support\CheckoutFixtures;
 it('выводит причину отказа в общем списке ошибок без отдельной подсказки над кнопкой', function (): void {
     app(CartService::class)->add(CheckoutFixtures::variant()->id, 1);
     $component = Livewire::test(Checkout::class)->assertDontSee('Выберите город для доставки.')
-        ->call('placeOrder')->assertHasErrors(['city_id'])->assertSee('Выберите город для доставки.')
+        ->call('placeOrder')->assertHasErrors(['form.city_id'])->assertSee('Выберите город для доставки.')
         ->assertDontSeeHtml('id="checkout-block-reason"');
     $document = new DOMDocument;
     @$document->loadHTML('<?xml encoding="utf-8" ?>'.$component->html());
@@ -45,7 +45,7 @@ it('показывает русские названия контактных и
     CheckoutFixtures::form($city, ['first_name' => '', 'last_name' => '', 'email' => 'invalid',
         'delivery_method' => 'COURIER', 'payment_method' => PaymentMethodEnum::ONLINE->value, 'street' => '', 'house' => '',
         'delivery_to_door' => true, 'floor' => 'wrong', 'apartment' => '', 'agreement' => false])
-        ->call('placeOrder')->assertHasErrors(['first_name', 'last_name', 'email', 'street', 'house', 'floor', 'apartment', 'agreement'])
+        ->call('placeOrder')->assertHasErrors(['form.first_name', 'form.last_name', 'form.email', 'form.street', 'form.house', 'form.floor', 'form.apartment', 'form.agreement'])
         ->assertSee('Необходимо согласиться с политикой обработки персональных данных.')
         ->assertSee('Поле имя обязательно для заполнения.')
         ->assertSee('Значение поля этаж должно быть целым числом.');

@@ -15,14 +15,14 @@ it('отправляет вопрос администратору и очища
     Setting::query()->create(['admin_email' => 'admin@example.com']);
 
     Livewire::test(QuestionForm::class)
-        ->set('name', 'Иван')
-        ->set('phone', '+7 (999) 123-45-67')
-        ->set('message', 'Когда доставят заказ?')
+        ->set('form.name', 'Иван')
+        ->set('form.phone', '+7 (999) 123-45-67')
+        ->set('form.message', 'Когда доставят заказ?')
         ->call('submit')
         ->assertHasNoErrors()
-        ->assertSet('name', '')
-        ->assertSet('phone', '')
-        ->assertSet('message', '')
+        ->assertSet('form.name', '')
+        ->assertSet('form.phone', '')
+        ->assertSet('form.message', '')
         ->assertDispatched('question-sent');
 
     Notification::assertSentOnDemandTimes(QuestionSubmittedNotification::class, 1);
@@ -47,12 +47,12 @@ it('проверяет обязательные поля и формат тел�
     Notification::fake();
 
     Livewire::test(QuestionForm::class)
-        ->set('phone', '89991234567')
+        ->set('form.phone', '89991234567')
         ->call('submit')
         ->assertHasErrors([
-            'name' => 'required',
-            'phone' => 'regex',
-            'message' => 'required',
+            'form.name' => 'required',
+            'form.phone' => 'regex',
+            'form.message' => 'required',
         ]);
 
     Notification::assertNothingSent();
@@ -62,11 +62,15 @@ it('не отправляет вопрос без адреса админист�
     Notification::fake();
 
     Livewire::test(QuestionForm::class)
-        ->set('name', 'Иван')
-        ->set('phone', '+7 (999) 123-45-67')
-        ->set('message', 'Вопрос')
+        ->set('form.name', 'Иван')
+        ->set('form.phone', '+7 (999) 123-45-67')
+        ->set('form.message', 'Вопрос')
         ->call('submit')
-        ->assertHasErrors('message');
+        ->assertHasErrors('form.message')
+        ->assertSee('Не удалось отправить вопрос. Попробуйте позже.')
+        ->assertSet('form.name', 'Иван')
+        ->assertSet('form.phone', '+7 (999) 123-45-67')
+        ->assertSet('form.message', 'Вопрос');
 
     Notification::assertNothingSent();
 });

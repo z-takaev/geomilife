@@ -89,10 +89,10 @@ it('фильтрует каталог по цене, наличию и фасо�
     createCatalogProduct($category, 'Дорогой товар', 'expensive-product', 2000);
 
     Livewire::test(CatalogProducts::class, ['category' => $category])
-        ->set('priceFrom', '700')
-        ->set('priceTo', '900')
-        ->set('availability', ['in-stock'])
-        ->set('packageValues', ['GRAM|500.000'])
+        ->set('form.priceFrom', '700')
+        ->set('form.priceTo', '900')
+        ->set('form.availability', ['in-stock'])
+        ->set('form.packageValues', ['GRAM|500.000'])
         ->call('applyFilters')
         ->assertHasNoErrors()
         ->assertViewHas(
@@ -103,14 +103,14 @@ it('фильтрует каталог по цене, наличию и фасо�
 
 it('проверяет диапазон цены и сбрасывает фильтры', function (): void {
     Livewire::test(CatalogProducts::class)
-        ->set('priceFrom', '1000')
-        ->set('priceTo', '500')
+        ->set('form.priceFrom', '1000')
+        ->set('form.priceTo', '500')
         ->call('applyFilters')
-        ->assertHasErrors('priceTo')
+        ->assertHasErrors('form.priceTo')
         ->call('resetFilters')
-        ->assertSet('priceFrom', '')
-        ->assertSet('priceTo', '')
-        ->assertSet('availability', [])
+        ->assertSet('form.priceFrom', '')
+        ->assertSet('form.priceTo', '')
+        ->assertSet('form.availability', [])
         ->assertSet('sort', '')
         ->assertHasNoErrors();
 });
@@ -133,7 +133,7 @@ it('не объединяет условия фильтра из разных ф
     $product->variants()->create(['sku' => 'LARGE', 'unit' => ProductUnitEnum::GRAM, 'value' => 500,
         'price' => Money::fromRubles(1000), 'is_active' => true]);
     Livewire::test(CatalogProducts::class, ['category' => $category])
-        ->set('priceTo', '200')->set('packageValues', ['GRAM|500.000'])->call('applyFilters')
+        ->set('form.priceTo', '200')->set('form.packageValues', ['GRAM|500.000'])->call('applyFilters')
         ->assertHasNoErrors()->assertViewHas('products', fn ($products): bool => $products->isEmpty());
 });
 
@@ -158,7 +158,7 @@ it('догружает товары без дублей и сбрасывает 
         ->call('loadMore')->assertViewHas('products', fn ($products): bool => $products->pluck('id')->all() === array_slice($ids, 0, 4))
         ->call('loadMore')->assertViewHas('products', fn ($products): bool => $products->pluck('id')->all() === $ids)
         ->assertViewHas('hasMoreProducts', false)
-        ->set('priceFrom', '400')->call('applyFilters')->assertSet('additionalPages', 0)
+        ->set('form.priceFrom', '400')->call('applyFilters')->assertSet('additionalPages', 0)
         ->assertViewHas('products', fn ($products): bool => $products->pluck('id')->all() === array_slice($ids, 3));
 });
 
@@ -185,4 +185,17 @@ it('публикует в SEO цену, валюту и наличие выбр�
         ->and($schema['offers']['priceCurrency'])->toBe('RUB')
         ->and($schema['offers']['availability'])->toBe('https://schema.org/PreOrder')
         ->and($schema['offers']['url'])->toBe(route('products.show', [$product, 'variant' => $variant->id]));
+});
+
+it('восстанавливает черновик фильтров из URL и применённых значений', function (): void {
+    Livewire::withQueryParams(['price_from' => '200', 'price_to' => '900'])
+        ->test(CatalogProducts::class)
+        ->assertSet('form.priceFrom', '200')
+        ->assertSet('form.priceTo', '900')
+        ->set('form.priceFrom', '300')
+        ->assertSet('appliedFilters.priceFrom', '200')
+        ->call('applyFilters')
+        ->assertSet('appliedFilters.priceFrom', '300')
+        ->set('appliedFilters.priceFrom', '200')
+        ->assertSet('form.priceFrom', '200');
 });

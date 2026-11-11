@@ -31,7 +31,7 @@ it('оформляет заказ без согласия при отсутст�
     app(CartService::class)->add(CheckoutFixtures::variant()->id, 1);
 
     CheckoutFixtures::form($city, ['agreement' => false])
-        ->assertDontSeeHtml('wire:model="agreement"')
+        ->assertDontSeeHtml('wire:model="form.agreement"')
         ->assertDontSee('Соглашаюсь с')
         ->call('placeOrder')->assertHasNoErrors();
 
@@ -47,13 +47,13 @@ it('показывает обязательное согласие и блоки
     app(CartService::class)->add(CheckoutFixtures::variant()->id, 1);
 
     $component = CheckoutFixtures::form($city, ['agreement' => false])
-        ->assertSeeHtml('wire:model="agreement"')
+        ->assertSeeHtml('wire:model="form.agreement"')
         ->assertSeeHtml($setting->privacyPolicyUrl())
-        ->call('placeOrder')->assertHasErrors(['agreement' => 'accepted']);
+        ->call('placeOrder')->assertHasErrors(['form.agreement' => 'accepted']);
 
     $this->assertDatabaseCount('orders', 0);
 
-    $component->set('agreement', true)->call('placeOrder')->assertHasNoErrors();
+    $component->set('form.agreement', true)->call('placeOrder')->assertHasNoErrors();
 
     $this->assertDatabaseCount('orders', 1);
 });
@@ -66,7 +66,7 @@ it('проверяет наличие документа заново при о�
     $component = CheckoutFixtures::form($city, ['agreement' => false]);
     CheckoutFixtures::privacyPolicy();
 
-    $component->call('placeOrder')->assertHasErrors(['agreement' => 'accepted']);
+    $component->call('placeOrder')->assertHasErrors(['form.agreement' => 'accepted']);
 
     $this->assertDatabaseCount('orders', 0);
 });

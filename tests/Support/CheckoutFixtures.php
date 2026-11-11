@@ -120,7 +120,7 @@ final class CheckoutFixtures
         ], $attributes);
 
         foreach ($values as $key => $value) {
-            $component->set($key, $value);
+            $component->set('form.'.$key, $value);
         }
 
         return $component;

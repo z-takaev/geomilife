@@ -28,7 +28,7 @@ it('отклоняет неизвестный способ доставки пр
     app(CartService::class)->add(CheckoutFixtures::variant()->id, 1);
 
     CheckoutFixtures::form($city, ['delivery_method' => 'UNKNOWN'])
-        ->call('placeOrder')->assertHasErrors(['delivery_method']);
+        ->call('placeOrder')->assertHasErrors(['form.delivery_method']);
 });
 
 it('сохраняет способ доставки и восстанавливает enum', function (string $value): void {

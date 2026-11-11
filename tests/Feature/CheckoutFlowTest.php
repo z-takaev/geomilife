@@ -72,8 +72,8 @@ it('подставляет профиль и сохраняет другого �
     $original = $user->only(['first_name', 'last_name', 'phone', 'email']);
     $this->actingAs($user);
     app(CartService::class)->add(CheckoutFixtures::variant()->getKey(), 1);
-    Livewire::test(Checkout::class)->assertSet('first_name', $user->first_name)
-        ->assertSet('last_name', $user->last_name)->assertSet('phone', $user->phone)->assertSet('email', $user->email);
+    Livewire::test(Checkout::class)->assertSet('form.first_name', $user->first_name)
+        ->assertSet('form.last_name', $user->last_name)->assertSet('form.phone', $user->phone)->assertSet('form.email', $user->email);
 
     CheckoutFixtures::form($city)->call('placeOrder')->assertHasNoErrors();
 
@@ -112,7 +112,7 @@ it('проверяет контакты и согласие до создани�
     $city = CheckoutFixtures::city();
     app(CartService::class)->add(CheckoutFixtures::variant()->getKey(), 1);
     CheckoutFixtures::form($city, ['first_name' => '', 'last_name' => '', 'phone' => '', 'email' => 'broken', 'agreement' => false])
-        ->call('placeOrder')->assertHasErrors(['first_name', 'last_name', 'phone', 'email', 'agreement']);
+        ->call('placeOrder')->assertHasErrors(['form.first_name', 'form.last_name', 'form.phone', 'form.email', 'form.agreement']);
     $this->assertDatabaseCount('orders', 0);
     expect(app(CartService::class)->count())->toBe(1);
 });
@@ -153,14 +153,14 @@ it('перепроверяет доступность самовывоза пе�
     app(CartService::class)->add(CheckoutFixtures::variant()->getKey(), 1);
     $component = CheckoutFixtures::form($city);
     $city->update(['is_pickup_available' => false]);
-    $component->call('placeOrder')->assertHasErrors(['delivery_method']);
+    $component->call('placeOrder')->assertHasErrors(['form.delivery_method']);
     $this->assertDatabaseCount('orders', 0);
 });
 
 it('не оформляет получение в отключённом городе', function (): void {
     $city = CheckoutFixtures::city(['is_active' => false]);
     app(CartService::class)->add(CheckoutFixtures::variant()->getKey(), 1);
-    CheckoutFixtures::form($city)->call('placeOrder')->assertHasErrors(['city_id']);
+    CheckoutFixtures::form($city)->call('placeOrder')->assertHasErrors(['form.city_id']);
     $this->assertDatabaseCount('orders', 0);
 });
 
@@ -168,7 +168,7 @@ it('запрещает сдэк в городе исключения даже п
     $city = CheckoutFixtures::city(['is_cdek_excluded' => true]);
     app(CartService::class)->add(CheckoutFixtures::variant()->getKey(), 1);
     CheckoutFixtures::form($city, ['delivery_method' => 'CDEK', 'payment_method' => PaymentMethodEnum::ONLINE->value])
-        ->call('placeOrder')->assertHasErrors(['delivery_method']);
+        ->call('placeOrder')->assertHasErrors(['form.delivery_method']);
     $this->assertDatabaseCount('orders', 0);
 });
 
@@ -176,7 +176,7 @@ it('запрещает оплату при получении для курье�
     $city = CheckoutFixtures::city();
     app(CartService::class)->add(CheckoutFixtures::variant()->getKey(), 1);
     CheckoutFixtures::form($city, ['delivery_method' => 'COURIER', 'street' => 'Мира', 'house' => '10'])
-        ->call('placeOrder')->assertHasErrors(['payment_method']);
+        ->call('placeOrder')->assertHasErrors(['form.payment_method']);
     $this->assertDatabaseCount('orders', 0);
 });
 
@@ -201,7 +201,7 @@ it('для услуги до двери требует положительны�
     $city = CheckoutFixtures::city();
     app(CartService::class)->add(CheckoutFixtures::variant()->getKey(), 1);
     CheckoutFixtures::form($city, ['delivery_method' => 'COURIER', 'payment_method' => PaymentMethodEnum::ONLINE->value, 'street' => 'Мира', 'house' => '10', 'delivery_to_door' => true, 'floor' => $floor])
-        ->call('placeOrder')->assertHasErrors(['floor']);
+        ->call('placeOrder')->assertHasErrors(['form.floor']);
     $this->assertDatabaseCount('orders', 0);
 })->with(['', '0', '-1', '1.5']);
 
@@ -234,7 +234,7 @@ it('курьерский адрес требует улицу и дом на о�
     $city = CheckoutFixtures::city();
     app(CartService::class)->add(CheckoutFixtures::variant()->getKey(), 1);
     CheckoutFixtures::form($city, ['delivery_method' => 'COURIER', 'payment_method' => PaymentMethodEnum::ONLINE->value, 'street' => '', 'house' => ''])
-        ->call('placeOrder')->assertHasErrors(['street', 'house']);
+        ->call('placeOrder')->assertHasErrors(['form.street', 'form.house']);
     $this->assertDatabaseCount('orders', 0);
 });
 
@@ -252,7 +252,7 @@ it('показывает выбранный город в поле поиска'
 
     Livewire::test(Checkout::class)
         ->call('selectCity', $city->id)
-        ->assertSet('city_id', $city->id)
+        ->assertSet('form.city_id', $city->id)
         ->assertSet('city_search', $city->name);
 });
 
@@ -264,11 +264,11 @@ it('ищет активные города и сбрасывает прежни�
     Livewire::test(Checkout::class)
         ->call('selectCity', $selected->id)
         ->set('city_search', 'владим')
-        ->assertSet('city_id', null)
-        ->assertSet('delivery_method', '')
+        ->assertSet('form.city_id', null)
+        ->assertSet('form.delivery_method', '')
         ->assertViewHas('cities', fn ($cities): bool => $cities->modelKeys() === [$matching->id])
         ->call('selectCity', $matching->id)
-        ->assertSet('city_id', $matching->id)
+        ->assertSet('form.city_id', $matching->id)
         ->assertSet('city_search', $matching->name);
 });
 
@@ -278,7 +278,7 @@ it('показывает пустой результат поиска город
     Livewire::test(Checkout::class)
         ->call('selectCity', $city->id)
         ->set('city_search', 'Несуществующий город')
-        ->assertSet('city_id', null)
+        ->assertSet('form.city_id', null)
         ->assertSee('Город не найден. Попробуйте изменить запрос.');
 });
 

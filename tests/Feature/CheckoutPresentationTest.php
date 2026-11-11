@@ -21,8 +21,8 @@ it('возвращает город пользователя при выборе
     $user = CheckoutFixtures::user(['city_id' => $home->id]);
     $this->actingAs($user);
     Livewire::test(Checkout::class)->call('selectCity', $other->id)
-        ->call('chooseAnotherDeliveryPoint')->assertSet('city_id', $home->id)
-        ->assertSet('city_search', $home->name)->assertSet('delivery_point_code', '')
+        ->call('chooseAnotherDeliveryPoint')->assertSet('form.city_id', $home->id)
+        ->assertSet('city_search', $home->name)->assertSet('form.delivery_point_code', '')
         ->assertSet('saved_delivery_point_id', null);
 });
 
@@ -30,11 +30,11 @@ it('возвращает определённый системой город г
     $city = CheckoutFixtures::city();
     session()->put('city.id', $city->id);
     Livewire::test(Checkout::class)->call('selectCity', CheckoutFixtures::city()->id)
-        ->call('chooseAnotherDeliveryPoint')->assertSet('city_id', $city->id)->assertSet('city_search', $city->name);
+        ->call('chooseAnotherDeliveryPoint')->assertSet('form.city_id', $city->id)->assertSet('city_search', $city->name);
 });
 
 it('оставляет выбор города пустым если город пользователя и системы неизвестен', function (): void {
     Livewire::test(Checkout::class)->call('selectCity', CheckoutFixtures::city()->id)
-        ->call('chooseAnotherDeliveryPoint')->assertSet('city_id', null)->assertSet('city_search', '')
+        ->call('chooseAnotherDeliveryPoint')->assertSet('form.city_id', null)->assertSet('city_search', '')
         ->assertSee('Выберите город (от 3 символов)');
 });
