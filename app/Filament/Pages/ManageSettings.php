@@ -16,7 +16,9 @@ use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Form;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
@@ -133,15 +135,14 @@ final class ManageSettings extends Page
                                             TextInput::make('title')
                                                 ->label('Заголовок')
                                                 ->required()
-                                                ->maxLength(50)
-                                                ->live(onBlur: true),
+                                                ->maxLength(50),
                                             Textarea::make('description')
                                                 ->label('Описание')
                                                 ->required()
                                                 ->maxLength(100)
                                                 ->rows(2),
                                         ])
-                                        ->itemLabel(static fn (array $state): string => $state['title'] ?? '')
+                                        ->itemLabel(static fn (array $state): string => $state['title'])
                                         ->addable(false)
                                         ->deletable(false)
                                         ->reorderable(false)
@@ -181,92 +182,122 @@ final class ManageSettings extends Page
 
                             Tab::make('Баннеры')
                                 ->schema([
-                                    SpatieMediaLibrary::make('banner_wide_image')
-                                        ->label('Широкий баннер')
-                                        ->collection('banner_wide_image')
-                                        ->maxFiles(1)
-                                        ->maxSize(5120)
-                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 1290, 200))
-                                        ->helperText('Рекомендуемый размер: 1290×200 пикселей.'),
-                                    SpatieMediaLibrary::make('banner_wide_mobile_image')
-                                        ->label('Широкий баннер — мобильное изображение')
-                                        ->collection('banner_wide_mobile_image')
-                                        ->maxFiles(1)
-                                        ->maxSize(5120)
-                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 750, 360))
-                                        ->helperText('Рекомендуемый размер: 750×360 пикселей.'),
-                                    SpatieMediaLibrary::make('banner_double_first_image')
-                                        ->label('Двойной баннер — первое изображение')
-                                        ->collection('banner_double_first_image')
-                                        ->maxFiles(1)
-                                        ->maxSize(5120)
-                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 635, 180))
-                                        ->helperText('Рекомендуемый размер: 635×180 пикселей.'),
-                                    SpatieMediaLibrary::make('banner_double_first_mobile_image')
-                                        ->label('Двойной баннер — первое мобильное изображение')
-                                        ->collection('banner_double_first_mobile_image')
-                                        ->maxFiles(1)
-                                        ->maxSize(5120)
-                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 750, 360))
-                                        ->helperText('Рекомендуемый размер: 750×360 пикселей.'),
-                                    SpatieMediaLibrary::make('banner_double_second_image')
-                                        ->label('Двойной баннер — второе изображение')
-                                        ->collection('banner_double_second_image')
-                                        ->maxFiles(1)
-                                        ->maxSize(5120)
-                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 635, 180))
-                                        ->helperText('Рекомендуемый размер: 635×180 пикселей.'),
-                                    SpatieMediaLibrary::make('banner_double_second_mobile_image')
-                                        ->label('Двойной баннер — второе мобильное изображение')
-                                        ->collection('banner_double_second_mobile_image')
-                                        ->maxFiles(1)
-                                        ->maxSize(5120)
-                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 750, 360))
-                                        ->helperText('Рекомендуемый размер: 750×360 пикселей.'),
-                                    SpatieMediaLibrary::make('banner_triple_first_image')
-                                        ->label('Тройной баннер — первое изображение')
-                                        ->collection('banner_triple_first_image')
-                                        ->maxFiles(1)
-                                        ->maxSize(5120)
-                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 417, 200))
-                                        ->helperText('Рекомендуемый размер: 417×200 пикселей.'),
-                                    SpatieMediaLibrary::make('banner_triple_first_mobile_image')
-                                        ->label('Тройной баннер — первое мобильное изображение')
-                                        ->collection('banner_triple_first_mobile_image')
-                                        ->maxFiles(1)
-                                        ->maxSize(5120)
-                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 750, 360))
-                                        ->helperText('Рекомендуемый размер: 750×360 пикселей.'),
-                                    SpatieMediaLibrary::make('banner_triple_second_image')
-                                        ->label('Тройной баннер — второе изображение')
-                                        ->collection('banner_triple_second_image')
-                                        ->maxFiles(1)
-                                        ->maxSize(5120)
-                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 417, 200))
-                                        ->helperText('Рекомендуемый размер: 417×200 пикселей.'),
-                                    SpatieMediaLibrary::make('banner_triple_second_mobile_image')
-                                        ->label('Тройной баннер — второе мобильное изображение')
-                                        ->collection('banner_triple_second_mobile_image')
-                                        ->maxFiles(1)
-                                        ->maxSize(5120)
-                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 750, 360))
-                                        ->helperText('Рекомендуемый размер: 750×360 пикселей.'),
-                                    SpatieMediaLibrary::make('banner_triple_third_image')
-                                        ->label('Тройной баннер — третье изображение')
-                                        ->collection('banner_triple_third_image')
-                                        ->maxFiles(1)
-                                        ->maxSize(5120)
-                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 417, 200))
-                                        ->helperText('Рекомендуемый размер: 417×200 пикселей.'),
-                                    SpatieMediaLibrary::make('banner_triple_third_mobile_image')
-                                        ->label('Тройной баннер — третье мобильное изображение')
-                                        ->collection('banner_triple_third_mobile_image')
-                                        ->maxFiles(1)
-                                        ->maxSize(5120)
-                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 750, 360))
-                                        ->helperText('Рекомендуемый размер: 750×360 пикселей.'),
-                                ])
-                                ->columns(2),
+                                    Section::make('Широкий баннер')
+                                        ->schema([
+                                            SpatieMediaLibrary::make('banner_wide_image')
+                                                ->label('Для компьютеров')
+                                                ->collection('banner_wide_image')
+                                                ->maxFiles(1)
+                                                ->maxSize(5120)
+                                                ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 1290, 200))
+                                                ->helperText('Рекомендуемый размер: 1290×200 пикселей.'),
+                                            SpatieMediaLibrary::make('banner_wide_mobile_image')
+                                                ->label('Для мобильных устройств')
+                                                ->collection('banner_wide_mobile_image')
+                                                ->maxFiles(1)
+                                                ->maxSize(5120)
+                                                ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 750, 360))
+                                                ->helperText('Рекомендуемый размер: 750×360 пикселей.'),
+                                        ])
+                                        ->columns(2)
+                                        ->collapsible()
+                                        ->collapsed(),
+                                    Section::make('Двойной баннер')
+                                        ->schema([
+                                            Fieldset::make('Первый баннер')
+                                                ->schema([
+                                                    SpatieMediaLibrary::make('banner_double_first_image')
+                                                        ->label('Для компьютеров')
+                                                        ->collection('banner_double_first_image')
+                                                        ->maxFiles(1)
+                                                        ->maxSize(5120)
+                                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 635, 180))
+                                                        ->helperText('Рекомендуемый размер: 635×180 пикселей.'),
+                                                    SpatieMediaLibrary::make('banner_double_first_mobile_image')
+                                                        ->label('Для мобильных устройств')
+                                                        ->collection('banner_double_first_mobile_image')
+                                                        ->maxFiles(1)
+                                                        ->maxSize(5120)
+                                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 750, 360))
+                                                        ->helperText('Рекомендуемый размер: 750×360 пикселей.'),
+                                                ]),
+                                            Fieldset::make('Второй баннер')
+                                                ->schema([
+                                                    SpatieMediaLibrary::make('banner_double_second_image')
+                                                        ->label('Для компьютеров')
+                                                        ->collection('banner_double_second_image')
+                                                        ->maxFiles(1)
+                                                        ->maxSize(5120)
+                                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 635, 180))
+                                                        ->helperText('Рекомендуемый размер: 635×180 пикселей.'),
+                                                    SpatieMediaLibrary::make('banner_double_second_mobile_image')
+                                                        ->label('Для мобильных устройств')
+                                                        ->collection('banner_double_second_mobile_image')
+                                                        ->maxFiles(1)
+                                                        ->maxSize(5120)
+                                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 750, 360))
+                                                        ->helperText('Рекомендуемый размер: 750×360 пикселей.'),
+                                                ]),
+                                        ])
+                                        ->collapsible()
+                                        ->collapsed(),
+                                    Section::make('Тройной баннер')
+                                        ->schema([
+                                            Fieldset::make('Первый баннер')
+                                                ->schema([
+                                                    SpatieMediaLibrary::make('banner_triple_first_image')
+                                                        ->label('Для компьютеров')
+                                                        ->collection('banner_triple_first_image')
+                                                        ->maxFiles(1)
+                                                        ->maxSize(5120)
+                                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 417, 200))
+                                                        ->helperText('Рекомендуемый размер: 417×200 пикселей.'),
+                                                    SpatieMediaLibrary::make('banner_triple_first_mobile_image')
+                                                        ->label('Для мобильных устройств')
+                                                        ->collection('banner_triple_first_mobile_image')
+                                                        ->maxFiles(1)
+                                                        ->maxSize(5120)
+                                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 750, 360))
+                                                        ->helperText('Рекомендуемый размер: 750×360 пикселей.'),
+                                                ]),
+                                            Fieldset::make('Второй баннер')
+                                                ->schema([
+                                                    SpatieMediaLibrary::make('banner_triple_second_image')
+                                                        ->label('Для компьютеров')
+                                                        ->collection('banner_triple_second_image')
+                                                        ->maxFiles(1)
+                                                        ->maxSize(5120)
+                                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 417, 200))
+                                                        ->helperText('Рекомендуемый размер: 417×200 пикселей.'),
+                                                    SpatieMediaLibrary::make('banner_triple_second_mobile_image')
+                                                        ->label('Для мобильных устройств')
+                                                        ->collection('banner_triple_second_mobile_image')
+                                                        ->maxFiles(1)
+                                                        ->maxSize(5120)
+                                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 750, 360))
+                                                        ->helperText('Рекомендуемый размер: 750×360 пикселей.'),
+                                                ]),
+                                            Fieldset::make('Третий баннер')
+                                                ->schema([
+                                                    SpatieMediaLibrary::make('banner_triple_third_image')
+                                                        ->label('Для компьютеров')
+                                                        ->collection('banner_triple_third_image')
+                                                        ->maxFiles(1)
+                                                        ->maxSize(5120)
+                                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 417, 200))
+                                                        ->helperText('Рекомендуемый размер: 417×200 пикселей.'),
+                                                    SpatieMediaLibrary::make('banner_triple_third_mobile_image')
+                                                        ->label('Для мобильных устройств')
+                                                        ->collection('banner_triple_third_mobile_image')
+                                                        ->maxFiles(1)
+                                                        ->maxSize(5120)
+                                                        ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 750, 360))
+                                                        ->helperText('Рекомендуемый размер: 750×360 пикселей.'),
+                                                ]),
+                                        ])
+                                        ->collapsible()
+                                        ->collapsed(),
+                                ]),
 
                             Tab::make('Общее')
                                 ->schema([
