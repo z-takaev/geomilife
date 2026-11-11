@@ -42,6 +42,11 @@ final class ManageSettings extends Page
 
     private ?Setting $setting = null;
 
+    public static function canAccess(): bool
+    {
+        return auth('filament')->user()?->role?->isAdmin() ?? false;
+    }
+
     public function mount(): void
     {
         $this->form->fill($this->getRecord()->attributesToArray());
@@ -114,10 +119,11 @@ final class ManageSettings extends Page
                                         ->maxLength(1000)
                                         ->rows(3)
                                         ->columnSpanFull(),
-                                    Textarea::make('yandex_map_script')
-                                        ->label('Скрипт Яндекс Карты')
-                                        ->helperText('Вставьте код карты из конструктора Яндекс Карт.')
-                                        ->rows(8)
+                                    TextInput::make('yandex_map_id')
+                                        ->label('Идентификатор Яндекс Карты')
+                                        ->helperText('Укажите идентификатор после constructor: в ссылке из конструктора Яндекс Карт.')
+                                        ->maxLength(64)
+                                        ->regex('/\A[a-f0-9]{64}\z/')
                                         ->columnSpanFull(),
                                 ])
                                 ->columns(2),
@@ -225,10 +231,13 @@ final class ManageSettings extends Page
     {
         $setting = $this->getRecord();
         $previousDocument = $setting->privacy_policy;
+        $isNew = ! $setting->exists;
         $setting->fill($this->form->getState());
         $setting->save();
 
-        $this->form->record($setting)->saveRelationships();
+        if ($isNew) {
+            $this->form->record($setting)->saveRelationships();
+        }
 
         if ($previousDocument && $previousDocument !== $setting->privacy_policy) {
             Storage::disk('public')->delete($previousDocument);

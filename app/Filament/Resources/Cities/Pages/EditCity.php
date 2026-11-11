@@ -20,6 +20,13 @@ final class EditCity extends EditRecord
     {
         return Arr::only($data, [
             'is_active',
+            'is_suggested',
+            'is_cdek_excluded',
+            'pickup_name',
+            'pickup_address',
+            'pickup_working_hours',
+            'pickup_phone',
+            'door_delivery_price',
             'is_pickup_available',
             'is_courier_available',
             'courier_delivery_price',

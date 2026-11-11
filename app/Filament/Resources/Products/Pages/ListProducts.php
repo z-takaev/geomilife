@@ -7,6 +7,7 @@ namespace App\Filament\Resources\Products\Pages;
 use App\Actions\Products\ExportProductsAction;
 use App\Actions\Products\ImportProductsAction;
 use App\Filament\Resources\Products\ProductResource;
+use App\Models\Product;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Forms\Components\FileUpload;
@@ -29,11 +30,11 @@ final class ListProducts extends ListRecords
         return [
             Action::make('exportExcel')
                 ->label('Экспорт в Excel')
-                ->authorize(fn (): bool => ProductResource::canViewAny())
+                ->authorize(fn (): bool => auth('filament')->user()?->can('export', Product::class) ?? false)
                 ->action(fn (): StreamedResponse => app(ExportProductsAction::class)->handle($this->getFilteredSortedTableQuery())),
             Action::make('importExcel')
                 ->label('Импорт из Excel')
-                ->authorize(fn (): bool => ProductResource::canViewAny())
+                ->authorize(fn (): bool => auth('filament')->user()?->can('create', Product::class) ?? false)
                 ->modalHeading('Обновить товары из Excel')
                 ->modalSubmitActionLabel('Применить изменения')
                 ->steps([

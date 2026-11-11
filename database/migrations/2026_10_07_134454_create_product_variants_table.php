@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->string('sku')->unique();
             $table->string('unit');
-            $table->decimal('value', 12, 3);
+            $table->unsignedInteger('value');
             $table->unsignedBigInteger('price');
             $table->unsignedBigInteger('old_price')->nullable();
             $table->unsignedInteger('weight')->nullable();
@@ -32,6 +32,7 @@ return new class extends Migration
             $table->index(['product_id', 'is_active', 'order']);
         });
 
+        DB::statement('ALTER TABLE product_variants ADD CONSTRAINT product_variants_value_check CHECK (value > 0 AND value <= 999999999)');
         DB::statement('ALTER TABLE product_variants ADD CONSTRAINT product_variants_price_check CHECK (price > 0 AND price % 100 = 0)');
         DB::statement('ALTER TABLE product_variants ADD CONSTRAINT product_variants_transport_check CHECK ((weight IS NULL OR weight > 0) AND (length IS NULL OR length > 0) AND (width IS NULL OR width > 0) AND (height IS NULL OR height > 0))');
         DB::statement('ALTER TABLE product_variants ADD CONSTRAINT product_variants_old_price_check CHECK (old_price IS NULL OR (old_price > price AND old_price % 100 = 0))');

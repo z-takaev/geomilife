@@ -95,7 +95,7 @@ final class ExportProductsAction
         $values = $isProduct
             ? ['Товар', (string) $record->id, null, $record->name, $yesNo($record->is_new), $yesNo($record->is_hit), $yesNo($record->is_active)]
             : ['Вариация', (string) $record->product_id, (string) $record->id, null, null, null, null,
-                $record->sku, (float) $record->value, $record->unit->getLabel(),
+                $record->sku, $record->value, $record->unit->getLabel(),
                 intdiv($record->price->minorAmount(), 100), $record->old_price === null ? null : intdiv($record->old_price->minorAmount(), 100),
                 $yesNo($record->is_active), $yesNo($record->is_preorder),
                 $record->weight, $record->length, $record->width, $record->height];

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Pages\Dashboard;
 use App\Services\Dashboard\DashboardMetricsService;
 use App\Support\Values\Money;
 use Filament\Support\Icons\Heroicon;
@@ -22,6 +23,16 @@ final class SalesOverview extends StatsOverviewWidget
     protected static bool $isLazy = false;
 
     protected ?string $heading = 'Основные метрики';
+
+    public function mount(): void
+    {
+        abort_unless(self::canView(), 403);
+    }
+
+    public static function canView(): bool
+    {
+        return Dashboard::canAccess();
+    }
 
     protected function getStats(): array
     {

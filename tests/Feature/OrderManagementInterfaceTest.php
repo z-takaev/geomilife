@@ -47,18 +47,11 @@ it('оставляет место название и вес упаковки и
         ->assertDontSee('Оплатить до');
 });
 
-it('разрешает сверку оплаты только администратору', function (FilamentUserRoleEnum $role): void {
+it('разрешает сверку оплаты администратору и менеджеру', function (FilamentUserRoleEnum $role): void {
     $this->actingAs(fulfillmentEmployee($role), 'filament');
     $order = fulfillmentOrder();
-    $component = Livewire::test(ViewOrder::class, ['record' => $order->id]);
-    if ($role === FilamentUserRoleEnum::ADMIN) {
-        $component->assertActionVisible('checkPayment');
-    } else {
-        $component->assertActionHidden('checkPayment');
-        $component->call('mountAction', 'checkPayment');
-        expect($component->instance()->mountedActions)->toBeEmpty();
-        Http::assertNothingSent();
-    }
+    Livewire::test(ViewOrder::class, ['record' => $order->id])->assertActionVisible('checkPayment')
+        ->mountAction('checkPayment')->assertActionMounted('checkPayment');
 })->with([FilamentUserRoleEnum::ADMIN, FilamentUserRoleEnum::MANAGER]);
 
 it('показывает этапы и подтверждает следующий переход с уведомлением покупателя', function (FilamentUserRoleEnum $role): void {

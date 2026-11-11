@@ -55,6 +55,14 @@ function pricingSpreadsheet(ProductVariant $variant, array $prices): string
     return $path;
 }
 
+beforeEach(function (): void {
+    $this->actingAs(FilamentUser::query()->create([
+        'name' => 'Администратор импорта', 'email' => 'pricing-admin@example.com', 'password' => 'password',
+        'role' => FilamentUserRoleEnum::ADMIN,
+    ]), 'filament');
+    Filament\Facades\Filament::setCurrentPanel('admin');
+});
+
 afterEach(function (): void {
     $path = storage_path('framework/testing/pricing.xlsx');
     if (is_file($path)) {

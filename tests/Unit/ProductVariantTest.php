@@ -6,14 +6,14 @@ use App\Enums\Products\ProductUnitEnum;
 use App\Models\ProductVariant;
 use App\Support\Values\Money;
 
-it('формирует название фасовки', function (string $value, ProductUnitEnum $unit, string $label): void {
+it('формирует название фасовки', function (int $value, ProductUnitEnum $unit, string $label): void {
     $variant = new ProductVariant(['value' => $value, 'unit' => $unit]);
 
     expect($variant->label())->toBe($label);
 })->with([
-    'граммы' => ['500.000', ProductUnitEnum::GRAM, '500 г'],
-    'миллилитры' => ['250.500', ProductUnitEnum::MILLILITER, '250.5 мл'],
-    'штуки' => ['1.000', ProductUnitEnum::PIECE, '1 шт'],
+    'граммы' => [500, ProductUnitEnum::GRAM, '500 г'],
+    'миллилитры' => [250, ProductUnitEnum::MILLILITER, '250 мл'],
+    'штуки' => [1, ProductUnitEnum::PIECE, '1 шт'],
 ]);
 
 it('возвращает цену со скидкой и старую цену', function (): void {

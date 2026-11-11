@@ -16,6 +16,13 @@ final class Dashboard extends BaseDashboard
 {
     use HasFiltersForm;
 
+    protected static string $routePath = '/overview';
+
+    public static function canAccess(): bool
+    {
+        return auth('filament')->user()?->role?->isAdmin() ?? false;
+    }
+
     public function filtersForm(Schema $schema): Schema
     {
         return $schema->components([

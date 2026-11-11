@@ -20,6 +20,7 @@ final class ListCities extends ListRecords
         return [
             Action::make('syncCdekCities')
                 ->label(__('Синхронизировать города СДЭК'))
+                ->authorize(fn (): bool => CityResource::canViewAny())
                 ->icon(Heroicon::OutlinedArrowPath)
                 ->action(function (): void {
                     SyncDeliveryCitiesJob::dispatch();

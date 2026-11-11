@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Products\Tables;
 
+use App\Filament\Resources\Products\ProductResource;
 use App\Models\Product;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -50,8 +52,8 @@ final class ProductsTable
                     ->boolean(),
                 ToggleColumn::make('is_active')
                     ->label('Активен')
-                    ->disabled(static fn (Product $record): bool => ! $record->is_active
-                        && (! $record->hasMedia('image') || $record->active_variants_count === 0)),
+                    ->disabled(static fn (Product $record): bool => ! ProductResource::canEdit($record)
+                        || (! $record->is_active && (! $record->hasMedia('image') || $record->active_variants_count === 0))),
             ])
             ->filters([
                 SelectFilter::make('category_id')
@@ -87,6 +89,7 @@ final class ProductsTable
             ->defaultSort('name')
             ->emptyStateHeading('Товары не найдены')
             ->recordActions([
+                ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make(),
             ]);

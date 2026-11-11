@@ -36,7 +36,7 @@ final class ProductVariant extends Model
     protected function casts(): array
     {
         return [
-            'value' => 'decimal:3',
+            'value' => 'integer',
             'price' => Money::class,
             'old_price' => Money::class,
             'weight' => 'integer',
@@ -85,9 +85,7 @@ final class ProductVariant extends Model
 
     public function label(): string
     {
-        $value = rtrim(rtrim($this->value, '0'), '.');
-
-        return sprintf('%s %s', $value === '' ? '0' : $value, $this->unit->getLabel());
+        return sprintf('%d %s', $this->value, $this->unit->getLabel());
     }
 
     public function hasDiscount(): bool

@@ -7,8 +7,10 @@ namespace App\Filament\Resources\Users\Tables;
 use App\Actions\Users\ExportUsersAction;
 use App\Filament\Resources\Users\Pages\ListUsers;
 use App\Filament\Resources\Users\UserResource;
+use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -31,7 +33,8 @@ final class UsersTable
                 TextColumn::make('email')->label('Email')->searchable()->sortable(),
                 TextColumn::make('phone')->label('Телефон')->placeholder('—')->searchable(),
                 TextColumn::make('birth_date')->label('Дата рождения')->date('d.m.Y')->toggleable(isToggledHiddenByDefault: true),
-                ToggleColumn::make('is_blocked')->label('Заблокирован'),
+                ToggleColumn::make('is_blocked')->label('Заблокирован')
+                    ->disabled(static fn (User $record): bool => ! UserResource::canEdit($record)),
                 IconColumn::make('phone_verified_at')->label('Телефон подтверждён')->boolean()->getStateUsing(fn ($record): bool => $record->phone_verified_at !== null)->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('telegram_username')->label('Telegram')->searchable()->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')->label('Дата регистрации')->dateTime('d.m.Y H:i')->sortable(),
@@ -57,10 +60,11 @@ final class UsersTable
             ->headerActions([
                 Action::make('exportExcel')
                     ->label('Экспорт в Excel')
-                    ->authorize(fn (): bool => UserResource::canViewAny())
+                    ->authorize(fn (): bool => auth('filament')->user()?->can('export', User::class) ?? false)
                     ->action(fn (ListUsers $livewire): StreamedResponse => app(ExportUsersAction::class)->handle($livewire->getFilteredSortedTableQuery())),
             ])
             ->recordActions([
+                ViewAction::make(),
                 EditAction::make(),
             ]);
     }

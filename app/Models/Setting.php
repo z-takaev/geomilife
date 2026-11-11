@@ -47,7 +47,7 @@ final class Setting extends Model implements HasMedia
         'admin_email',
         'address',
         'working_hours',
-        'yandex_map_script',
+        'yandex_map_id',
         'footer_title',
         'footer_description',
         'instagram_url',
@@ -116,6 +116,21 @@ final class Setting extends Model implements HasMedia
     public function privacyPolicyUrl(): string
     {
         return $this->privacy_policy ? Storage::disk('public')->url($this->privacy_policy) : '';
+    }
+
+    public function yandexMapUrl(): ?string
+    {
+        if (! is_string($this->yandex_map_id) || preg_match('/\A[a-f0-9]{64}\z/', $this->yandex_map_id) !== 1) {
+            return null;
+        }
+
+        return 'https://api-maps.yandex.ru/services/constructor/1.0/js/?'.http_build_query([
+            'um' => 'constructor:'.$this->yandex_map_id,
+            'width' => '100%',
+            'height' => 400,
+            'lang' => 'ru_RU',
+            'scroll' => 'true',
+        ], encoding_type: PHP_QUERY_RFC3986);
     }
 
     public function storyVideoEmbedUrl(): ?string

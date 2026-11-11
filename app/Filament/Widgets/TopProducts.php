@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Pages\Dashboard;
 use App\Services\Dashboard\DashboardMetricsService;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -19,6 +20,16 @@ final class TopProducts extends TableWidget
     protected static bool $isLazy = false;
 
     protected int|string|array $columnSpan = 'full';
+
+    public function mount(): void
+    {
+        abort_unless(self::canView(), 403);
+    }
+
+    public static function canView(): bool
+    {
+        return Dashboard::canAccess();
+    }
 
     public function table(Table $table): Table
     {

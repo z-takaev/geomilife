@@ -92,7 +92,7 @@ it('фильтрует каталог по цене, наличию и фасо�
         ->set('form.priceFrom', '700')
         ->set('form.priceTo', '900')
         ->set('form.availability', ['in-stock'])
-        ->set('form.packageValues', ['GRAM|500.000'])
+        ->set('form.packageValues', ['GRAM|500'])
         ->call('applyFilters')
         ->assertHasNoErrors()
         ->assertViewHas(
@@ -133,7 +133,7 @@ it('не объединяет условия фильтра из разных ф
     $product->variants()->create(['sku' => 'LARGE', 'unit' => ProductUnitEnum::GRAM, 'value' => 500,
         'price' => Money::fromRubles(1000), 'is_active' => true]);
     Livewire::test(CatalogProducts::class, ['category' => $category])
-        ->set('form.priceTo', '200')->set('form.packageValues', ['GRAM|500.000'])->call('applyFilters')
+        ->set('form.priceTo', '200')->set('form.packageValues', ['GRAM|500'])->call('applyFilters')
         ->assertHasNoErrors()->assertViewHas('products', fn ($products): bool => $products->isEmpty());
 });
 

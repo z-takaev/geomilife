@@ -64,7 +64,7 @@ final class AdminPanelProvider extends PanelProvider
             ->unsavedChangesAlerts()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
-            ->navigation(fn (NavigationBuilder $builder): NavigationBuilder => $this->navigation($builder))
+            ->navigation($this->navigation(...))
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->renderHook(
                 PanelsRenderHook::USER_MENU_BEFORE,
@@ -91,34 +91,39 @@ final class AdminPanelProvider extends PanelProvider
         return $builder->groups([
             NavigationGroup::make()
                 ->items([
-                    ...Dashboard::getNavigationItems(),
-                    ...UserResource::getNavigationItems(),
-                    ...OrderResource::getNavigationItems(),
+                    ...self::navigationItems(Dashboard::class),
+                    ...self::navigationItems(OrderResource::class),
+                    ...self::navigationItems(UserResource::class),
                 ]),
             NavigationGroup::make('Продукция')
                 ->items([
-                    ...CategoryResource::getNavigationItems(),
-                    ...ProductResource::getNavigationItems(),
-                    ...ProductAttributeResource::getNavigationItems(),
+                    ...self::navigationItems(CategoryResource::class),
+                    ...self::navigationItems(ProductResource::class),
+                    ...self::navigationItems(ProductAttributeResource::class),
                 ]),
             NavigationGroup::make('Контент')
                 ->items([
-                    ...HomeSlideResource::getNavigationItems(),
-                    ...PromoResource::getNavigationItems(),
-                    ...NewsResource::getNavigationItems(),
-                    ...ArticleResource::getNavigationItems(),
-                    ...ReviewResource::getNavigationItems(),
-                    ...FaqResource::getNavigationItems(),
-                    ...PageResource::getNavigationItems(),
+                    ...self::navigationItems(HomeSlideResource::class),
+                    ...self::navigationItems(PromoResource::class),
+                    ...self::navigationItems(NewsResource::class),
+                    ...self::navigationItems(ArticleResource::class),
+                    ...self::navigationItems(ReviewResource::class),
+                    ...self::navigationItems(FaqResource::class),
+                    ...self::navigationItems(PageResource::class),
                 ]),
             NavigationGroup::make('Настройки')
                 ->items([
-                    ...CityResource::getNavigationItems(),
-                    ...ShippingBoxResource::getNavigationItems(),
-                    ...SeoResource::getNavigationItems(),
-                    ...FilamentUserResource::getNavigationItems(),
-                    ...ManageSettings::getNavigationItems(),
+                    ...self::navigationItems(CityResource::class),
+                    ...self::navigationItems(ShippingBoxResource::class),
+                    ...self::navigationItems(SeoResource::class),
+                    ...self::navigationItems(FilamentUserResource::class),
+                    ...self::navigationItems(ManageSettings::class),
                 ]),
         ]);
+    }
+
+    private static function navigationItems(string $component): array
+    {
+        return $component::canAccess() ? $component::getNavigationItems() : [];
     }
 }

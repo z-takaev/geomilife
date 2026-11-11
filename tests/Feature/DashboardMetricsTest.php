@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\Filament\FilamentUserRoleEnum;
 use App\Enums\Orders\PaymentStatusEnum;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Widgets\SalesOverview;
@@ -24,7 +25,7 @@ function dashboardOrder(array $attributes = []): Order
 beforeEach(function (): void {
     $this->travelTo(now()->setDate(2026, 11, 11)->setTime(12, 0));
     Filament::setCurrentPanel('admin');
-    $this->actingAs(fulfillmentEmployee(), 'filament');
+    $this->actingAs(fulfillmentEmployee(FilamentUserRoleEnum::ADMIN), 'filament');
 });
 
 it('выбирает сегодня по умолчанию и убирает выбор количества товаров', function (): void {

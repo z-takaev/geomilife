@@ -82,7 +82,7 @@ final class ViewOrder extends ViewRecord
             ActionGroup::make([
                 Action::make('checkPayment')
                     ->label('Сверить оплату с банком')
-                    ->authorize(fn (): bool => auth('filament')->user()?->role?->isAdmin() ?? false)
+                    ->authorize(fn (): bool => OrderResource::canView($this->getRecord()))
                     ->visible(fn (): bool => $this->getRecord()->payment_method->isOnline())
                     ->requiresConfirmation()
                     ->modalDescription('Будет запрошено состояние всех попыток оплаты в Т-Банке. Если заказ отменён и обнаружена оплата, будет запущен возврат.')

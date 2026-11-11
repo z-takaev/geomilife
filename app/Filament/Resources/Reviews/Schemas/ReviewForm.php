@@ -31,6 +31,7 @@ final class ReviewForm
                     ->minValue(1)
                     ->maxValue(5)
                     ->step(0.1)
+                    ->rule('decimal:0,1')
                     ->required(),
                 Select::make('source')
                     ->label('Источник отзыва')

@@ -126,10 +126,10 @@
                     </div>
                 </div>
 
-                @if (filled(settings()?->yandex_map_script))
+                @if ($mapUrl = settings()?->yandexMapUrl())
                     <div class="col-12">
                         <div class="contacts-map">
-                            {!! settings()?->yandex_map_script !!}
+                            <script type="text/javascript" charset="utf-8" async src="{{ $mapUrl }}"></script>
                         </div>
                     </div>
                 @endif

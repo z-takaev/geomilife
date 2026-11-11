@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('admin_email')->nullable();
             $table->text('address')->nullable();
             $table->text('working_hours')->nullable();
-            $table->text('yandex_map_script')->nullable();
+            $table->string('yandex_map_id', 64)->nullable();
 
             $table->string('footer_title')->nullable();
             $table->text('footer_description')->nullable();

@@ -71,7 +71,7 @@ final class CatalogRepository
                 ->distinct()
                 ->get()
                 ->sortBy(static fn (ProductVariant $variant): string => sprintf(
-                    '%02d-%020.3f', $unitOrder[$variant->unit->value], (float) $variant->value,
+                    '%02d-%010d', $unitOrder[$variant->unit->value], $variant->value,
                 ))
                 ->map(static fn (ProductVariant $variant): array => [
                     'value' => $variant->unit->value.'|'.$variant->value,

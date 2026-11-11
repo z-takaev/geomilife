@@ -146,7 +146,7 @@ it('выгружает пустую выборку файлом с заголо�
 });
 
 it('ставит города с курьером или самовывозом первыми до пагинации', function (): void {
-    $this->actingAs(fulfillmentEmployee(), 'filament');
+    $this->actingAs(fulfillmentEmployee(FilamentUserRoleEnum::ADMIN), 'filament');
     foreach (range(1, 15) as $index) {
         City::query()->create(['cdek_code' => 9000 + $index, 'name' => sprintf('А-%02d', $index), 'is_active' => true]);
     }
@@ -164,7 +164,7 @@ it('ставит города с курьером или самовывозом 
 });
 
 it('сохраняет приоритет городов после фильтра и поиска', function (): void {
-    $this->actingAs(fulfillmentEmployee(), 'filament');
+    $this->actingAs(fulfillmentEmployee(FilamentUserRoleEnum::ADMIN), 'filament');
     $regular = City::query()->create(['cdek_code' => 9201, 'name' => 'Город А', 'is_active' => true]);
     $priority = City::query()->create(['cdek_code' => 9202, 'name' => 'Город Я', 'is_active' => true, 'is_pickup_available' => true]);
     City::query()->create(['cdek_code' => 9203, 'name' => 'Другой', 'is_active' => true, 'is_pickup_available' => true]);
