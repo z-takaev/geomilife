@@ -6,6 +6,7 @@ namespace App\Filament\Pages;
 
 use App\Filament\Forms\Components\SpatieMediaLibrary;
 use App\Models\Setting;
+use App\Support\Email\EmailNormalizer;
 use App\Support\Phone\PhoneFormat;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -77,12 +78,16 @@ final class ManageSettings extends Page
                                         ->label('Email')
                                         ->email()
                                         ->required()
+                                        ->mutateStateForValidationUsing(static fn (?string $state): ?string => EmailNormalizer::normalize($state))
+                                        ->dehydrateStateUsing(static fn (?string $state): ?string => EmailNormalizer::normalize($state))
                                         ->maxLength(50),
                                     TextInput::make('admin_email')
                                         ->label('Email администратора')
                                         ->helperText('На этот адрес будут приходить письма с сайта.')
                                         ->email()
                                         ->required()
+                                        ->mutateStateForValidationUsing(static fn (?string $state): ?string => EmailNormalizer::normalize($state))
+                                        ->dehydrateStateUsing(static fn (?string $state): ?string => EmailNormalizer::normalize($state))
                                         ->maxLength(50),
 
                                     Textarea::make('address')
@@ -143,7 +148,7 @@ final class ManageSettings extends Page
                                                 ->maxLength(100)
                                                 ->rows(2),
                                         ])
-                                        ->itemLabel(static fn (array $state): string => $state['title'])
+                                        ->itemLabel(static fn (array $state): string => (string) ($state['title'] ?? ''))
                                         ->addable(false)
                                         ->deletable(false)
                                         ->reorderable(false)
@@ -163,6 +168,7 @@ final class ManageSettings extends Page
                                         ->label('Ссылка на видео')
                                         ->helperText('Прямая ссылка на VK Видео')
                                         ->url()
+                                        ->regex('~\Ahttps?://(?:www\.)?(?:vkvideo\.ru|vk\.com)/video-?\d+_\d+(?:[/?#].*)?\z~i')
                                         ->maxLength(2048),
                                     Textarea::make('story_description')
                                         ->label('Описание')

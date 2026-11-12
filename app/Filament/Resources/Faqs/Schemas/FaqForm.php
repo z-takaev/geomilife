@@ -26,6 +26,7 @@ final class FaqForm
                     ->required()
                     ->maxLength(9999)
                     ->fileAttachmentsAcceptedFileTypes(ImageMimeTypes::ALLOWED)
+                    ->fileAttachmentsMaxSize(5120)
                     ->preventFileAttachmentPathTampering()
                     ->resizableImages()
                     ->columnSpanFull(),

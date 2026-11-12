@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 use App\Models\Article;
 use App\Models\City;
+use App\Models\FilamentUser;
+use App\Models\Order;
 use App\Models\ProductVariant;
 use App\Models\Setting;
+use App\Models\User;
 use App\Support\Values\Money;
 use Illuminate\Support\Str;
 use Tests\Support\CheckoutFixtures;
@@ -21,6 +24,19 @@ it('генерирует уникальные адреса и сохраняет
 it('уважает явно заданный slug', function (): void {
     $article = Article::query()->create(['published_at' => today(), 'title' => 'О компании', 'slug' => 'about']);
     expect($article->slug)->toBe('about');
+});
+
+it('нормализует email во всех сохраняющих их моделях', function (): void {
+    $user = new User(['email' => ' USER@EXAMPLE.COM ']);
+    $filamentUser = new FilamentUser(['email' => ' ADMIN@EXAMPLE.COM ']);
+    $setting = new Setting(['email' => ' STORE@EXAMPLE.COM ', 'admin_email' => ' OWNER@EXAMPLE.COM ']);
+    $order = new Order(['customer_email' => ' CUSTOMER@EXAMPLE.COM ']);
+
+    expect($user->email)->toBe('user@example.com')
+        ->and($filamentUser->email)->toBe('admin@example.com')
+        ->and($setting->email)->toBe('store@example.com')
+        ->and($setting->admin_email)->toBe('owner@example.com')
+        ->and($order->customer_email)->toBe('customer@example.com');
 });
 
 it('сохраняет деньги в копейках и сериализует в рублях', function (): void {

@@ -17,6 +17,7 @@ use App\Services\Orders\CheckoutService;
 use App\Services\Orders\OrderNotificationService;
 use App\Services\Orders\OrderPaymentService;
 use App\Services\Tbank\Exceptions\TbankApiException;
+use App\Support\Email\EmailNormalizer;
 use App\Support\Values\Money;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
@@ -201,6 +202,7 @@ final class Checkout extends Component
         $order = $service->findPlacedOrder($this->idempotency_key);
 
         if ($order === null) {
+            $this->form->email = EmailNormalizer::normalize($this->form->email) ?? '';
             $this->validate();
 
             try {

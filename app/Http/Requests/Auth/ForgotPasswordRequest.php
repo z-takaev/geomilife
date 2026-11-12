@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Auth;
 
+use App\Support\Email\EmailNormalizer;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Str;
 
 final class ForgotPasswordRequest extends FormRequest
 {
@@ -29,7 +29,7 @@ final class ForgotPasswordRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'email' => Str::lower(trim((string) $this->input('email'))),
+            'email' => EmailNormalizer::normalize((string) $this->input('email')),
         ]);
     }
 }

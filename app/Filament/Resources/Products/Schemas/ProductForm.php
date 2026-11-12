@@ -46,7 +46,7 @@ final class ProductForm
                                     ->collection('image')
                                     ->required()
                                     ->maxFiles(1)
-                                    ->processImage(static fn (Image $image): Image => $image->fit(Fit::Fill, 1200, 1200, backgroundColor: '#ffffff'))
+                                    ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 1200, 1200))
                                     ->helperText('Рекомендуемый размер: 1200×1200 пикселей.'),
                                 SpatieMediaLibrary::make('gallery')
                                     ->label('Галерея')
@@ -54,7 +54,7 @@ final class ProductForm
                                     ->multiple()
                                     ->reorderable()
                                     ->maxFiles(10)
-                                    ->processImage(static fn (Image $image): Image => $image->fit(Fit::Fill, 1200, 1200, backgroundColor: '#ffffff'))
+                                    ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 1200, 1200))
                                     ->helperText('Рекомендуемый размер: 1200×1200 пикселей.'),
                                 Grid::make(2)
                                     ->schema([
@@ -73,6 +73,7 @@ final class ProductForm
                                     ->required(),
                                 Textarea::make('description')
                                     ->label('Описание')
+                                    ->maxLength(5000)
                                     ->rows(8)
                                     ->columnSpanFull(),
                                 Grid::make(3)
@@ -132,6 +133,7 @@ final class ProductForm
                                                     ->formatStateUsing(static fn (mixed $state): mixed => $state instanceof Money ? intdiv($state->minorAmount(), 100) : $state)
                                                     ->integer()
                                                     ->minValue(1)
+                                                    ->maxValue(99999)
                                                     ->suffix('₽')
                                                     ->required()
                                                     ->live(onBlur: true),
@@ -140,6 +142,7 @@ final class ProductForm
                                                     ->formatStateUsing(static fn (mixed $state): mixed => $state instanceof Money ? intdiv($state->minorAmount(), 100) : $state)
                                                     ->integer()
                                                     ->gt('price')
+                                                    ->maxValue(99999)
                                                     ->suffix('₽'),
                                                 ...self::transportFields(),
                                                 Flex::make([
@@ -157,6 +160,7 @@ final class ProductForm
                                     ->itemLabel(self::variantLabel(...))
                                     ->defaultItems(1)
                                     ->minItems(1)
+                                    ->maxItems(10)
                                     ->cloneable()
                                     ->collapsible()
                                     ->addActionLabel('Добавить вариант')
@@ -211,7 +215,13 @@ final class ProductForm
         $fields = [];
         foreach (['weight' => ['Вес с потребительской упаковкой', 'г'], 'length' => ['Длина', 'мм'],
             'width' => ['Ширина', 'мм'], 'height' => ['Высота', 'мм']] as $name => [$label, $unit]) {
-            $fields[] = TextInput::make($name)->label($label)->integer()->minValue(1)->required()->suffix($unit);
+            $fields[] = TextInput::make($name)
+                ->label($label)
+                ->integer()
+                ->minValue(1)
+                ->maxValue($name === 'weight' ? 99999 : 5000)
+                ->required()
+                ->suffix($unit);
         }
 
         return $fields;

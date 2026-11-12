@@ -41,8 +41,8 @@ final class ProcessImageAction
             $encodedImage->stripImage();
             $encodedImage->setImageFormat('webp');
             $encodedImage->setImageDepth(8);
-            $encodedImage->setImageCompressionQuality(100);
-            $encodedImage->setOption('webp:lossless', 'true');
+            $encodedImage->setImageCompressionQuality(90);
+            $encodedImage->setOption('webp:lossless', 'false');
             $encodedImage->setOption('webp:method', '6');
 
             return $encodedImage->getImageBlob();

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Support\Email\NormalizedEmailCast;
 use App\Support\Media\ImageMimeTypes;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -65,6 +66,8 @@ final class Setting extends Model implements HasMedia
         return [
             'snow_enabled' => 'boolean',
             'benefits' => 'array',
+            'email' => NormalizedEmailCast::class,
+            'admin_email' => NormalizedEmailCast::class,
         ];
     }
 

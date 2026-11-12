@@ -177,10 +177,10 @@ final class ImportProductsAction
             'sku' => ['required', 'string', 'max:255', Rule::unique('product_variants', 'sku')->ignore($record->id)],
             'value' => ['required', 'integer', 'min:1', 'max:999999999'],
             'unit' => ['required', Rule::in(array_keys($units))],
-            'price' => ['required', 'numeric', 'min:1', 'regex:/^\d+(?:\.0{1,2})?$/'],
-            'old_price' => ['nullable', 'numeric', 'regex:/^\d+(?:\.0{1,2})?$/', 'gt:price'], 'is_preorder' => 'required|in:Да,Нет',
-            'weight' => 'required|integer|min:1', 'length' => 'required|integer|min:1',
-            'width' => 'required|integer|min:1', 'height' => 'required|integer|min:1',
+            'price' => ['required', 'numeric', 'min:1', 'max:99999', 'regex:/^\d+(?:\.0{1,2})?$/'],
+            'old_price' => ['nullable', 'numeric', 'max:99999', 'regex:/^\d+(?:\.0{1,2})?$/', 'gt:price'], 'is_preorder' => 'required|in:Да,Нет',
+            'weight' => 'required|integer|min:1|max:99999', 'length' => 'required|integer|min:1|max:5000',
+            'width' => 'required|integer|min:1|max:5000', 'height' => 'required|integer|min:1|max:5000',
         ];
         $rules['is_active'] = 'required|in:Да,Нет';
         Validator::make($data, $rules, attributes: ExportProductsAction::FIELD_LABELS)->validate();

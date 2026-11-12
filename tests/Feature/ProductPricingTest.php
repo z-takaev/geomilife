@@ -225,6 +225,29 @@ it('отклоняет некорректные цены в Excel без сох�
         ->and($variant->fresh()->old_price)->toBeNull();
 })->with([[800, 800], [800, 799], [800.5, 1000], [800, 1000.5], [800, 0]]);
 
+it('проверяет максимальные значения варианта при импорте', function (string $column, int $value): void {
+    Gate::before(static fn (): bool => true);
+    $variant = pricingVariant();
+    $path = pricingSpreadsheet($variant, ['price' => 800, 'old_price' => 1000]);
+    $spreadsheet = IOFactory::load($path);
+    try {
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue($column.'2', $value);
+        if ($column === 'K') {
+            $sheet->setCellValue('L2', null);
+        }
+        (new Xlsx($spreadsheet))->save($path);
+    } finally {
+        $spreadsheet->disconnectWorksheets();
+    }
+
+    expect(fn () => app(ImportProductsAction::class)->handle($path))->toThrow(ValidationException::class)
+        ->and($variant->fresh()->price->toRubles())->toBe('750.00');
+})->with([
+    ['K', 100000], ['L', 100000], ['O', 100000],
+    ['P', 5001], ['Q', 5001], ['R', 5001],
+]);
+
 it('экспортирует старую цену в рублях вместо процента скидки', function (): void {
     $variant = pricingVariant(1000);
     $response = app(ExportProductsAction::class)->handle(Product::query());

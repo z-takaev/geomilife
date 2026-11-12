@@ -26,14 +26,16 @@ use App\Services\Cart\CartService;
 use App\Services\Cities\CurrentCityService;
 use App\Services\Favorites\FavoriteService;
 use App\Services\Telegram\TelegramConnectionService;
+use App\Support\Email\EmailNormalizer;
 use App\Support\Seo\SeoManager;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use SergiX44\Nutgram\Nutgram;
 
@@ -56,6 +58,13 @@ final class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        TextInput::configureUsing(static function (TextInput $component): void {
+            $component->trim(static fn (TextInput $component): bool => ! $component->isPassword());
+        });
+        Textarea::configureUsing(static function (Textarea $component): void {
+            $component->trim();
+        });
+
         foreach ([Article::class, Category::class, City::class, Faq::class, HomeSlide::class, News::class, Page::class, ProductAttribute::class, Promo::class, Review::class, Seo::class, Setting::class, ShippingBox::class] as $model) {
             Gate::policy($model, AdminResourcePolicy::class);
         }
@@ -68,7 +77,7 @@ final class AppServiceProvider extends ServiceProvider
 
         Password::defaults(
             static fn (): Password => Password::min(8)
-                ->max(30)
+                ->max(50)
                 ->mixedCase()
                 ->numbers(),
         );
@@ -76,14 +85,14 @@ final class AppServiceProvider extends ServiceProvider
         RateLimiter::for(
             'login',
             static fn (Request $request): Limit => Limit::perMinute(5)->by(
-                Str::lower($request->string('email')->toString()).'|'.$request->ip(),
+                EmailNormalizer::normalize($request->string('email')->toString()).'|'.$request->ip(),
             ),
         );
 
         RateLimiter::for(
             'password-reset',
             static fn (Request $request): Limit => Limit::perMinute(3)->by(
-                Str::lower($request->string('email')->toString()).'|'.$request->ip(),
+                EmailNormalizer::normalize($request->string('email')->toString()).'|'.$request->ip(),
             ),
         );
     }

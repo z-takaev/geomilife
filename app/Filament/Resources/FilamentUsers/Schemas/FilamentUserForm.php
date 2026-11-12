@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\FilamentUsers\Schemas;
 
+use App\Support\Email\EmailNormalizer;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 use Illuminate\Validation\Rules\Password;
@@ -22,6 +23,8 @@ final class FilamentUserForm
                     ->label('Email')
                     ->email()
                     ->required()
+                    ->mutateStateForValidationUsing(static fn (?string $state): ?string => EmailNormalizer::normalize($state))
+                    ->dehydrateStateUsing(static fn (?string $state): ?string => EmailNormalizer::normalize($state))
                     ->maxLength(50)
                     ->unique(ignoreRecord: true),
                 TextInput::make('password')
@@ -29,6 +32,7 @@ final class FilamentUserForm
                     ->password()
                     ->autocomplete('new-password')
                     ->rule(Password::default())
+                    ->maxLength(50)
                     ->confirmed()
                     ->required(fn (string $operation): bool => $operation === 'create')
                     ->afterStateHydrated(fn (TextInput $component) => $component->state(null))
@@ -37,6 +41,7 @@ final class FilamentUserForm
                     ->label('Подтверждение пароля')
                     ->password()
                     ->autocomplete('new-password')
+                    ->maxLength(50)
                     ->requiredWith('password')
                     ->dehydrated(false),
             ]);

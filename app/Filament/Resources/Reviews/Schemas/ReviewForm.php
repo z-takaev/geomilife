@@ -24,6 +24,7 @@ final class ReviewForm
                     ->maxLength(50),
                 DatePicker::make('reviewed_at')
                     ->label('Дата отзыва')
+                    ->maxDate(today())
                     ->required(),
                 TextInput::make('rating')
                     ->label('Рейтинг')
@@ -40,6 +41,7 @@ final class ReviewForm
                 Textarea::make('text')
                     ->label('Текст отзыва')
                     ->required()
+                    ->maxLength(5000)
                     ->rows(8)
                     ->columnSpanFull(),
                 Toggle::make('is_active')

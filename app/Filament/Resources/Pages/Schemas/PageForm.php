@@ -34,6 +34,7 @@ final class PageForm
                                     ->collection('images')
                                     ->multiple()
                                     ->reorderable()
+                                    ->maxFiles(5)
                                     ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 1200, 800))
                                     ->helperText('Рекомендуемый размер: 1200×800 пикселей.')
                                     ->columnSpanFull(),
@@ -49,7 +50,9 @@ final class PageForm
                                 RichEditor::make('content')
                                     ->label('Содержание')
                                     ->required()
+                                    ->maxLength(50000)
                                     ->fileAttachmentsAcceptedFileTypes(ImageMimeTypes::ALLOWED)
+                                    ->fileAttachmentsMaxSize(5120)
                                     ->preventFileAttachmentPathTampering()
                                     ->resizableImages()
                                     ->columnSpanFull(),

@@ -88,3 +88,12 @@ it('снова разрешает создание после удаления �
 
     $this->assertDatabaseCount('shipping_boxes', 10);
 });
+
+it('не принимает габариты коробки меньше одиннадцати миллиметров', function (string $field): void {
+    Livewire::test(CreateShippingBox::class)
+        ->fillForm([...$this->boxData, $field => 10])
+        ->call('create')
+        ->assertHasFormErrors([$field => 'min']);
+
+    $this->assertDatabaseCount('shipping_boxes', 0);
+})->with(['length', 'width', 'height']);

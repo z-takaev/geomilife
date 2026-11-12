@@ -40,7 +40,7 @@ final class ShippingBoxForm
             $fields[] = TextInput::make($name)
                 ->label($label)
                 ->integer()
-                ->minValue(1)
+                ->minValue(11)
                 ->maxValue(5000)
                 ->required()
                 ->suffix('мм')

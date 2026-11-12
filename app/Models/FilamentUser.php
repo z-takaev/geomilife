@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Filament\FilamentUserRoleEnum;
+use App\Support\Email\NormalizedEmailCast;
 use Filament\Models\Contracts\FilamentUser as FilamentUserContract;
 use Filament\Panel;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -38,6 +39,7 @@ final class FilamentUser extends Authenticatable implements FilamentUserContract
     protected function casts(): array
     {
         return [
+            'email' => NormalizedEmailCast::class,
             'password' => 'hashed',
             'role' => FilamentUserRoleEnum::class,
         ];

@@ -38,7 +38,7 @@ final class OrdersTable
                 SelectFilter::make('payment_status')->label('Оплата')->options(PaymentStatusEnum::class),
                 SelectFilter::make('delivery_method')->label('Получение')->options(DeliveryMethodEnum::class),
                 Filter::make('created_at')->label('Период оформления')->schema([
-                    DatePicker::make('from')->label('С даты'), DatePicker::make('until')->label('По дату'),
+                    DatePicker::make('from')->label('С даты'), DatePicker::make('until')->label('По дату')->afterOrEqual('from'),
                 ])->query(fn (Builder $query, array $data): Builder => $query
                     ->when($data['from'] ?? null, fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date))
                     ->when($data['until'] ?? null, fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date))),

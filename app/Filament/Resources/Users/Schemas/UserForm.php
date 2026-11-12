@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use App\Support\Email\EmailNormalizer;
 use App\Support\Phone\PhoneFormat;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
@@ -37,20 +38,24 @@ final class UserForm
                     ->label('Email')
                     ->email()
                     ->required()
+                    ->mutateStateForValidationUsing(static fn (?string $state): ?string => EmailNormalizer::normalize($state))
+                    ->dehydrateStateUsing(static fn (?string $state): ?string => EmailNormalizer::normalize($state))
                     ->unique(ignoreRecord: true)
                     ->maxLength(255),
                 TextInput::make('phone')
                     ->label('Телефон')
                     ->tel()
                     ->mask(PhoneFormat::MASK)
+                    ->regex(PhoneFormat::FORMATTED_OR_COMPACT_PATTERN)
                     ->unique(ignoreRecord: true)
-                    ->maxLength(255),
+                    ->maxLength(40),
                 TextInput::make('password')
                     ->label('Пароль')
                     ->password()
                     ->revealable()
                     ->autocomplete('new-password')
                     ->rule(Password::defaults())
+                    ->maxLength(50)
                     ->required(fn (string $operation): bool => $operation === 'create')
                     ->dehydrated(fn (?string $state): bool => filled($state))
                     ->afterStateHydrated(fn (TextInput $component) => $component->state(null))

@@ -20,6 +20,24 @@ it('преобразует изображение в WebP с сохранени�
     $image->clear();
 });
 
+it('кодирует изображение в lossy WebP с высоким качеством', function (): void {
+    $source = new Imagick;
+    $source->newPseudoImage(800, 600, 'plasma:fractal');
+    $source->setImageFormat('png');
+
+    $result = app(ProcessImageAction::class)->run($source->getImageBlob());
+    $image = new Imagick;
+    $image->readImageBlob($result);
+    [, $distortion] = $source->compareImages($image, Imagick::METRIC_ROOTMEANSQUAREDERROR);
+
+    expect($image->getImageFormat())->toBe('WEBP')
+        ->and($distortion)->toBeGreaterThan(0.0)
+        ->and($distortion)->toBeLessThan(0.05);
+
+    $source->clear();
+    $image->clear();
+});
+
 it('применяет преобразование перед кодированием изображения', function (): void {
     $source = new Imagick;
     $source->newImage(20, 10, new ImagickPixel('red'), 'png');

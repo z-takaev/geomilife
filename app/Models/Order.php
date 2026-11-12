@@ -8,6 +8,7 @@ use App\Enums\Orders\DeliveryMethodEnum;
 use App\Enums\Orders\OrderStatusEnum;
 use App\Enums\Orders\PaymentMethodEnum;
 use App\Enums\Orders\PaymentStatusEnum;
+use App\Support\Email\NormalizedEmailCast;
 use App\Support\Values\Money;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -49,6 +50,7 @@ final class Order extends Model
     protected function casts(): array
     {
         return [
+            'customer_email' => NormalizedEmailCast::class,
             'status' => OrderStatusEnum::class,
             'payment_status' => PaymentStatusEnum::class,
             'payment_method' => PaymentMethodEnum::class,

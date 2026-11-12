@@ -56,6 +56,7 @@ it('отклоняет некорректную регистрацию без с
     'нет согласия' => [['terms' => false], 'terms'],
     'нет имени' => [['first_name' => '  '], 'first_name'],
     'короткий пароль' => [['password' => 'Ab1', 'password_confirmation' => 'Ab1'], 'password'],
+    'длинный пароль' => [['password' => str_repeat('A1', 26), 'password_confirmation' => str_repeat('A1', 26)], 'password'],
     'нет регистра' => [['password' => 'password123', 'password_confirmation' => 'password123'], 'password'],
     'разные пароли' => [['password_confirmation' => 'Other123'], 'password'],
     'неверная почта' => [['email' => 'invalid'], 'email'],

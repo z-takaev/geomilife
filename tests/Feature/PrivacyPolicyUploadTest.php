@@ -87,3 +87,34 @@ it('отклоняет PDF больше 10 МБ и оставляет текущ
     expect($this->setting->fresh()->privacy_policy)->toBe($this->document);
     Storage::disk('public')->assertExists($this->document);
 });
+
+it('принимает только прямую ссылку на VK Видео', function (string $url, bool $valid): void {
+    $component = Livewire::test(ManageSettings::class)
+        ->fillForm([...$this->formData, 'story_video_url' => $url])
+        ->call('save');
+
+    if ($valid) {
+        $component->assertHasNoFormErrors();
+        expect($this->setting->fresh()->story_video_url)->toBe($url);
+
+        return;
+    }
+
+    $component->assertHasFormErrors(['story_video_url' => 'regex']);
+})->with([
+    ['https://vkvideo.ru/video-123_456', true],
+    ['https://vk.com/video123_456?list=example', true],
+    ['https://example.com/video-123_456', false],
+    ['https://vkvideo.ru/playlist/123', false],
+]);
+
+it('нормализует email настроек', function (): void {
+    Livewire::test(ManageSettings::class)
+        ->fillForm([...$this->formData, 'email' => ' STORE@EXAMPLE.COM ', 'admin_email' => ' ADMIN@EXAMPLE.COM '])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect($this->setting->fresh())
+        ->email->toBe('store@example.com')
+        ->admin_email->toBe('admin@example.com');
+});

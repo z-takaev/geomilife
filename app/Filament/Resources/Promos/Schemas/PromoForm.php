@@ -60,12 +60,15 @@ final class PromoForm
                                     ->columnSpanFull(),
                                 Textarea::make('excerpt')
                                     ->label('Краткое описание')
+                                    ->maxLength(500)
                                     ->rows(4)
                                     ->columnSpanFull(),
                                 RichEditor::make('content')
                                     ->label('Содержание')
                                     ->required()
+                                    ->maxLength(50000)
                                     ->fileAttachmentsAcceptedFileTypes(ImageMimeTypes::ALLOWED)
+                                    ->fileAttachmentsMaxSize(5120)
                                     ->preventFileAttachmentPathTampering()
                                     ->resizableImages()
                                     ->columnSpanFull(),
