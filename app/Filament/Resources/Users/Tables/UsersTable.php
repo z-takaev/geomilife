@@ -14,7 +14,6 @@ use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
@@ -28,16 +27,26 @@ final class UsersTable
     {
         return $table
             ->columns([
-                TextColumn::make('first_name')->label('Имя')->searchable()->sortable(),
-                TextColumn::make('last_name')->label('Фамилия')->searchable()->sortable(),
-                TextColumn::make('email')->label('Email')->searchable()->sortable(),
-                TextColumn::make('phone')->label('Телефон')->placeholder('—')->searchable(),
-                TextColumn::make('birth_date')->label('Дата рождения')->date('d.m.Y')->toggleable(isToggledHiddenByDefault: true),
-                ToggleColumn::make('is_blocked')->label('Заблокирован')
-                    ->disabled(static fn (User $record): bool => ! UserResource::canEdit($record)),
-                IconColumn::make('phone_verified_at')->label('Телефон подтверждён')->boolean()->getStateUsing(fn ($record): bool => $record->phone_verified_at !== null)->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('telegram_username')->label('Telegram')->searchable()->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('created_at')->label('Дата регистрации')->dateTime('d.m.Y H:i')->sortable(),
+                TextColumn::make('first_name')
+                    ->label('Имя')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('last_name')
+                    ->label('Фамилия')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('email')
+                    ->label('Email')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('phone')
+                    ->label('Телефон')
+                    ->placeholder('—')
+                    ->searchable(),
+                IconColumn::make('is_blocked')
+                    ->label('Заблокирован')
+                    ->boolean()
+                    ->sortable(),
             ])
             ->filters([
                 TernaryFilter::make('is_blocked')->label('Блокировка')->trueLabel('Заблокированные')->falseLabel('Незаблокированные'),
@@ -64,7 +73,8 @@ final class UsersTable
                     ->action(fn (ListUsers $livewire): StreamedResponse => app(ExportUsersAction::class)->handle($livewire->getFilteredSortedTableQuery())),
             ])
             ->recordActions([
-                ViewAction::make(),
+                ViewAction::make()
+                    ->visible(static fn (User $record): bool => ! UserResource::canEdit($record)),
                 EditAction::make(),
             ]);
     }

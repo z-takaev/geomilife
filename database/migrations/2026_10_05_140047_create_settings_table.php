@@ -31,15 +31,7 @@ return new class extends Migration
 
             $table->string('story_title')->nullable();
             $table->text('story_description')->nullable();
-            $table->string('story_image')->nullable();
             $table->text('story_video_url')->nullable();
-
-            $table->string('banner_wide_image')->nullable();
-            $table->string('banner_double_first_image')->nullable();
-            $table->string('banner_double_second_image')->nullable();
-            $table->string('banner_triple_first_image')->nullable();
-            $table->string('banner_triple_second_image')->nullable();
-            $table->string('banner_triple_third_image')->nullable();
 
             $table->string('privacy_policy')->nullable();
 

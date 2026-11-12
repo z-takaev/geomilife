@@ -35,13 +35,13 @@ final class ProductsTable
                     ->conversion('card')
                     ->imageWidth(64)
                     ->imageHeight(64),
+                TextColumn::make('category.name')
+                    ->label('Категория')
+                    ->sortable()
+                    ->wrap(),
                 TextColumn::make('name')
                     ->label('Название')
                     ->searchable()
-                    ->sortable()
-                    ->wrap(),
-                TextColumn::make('category.name')
-                    ->label('Категория')
                     ->sortable()
                     ->wrap(),
                 IconColumn::make('is_new')
@@ -61,21 +61,6 @@ final class ProductsTable
                     ->relationship('category', 'name')
                     ->searchable()
                     ->preload(),
-                TernaryFilter::make('is_preorder')
-                    ->label('Предзаказ')
-                    ->queries(
-                        true: static fn (Builder $query): Builder => $query->whereHas(
-                            'variants',
-                            static fn (Builder $query): Builder => $query->where('is_preorder', true),
-                        ),
-                        false: static fn (Builder $query): Builder => $query->whereHas(
-                            'variants',
-                            static fn (Builder $query): Builder => $query->where('is_preorder', false),
-                        ),
-                    )
-                    ->placeholder('Все товары')
-                    ->trueLabel('Доступны по предзаказу')
-                    ->falseLabel('В наличии'),
                 TernaryFilter::make('is_active')
                     ->label('Активность')
                     ->placeholder('Все товары')
@@ -86,10 +71,11 @@ final class ProductsTable
                 TernaryFilter::make('is_hit')
                     ->label('Хит'),
             ])
-            ->defaultSort('name')
+            ->defaultSort('id', 'desc')
             ->emptyStateHeading('Товары не найдены')
             ->recordActions([
-                ViewAction::make(),
+                ViewAction::make()
+                    ->visible(static fn (Product $record): bool => ! ProductResource::canEdit($record)),
                 EditAction::make(),
                 DeleteAction::make(),
             ]);

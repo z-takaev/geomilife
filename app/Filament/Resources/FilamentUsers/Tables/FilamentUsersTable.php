@@ -28,7 +28,7 @@ final class FilamentUsersTable
                     ->dateTime('d.m.Y H:i')
                     ->sortable(),
             ])
-            ->defaultSort('name')
+            ->defaultSort('id', 'desc')
             ->emptyStateHeading('Менеджеры не найдены')
             ->recordActions([
                 EditAction::make(),

@@ -49,6 +49,7 @@ final class PromosTable
                     ->trueLabel('Активные')
                     ->falseLabel('Неактивные'),
             ])
+            ->defaultSort('id', 'desc')
             ->emptyStateHeading('Акции не найдены')
             ->recordActions([
                 EditAction::make(),

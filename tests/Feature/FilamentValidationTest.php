@@ -15,11 +15,13 @@ use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Promos\Pages\CreatePromo;
 use App\Filament\Resources\Reviews\Pages\CreateReview;
 use App\Filament\Resources\Users\Pages\CreateUser;
+use App\Models\City;
 use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\User;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\Select;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -190,6 +192,18 @@ it('проверяет телефон пользователя на сервер
     Livewire::test(CreateUser::class)->fillForm([
         'first_name' => 'Покупатель', 'email' => 'buyer@example.com', 'phone' => 'не телефон', 'password' => 'Password123',
     ])->call('create')->assertHasFormErrors(['phone' => 'regex']);
+});
+
+it('показывает регион в вариантах выбора города и ищет только по названию', function (): void {
+    $city = new City([
+        'name' => 'Москва',
+        'region' => 'Псковская область',
+        'sub_region' => 'Порховский район',
+    ]);
+
+    Livewire::test(CreateUser::class)
+        ->assertFormFieldExists('city_id', fn (Select $field): bool => $field->getOptionLabelFromRecord($city) === 'Москва, Псковская область'
+            && $field->getSearchColumns() === ['name']);
 });
 
 it('ограничивает длину паролей в административных формах', function (string $component): void {

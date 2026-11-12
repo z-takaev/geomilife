@@ -45,6 +45,7 @@ final class NewsTable
                     ->trueLabel('Активные')
                     ->falseLabel('Неактивные'),
             ])
+            ->defaultSort('id', 'desc')
             ->emptyStateHeading('Новости не найдены')
             ->recordActions([
                 EditAction::make(),

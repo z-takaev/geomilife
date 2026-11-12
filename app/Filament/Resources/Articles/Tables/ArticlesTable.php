@@ -45,6 +45,7 @@ final class ArticlesTable
                     ->trueLabel('Активные')
                     ->falseLabel('Неактивные'),
             ])
+            ->defaultSort('id', 'desc')
             ->emptyStateHeading('Статьи не найдены')
             ->recordActions([
                 EditAction::make(),

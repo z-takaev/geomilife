@@ -39,6 +39,7 @@ final class ReviewsTable
                     ->trueLabel('Активные')
                     ->falseLabel('Неактивные'),
             ])
+            ->defaultSort('id', 'desc')
             ->emptyStateHeading('Отзывы не найдены')
             ->recordActions([
                 EditAction::make(),

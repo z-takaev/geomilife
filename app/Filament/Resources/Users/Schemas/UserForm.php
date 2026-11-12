@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use App\Models\City;
 use App\Support\Email\EmailNormalizer;
 use App\Support\Phone\PhoneFormat;
 use Filament\Forms\Components\Checkbox;
@@ -23,17 +24,18 @@ final class UserForm
                 TextInput::make('first_name')
                     ->label('Имя')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(50),
                 TextInput::make('last_name')
                     ->label('Фамилия')
-                    ->maxLength(255),
+                    ->maxLength(50),
                 DatePicker::make('birth_date')
                     ->label('Дата рождения')
                     ->before('today'),
                 Select::make('city_id')
                     ->label('Город')
                     ->relationship('city', 'name')
-                    ->searchable(),
+                    ->getOptionLabelFromRecordUsing(static fn (City $city): string => self::cityOptionLabel($city))
+                    ->searchable(['name']),
                 TextInput::make('email')
                     ->label('Email')
                     ->email()
@@ -41,7 +43,7 @@ final class UserForm
                     ->mutateStateForValidationUsing(static fn (?string $state): ?string => EmailNormalizer::normalize($state))
                     ->dehydrateStateUsing(static fn (?string $state): ?string => EmailNormalizer::normalize($state))
                     ->unique(ignoreRecord: true)
-                    ->maxLength(255),
+                    ->maxLength(50),
                 TextInput::make('phone')
                     ->label('Телефон')
                     ->tel()
@@ -74,5 +76,12 @@ final class UserForm
                             ->default(true),
                     ]),
             ]);
+    }
+
+    private static function cityOptionLabel(City $city): string
+    {
+        return blank($city->region)
+            ? $city->name
+            : $city->name.', '.$city->region;
     }
 }

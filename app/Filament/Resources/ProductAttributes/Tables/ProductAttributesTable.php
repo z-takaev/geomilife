@@ -26,7 +26,7 @@ final class ProductAttributesTable
                     ->label('Товаров')
                     ->sortable(),
             ])
-            ->defaultSort('name')
+            ->defaultSort('id', 'desc')
             ->emptyStateHeading('Характеристики не найдены')
             ->recordActions([
                 EditAction::make(),

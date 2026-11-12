@@ -17,7 +17,7 @@ final class ShippingBoxesTable
             TextColumn::make('name')->label('Название')->searchable()->sortable(),
             ToggleColumn::make('is_active')->label('Доступна'),
         ])
-            ->defaultSort('name')->recordActions([EditAction::make()])
+            ->defaultSort('id', 'desc')->recordActions([EditAction::make()])
             ->searchable(false)
             ->paginated(false);
     }
