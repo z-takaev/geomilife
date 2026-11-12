@@ -23,13 +23,11 @@ beforeEach(function (): void {
     $this->actingAs(fulfillmentEmployee(), 'filament');
 });
 
-it('скрывает предзаказ и трек-номер по умолчанию с возможностью включения', function (): void {
-    $order = fulfillmentOrder();
-    $order->shipment()->create(['cdek_number' => 'TRACK-123']);
+it('скрывает предзаказ по умолчанию с возможностью включения', function (): void {
+    fulfillmentOrder();
+
     Livewire::test(ListOrders::class)
-        ->assertDontSee('TRACK-123')
-        ->assertTableColumnExists('is_preorder', fn ($column): bool => $column->isToggleable() && $column->isToggledHidden())
-        ->assertTableColumnExists('shipment.cdek_number', fn ($column): bool => $column->isToggleable() && $column->isToggledHidden());
+        ->assertTableColumnExists('is_preorder', fn ($column): bool => $column->isToggleable() && $column->isToggledHidden());
 });
 
 it('оставляет место название и вес упаковки и убирает технические поля', function (): void {

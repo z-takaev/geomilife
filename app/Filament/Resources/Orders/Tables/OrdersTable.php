@@ -24,15 +24,12 @@ final class OrdersTable
             ->columns([
                 TextColumn::make('number')->label('Номер')->searchable()->sortable(),
                 TextColumn::make('created_at')->label('Дата')->dateTime('d.m.Y H:i')->sortable(),
-                TextColumn::make('customer_name')->label('Получатель')->searchable(),
-                TextColumn::make('customer_phone')->label('Телефон')->searchable(),
-                TextColumn::make('customer_email')->label('Email')->searchable()->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('customer_name')->label('Покупатель')->searchable(),
                 TextColumn::make('total')->label('Итого')->formatStateUsing(fn ($state): string => $state->format())->sortable(),
                 TextColumn::make('delivery_method')->label('Получение'),
                 TextColumn::make('status')->label('Статус')->badge(),
                 TextColumn::make('payment_status')->label('Оплата')->badge(),
                 IconColumn::make('is_preorder')->label('Предзаказ')->boolean()->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('shipment.cdek_number')->label('Трек-номер')->searchable()->toggleable(isToggledHiddenByDefault: true),
             ])->filters([
                 SelectFilter::make('status')->label('Статус заказа')->options(OrderStatusEnum::class),
                 SelectFilter::make('payment_status')->label('Оплата')->options(PaymentStatusEnum::class),
