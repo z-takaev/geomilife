@@ -26,8 +26,19 @@ it('показывает понятные названия готовых док
 
     Livewire::test(ViewOrder::class, ['record' => $order->id])
         ->assertSee('Квитанция')->assertSee('Наклейки')->assertSee('Готов')
+        ->assertSee('Скачать')
+        ->assertSeeHtml('href="'.route('admin.orders.cdek-waybill', $order).'"')
+        ->assertSeeHtml('href="'.route('admin.orders.cdek-barcodes', $order).'"')
         ->assertDontSee('WAYBILL')->assertDontSee('BARCODES')->assertDontSee('READY')
         ->assertDontSee('Причина ошибки')->assertDontSee('Ошибка');
+});
+
+it('показывает сообщение до формирования документов', function (): void {
+    $order = fulfillmentOrder();
+
+    Livewire::test(ViewOrder::class, ['record' => $order->id])
+        ->assertSee('Документы ещё не сформированы')
+        ->assertDontSee('Скачать');
 });
 
 it('показывает понятное состояние документа', function (string $state, string $label): void {

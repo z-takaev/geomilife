@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs\Orders;
 
+use App\Enums\Cdek\CdekPrintStateEnum;
 use App\Models\Order;
 use App\Services\Orders\OrderDocumentService;
 use App\Services\Orders\OrderNotificationService;
@@ -30,7 +31,8 @@ final class PrepareCdekDocumentsJob implements ShouldQueue
         if ($order !== null && ! $order->status->isCancelled() && $order->cancellation_state === null) {
             $service->prepareCdekDocuments($order);
 
-            if ($order->documents()->whereIn('state', ['CREATING', 'ACCEPTED', 'PROCESSING'])->exists()) {
+            if ($order->documents()->whereIn('state', [CdekPrintStateEnum::CREATING->value,
+                CdekPrintStateEnum::ACCEPTED->value, CdekPrintStateEnum::PROCESSING->value])->exists()) {
                 if ($this->pollAttempt < 10) {
                     self::dispatch($order->id, $this->pollAttempt + 1)->delay(now()->addSeconds(30))->afterCommit();
                 } else {

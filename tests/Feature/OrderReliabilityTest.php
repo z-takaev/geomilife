@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Enums\Cdek\CdekPrintStateEnum;
+use App\Enums\Cdek\CdekShipmentWorkflowStateEnum;
 use App\Enums\Orders\OrderStatusEnum;
 use App\Enums\Orders\PaymentMethodEnum;
 use App\Jobs\Orders\PrepareCdekDocumentsJob;
@@ -99,7 +101,7 @@ it('восстанавливает просроченный захват фор�
 
     expect(app(OrderDocumentService::class)->downloadCdekDocument($order, 'WAYBILL'))->toBe('%PDF-1.4 test');
     Http::assertSentCount(4);
-    expect($document->fresh()->state)->toBe('READY');
+    expect($document->fresh()->state)->toBe(CdekPrintStateEnum::READY);
 });
 
 it('не повторяет создание документа при свежем захвате', function (): void {
@@ -192,7 +194,7 @@ it('не ставит документы после конкурентного �
         Event::forget($event);
     }
     expect($changed)->toBeTrue()
-        ->and($shipment->fresh()->operation_state)->toBe('CANCELLING');
+        ->and($shipment->fresh()->operation_state)->toBe(CdekShipmentWorkflowStateEnum::CANCELLING);
     Queue::assertNotPushed(PrepareCdekDocumentsJob::class);
 });
 

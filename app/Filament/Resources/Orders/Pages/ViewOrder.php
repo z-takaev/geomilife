@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Orders\Pages;
 
+use App\Enums\Cdek\CdekPrintStateEnum;
+use App\Enums\Cdek\CdekRequestStateEnum;
+use App\Enums\Cdek\CdekShipmentWorkflowStateEnum;
 use App\Enums\Orders\OrderStatusEnum;
 use App\Enums\Orders\PaymentStatusEnum;
 use App\Filament\Resources\Orders\OrderResource;
@@ -85,7 +88,7 @@ final class ViewOrder extends ViewRecord
                     ->authorize(fn (): bool => OrderResource::canView($this->getRecord()))
                     ->visible(fn (): bool => $this->getRecord()->payment_method->isOnline())
                     ->requiresConfirmation()
-                    ->modalDescription('Будет запрошено состояние всех попыток оплаты в Т-Банке. Если заказ отменён и обнаружена оплата, будет запущен возврат.')
+                    ->modalDescription('Будет запрошено состояние платежа в Т-Банке. Если заказ отменён и обнаружена оплата, будет запущен возврат.')
                     ->modalSubmitActionLabel('Сверить оплату')
                     ->action(fn () => $this->perform(function (): void {
                         foreach ($this->getRecord()->payments as $payment) {
@@ -109,12 +112,26 @@ final class ViewOrder extends ViewRecord
                 Action::make('retryShipment')
                     ->label('Повторить регистрацию СДЭК')
                     ->requiresConfirmation()
-                    ->visible(fn (): bool => $this->getRecord()->status->isReadyToShip() && $this->getRecord()->cancellation_state === null)
+                    ->visible(fn (): bool => $this->getRecord()->status->isReadyToShip()
+                        && $this->getRecord()->cancellation_state === null
+                        && $this->getRecord()->shipment?->uuid === null
+                        && ! in_array($this->getRecord()->shipment?->operation_state, [
+                            CdekShipmentWorkflowStateEnum::CREATING,
+                            CdekShipmentWorkflowStateEnum::REGISTERING,
+                        ], true))
                     ->action(fn () => $this->perform(fn () => CreateCdekShipmentJob::dispatch($this->getRecord()->id))),
 
                 Action::make('prepareDocuments')
-                    ->label('Подготовить документы СДЭК')
-                    ->visible(fn (): bool => $this->getRecord()->shipment?->request_state === 'SUCCESSFUL')
+                    ->label('Проверить / повторить подготовку документов')
+                    ->visible(fn (): bool => $this->getRecord()->shipment?->request_state?->is(CdekRequestStateEnum::SUCCESSFUL)
+                        && ($this->getRecord()->documents()->count() < 2
+                            || $this->getRecord()->documents()->whereIn('state', [
+                                CdekPrintStateEnum::CREATING->value,
+                                CdekPrintStateEnum::ACCEPTED->value,
+                                CdekPrintStateEnum::PROCESSING->value,
+                                CdekPrintStateEnum::INVALID->value,
+                                CdekPrintStateEnum::REMOVED->value,
+                            ])->exists()))
                     ->action(fn () => $this->perform(fn () => PrepareCdekDocumentsJob::dispatch($this->getRecord()->id))),
 
             ])->label('Дополнительно')->button(),
@@ -122,16 +139,6 @@ final class ViewOrder extends ViewRecord
             Action::make('packingSlip')
                 ->label('Накладная для сборки')
                 ->url(fn (): string => route('admin.orders.packing-slip', $this->getRecord())),
-
-            Action::make('waybill')
-                ->label('Квитанция СДЭК')
-                ->visible(fn (): bool => $this->getRecord()->shipment?->uuid !== null)
-                ->url(fn (): string => route('admin.orders.cdek-waybill', $this->getRecord())),
-
-            Action::make('barcodes')
-                ->label('Наклейки СДЭК')
-                ->visible(fn (): bool => $this->getRecord()->shipment?->uuid !== null)
-                ->url(fn (): string => route('admin.orders.cdek-barcodes', $this->getRecord())),
         ];
     }
 

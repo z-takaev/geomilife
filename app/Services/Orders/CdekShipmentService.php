@@ -10,6 +10,8 @@ use App\DTO\Cdek\CdekOrderItemDto;
 use App\DTO\Cdek\CdekOrderPackageDto;
 use App\DTO\Cdek\CdekOrderResponseDto;
 use App\DTO\Cdek\CdekPaymentDto;
+use App\Enums\Cdek\CdekOrderStatusEnum;
+use App\Enums\Cdek\CdekShipmentWorkflowStateEnum;
 use App\Enums\Orders\OrderStatusEnum;
 use App\Jobs\Orders\CreateCdekShipmentJob;
 use App\Jobs\Orders\PrepareCdekDocumentsJob;
@@ -49,7 +51,8 @@ final class CdekShipmentService
         }
 
         if (isset($shipment->payload['request_sent_at'])) {
-            if (! $this->recoverShipment($order, $shipment) && $shipment->fresh()->operation_state === 'ABSENT') {
+            if (! $this->recoverShipment($order, $shipment)
+                && $shipment->fresh()->operation_state?->is(CdekShipmentWorkflowStateEnum::ABSENT)) {
                 $this->create($order);
             }
 
@@ -57,7 +60,7 @@ final class CdekShipmentService
         }
 
         $claimedRows = OrderShipment::query()->whereKey($shipment->id)
-            ->where('operation_state', 'CREATING')->whereNull('last_checked_at')
+            ->where('operation_state', CdekShipmentWorkflowStateEnum::CREATING->value)->whereNull('last_checked_at')
             ->update(['last_checked_at' => now()]);
 
         if (! $claimedRows) {
@@ -81,7 +84,8 @@ final class CdekShipmentService
         }
 
         if ($shipment->uuid === null) {
-            if (! $this->recoverShipment($order, $shipment) && $shipment->fresh()->operation_state === 'ABSENT'
+            if (! $this->recoverShipment($order, $shipment)
+                && $shipment->fresh()->operation_state?->is(CdekShipmentWorkflowStateEnum::ABSENT)
                 && $order->cancellation_state === null && $order->status->isReadyToShip()) {
                 CreateCdekShipmentJob::dispatch($order->id)->afterCommit();
             }
@@ -100,17 +104,21 @@ final class CdekShipmentService
     {
         $shipment = $order->shipment()->first();
 
-        if ($shipment === null || ($shipment->uuid === null && ! in_array($shipment->operation_state, ['CREATING', 'UNKNOWN', 'REGISTERING'], true))) {
+        if ($shipment === null || ($shipment->uuid === null && ! in_array($shipment->operation_state, [
+            CdekShipmentWorkflowStateEnum::CREATING,
+            CdekShipmentWorkflowStateEnum::UNKNOWN,
+            CdekShipmentWorkflowStateEnum::REGISTERING,
+        ], true))) {
             return true;
         }
 
-        if ($shipment->operation_state === 'CANCELLED') {
+        if ($shipment->operation_state?->is(CdekShipmentWorkflowStateEnum::CANCELLED)) {
             return true;
         }
 
         if ($shipment->uuid === null) {
             if (! $this->recoverShipment($order, $shipment)) {
-                return $shipment->fresh()->operation_state === 'ABSENT';
+                return $shipment->fresh()->operation_state?->is(CdekShipmentWorkflowStateEnum::ABSENT) ?? false;
             }
 
             $shipment->refresh();
@@ -119,8 +127,8 @@ final class CdekShipmentService
         try {
             $cdekOrder = $this->cdek->getOrder($shipment->uuid);
         } catch (CdekApiException $exception) {
-            if ($exception->statusCode === 404 && $shipment->operation_state === 'CANCELLING') {
-                $shipment->update(['operation_state' => 'CANCELLED', 'error' => null, 'last_checked_at' => now()]);
+            if ($exception->statusCode === 404 && $shipment->operation_state?->is(CdekShipmentWorkflowStateEnum::CANCELLING)) {
+                $shipment->update(['operation_state' => CdekShipmentWorkflowStateEnum::CANCELLED, 'error' => null, 'last_checked_at' => now()]);
 
                 return true;
             }
@@ -129,14 +137,17 @@ final class CdekShipmentService
 
         foreach ($cdekOrder->operation->requests as $request) {
             if ($request['type'] === 'DELETE' && $request['state']->isSuccessful()) {
-                $shipment->update(['operation_state' => 'CANCELLED', 'error' => null, 'last_checked_at' => now()]);
+                $shipment->update(['operation_state' => CdekShipmentWorkflowStateEnum::CANCELLED, 'error' => null, 'last_checked_at' => now()]);
 
                 return true;
             }
         }
 
-        if (in_array($cdekOrder->statusCode, ['REMOVED', 'DELETED', 'CANCELLED', 'CANCELED'], true)) {
-            $shipment->update(['operation_state' => 'CANCELLED', 'error' => null, 'last_checked_at' => now()]);
+        $carrierStatus = CdekOrderStatusEnum::tryFrom($cdekOrder->statusCode ?? '');
+
+        if (in_array($carrierStatus, [CdekOrderStatusEnum::REMOVED, CdekOrderStatusEnum::DELETED,
+            CdekOrderStatusEnum::CANCELLED, CdekOrderStatusEnum::CANCELED], true)) {
+            $shipment->update(['operation_state' => CdekShipmentWorkflowStateEnum::CANCELLED, 'error' => null, 'last_checked_at' => now()]);
 
             return true;
         }
@@ -145,31 +156,31 @@ final class CdekShipmentService
             return false;
         }
 
-        if ($cdekOrder->statusCode !== 'CREATED') {
+        if (! $carrierStatus?->is(CdekOrderStatusEnum::CREATED)) {
             throw ValidationException::withMessages(['status' => __('В СДЭК началось движение груза. Отмена заказа недоступна.')]);
         }
 
         $sentAt = $shipment->payload['cancel_request_sent_at'] ?? null;
 
-        if ($shipment->operation_state === 'CANCELLING' && $sentAt !== null
+        if ($shipment->operation_state?->is(CdekShipmentWorkflowStateEnum::CANCELLING) && $sentAt !== null
             && CarbonImmutable::parse($sentAt)->gt(now()->subMinutes((int) config('orders.reconciliation_stale_minutes')))) {
             return false;
         }
 
         $shipment->update([
-            'operation_state' => 'CANCELLING',
+            'operation_state' => CdekShipmentWorkflowStateEnum::CANCELLING,
             'last_checked_at' => now(),
             'payload' => [...($shipment->payload ?? []), 'cancel_request_sent_at' => now()->toIso8601String()],
         ]);
         $result = $this->cdek->cancelOrder($shipment->uuid);
 
         if ($result->errors !== []) {
-            $shipment->update(['operation_state' => 'CANCEL_FAILED', 'error' => $result->errors[0]['message']]);
+            $shipment->update(['operation_state' => CdekShipmentWorkflowStateEnum::CANCEL_FAILED, 'error' => $result->errors[0]['message']]);
             throw new CdekApiException($result->errors[0]['message'], errors: $result->errors);
         }
 
         if ($result->state?->isSuccessful() ?? false) {
-            $shipment->update(['operation_state' => 'CANCELLED', 'error' => null]);
+            $shipment->update(['operation_state' => CdekShipmentWorkflowStateEnum::CANCELLED, 'error' => null]);
 
             return true;
         }
@@ -250,7 +261,7 @@ final class CdekShipmentService
                 $sentAt = $shipment->payload['request_sent_at'] ?? $shipment->last_checked_at?->toIso8601String() ?? $shipment->created_at?->toIso8601String();
 
                 if ($sentAt !== null && CarbonImmutable::parse($sentAt)->lte(now()->subMinutes((int) config('orders.reconciliation_stale_minutes')))) {
-                    $shipment->update(['operation_state' => 'ABSENT', 'last_checked_at' => now(), 'error' => null]);
+                    $shipment->update(['operation_state' => CdekShipmentWorkflowStateEnum::ABSENT, 'last_checked_at' => now(), 'error' => null]);
                 }
 
                 return false;
@@ -284,10 +295,10 @@ final class CdekShipmentService
 
             $shipment->update($this->shipmentChanges($shipment, $cdekOrder));
 
-            $status = match ($cdekOrder->statusCode) {
-                'RECEIVED_AT_SHIPMENT_WAREHOUSE', 'ACCEPTED_AT_PICK_UP_POINT', 'READY_FOR_DELIVERY', 'TAKEN_BY_COURIER',
-                'ACCEPTED_AT_TRANSIT_WAREHOUSE', 'ACCEPTED_AT_DELIVERY_WAREHOUSE', 'SENT_TO_TRANSIT_CITY', 'SENT_TO_DELIVERY_CITY' => OrderStatusEnum::SHIPPED,
-                'DELIVERED' => OrderStatusEnum::DELIVERED,
+            $carrierStatus = CdekOrderStatusEnum::tryFrom($cdekOrder->statusCode ?? '');
+            $status = match (true) {
+                $carrierStatus?->indicatesShipped() => OrderStatusEnum::SHIPPED,
+                $carrierStatus?->isDelivered() => OrderStatusEnum::DELIVERED,
                 default => null,
             };
 
@@ -321,11 +332,15 @@ final class CdekShipmentService
 
             $shipment = $lockedOrder->shipment()->firstOrCreate([]);
 
-            if ($shipment->uuid !== null || in_array($shipment->operation_state, ['CREATING', 'UNKNOWN', 'REGISTERING'], true)) {
+            if ($shipment->uuid !== null || in_array($shipment->operation_state, [
+                CdekShipmentWorkflowStateEnum::CREATING,
+                CdekShipmentWorkflowStateEnum::UNKNOWN,
+                CdekShipmentWorkflowStateEnum::REGISTERING,
+            ], true)) {
                 return $shipment;
             }
 
-            $shipment->update(['operation_state' => 'CREATING', 'error' => null, 'last_checked_at' => null, 'payload' => ['request' => $request->toArray()]]);
+            $shipment->update(['operation_state' => CdekShipmentWorkflowStateEnum::CREATING, 'error' => null, 'last_checked_at' => null, 'payload' => ['request' => $request->toArray()]]);
 
             return $shipment;
         });
@@ -341,8 +356,8 @@ final class CdekShipmentService
 
             $shipment->update([
                 'uuid' => $result->uuid,
-                'request_state' => $result->state?->value,
-                'operation_state' => $result->errors === [] ? 'REGISTERING' : 'FAILED',
+                'request_state' => $result->state,
+                'operation_state' => $result->errors === [] ? CdekShipmentWorkflowStateEnum::REGISTERING : CdekShipmentWorkflowStateEnum::FAILED,
                 'error' => $result->errors === [] ? null : $result->errors[0]['message'],
             ]);
 
@@ -352,7 +367,9 @@ final class CdekShipmentService
             SyncCdekShipmentJob::dispatch($order->id)->delay(now()->addSeconds(5))->afterCommit();
         } catch (Throwable $exception) {
             if ($shipment->uuid === null) {
-                $state = $exception instanceof CdekApiException && $exception->statusCode !== null && $exception->statusCode < 500 ? 'FAILED' : 'UNKNOWN';
+                $state = $exception instanceof CdekApiException && $exception->statusCode !== null && $exception->statusCode < 500
+                    ? CdekShipmentWorkflowStateEnum::FAILED
+                    : CdekShipmentWorkflowStateEnum::UNKNOWN;
                 $shipment->update(['operation_state' => $state, 'error' => $exception->getMessage()]);
             }
 
@@ -368,11 +385,14 @@ final class CdekShipmentService
             'cdek_number' => $cdekOrder->cdekNumber ?? $shipment->cdek_number,
             'status' => $cdekOrder->statusCode ?? $shipment->status,
             'status_at' => $cdekOrder->statusDateTime ?? $shipment->status_at,
-            'request_state' => $cdekOrder->operation->state?->value,
-            'operation_state' => in_array($shipment->operation_state, ['CANCELLING', 'CANCELLED', 'CANCEL_FAILED'], true)
+            'request_state' => $cdekOrder->operation->state,
+            'operation_state' => in_array($shipment->operation_state, [CdekShipmentWorkflowStateEnum::CANCELLING,
+                CdekShipmentWorkflowStateEnum::CANCELLED, CdekShipmentWorkflowStateEnum::CANCEL_FAILED], true)
                 ? $shipment->operation_state
-                : ($cdekOrder->operation->errors !== [] ? 'FAILED'
-                    : (($cdekOrder->operation->state?->isSuccessful() ?? false) ? 'REGISTERED' : 'REGISTERING')),
+                : ($cdekOrder->operation->errors !== [] ? CdekShipmentWorkflowStateEnum::FAILED
+                    : (($cdekOrder->operation->state?->isSuccessful() ?? false)
+                        ? CdekShipmentWorkflowStateEnum::REGISTERED
+                        : CdekShipmentWorkflowStateEnum::REGISTERING)),
             'error' => $cdekOrder->operation->errors[0]['message'] ?? null,
             'last_checked_at' => now(),
         ];
@@ -382,6 +402,7 @@ final class CdekShipmentService
     {
         return ($cdekOrder->operation->state?->isSuccessful() ?? false) && $cdekOrder->operation->errors === []
                         && ! $order->status->isCancelled() && $order->cancellation_state === null
-                        && ! in_array($shipment->operation_state, ['CANCELLING', 'CANCELLED', 'CANCEL_FAILED'], true);
+                        && ! in_array($shipment->operation_state, [CdekShipmentWorkflowStateEnum::CANCELLING,
+                            CdekShipmentWorkflowStateEnum::CANCELLED, CdekShipmentWorkflowStateEnum::CANCEL_FAILED], true);
     }
 }

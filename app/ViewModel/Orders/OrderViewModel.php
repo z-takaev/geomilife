@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\ViewModel\Orders;
 
+use App\Enums\Cdek\CdekOrderStatusEnum;
+use App\Enums\Cdek\CdekRequestStateEnum;
 use App\Enums\Orders\OrderStatusEnum;
 use App\Models\Order;
 use App\Services\Orders\OrderLifecycleService;
@@ -130,6 +132,58 @@ final class OrderViewModel
     public static function deliveryLabel(Order $order): string
     {
         return $order->delivery_method->getLabel();
+    }
+
+    public static function cancellationStateLabel(?string $state): string
+    {
+        return match ($state) {
+            'PENDING' => __('Выполняется'),
+            'FAILED' => __('Ошибка отмены'),
+            'COMPLETED' => __('Завершена'),
+            default => '—',
+        };
+    }
+
+    public static function accountLabel(Order $order): string
+    {
+        if ($order->user === null) {
+            return __('Гость');
+        }
+
+        $name = trim($order->user->first_name.' '.$order->user->last_name);
+
+        return $name !== '' ? $name : $order->user->email;
+    }
+
+    public static function cdekStatusLabel(Order $order): string
+    {
+        $status = $order->shipment?->status;
+
+        if ($status === null) {
+            return __('Статус ещё не получен');
+        }
+
+        return CdekOrderStatusEnum::tryFrom($status)?->getLabel() ?? __('Неизвестный статус СДЭК');
+    }
+
+    public static function cdekRegistrationLabel(Order $order): string
+    {
+        $shipment = $order->shipment;
+
+        if ($shipment === null) {
+            return __('Не зарегистрировано в СДЭК');
+        }
+
+        if ($shipment->operation_state !== null) {
+            return $shipment->operation_state->getLabel();
+        }
+
+        return match ($shipment->request_state) {
+            CdekRequestStateEnum::ACCEPTED, CdekRequestStateEnum::WAITING => __('Регистрируется'),
+            CdekRequestStateEnum::SUCCESSFUL => __('Зарегистрировано'),
+            CdekRequestStateEnum::INVALID => __('Ошибка регистрации'),
+            default => $shipment->uuid === null ? __('Не зарегистрировано в СДЭК') : __('Зарегистрировано'),
+        };
     }
 
     public static function confirmation(Order $order): array

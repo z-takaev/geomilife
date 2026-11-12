@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Enums\Cdek;
 
-enum CdekRequestStateEnum: string
+use Filament\Support\Contracts\HasLabel;
+
+enum CdekRequestStateEnum: string implements HasLabel
 {
     case ACCEPTED = 'ACCEPTED';
     case WAITING = 'WAITING';
@@ -24,5 +26,15 @@ enum CdekRequestStateEnum: string
     public function isInvalid(): bool
     {
         return $this->is(self::INVALID);
+    }
+
+    public function getLabel(): string
+    {
+        return match ($this) {
+            self::ACCEPTED => __('Принят'),
+            self::WAITING => __('Ожидает обработки'),
+            self::SUCCESSFUL => __('Успешно обработан'),
+            self::INVALID => __('Некорректный запрос'),
+        };
     }
 }

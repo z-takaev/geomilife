@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Orders;
 
+use App\Enums\Cdek\CdekPrintStateEnum;
+use App\Enums\Cdek\CdekRequestStateEnum;
 use App\Models\Order;
 use App\Models\OrderDocument;
 use App\Services\Cdek\CdekService;
@@ -50,11 +52,11 @@ final class OrderDocumentService
         foreach (['WAYBILL', 'BARCODES'] as $type) {
             $document = $this->prepareDocument($order, $type);
 
-            if ($document->uuid !== null && in_array($document->state, ['ACCEPTED', 'PROCESSING'], true)) {
+            if ($document->uuid !== null && in_array($document->state, [CdekPrintStateEnum::ACCEPTED, CdekPrintStateEnum::PROCESSING], true)) {
                 $result = $type === 'WAYBILL' ? $this->cdek->getWaybill($document->uuid) : $this->cdek->getBarcodes($document->uuid);
 
                 $document->update([
-                    'state' => $result->status?->value ?? $document->state,
+                    'state' => $result->status ?? $document->state,
                     'error' => $result->operation->errors[0]['message'] ?? null,
                 ]);
             }
@@ -68,7 +70,8 @@ final class OrderDocumentService
     {
         $document = $order->documents()->where('type', $type)->first();
 
-        if ($document === null || $document->uuid === null || in_array($document->state, ['INVALID', 'REMOVED'], true)) {
+        if ($document === null || $document->uuid === null
+            || in_array($document->state, [CdekPrintStateEnum::INVALID, CdekPrintStateEnum::REMOVED], true)) {
             $document = $this->prepareDocument($order, $type);
         }
 
@@ -76,10 +79,10 @@ final class OrderDocumentService
             throw ValidationException::withMessages(['document' => __('Документ готовится. Повторите скачивание позже.')]);
         }
 
-        if ($document->state !== 'READY') {
+        if (! $document->state?->isReady()) {
             $result = $type === 'WAYBILL' ? $this->cdek->getWaybill($document->uuid) : $this->cdek->getBarcodes($document->uuid);
 
-            $document->update(['state' => $result->status?->value, 'error' => $result->operation->errors[0]['message'] ?? null]);
+            $document->update(['state' => $result->status, 'error' => $result->operation->errors[0]['message'] ?? null]);
 
             if (! $result->status?->isReady()) {
                 throw ValidationException::withMessages(['document' => __('Документ ещё не готов. Повторите скачивание позже.')]);
@@ -93,7 +96,7 @@ final class OrderDocumentService
                 throw $exception;
             }
 
-            $document->update(['state' => 'REMOVED', 'error' => $exception->getMessage()]);
+            $document->update(['state' => CdekPrintStateEnum::REMOVED, 'error' => $exception->getMessage()]);
             $this->prepareDocument($order, $type);
             throw ValidationException::withMessages(['document' => __('Документ формируется повторно. Повторите скачивание позже.')]);
         }
@@ -107,7 +110,7 @@ final class OrderDocumentService
 
         $shipment = $order->shipment()->first();
 
-        if ($shipment?->uuid === null || $shipment->request_state !== 'SUCCESSFUL') {
+        if ($shipment?->uuid === null || ! $shipment->request_state?->is(CdekRequestStateEnum::SUCCESSFUL)) {
             throw ValidationException::withMessages(['document' => __('Дождитесь успешной регистрации отправления СДЭК.')]);
         }
 
@@ -130,12 +133,13 @@ final class OrderDocumentService
                 ->lockForUpdate()
                 ->findOrFail($document->id);
 
-            if (($lockedDocument->uuid !== null && ! in_array($lockedDocument->state, ['INVALID', 'REMOVED'], true))
-                || ($lockedDocument->state === 'CREATING' && $lockedDocument->updated_at->gt(now()->subMinutes((int) config('orders.reconciliation_stale_minutes'))))) {
+            if (($lockedDocument->uuid !== null && ! in_array($lockedDocument->state, [CdekPrintStateEnum::INVALID, CdekPrintStateEnum::REMOVED], true))
+                || ($lockedDocument->state?->is(CdekPrintStateEnum::CREATING)
+                    && $lockedDocument->updated_at->gt(now()->subMinutes((int) config('orders.reconciliation_stale_minutes'))))) {
                 return false;
             }
 
-            $lockedDocument->update(['uuid' => null, 'state' => 'CREATING', 'error' => null]);
+            $lockedDocument->update(['uuid' => null, 'state' => CdekPrintStateEnum::CREATING, 'error' => null]);
 
             return true;
         });
@@ -148,12 +152,14 @@ final class OrderDocumentService
 
             $document->update([
                 'uuid' => $result->uuid,
-                'state' => $result->errors === [] ? 'ACCEPTED' : 'INVALID',
+                'state' => $result->errors === [] ? CdekPrintStateEnum::ACCEPTED : CdekPrintStateEnum::INVALID,
                 'error' => $result->errors[0]['message'] ?? null,
             ]);
         } catch (Throwable $exception) {
             $document->update([
-                'state' => $exception instanceof CdekApiException && ($exception->statusCode === null || $exception->statusCode >= 500) ? 'CREATING' : 'INVALID',
+                'state' => $exception instanceof CdekApiException && ($exception->statusCode === null || $exception->statusCode >= 500)
+                    ? CdekPrintStateEnum::CREATING
+                    : CdekPrintStateEnum::INVALID,
                 'error' => $exception->getMessage(),
             ]);
             app(OrderNotificationService::class)->queue($order, 'DOCUMENT_FAILED', 'document-failed:'.$type.':'.hash('sha256', $exception->getMessage()));
