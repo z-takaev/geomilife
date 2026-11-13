@@ -59,11 +59,6 @@ final class UserProfile extends Component
         $validated = $this->form->validate();
 
         $user->fill($validated);
-
-        if ($user->isDirty('phone')) {
-            $user->phone_verified_at = null;
-        }
-
         $user->save();
         app(CurrentCityService::class)->select($validated['city_id']);
         $this->dispatch('notify', message: __('Данные профиля сохранены.'), type: 'success');

@@ -17,8 +17,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 function pricingVariant(?int $oldPrice = null): ProductVariant
@@ -250,6 +253,22 @@ it('проверяет максимальные значения вариант�
 
 it('экспортирует старую цену в рублях вместо процента скидки', function (): void {
     $variant = pricingVariant(1000);
+    $secondProduct = Product::query()->create([
+        'category_id' => $variant->product->category_id,
+        'name' => 'Второе масло',
+        'is_active' => false,
+    ]);
+    $secondProduct->variants()->create([
+        'sku' => 'SECOND-PRICING',
+        'unit' => ProductUnitEnum::GRAM,
+        'value' => 250,
+        'price' => Money::fromRubles(500),
+        'weight' => 300,
+        'length' => 60,
+        'width' => 60,
+        'height' => 100,
+        'is_active' => true,
+    ]);
     $response = app(ExportProductsAction::class)->handle(Product::query());
     ob_start();
     $response->sendContent();
@@ -262,12 +281,26 @@ it('экспортирует старую цену в рублях вместо 
     $spreadsheet = IOFactory::load($path);
     try {
         $sheet = $spreadsheet->getSheetByName('Товары');
-        expect($sheet->getCell('L1')->getValue())->toBe('Старая цена, ₽')
+        expect($spreadsheet->getSheetCount())->toBe(2)
+            ->and($spreadsheet->getSheetByName('Как заполнить'))->not->toBeNull()
+            ->and($sheet->getFreezePane())->toBe('A2')
+            ->and($sheet->getProtection()->getSheet())->not->toBeTrue()
+            ->and($sheet->getStyle('A1')->getBorders()->getLeft()->getBorderStyle())->toBe(Border::BORDER_NONE)
+            ->and($sheet->getCell('J3')->getDataValidation()->getType())->toBe(DataValidation::TYPE_NONE)
+            ->and($sheet->getStyle('A2')->getFill()->getFillType())->toBe(Fill::FILL_SOLID)
+            ->and($sheet->getStyle('A2')->getFill()->getStartColor()->getRGB())->toBe('C6E0B4')
+            ->and($sheet->getStyle('A2')->getFont()->getBold())->toBeTrue()
+            ->and($sheet->getStyle('A3')->getFill()->getFillType())->toBe(Fill::FILL_NONE)
+            ->and($sheet->getCell('A4')->getValue())->toBeNull()
+            ->and($sheet->getCell('A5')->getValue())->toBe('Товар')
+            ->and($sheet->getCell('L1')->getValue())->toBe('Старая цена, ₽')
             ->and((int) $sheet->getCell('K3')->getValue())->toBe(750)
             ->and((int) $sheet->getCell('L3')->getValue())->toBe(1000);
     } finally {
         $spreadsheet->disconnectWorksheets();
     }
+
+    expect(app(ImportProductsAction::class)->preview($path))->toContain('Будет обновлено записей: 0');
 });
 
 it('показывает ошибки цен в форме вариации', function (string $price, ?string $oldPrice, string $field, string $rule): void {

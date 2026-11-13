@@ -21,10 +21,6 @@ final class EditUser extends EditRecord
             $record->email_verified_at = null;
         }
 
-        if ($record->isDirty('phone')) {
-            $record->phone_verified_at = null;
-        }
-
         $record->save();
 
         return $record;

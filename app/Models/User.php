@@ -42,7 +42,6 @@ final class User extends Authenticatable implements MustVerifyEmail
             'email' => NormalizedEmailCast::class,
             'birth_date' => 'date',
             'email_verified_at' => 'datetime',
-            'phone_verified_at' => 'datetime',
             'is_blocked' => 'boolean',
             'telegram_notifications_enabled' => 'boolean',
             'password' => 'hashed',

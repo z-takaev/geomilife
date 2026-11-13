@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('phone')->nullable()->unique();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->timestamp('phone_verified_at')->nullable();
             $table->string('password');
             $table->boolean('is_blocked')->default(false);
             $table->foreignId('city_id')->nullable()->constrained()->nullOnDelete();

@@ -85,6 +85,8 @@ it('выгружает один заказ одной строкой с семн
             ->and($sheet->getTitle())->toBe('Заказы')
             ->and($sheet->getHighestDataRow())->toBe(2)
             ->and($sheet->getHighestDataColumn())->toBe('Q')
+            ->and($sheet->getFreezePane())->toBe('A2')
+            ->and($sheet->getAutoFilter()->getRange())->toBe('')
             ->and($sheet->getCell('A2')->getValue())->toBe($order->number)
             ->and($sheet->getCell('A2')->getDataType())->toBe(DataType::TYPE_NUMERIC)
             ->and($sheet->getCell('C2')->getValue())->toBe('Покупатель из снимка')

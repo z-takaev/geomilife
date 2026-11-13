@@ -45,7 +45,6 @@ final class ExportOrdersAction
 
                 $last = max(1, $rowNumber - 1);
                 $sheet->freezePane('A2');
-                $sheet->setAutoFilter('A1:Q'.$last);
                 $sheet->getStyle('A1:Q1')->getFont()->setBold(true);
                 $sheet->getStyle('A1:Q'.$last)->getAlignment()->setWrapText(true)->setVertical('top');
 

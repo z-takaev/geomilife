@@ -4,17 +4,13 @@ declare(strict_types=1);
 
 namespace App\Actions\Products;
 
-use App\Enums\Products\ProductUnitEnum;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Database\Eloquent\Builder;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
-use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
-use PhpOffice\PhpSpreadsheet\Style\Protection;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -47,37 +43,32 @@ final class ExportProductsAction
                     foreach ($product->variants as $variant) {
                         $this->writeRow($sheet, $line++, $variant);
                     }
+
+                    $line++;
                 }
-                $sheet->freezePane('D2');
-                $sheet->getStyle('A1:R'.max(1, $line - 1))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-                $sheet->getStyle('A1:R1')->applyFromArray([
-                    'font' => ['bold' => true],
-                    'alignment' => ['wrapText' => true],
-                ]);
-                $sheet->getRowDimension(1)->setRowHeight(42);
+                $lastRow = max(1, $line - 2);
+                $sheet->freezePane('A2');
+                $sheet->getStyle('A1:R1')->getFont()->setBold(true);
+                $sheet->getStyle('A1:R'.$lastRow)->getAlignment()->setWrapText(true)->setVertical('top');
                 foreach (range('A', 'R') as $column) {
                     $sheet->getColumnDimension($column)->setWidth($column === 'D' ? 45 : 20);
                 }
-                $sheet->getProtection()->setSheet(true);
 
                 $instructions = $spreadsheet->createSheet()->setTitle('Как заполнить');
                 $instructions->fromArray([
                     ['Поле', 'Подсказка'],
                     ['Редактирование', 'ID и тип строки менять нельзя. Заполняйте только поля соответствующего типа строки.'],
                     ['Товар / Вариация', 'Общие поля редактируются один раз в строке товара. Остальные — в строках вариаций.'],
-                    ['Да / Нет', 'Да — включено (1), Нет — выключено (0). Выбирайте значение из списка.'],
+                    ['Да / Нет', 'Используйте только значения «Да» или «Нет».'],
                     ['Количество', 'Фасовка, не складской остаток. Целое число от 1.'],
                     ['Цена / Старая цена', 'Цены — целые числа рублей. Цена — от 1. Старая цена должна быть больше актуальной. Пустая старая цена убирает скидку.'],
-                    ['Артикул / Единица', 'Артикул должен быть уникальным. Единицу выбирайте из списка.'],
+                    ['Артикул / Единица', 'Артикул должен быть уникальным. Единицу указывайте в том же виде, что в выгрузке.'],
                     ['Импорт', 'Перед правкой скачайте актуальный экспорт. Строки обновляются по ID; отсутствующие строки ничего не удаляют.'],
                 ]);
                 $instructions->getColumnDimension('A')->setWidth(28);
                 $instructions->getColumnDimension('B')->setWidth(110);
                 $instructions->getStyle('A1:B8')->getAlignment()->setWrapText(true);
-                $instructions->getStyle('A1:B8')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-                foreach (range(1, 8) as $row) {
-                    $instructions->getRowDimension($row)->setRowHeight(32);
-                }
+                $instructions->getStyle('A1:B1')->getFont()->setBold(true);
                 $spreadsheet->setActiveSheetIndex(0);
                 (new Xlsx($spreadsheet))->save('php://output');
             } finally {
@@ -104,23 +95,12 @@ final class ExportProductsAction
                 $sheet->getCell([$index + 1, $line])->setValueExplicit($value, is_string($value) ? DataType::TYPE_STRING : DataType::TYPE_NUMERIC);
             }
         }
-        $editable = $isProduct ? 'D'.$line.':G'.$line : 'H'.$line.':R'.$line;
-        $sheet->getStyle($editable)->getProtection()->setLocked(Protection::PROTECTION_UNPROTECTED);
         $sheet->getStyle('H'.$line)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_TEXT);
         $sheet->getStyle('I'.$line)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER);
         $sheet->getStyle('K'.$line.':L'.$line)->getNumberFormat()->setFormatCode('0');
         if ($isProduct) {
-            $sheet->getStyle('A'.$line.':R'.$line)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('F8F5F2');
+            $sheet->getStyle('A'.$line.':R'.$line)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('C6E0B4');
             $sheet->getStyle('A'.$line.':R'.$line)->getFont()->setBold(true);
-        }
-        foreach ($isProduct ? ['E', 'F', 'G'] : ['M', 'N', 'J'] as $column) {
-            $options = $column === 'J'
-                ? implode(',', array_map(static fn (ProductUnitEnum $unit): string => $unit->getLabel(), ProductUnitEnum::cases()))
-                : 'Да,Нет';
-            $sheet->getCell($column.$line)->getDataValidation()
-                ->setType(DataValidation::TYPE_LIST)->setFormula1('"'.$options.'"')
-                ->setShowDropDown(true)
-                ->setShowErrorMessage(true)->setErrorStyle(DataValidation::STYLE_STOP)->setError('Выберите значение из списка.');
         }
     }
 }
