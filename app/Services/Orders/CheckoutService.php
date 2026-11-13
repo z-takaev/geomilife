@@ -20,10 +20,10 @@ use App\Models\User;
 use App\Services\Cart\CartService;
 use App\Services\Cdek\CdekService;
 use App\Services\Customers\SavedDeliveryLocationService;
+use App\Support\Phone\PhoneFormat;
 use App\Support\Values\Money;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 final class CheckoutService
@@ -219,13 +219,7 @@ final class CheckoutService
      */
     public function normalizePhone(string $value): string
     {
-        $digits = preg_replace('/\D/', '', $value);
-
-        if (strlen($digits) === 11 && str_starts_with($digits, '8')) {
-            $digits = '7'.substr($digits, 1);
-        }
-
-        return '+'.$digits;
+        return PhoneFormat::normalize($value);
     }
 
     private function calculateCart(): array
@@ -395,7 +389,6 @@ final class CheckoutService
         return Order::query()->create([
             'user_id' => $user?->id,
             'city_id' => $calculation['city']->id,
-            'number' => now()->format('ymd').'-'.Str::upper(Str::random(8)),
             'status' => OrderStatusEnum::NEW,
             'payment_status' => PaymentStatusEnum::UNPAID,
             'delivery_method' => $form['delivery_method'],

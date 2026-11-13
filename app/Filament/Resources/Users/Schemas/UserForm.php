@@ -34,8 +34,8 @@ final class UserForm
                 Select::make('city_id')
                     ->label('Город')
                     ->relationship('city', 'name')
-                    ->getOptionLabelFromRecordUsing(static fn (City $city): string => self::cityOptionLabel($city))
-                    ->searchable(['name']),
+                    ->getOptionLabelFromRecordUsing(static fn (City $city): string => $city->optionLabel())
+                    ->searchable(['name', 'region']),
                 TextInput::make('email')
                     ->label('Email')
                     ->email()
@@ -76,12 +76,5 @@ final class UserForm
                             ->default(true),
                     ]),
             ]);
-    }
-
-    private static function cityOptionLabel(City $city): string
-    {
-        return blank($city->region)
-            ? $city->name
-            : $city->name.', '.$city->region;
     }
 }

@@ -9,6 +9,10 @@
                 autocomplete="family-name" error-bag="signUp" required />
             <x-auth.form.input id="email" name="email" type="email" :label="__('Email')" :value="$errors->signUp->any() ? old('email') : ''"
                 :placeholder="__('Email')" autocomplete="email" error-bag="signUp" required />
+            <x-auth.form.input id="registration-phone" name="phone" type="tel" :label="__('Телефон')"
+                :value="$errors->signUp->any() ? old('phone') : ''" :placeholder="__('+7 (___) ___-__-__')" autocomplete="tel" inputmode="tel" maxlength="18" data-phone-mask
+                error-bag="signUp" required />
+            <livewire:registration-city-selector :selected-city-id="$errors->signUp->any() && old('city_id') ? (int) old('city_id') : null" />
             <x-auth.form.password id="password" name="password" :label="__('Пароль')" :placeholder="__('Пароль')"
                 autocomplete="new-password" error-bag="signUp" required />
             <x-auth.form.password id="password2" name="password_confirmation" :label="__('Подтвердите пароль')" :placeholder="__('Подтвердите пароль')"

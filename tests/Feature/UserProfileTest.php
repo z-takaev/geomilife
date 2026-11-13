@@ -9,8 +9,11 @@ use Livewire\Exceptions\MethodNotFoundException;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
-    $this->user = User::query()->create(['first_name' => 'Иван', 'last_name' => 'Иванов', 'email' => 'buyer@example.com', 'password' => 'Password123']);
     $this->city = City::query()->create(['cdek_code' => 44, 'name' => 'Москва', 'is_active' => true]);
+    $this->user = User::query()->create([
+        'first_name' => 'Иван', 'last_name' => 'Иванов', 'email' => 'buyer@example.com',
+        'password' => 'Password123', 'phone' => '+79990000000', 'city_id' => $this->city->id,
+    ]);
     $this->actingAs($this->user);
 });
 
@@ -26,6 +29,33 @@ it('сохраняет профиль текущего пользователя'
     expect($this->user->fresh()->only(['first_name', 'last_name', 'phone']))->toBe([
         'first_name' => 'Пётр', 'last_name' => 'Петров', 'phone' => '+79991234567',
     ])->and($this->user->fresh()->birth_date->format('Y-m-d'))->toBe('1990-01-01');
+});
+
+it('сохраняет город по умолчанию и нормализованный телефон', function (): void {
+    $otherCity = City::query()->create([
+        'cdek_code' => 137,
+        'name' => 'Киров',
+        'region' => 'Кировская область',
+        'is_active' => true,
+    ]);
+
+    Livewire::test(UserProfile::class)
+        ->set('form.phone', '+7 (999) 123-45-67')
+        ->set('city_search', $otherCity->optionLabel())
+        ->call('selectCity', $otherCity->id)
+        ->call('saveProfile')
+        ->assertHasNoErrors();
+
+    expect($this->user->fresh()->phone)->toBe('+79991234567')
+        ->and($this->user->fresh()->city_id)->toBe($otherCity->id);
+});
+
+it('требует корректные телефон и активный город', function (): void {
+    Livewire::test(UserProfile::class)
+        ->set('form.phone', '123')
+        ->set('form.city_id', null)
+        ->call('saveProfile')
+        ->assertHasErrors(['form.phone', 'form.city_id']);
 });
 
 it('не сохраняет профиль с чужим телефоном или будущей датой рождения', function (): void {

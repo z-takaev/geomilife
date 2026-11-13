@@ -40,6 +40,9 @@ Route::get('/search', SearchController::class)->name('search');
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 
 Route::get('/checkout', CheckoutController::class)->name('checkout');
+Route::get('/checkout/success', [CheckoutController::class, 'orderSuccess'])->name('checkout.success');
+Route::get('/payment/success', [CheckoutController::class, 'paymentSuccess'])->name('payment.success');
+Route::get('/payment/fail', [CheckoutController::class, 'paymentFail'])->name('payment.fail');
 
 Route::get('/faqs', FaqController::class)->name('faqs');
 
@@ -97,6 +100,7 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::controller(OrderController::class)->prefix('orders')->name('orders.')->whereNumber('order')->group(function (): void {
         Route::get('/', 'index')->name('index');
         Route::get('/{order}', 'show')->name('show');
+        Route::post('/{order}/repeat', 'repeat')->middleware('throttle:6,1')->name('repeat');
         Route::post('/{order}/cancel', 'cancel')->middleware('throttle:6,1')->name('cancel');
     });
 });

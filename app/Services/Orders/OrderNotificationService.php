@@ -71,7 +71,7 @@ final class OrderNotificationService
 
                 $order = $eventRecord->order;
                 $event = $eventRecord->event;
-                $buyerEvents = ['CREATED', 'PAYMENT_PAID', 'PAID', 'CONFIRMED', 'READY_FOR_PICKUP',
+                $buyerEvents = ['CREATED', 'CONFIRMED', 'READY_FOR_PICKUP',
                     'READY_TO_SHIP', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED'];
 
                 if (in_array($event, $buyerEvents, true)) {

@@ -34,7 +34,6 @@ final class Order extends Model
         'cancellation_state',
         'cancellation_reason',
         'cancelled_at',
-        'number',
         'status',
         'payment_status',
         'delivery_method',
@@ -51,6 +50,7 @@ final class Order extends Model
     {
         return [
             'customer_email' => NormalizedEmailCast::class,
+            'number' => 'integer',
             'status' => OrderStatusEnum::class,
             'payment_status' => PaymentStatusEnum::class,
             'payment_method' => PaymentMethodEnum::class,
@@ -70,6 +70,12 @@ final class Order extends Model
     {
         self::creating(static function (self $order): void {
             $order->idempotency_key ??= (string) Str::uuid();
+        });
+
+        self::created(static function (self $order): void {
+            if ($order->number === null) {
+                $order->forceFill(['number' => $order->getKey() + 999])->saveQuietly();
+            }
         });
     }
 

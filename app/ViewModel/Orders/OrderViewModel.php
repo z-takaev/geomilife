@@ -56,8 +56,8 @@ final class OrderViewModel
         }
 
         if ($order->delivery_method->isPickup() && $order->status->isReadyForPickup()
-            && ! $order->payment_status->isPaid()) {
-            return __('Подтвердите получение оплаты перед выдачей заказа.');
+            && $order->payment_method->isPickup() && ! $order->payment_status->isPaid()) {
+            return __('При выдаче подтвердите получение оплаты и передачу заказа покупателю.');
         }
 
         return __('Проверьте заказ и выполните следующий шаг. Перед изменением статуса потребуется подтверждение.');
@@ -86,7 +86,9 @@ final class OrderViewModel
         }
 
         if ($status->isDelivered()) {
-            $description .= ' '.__('Подтвердите, что покупатель получил заказ.');
+            $description .= $order->delivery_method->isPickup() && $order->payment_method->isPickup()
+                ? ' '.__('Подтвердите, что получена оплата :amount и заказ выдан покупателю.', ['amount' => $order->total->format()])
+                : ' '.__('Подтвердите, что покупатель получил заказ.');
         }
 
         return $description;

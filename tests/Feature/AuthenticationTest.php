@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Livewire\RegistrationCitySelector;
+use App\Models\City;
+use App\Models\FilamentUser;
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Auth\Notifications\ResetPassword;
@@ -11,6 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\URL;
+use Livewire\Livewire;
 
 function authenticationUser(string $email, bool $verified = true): User
 {
@@ -22,11 +26,34 @@ function authenticationUser(string $email, bool $verified = true): User
     return $user;
 }
 
+function registrationCity(): City
+{
+    return City::query()->create([
+        'cdek_code' => 44,
+        'name' => 'Москва',
+        'region' => 'Москва',
+        'is_active' => true,
+    ]);
+}
+
+it('регистрация ищет активный город и показывает его регион', function (): void {
+    $city = registrationCity();
+
+    Livewire::test(RegistrationCitySelector::class)
+        ->set('query', 'Москва')
+        ->assertSee($city->region)
+        ->call('select', $city->id)
+        ->assertSet('selected_city_id', $city->id)
+        ->assertSeeHtml('name="city_id"');
+});
+
 it('регистрирует пользователя с нормализованной почтой и отправляет подтверждение', function (): void {
     Notification::fake();
+    $city = registrationCity();
 
     $this->post(route('register'), [
         'first_name' => ' Иван ', 'last_name' => ' Иванов ', 'email' => ' BUYER@EXAMPLE.COM ',
+        'phone' => '+7 (999) 123-45-67', 'city_id' => $city->id,
         'password' => 'Password123', 'password_confirmation' => 'Password123', 'terms' => true,
         'email_verified_at' => now(), 'is_blocked' => true,
     ])->assertRedirect(route('verification.notice'));
@@ -36,6 +63,8 @@ it('регистрирует пользователя с нормализова�
     expect($user->first_name)->toBe('Иван')
         ->and($user->last_name)->toBe('Иванов')
         ->and($user->email)->toBe('buyer@example.com')
+        ->and($user->phone)->toBe('+79991234567')
+        ->and($user->city_id)->toBe($city->id)
         ->and($user->hasVerifiedEmail())->toBeFalse()
         ->and($user->is_blocked)->toBeFalse()
         ->and(Hash::check('Password123', $user->password))->toBeTrue();
@@ -44,8 +73,10 @@ it('регистрирует пользователя с нормализова�
 
 it('отклоняет некорректную регистрацию без создания аккаунта', function (array $changes, string $field): void {
     Notification::fake();
+    $city = registrationCity();
     $this->post(route('register'), array_replace([
         'first_name' => 'Иван', 'last_name' => 'Иванов', 'email' => 'buyer@example.com',
+        'phone' => '+7 (999) 123-45-67', 'city_id' => $city->id,
         'password' => 'Password123', 'password_confirmation' => 'Password123', 'terms' => true,
     ], $changes))->assertSessionHasErrorsIn('signUp', $field);
 
@@ -60,12 +91,17 @@ it('отклоняет некорректную регистрацию без с
     'нет регистра' => [['password' => 'password123', 'password_confirmation' => 'password123'], 'password'],
     'разные пароли' => [['password_confirmation' => 'Other123'], 'password'],
     'неверная почта' => [['email' => 'invalid'], 'email'],
+    'нет телефона' => [['phone' => ''], 'phone'],
+    'неверный телефон' => [['phone' => '+7 (999) 12'], 'phone'],
+    'нет города' => [['city_id' => null], 'city_id'],
 ]);
 
 it('не регистрирует повторно нормализованный email', function (): void {
     authenticationUser('buyer@example.com');
+    $city = registrationCity();
     $this->post(route('register'), [
         'first_name' => 'Иван', 'last_name' => 'Иванов', 'email' => ' BUYER@example.com ',
+        'phone' => '+7 (999) 123-45-67', 'city_id' => $city->id,
         'password' => 'Password123', 'password_confirmation' => 'Password123', 'terms' => true,
     ])->assertSessionHasErrorsIn('signUp', 'email');
     $this->assertDatabaseCount('users', 1);
@@ -110,6 +146,25 @@ it('завершает активную сессию заблокированн�
     $this->actingAs($user)->get(route('profile.show'))
         ->assertRedirect(route('home'))->assertSessionHasErrorsIn('signIn', 'email');
     $this->assertGuest();
+});
+
+it('блокировка покупателя не завершает сессию администратора', function (): void {
+    $admin = FilamentUser::query()->create([
+        'name' => 'Администратор',
+        'email' => 'admin@example.com',
+        'password' => 'Password123',
+        'role' => 'ADMIN',
+    ]);
+    $user = authenticationUser('buyer@example.com');
+    $user->update(['is_blocked' => true]);
+
+    $this->actingAs($admin, 'filament')
+        ->actingAs($user, 'web')
+        ->get(route('profile.show'))
+        ->assertRedirect(route('home'));
+
+    $this->assertGuest('web');
+    $this->assertAuthenticatedAs($admin, 'filament');
 });
 
 it('подтверждает почту по подписанной ссылке', function (): void {

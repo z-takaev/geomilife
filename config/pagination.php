@@ -6,6 +6,7 @@ return [
     'per_page' => [
         'articles' => 10,
         'catalog' => 15,
+        'city_search' => 10,
         'news' => 10,
         'promos' => 15,
         'reviews' => 10,

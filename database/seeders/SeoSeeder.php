@@ -22,6 +22,9 @@ final class SeoSeeder extends Seeder
             'catalog.index',
             'search',
             'checkout',
+            'checkout.success',
+            'payment.success',
+            'payment.fail',
             'profile.show',
             'orders.index',
         ];

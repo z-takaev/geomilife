@@ -14,14 +14,11 @@ beforeEach(function (): void {
     config(['telegram.manager_chat_id' => '-1001234567890']);
 });
 
-it('отправляет покупателю текст события и трек без ссылки', function (): void {
-    $order = fulfillmentOrder();
-    $order->shipment()->create(['cdek_number' => 'TRACK-123']);
-    $notification = new OrderUpdateNotification($order, 'PAYMENT_PAID');
-    $text = $notification->toTelegram(new AnonymousNotifiable);
+it('не отправляет покупателю уведомление об успешной оплате', function (string $event): void {
+    app(OrderNotificationService::class)->queue(fulfillmentOrder(), $event, $event);
 
-    expect($text)->toBe("Заказ №{$order->number}\nОплата заказа подтверждена.\nСумма: {$order->total->format()}\nТрек-номер: TRACK-123");
-});
+    Notification::assertNothingSent();
+})->with(['PAYMENT_PAID', 'PAID']);
 
 it('сообщает менеджерам о новом заказе отдельным текстом без ссылки', function (): void {
     $order = fulfillmentOrder();
@@ -43,7 +40,7 @@ it('уведомляет о последующих статусах только
     Notification::assertSentOnDemandTimes(OrderUpdateNotification::class, 1);
     Notification::assertSentOnDemand(OrderUpdateNotification::class,
         fn (OrderUpdateNotification $notification): bool => $notification->audience === 'BUYER');
-})->with(['PAYMENT_PAID', 'PAID', 'CONFIRMED', 'READY_FOR_PICKUP', 'READY_TO_SHIP', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED']);
+})->with(['CONFIRMED', 'READY_FOR_PICKUP', 'READY_TO_SHIP', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED']);
 
 it('сохраняет сообщения менеджерам об ошибках', function (string $event): void {
     app(OrderNotificationService::class)->queue(fulfillmentOrder(), $event, $event);

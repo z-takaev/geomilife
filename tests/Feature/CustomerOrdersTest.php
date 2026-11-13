@@ -17,9 +17,9 @@ beforeEach(function (): void {
 
 it('показывает карточки только своих заказов начиная с новых', function (): void {
     $user = CheckoutFixtures::user();
-    $old = CheckoutFixtures::order($user, ['number' => 'OWN-OLD-301', 'created_at' => now()->subDay()]);
-    $new = CheckoutFixtures::order($user, ['number' => 'OWN-NEW-302', 'created_at' => now()]);
-    $foreign = CheckoutFixtures::order(CheckoutFixtures::user(), ['number' => 'FOREIGN-SECRET-303']);
+    $old = CheckoutFixtures::order($user, ['created_at' => now()->subDay()]);
+    $new = CheckoutFixtures::order($user, ['created_at' => now()]);
+    $foreign = CheckoutFixtures::order(CheckoutFixtures::user());
 
     $this->actingAs($user)->get(route('orders.index'))->assertOk()
         ->assertSeeInOrder([$new->number, $old->number])->assertDontSee($foreign->number)

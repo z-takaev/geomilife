@@ -21,7 +21,7 @@ function fulfillmentEmployee(FilamentUserRoleEnum $role = FilamentUserRoleEnum::
 function fulfillmentOrder(array $attributes = []): Order
 {
     return Order::query()->create(array_replace([
-        'number' => 'TEST-'.Str::uuid(), 'status' => 'NEW', 'payment_status' => 'PAID',
+        'status' => 'NEW', 'payment_status' => 'PAID',
         'payment_method' => PaymentMethodEnum::ONLINE->value, 'delivery_method' => DeliveryMethodEnum::CDEK->value,
         'subtotal' => Money::fromRubles(1200), 'delivery_price' => Money::fromRubles(350),
         'total' => Money::fromRubles(1550), 'customer_name' => 'Покупатель из снимка',

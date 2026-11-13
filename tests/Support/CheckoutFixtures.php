@@ -143,7 +143,6 @@ final class CheckoutFixtures
     {
         return Order::query()->create(array_replace([
             'user_id' => $user?->getKey(),
-            'number' => 'CHECKOUT-'.Str::uuid(),
             'status' => 'NEW',
             'payment_status' => 'UNPAID',
             'payment_method' => PaymentMethodEnum::PICKUP->value,

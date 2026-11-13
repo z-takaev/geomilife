@@ -243,7 +243,7 @@ final class CdekShipmentService
         }
 
         return new CdekCreateOrderRequestDto(
-            tariffCode: 136, number: $order->number,
+            tariffCode: 136, number: (string) $order->number,
             recipient: new CdekContactDto(name: $order->customer_name, phone: $order->customer_phone, email: $order->customer_email),
             packages: $packages, shipmentPoint: (string) config('orders.cdek.shipment_point'),
             deliveryPoint: $order->delivery_address['code'],
@@ -255,7 +255,7 @@ final class CdekShipmentService
     private function recoverShipment(Order $order, OrderShipment $shipment): bool
     {
         try {
-            $cdekOrder = $this->cdek->findOrder($order->number);
+            $cdekOrder = $this->cdek->findOrder((string) $order->number);
         } catch (CdekApiException $exception) {
             if ($exception->statusCode === 404) {
                 $sentAt = $shipment->payload['request_sent_at'] ?? $shipment->last_checked_at?->toIso8601String() ?? $shipment->created_at?->toIso8601String();

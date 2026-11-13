@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\Products\ProductUnitEnum;
 use App\Livewire\Favorites;
 use App\Models\Category;
+use App\Models\City;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\Favorites\FavoriteService;
@@ -154,9 +155,13 @@ it('после входа показывает предложение объед
 it('переносит гостевое избранное после регистрации', function (): void {
     Notification::fake();
     $product = favoriteProduct();
+    $city = City::query()->create([
+        'cdek_code' => 44, 'name' => 'Москва', 'region' => 'Москва', 'is_active' => true,
+    ]);
 
     $this->post(route('register'), [
         'first_name' => 'Иван', 'last_name' => 'Иванов', 'email' => 'favorite-registration@example.com',
+        'phone' => '+7 (999) 123-45-67', 'city_id' => $city->id,
         'password' => 'Password123', 'password_confirmation' => 'Password123', 'terms' => true,
     ])->assertRedirect(route('verification.notice'));
     $this->get(route('verification.notice'))->assertOk();

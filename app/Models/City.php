@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Support\Values\Money;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -55,5 +56,17 @@ final class City extends Model
     public function addresses(): HasMany
     {
         return $this->hasMany(Address::class);
+    }
+
+    public function scopeSearchByName(Builder $query, string $search): void
+    {
+        $query->whereLike('name', '%'.addcslashes(trim($search), '\\%_').'%');
+    }
+
+    public function optionLabel(): string
+    {
+        return blank($this->region)
+            ? $this->name
+            : $this->name.', '.$this->region;
     }
 }

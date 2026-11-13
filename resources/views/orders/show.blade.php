@@ -141,6 +141,11 @@
                     @if ($order->payment_status->isRefunded())
                         <p class="order-muted">{{ __('Банк подтвердил полный возврат оплаты.') }}</p>
                     @endif
+                    <form method="post" action="{{ route('orders.repeat', $order) }}" x-data
+                        @submit="if (!confirm(@js(__('Текущая корзина будет заменена товарами из этого заказа. Продолжить?')))) $event.preventDefault()">
+                        @csrf
+                        <button type="submit" class="profile-button w-100">{{ __('Повторить заказ') }}</button>
+                    </form>
                     @if ($presentation['canCancel'])
                         <form method="post" action="{{ $presentation['cancelUrl'] }}" class="order-cancel-form" x-data
                             @submit="if (!confirm(@js(__('Отменить заказ? Онлайн-оплата будет возвращена полностью.')))) $event.preventDefault()">@csrf<input

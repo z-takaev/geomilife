@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 use App\Enums\Filament\FilamentUserRoleEnum;
 use App\Enums\Orders\DeliveryMethodEnum;
+use App\Enums\Orders\OrderStatusEnum;
 use App\Enums\Orders\PaymentMethodEnum;
 use App\Enums\Orders\PaymentStatusEnum;
 use App\Models\FilamentUser;
 use App\Models\OrderNotificationDelivery;
 use App\Services\Cart\CartService;
-use App\Services\Orders\OrderPaymentService;
+use App\Services\Orders\OrderLifecycleService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -64,24 +65,33 @@ it('при списании не затрагивает корзину друг�
         ->and($owner->cart->items()->sole()->quantity)->toBe(5);
 });
 
-it('фиксирует оплату при получении один раз и отправляет одно событие уведомления', function (FilamentUserRoleEnum $role): void {
-    $order = PaymentFixtures::order(['payment_method' => PaymentMethodEnum::PICKUP]);
+it('фиксирует оплату и выдачу при самовывозе один раз', function (FilamentUserRoleEnum $role): void {
+    $order = PaymentFixtures::order([
+        'payment_method' => PaymentMethodEnum::PICKUP,
+        'delivery_method' => DeliveryMethodEnum::PICKUP,
+        'status' => OrderStatusEnum::READY_FOR_PICKUP,
+    ]);
     $actor = PaymentFixtures::manager();
     $actor->update(['role' => $role]);
-    $payments = app(OrderPaymentService::class);
+    $lifecycle = app(OrderLifecycleService::class);
 
-    $payments->markPickupPaid($order, $actor);
-    $payments->markPickupPaid($order->fresh(), $actor);
+    $lifecycle->advanceStatus($order, OrderStatusEnum::DELIVERED, $actor);
+    $lifecycle->advanceStatus($order->fresh(), OrderStatusEnum::DELIVERED, $actor);
 
     expect($order->fresh()->payment_status)->toBe(PaymentStatusEnum::PAID)
+        ->and($order->fresh()->status)->toBe(OrderStatusEnum::DELIVERED)
         ->and(OrderNotificationDelivery::query()->where('order_id', $order->id)->count())->toBe(1);
     Http::assertNothingSent();
 })->with([FilamentUserRoleEnum::ADMIN, FilamentUserRoleEnum::MANAGER]);
 
-it('запрещает ручную отметку оплаты при неподходящем состоянии заказа', function (array $attributes): void {
-    $order = PaymentFixtures::order(array_replace(['payment_method' => PaymentMethodEnum::PICKUP], $attributes));
+it('запрещает выдачу самовывоза при неподходящем состоянии заказа', function (array $attributes): void {
+    $order = PaymentFixtures::order(array_replace([
+        'payment_method' => PaymentMethodEnum::PICKUP,
+        'delivery_method' => DeliveryMethodEnum::PICKUP,
+        'status' => OrderStatusEnum::READY_FOR_PICKUP,
+    ], $attributes));
 
-    expect(fn () => app(OrderPaymentService::class)->markPickupPaid($order, PaymentFixtures::manager()))
+    expect(fn () => app(OrderLifecycleService::class)->advanceStatus($order, OrderStatusEnum::DELIVERED, PaymentFixtures::manager()))
         ->toThrow(ValidationException::class);
 
     expect($order->fresh()->payment_status)->toBe(PaymentStatusEnum::UNPAID);
@@ -89,15 +99,18 @@ it('запрещает ручную отметку оплаты при непо�
     'онлайн-оплата' => [['payment_method' => PaymentMethodEnum::ONLINE]],
     'курьер' => [['delivery_method' => DeliveryMethodEnum::COURIER]],
     'отменён' => [['status' => 'CANCELLED']],
-    'выдан' => [['status' => 'DELIVERED']],
     'отмена в процессе' => [['cancellation_state' => 'PENDING']],
 ]);
 
-it('не позволяет несохранённому сотруднику подтвердить оплату', function (): void {
-    $order = PaymentFixtures::order(['payment_method' => PaymentMethodEnum::PICKUP]);
+it('не позволяет несохранённому сотруднику подтвердить выдачу', function (): void {
+    $order = PaymentFixtures::order([
+        'payment_method' => PaymentMethodEnum::PICKUP,
+        'delivery_method' => DeliveryMethodEnum::PICKUP,
+        'status' => OrderStatusEnum::READY_FOR_PICKUP,
+    ]);
     $actor = new FilamentUser(['role' => FilamentUserRoleEnum::MANAGER]);
 
-    expect(fn () => app(OrderPaymentService::class)->markPickupPaid($order, $actor))
+    expect(fn () => app(OrderLifecycleService::class)->advanceStatus($order, OrderStatusEnum::DELIVERED, $actor))
         ->toThrow(AuthorizationException::class);
 
     expect($order->fresh()->payment_status)->toBe(PaymentStatusEnum::UNPAID);

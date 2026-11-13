@@ -87,7 +87,6 @@ final class OrderUpdateNotification extends Notification implements ShouldQueue
     {
         return match ($this->event) {
             'CREATED' => $this->audience === 'MANAGER' ? __('Поступил новый заказ.') : __('Ваш заказ принят.'),
-            'PAYMENT_PAID', 'PAID' => __('Оплата заказа подтверждена.'),
             'REFUNDED' => __('Банк подтвердил полный возврат оплаты заказа.'),
             'REFUND_FAILED' => __('Возврат оплаты не завершён. Требуется проверка.'),
             'CANCELLATION_FAILED' => __('Не удалось завершить отмену заказа. Требуется проверка.'),

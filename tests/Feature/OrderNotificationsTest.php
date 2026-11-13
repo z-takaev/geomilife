@@ -18,7 +18,6 @@ function notificationOrder(?User $user = null): Order
 {
     return Order::query()->create([
         'user_id' => $user?->id,
-        'number' => 'NOTIFY-001',
         'status' => 'NEW',
         'payment_status' => 'UNPAID',
         'payment_method' => PaymentMethodEnum::ONLINE->value,
@@ -94,7 +93,7 @@ it('письмо гостю содержит номер заказа и собы
                 return false;
             }
             $mail = $notification->toMail($notifiable);
-            expect($mail->subject)->toContain('NOTIFY-001')
+            expect($mail->subject)->toContain((string) $notification->order->number)
                 ->and(implode(' ', $mail->introLines))->toContain('возврат')
                 ->and($mail->actionUrl)->toBeNull();
 
@@ -138,7 +137,7 @@ it('включает сохранённый состав и сведения з�
     $plain = (string) app(Markdown::class)->renderText($mail->markdown, $mail->data());
 
     foreach ([$html, $plain] as $body) {
-        expect($body)->toContain('NOTIFY-001', $order->created_at->format('d.m.Y'),
+        expect($body)->toContain((string) $order->number, $order->created_at->format('d.m.Y'),
             'Крем из оформленного заказа', '250 мл', 'SNAPSHOT-250', '600 ₽', '2 × 600 ₽',
             '1 200 ₽', '350 ₽', '1 550 ₽', $order->customer_name, $order->customer_phone,
             $order->customer_email, 'Позвоните перед выдачей')

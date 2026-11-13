@@ -10,7 +10,6 @@ use App\Filament\Resources\Orders\Pages\ViewOrder;
 use App\Models\Order;
 use App\Services\Cart\CartService;
 use App\Services\Orders\OrderLifecycleService;
-use App\Services\Orders\OrderPaymentService;
 use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
@@ -40,7 +39,6 @@ it('оформляет и обрабатывает самовывоз без т�
     $lifecycle = app(OrderLifecycleService::class);
     $lifecycle->advanceStatus($order, OrderStatusEnum::CONFIRMED, $actor);
     $lifecycle->advanceStatus($order->fresh(), OrderStatusEnum::READY_FOR_PICKUP, $actor);
-    app(OrderPaymentService::class)->markPickupPaid($order->fresh(), $actor);
     $lifecycle->advanceStatus($order->fresh(), OrderStatusEnum::DELIVERED, $actor);
 
     expect($order->fresh()->status)->toBe(OrderStatusEnum::DELIVERED)

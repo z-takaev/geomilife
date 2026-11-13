@@ -46,7 +46,6 @@ final class PaymentFixtures
     {
         return Order::query()->create(array_replace([
             'user_id' => self::user()->id,
-            'number' => 'TEST-'.Str::uuid(),
             'status' => 'NEW',
             'payment_status' => 'UNPAID',
             'payment_method' => PaymentMethodEnum::ONLINE->value,

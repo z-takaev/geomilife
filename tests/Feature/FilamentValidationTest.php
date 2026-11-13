@@ -194,7 +194,7 @@ it('проверяет телефон пользователя на сервер
     ])->call('create')->assertHasFormErrors(['phone' => 'regex']);
 });
 
-it('показывает регион в вариантах выбора города и ищет только по названию', function (): void {
+it('показывает регион в вариантах выбора города и ищет по названию и региону', function (): void {
     $city = new City([
         'name' => 'Москва',
         'region' => 'Псковская область',
@@ -203,7 +203,7 @@ it('показывает регион в вариантах выбора гор�
 
     Livewire::test(CreateUser::class)
         ->assertFormFieldExists('city_id', fn (Select $field): bool => $field->getOptionLabelFromRecord($city) === 'Москва, Псковская область'
-            && $field->getSearchColumns() === ['name']);
+            && $field->getSearchColumns() === ['name', 'region']);
 });
 
 it('ограничивает длину паролей в административных формах', function (string $component): void {

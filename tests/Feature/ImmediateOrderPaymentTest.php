@@ -54,7 +54,7 @@ it('при повторной отправке оформления не отк�
     $component = CheckoutFixtures::form($city, ['payment_method' => PaymentMethodEnum::ONLINE->value]);
     $component->call('placeOrder')->assertHasNoErrors()->assertRedirect('https://tbank.checkout.test/payment/731000001');
     $this->travel(15)->minutes();
-    $component->call('placeOrder')->assertHasNoErrors()->assertRedirect(route('home'));
+    $component->call('placeOrder')->assertHasNoErrors()->assertRedirect(route('checkout.success'));
 
     expect(Order::query()->count())->toBe(1)
         ->and(Order::query()->sole()->payments()->count())->toBe(1);

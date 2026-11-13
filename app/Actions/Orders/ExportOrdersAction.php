@@ -69,7 +69,7 @@ final class ExportOrdersAction
     private function row(Order $order): array
     {
         return [
-            (string) $order->number, $order->created_at->format('d.m.Y H:i:s'),
+            $order->number, $order->created_at->format('d.m.Y H:i:s'),
             $order->customer_name, $order->customer_phone, $order->customer_email,
             (string) ($order->delivery_address['city'] ?? ''), OrderViewModel::deliveryLabel($order),
             OrderViewModel::address($order), $order->status->getLabel(), $order->payment_status->getLabel(),

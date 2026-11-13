@@ -96,6 +96,7 @@ it('подтверждённый вебхук обновляет оплату о
         ->and(PaymentFixtures::value($payment->fresh()->status))->toBe('PAID')
         ->and($order->payments()->count())->toBe(1)
         ->and(PaymentFixtures::value($order->fresh()->status))->toBe('NEW');
+    Notification::assertNothingSent();
     Http::assertNotSent(fn (Request $request): bool => str_contains($request->url(), 'cdek'));
 });
 

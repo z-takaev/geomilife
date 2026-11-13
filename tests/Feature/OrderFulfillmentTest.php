@@ -72,7 +72,7 @@ it('отправляет тариф 136 внешние размеры с окр�
     Http::assertSent(function (Request $request) use ($order): bool {
         return $request->method() === 'POST' && str_ends_with($request->url(), '/v2/orders')
             && $request['tariff_code'] === 136
-            && $request['number'] === $order->number
+            && $request['number'] === (string) $order->number
             && $request['shipment_point'] === 'VLZ2'
             && $request['delivery_point'] === 'MSK1'
             && $request['sender']['company'] === 'GeoMiLife'

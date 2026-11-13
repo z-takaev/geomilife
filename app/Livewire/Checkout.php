@@ -69,7 +69,7 @@ final class Checkout extends Component
 
         $this->form->city_id = $cities->current()?->id;
         $city = $this->form->selectedCity();
-        $this->city_search = $city?->name ?? '';
+        $this->city_search = $city?->optionLabel() ?? '';
         $this->form->delivery_method = (string) array_key_first(app(CheckoutService::class)->availableDeliveryMethods($city));
         $this->handleFormChange('delivery_method');
     }
@@ -81,7 +81,7 @@ final class Checkout extends Component
 
     public function updatedCitySearch(): void
     {
-        if ($this->form->city_id !== null && $this->city_search !== $this->form->selectedCity()?->name) {
+        if ($this->form->city_id !== null && $this->city_search !== $this->form->selectedCity()?->optionLabel()) {
             $this->form->city_id = null;
             $this->handleFormChange('city_id');
         }
@@ -96,9 +96,11 @@ final class Checkout extends Component
 
     public function selectCity(int $id, ?string $name = null): void
     {
-        $this->form->city_id = City::query()
+        $city = City::query()
             ->where('is_active', true)
-            ->findOrFail($id)->id;
+            ->findOrFail($id);
+        $this->form->city_id = $city->id;
+        $this->city_search = $city->optionLabel();
         $this->handleFormChange('city_id');
     }
 
@@ -115,7 +117,7 @@ final class Checkout extends Component
         $address = auth()->user()->addresses()->with('city')->findOrFail($addressId);
         $this->fillAddress($address);
         $this->form->city_id = $address->city_id;
-        $this->city_search = $address->city?->name ?? '';
+        $this->city_search = $address->city?->optionLabel() ?? '';
         $this->form->delivery_method = DeliveryMethodEnum::COURIER->value;
         $this->form->payment_method = PaymentMethodEnum::ONLINE->value;
         $this->recalculate();
@@ -144,7 +146,7 @@ final class Checkout extends Component
     {
         $city = $cities->current() ?? $cities->getOrDetect();
         $this->form->city_id = $city?->id;
-        $this->city_search = $city?->name ?? '';
+        $this->city_search = $city?->optionLabel() ?? '';
         $this->handleFormChange('city_id');
     }
 
@@ -154,7 +156,7 @@ final class Checkout extends Component
         $point = auth()->user()->savedDeliveryPoints()
             ->findOrFail($pointId);
         $this->form->city_id = $point->city_id;
-        $this->city_search = $point->city?->name ?? '';
+        $this->city_search = $point->city?->optionLabel() ?? '';
         $this->form->delivery_method = DeliveryMethodEnum::CDEK->value;
         $this->form->payment_method = PaymentMethodEnum::ONLINE->value;
         $this->form->delivery_point_code = $point->code;
@@ -230,6 +232,9 @@ final class Checkout extends Component
             } catch (TbankApiException|ValidationException $exception) {
                 report($exception);
                 session()->flash('order_message', __('Заказ сохранён, но открыть оплату не удалось. Свяжитесь с нами для уточнения оплаты.'));
+                $this->redirect(route('payment.fail'));
+
+                return;
             }
         }
 
@@ -239,11 +244,7 @@ final class Checkout extends Component
             return;
         }
 
-        if (! session()->has('order_message')) {
-            session()->flash('order_message', __('Ваш заказ принят. Подтверждение отправлено на указанный email.'));
-        }
-
-        $this->redirect(route('home'));
+        $this->redirect(route('checkout.success'));
     }
 
     public function render(): View
@@ -395,7 +396,7 @@ final class Checkout extends Component
         $city = $this->form->selectedCity();
 
         if ($city !== null) {
-            $this->city_search = $city->name;
+            $this->city_search = $city->optionLabel();
         }
 
         $this->resetDeliveryPoint();
@@ -439,7 +440,7 @@ final class Checkout extends Component
         $citySearch = trim($this->city_search);
 
         return mb_strlen($citySearch) < 3 ? collect() : City::query()->where('is_active', true)
-            ->whereLike('name', '%'.addcslashes($citySearch, '%_\\').'%')
+            ->searchByName($citySearch)
             ->orderByDesc('is_suggested')->orderBy('name')->get();
     }
 

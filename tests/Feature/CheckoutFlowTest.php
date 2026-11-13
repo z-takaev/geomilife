@@ -307,13 +307,15 @@ it('не хранит токен гостевого доступа к заказ
     expect(Schema::hasColumn('orders', 'guest_token'))->toBeFalse();
 });
 
-it('после гостевого оформления показывает подтверждение без ссылки на заказ', function (): void {
+it('после гостевого оформления открывает общую страницу подтверждения', function (): void {
     $city = CheckoutFixtures::city();
     app(CartService::class)->add(CheckoutFixtures::variant()->getKey(), 1);
 
-    CheckoutFixtures::form($city)->call('placeOrder')->assertHasNoErrors()->assertRedirect(route('home'));
+    CheckoutFixtures::form($city)->call('placeOrder')->assertHasNoErrors()->assertRedirect(route('checkout.success'));
 
-    $this->get(route('home'))->assertOk()->assertSee('Ваш заказ принят. Подтверждение отправлено на указанный email.');
+    $this->get(route('checkout.success'))->assertOk()
+        ->assertSee('Заказ успешно оформлен')
+        ->assertSee('Подтверждение отправлено на указанный email.');
 });
 
 it('после оформления владельцем открывает заказ в личном кабинете', function (): void {
@@ -332,6 +334,10 @@ it('гость переходит к оплате в банке без гост�
     CheckoutFixtures::form($city, ['payment_method' => PaymentMethodEnum::ONLINE->value])
         ->call('placeOrder')->assertHasNoErrors()
         ->assertRedirect('https://tbank.checkout.test/payment/731000001');
+
+    Http::assertSent(fn ($request): bool => $request->url() === 'https://tbank.checkout.test/v2/Init'
+        && $request['SuccessURL'] === route('payment.success')
+        && $request['FailURL'] === route('payment.fail'));
 });
 
 it('при ошибке оплаты гостю не предлагают недоступную страницу заказа', function (): void {
@@ -344,9 +350,9 @@ it('при ошибке оплаты гостю не предлагают нед
     app(CartService::class)->add(CheckoutFixtures::variant()->getKey(), 1);
 
     CheckoutFixtures::form($city, ['payment_method' => PaymentMethodEnum::ONLINE->value])
-        ->call('placeOrder')->assertHasNoErrors()->assertRedirect(route('home'));
+        ->call('placeOrder')->assertHasNoErrors()->assertRedirect(route('payment.fail'));
 
-    $this->get(route('home'))->assertOk()
+    $this->get(route('payment.fail'))->assertOk()
         ->assertSee('Заказ сохранён, но открыть оплату не удалось. Свяжитесь с нами для уточнения оплаты.')
         ->assertDontSee('Повторите оплату на странице заказа.');
     $this->assertDatabaseCount('orders', 1);

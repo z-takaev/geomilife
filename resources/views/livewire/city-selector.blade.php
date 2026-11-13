@@ -37,7 +37,10 @@
                                 <li wire:key="city-result-{{ $city->getKey() }}">
                                     <button type="button" wire:click="select({{ $city->getKey() }})"
                                         wire:loading.attr="disabled" wire:target="query, select">
-                                        <span>{{ __($city->name) }}</span>
+                                        <span>{{ __($city->name) }}{{ $city->region ? ',' : '' }}</span>
+                                        @if ($city->region)
+                                            <small>{{ $city->region }}</small>
+                                        @endif
                                     </button>
                                 </li>
                             @empty

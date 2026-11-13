@@ -17,7 +17,7 @@ final class SignUpController extends Controller
     {
         $data = $request->safe()->only([
             'first_name', 'last_name',
-            'email', 'password',
+            'email', 'phone', 'city_id', 'password',
         ]);
 
         $user = User::query()->create($data);

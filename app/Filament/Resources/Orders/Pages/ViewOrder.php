@@ -46,19 +46,6 @@ final class ViewOrder extends ViewRecord
         return [
             ...$actions,
 
-            Action::make('markPaid')
-                ->label('Подтвердить получение оплаты')
-                ->modalHeading('Подтвердить получение оплаты')
-                ->modalDescription(fn (): string => __('Подтвердите, что получена оплата в размере :amount. Покупателю будет отправлено уведомление. После этого можно отдельно подтвердить выдачу заказа.', ['amount' => $this->getRecord()->total->format()]))
-                ->modalSubmitActionLabel('Оплата получена')
-                ->requiresConfirmation()
-                ->visible(fn (): bool => $this->getRecord()->delivery_method->isPickup()
-                    && $this->getRecord()->cancellation_state === null
-                    && $this->getRecord()->payment_method->isPickup()
-                    && ! $this->getRecord()->payment_status->isPaid()
-                    && ! in_array($this->getRecord()->status, [OrderStatusEnum::CANCELLED, OrderStatusEnum::DELIVERED], true))
-                ->action(fn () => $this->perform(fn () => app(OrderPaymentService::class)->markPickupPaid($this->getRecord(), auth('filament')->user()))),
-
         ];
     }
 

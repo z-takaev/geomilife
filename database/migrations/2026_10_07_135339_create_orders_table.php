@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('city_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('number')->unique();
+            $table->unsignedBigInteger('number')->nullable()->unique();
             $table->string('status');
             $table->string('payment_status');
             $table->string('delivery_method');

@@ -7,22 +7,17 @@ namespace App\Services\Orders;
 use App\DTO\Tbank\TbankCancelPaymentRequestDto;
 use App\DTO\Tbank\TbankInitPaymentRequestDto;
 use App\DTO\Tbank\TbankPaymentNotificationDto;
-use App\Enums\Orders\OrderStatusEnum;
 use App\Enums\Orders\PaymentStatusEnum;
 use App\Enums\Tbank\TbankPaymentStatusEnum;
-use App\Models\FilamentUser;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Services\Tbank\Exceptions\TbankApiException;
 use App\Services\Tbank\TbankService;
-use App\Support\Traits\Orders\ValidatesOrderManagement;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 final class OrderPaymentService
 {
-    use ValidatesOrderManagement;
-
     public function __construct(private readonly TbankService $bank) {}
 
     public function startOnlinePayment(Order $order): Payment
@@ -118,33 +113,6 @@ final class OrderPaymentService
         foreach ($order->payments()->where('provider', 'TBANK')->orderBy('id')->get() as $payment) {
             $this->refundPayment($order, $payment);
         }
-    }
-
-    /**
-     * Фиксирует оплату при самовывозе с проверкой прав сотрудника.
-     */
-    public function markPickupPaid(Order $order, FilamentUser $actor): void
-    {
-        $this->assertStaff($actor);
-        DB::transaction(function () use ($order): void {
-            $lockedOrder = Order::query()
-                ->lockForUpdate()
-                ->findOrFail($order->id);
-            $this->assertNotCancelling($lockedOrder);
-
-            if (! $lockedOrder->delivery_method->isPickup() || ! $lockedOrder->payment_method->isPickup()
-                || in_array($lockedOrder->status, [OrderStatusEnum::CANCELLED, OrderStatusEnum::DELIVERED], true)) {
-                throw ValidationException::withMessages(['payment' => 'Ручная отметка оплаты недоступна.']);
-            }
-
-            if ($lockedOrder->payment_status->isPaid()) {
-                return;
-            }
-
-            $lockedOrder->update(['payment_status' => PaymentStatusEnum::PAID]);
-
-            $this->notify($lockedOrder, 'PAYMENT_PAID', 'payment-paid:'.$lockedOrder->id);
-        });
     }
 
     private function recoverInitialization(Payment $payment): void
@@ -251,10 +219,6 @@ final class OrderPaymentService
 
         $order->update(['payment_status' => $nextStatus]);
 
-        if ($nextStatus->isPaid() && ! $previousStatus->is($nextStatus)) {
-            $this->notify($order, 'PAYMENT_PAID', 'payment-paid:'.$order->id);
-        }
-
         if ($nextStatus->isRefunded() && ! $previousStatus->is($nextStatus)) {
             $this->notify($order, 'REFUNDED', 'payment-refunded:'.$order->id);
         }
@@ -325,6 +289,8 @@ final class OrderPaymentService
                 orderId: $payment->bank_order_id,
                 amount: $payment->amount,
                 description: 'Заказ '.$order->number,
+                successUrl: route('payment.success'),
+                failUrl: route('payment.fail'),
                 notificationUrl: $this->secureRoute('tbank.webhook'),
             ));
 

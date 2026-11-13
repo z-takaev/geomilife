@@ -14,10 +14,10 @@ final class EnsureUserIsNotBlocked
 {
     public function handle(Request $request, Closure $next): Response|RedirectResponse
     {
-        if ($request->user()?->is_blocked) {
-            Auth::logout();
+        if (Auth::guard('web')->user()?->is_blocked) {
+            Auth::guard('web')->logout();
 
-            $request->session()->invalidate();
+            $request->session()->regenerate();
             $request->session()->regenerateToken();
 
             return redirect()->route('home')

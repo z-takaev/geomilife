@@ -12,8 +12,6 @@ use Livewire\Component;
 
 final class CitySelector extends Component
 {
-    private const int SEARCH_LIMIT = 5;
-
     public string $query = '';
 
     public function detect(CurrentCityService $currentCityService): void
@@ -43,12 +41,12 @@ final class CitySelector extends Component
         if ($query !== '') {
             $searchResults = City::query()
                 ->where('is_active', true)
-                ->whereLike('name', '%'.addcslashes($query, '\\%_').'%')
+                ->searchByName($query)
                 ->orderByDesc('is_suggested')
                 ->orderBy('name')
                 ->orderBy('region')
                 ->orderBy('id')
-                ->limit(self::SEARCH_LIMIT)
+                ->limit((int) config('pagination.per_page.city_search'))
                 ->get();
         }
 

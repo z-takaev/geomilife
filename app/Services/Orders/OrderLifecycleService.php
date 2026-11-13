@@ -6,6 +6,7 @@ namespace App\Services\Orders;
 
 use App\Enums\Orders\DeliveryMethodEnum;
 use App\Enums\Orders\OrderStatusEnum;
+use App\Enums\Orders\PaymentStatusEnum;
 use App\Jobs\Orders\CreateCdekShipmentJob;
 use App\Models\FilamentUser;
 use App\Models\Order;
@@ -46,8 +47,12 @@ final class OrderLifecycleService
         $index = array_search($order->status, $stages, true);
         $next = $index === false ? null : ($stages[$index + 1] ?? null);
 
+        $collectsPickupPayment = ($next?->isDelivered() ?? false)
+            && $order->delivery_method->isPickup()
+            && $order->payment_method->isPickup();
+
         if (($order->delivery_method->isCdek() && in_array($next, [OrderStatusEnum::SHIPPED, OrderStatusEnum::DELIVERED], true))
-            || (($next?->isDelivered() ?? false) && ! $order->payment_status->isPaid())) {
+            || (($next?->isDelivered() ?? false) && ! $order->payment_status->isPaid() && ! $collectsPickupPayment)) {
             return null;
         }
 
@@ -80,7 +85,14 @@ final class OrderLifecycleService
                 throw ValidationException::withMessages(['status' => 'Этот переход статуса недоступен.']);
             }
 
-            $lockedOrder->update(['status' => $status]);
+            $changes = ['status' => $status];
+
+            if ($status->isDelivered() && $lockedOrder->delivery_method->isPickup()
+                && $lockedOrder->payment_method->isPickup()) {
+                $changes['payment_status'] = PaymentStatusEnum::PAID;
+            }
+
+            $lockedOrder->update($changes);
             $this->notify($lockedOrder, $status->value, 'status:'.$status->value);
 
             return true;

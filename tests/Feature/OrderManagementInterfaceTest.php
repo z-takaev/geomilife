@@ -260,21 +260,22 @@ it('объясняет регистрацию СДЭК и сохраняет а�
     expect($order->fresh()->status)->toBe(OrderStatusEnum::READY_TO_SHIP);
 });
 
-it('требует отдельного подтверждения оплаты перед выдачей самовывоза', function (): void {
+it('подтверждает оплату и выдачу самовывоза одним действием', function (): void {
     $order = fulfillmentOrder([
         'delivery_method' => 'PICKUP', 'payment_method' => PaymentMethodEnum::PICKUP->value,
         'payment_status' => 'PENDING', 'status' => 'READY_FOR_PICKUP',
     ]);
-    $payment = TestAction::make('markPaid')->schemaComponent('processingActions');
     $handover = TestAction::make('status_DELIVERED')->schemaComponent('processingActions');
     $component = Livewire::test(ViewOrder::class, ['record' => $order->id])
-        ->assertSee('Подтвердите получение оплаты перед выдачей заказа')
-        ->assertActionVisible($payment)->assertDontSee('Подтвердить выдачу')
-        ->mountAction($payment)->assertActionMounted($payment);
-    expect($component->instance()->getMountedAction()->getModalDescription())->toContain($order->total->format());
-    $component->callMountedAction()->assertHasNoActionErrors()->assertActionVisible($handover)
-        ->assertSee('Подтвердить выдачу')->callAction($handover);
-    expect($order->fresh()->status)->toBe(OrderStatusEnum::DELIVERED);
+        ->assertDontSee('Подтвердить получение оплаты')
+        ->assertActionVisible($handover)
+        ->assertSee('Подтвердить выдачу')
+        ->mountAction($handover)->assertActionMounted($handover);
+    expect($component->instance()->getMountedAction()->getModalDescription())
+        ->toContain('получена оплата', $order->total->format());
+    $component->callMountedAction()->assertHasNoActionErrors();
+    expect($order->fresh()->status)->toBe(OrderStatusEnum::DELIVERED)
+        ->and($order->fresh()->payment_status->value)->toBe('PAID');
 });
 
 it('не применяет устаревшее подтверждение повторно', function (): void {

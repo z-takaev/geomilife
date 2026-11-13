@@ -28,6 +28,35 @@
                         <small>{{ $message }}</small>
                     @enderror
                 </label>
+                <fieldset class="profile-form__wide checkout-suggestions" x-data="checkoutSuggestions()"
+                    x-on:click.outside="open = false" x-on:keydown.escape.stop.prevent="close()">
+                    <label for="profile-city">{{ __('Город по умолчанию') }}</label>
+                    <div class="checkout-suggestions__input">
+                        <input id="profile-city" type="search" wire:model.live.debounce.300ms="city_search"
+                            placeholder="{{ __('Начните вводить город') }}" autocomplete="off" maxlength="255"
+                            x-ref="searchInput" x-on:focus="show()" x-on:input="show()">
+                        @if (mb_strlen(trim($city_search)) >= 3)
+                            <ul class="city-selection__results" x-show="open">
+                                @forelse ($cities as $city)
+                                    <li wire:key="profile-city-{{ $city->id }}">
+                                        <button type="button" wire:click="selectCity({{ $city->id }})"
+                                            x-on:click="open = false">
+                                            <span>{{ $city->name }}</span>
+                                            @if ($city->region)
+                                                <small>{{ $city->region }}</small>
+                                            @endif
+                                        </button>
+                                    </li>
+                                @empty
+                                    <li class="city-selection__status">{{ __('Города не найдены') }}</li>
+                                @endforelse
+                            </ul>
+                        @endif
+                    </div>
+                    @error('form.city_id')
+                        <small>{{ $message }}</small>
+                    @enderror
+                </fieldset>
                 <label class="profile-form__wide">{{ __('Email') }}<input type="email" value="{{ $user->email }}"
                         disabled></label>
                 <div class="profile-form__wide profile-form__actions"><button class="profile-button"
@@ -108,8 +137,13 @@
                 <div class="profile-telegram__controls">
                     <span
                         class="profile-telegram__status profile-telegram__status--connected">{{ __('Подключен') }}</span>
-                    <button type="button" class="profile-text-button"
-                        wire:click="disconnectTelegram">{{ __('Отключить') }}</button>
+                    <div class="profile-telegram__account">
+                        @if ($user->telegram_username)
+                            <span class="profile-telegram__username">{{ '@' . $user->telegram_username }}</span>
+                        @endif
+                        <button type="button" class="profile-text-button profile-telegram__disconnect"
+                            wire:click="disconnectTelegram">{{ __('Отключить') }}</button>
+                    </div>
                 </div>
             @elseif ($telegramBotConfigured)
                 <div class="profile-telegram__controls">

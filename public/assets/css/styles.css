@@ -16205,7 +16205,7 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
     mask: url('../images/social/telegram.svg') center / contain no-repeat;
 }
 .profile-telegram__copy h2 {
-    margin: 0 0 5px;
+    margin: 0 0 3px;
     color: var(--text-black);
     font-size: 18px;
     font-weight: 600;
@@ -16220,6 +16220,16 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
     flex: 0 0 auto;
     align-items: center;
     gap: 16px;
+}
+.profile-telegram__account {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
+}
+.profile-telegram__disconnect {
+    color: var(--primary);
+    font-weight: 500;
 }
 .profile-telegram__status {
     margin: 0;

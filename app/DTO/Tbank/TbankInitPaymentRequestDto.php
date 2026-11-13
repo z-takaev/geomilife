@@ -30,11 +30,16 @@ final readonly class TbankInitPaymentRequestDto
             throw new InvalidArgumentException('Описание платежа должно содержать от 1 до 140 символов.');
         }
 
-        foreach ([$successUrl, $failUrl, $notificationUrl] as $url) {
+        foreach ([$successUrl, $failUrl] as $url) {
             if ($url !== null && (filter_var($url, FILTER_VALIDATE_URL) === false
-                || parse_url($url, PHP_URL_SCHEME) !== 'https' || mb_strlen($url) > 250)) {
-                throw new InvalidArgumentException('Укажите корректный HTTPS URL длиной до 250 символов.');
+                || ! in_array(parse_url($url, PHP_URL_SCHEME), ['http', 'https'], true) || mb_strlen($url) > 250)) {
+                throw new InvalidArgumentException('Укажите корректный URL возврата длиной до 250 символов.');
             }
+        }
+
+        if ($notificationUrl !== null && (filter_var($notificationUrl, FILTER_VALIDATE_URL) === false
+            || parse_url($notificationUrl, PHP_URL_SCHEME) !== 'https' || mb_strlen($notificationUrl) > 250)) {
+            throw new InvalidArgumentException('Укажите корректный HTTPS URL уведомлений длиной до 250 символов.');
         }
 
         if ($redirectDueDate !== null && ($redirectDueDate < new DateTimeImmutable('+1 minute')

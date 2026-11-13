@@ -246,7 +246,7 @@ it('определяет следующий ручной статус по до�
 })->with([
     ['PICKUP', 'NEW', 'UNPAID', OrderStatusEnum::CONFIRMED],
     ['PICKUP', 'CONFIRMED', 'UNPAID', OrderStatusEnum::READY_FOR_PICKUP],
-    ['PICKUP', 'READY_FOR_PICKUP', 'UNPAID', null],
+    ['PICKUP', 'READY_FOR_PICKUP', 'UNPAID', OrderStatusEnum::DELIVERED],
     ['PICKUP', 'READY_FOR_PICKUP', 'PAID', OrderStatusEnum::DELIVERED],
     ['COURIER', 'CONFIRMED', 'PAID', OrderStatusEnum::DELIVERED],
     ['COURIER', 'CONFIRMED', 'UNPAID', null],

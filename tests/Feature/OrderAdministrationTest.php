@@ -66,7 +66,7 @@ it('позволяет сохранять изменения данных офо
 
 it('выгружает один заказ одной строкой с семнадцатью колонками и правильными типами', function (): void {
     $this->actingAs(fulfillmentEmployee(), 'filament');
-    $order = fulfillmentOrder(['number' => '0000123', 'comment' => '=HYPERLINK("https://invalid.test")']);
+    $order = fulfillmentOrder(['comment' => '=HYPERLINK("https://invalid.test")']);
     fulfillmentOrderItem($order);
     fulfillmentOrderItem($order, ['product_variant_id' => 2, 'sku' => 'SECOND']);
     $order->payments()->create([
@@ -85,7 +85,8 @@ it('выгружает один заказ одной строкой с семн
             ->and($sheet->getTitle())->toBe('Заказы')
             ->and($sheet->getHighestDataRow())->toBe(2)
             ->and($sheet->getHighestDataColumn())->toBe('Q')
-            ->and($sheet->getCell('A2')->getValue())->toBe('0000123')
+            ->and($sheet->getCell('A2')->getValue())->toBe($order->number)
+            ->and($sheet->getCell('A2')->getDataType())->toBe(DataType::TYPE_NUMERIC)
             ->and($sheet->getCell('C2')->getValue())->toBe('Покупатель из снимка')
             ->and($sheet->getCell('D2')->getDataType())->toBe(DataType::TYPE_STRING)
             ->and($sheet->getCell('E2')->getValue())->toBe('snapshot@example.test')
@@ -101,20 +102,18 @@ it('выгружает один заказ одной строкой с семн
     }
 });
 
-it('экспортирует все результаты фильтров и поиска со всех страниц в выбранной сортировке', function (): void {
+it('экспортирует все результаты фильтров со всех страниц в выбранной сортировке', function (): void {
     $this->actingAs(fulfillmentEmployee(), 'filament');
-    $matching = collect(range(1, 31))->map(fn (int $index): Order => fulfillmentOrder([
-        'number' => sprintf('FILTER-%03d', $index), 'status' => 'CONFIRMED',
+    $matching = collect(range(1, 31))->map(fn (): Order => fulfillmentOrder([
+        'status' => 'CONFIRMED',
         'delivery_method' => 'COURIER',
     ]));
-    fulfillmentOrder(['number' => 'FILTER-WRONG-STATUS', 'status' => 'NEW', 'delivery_method' => 'COURIER']);
-    fulfillmentOrder(['number' => 'FILTER-WRONG-DELIVERY', 'status' => 'CONFIRMED', 'delivery_method' => 'PICKUP']);
-    fulfillmentOrder(['number' => 'OTHER-NUMBER', 'status' => 'CONFIRMED', 'delivery_method' => 'COURIER']);
+    fulfillmentOrder(['status' => 'NEW', 'delivery_method' => 'COURIER']);
+    fulfillmentOrder(['status' => 'CONFIRMED', 'delivery_method' => 'PICKUP']);
 
     $component = Livewire::test(ListOrders::class)
         ->filterTable('status', 'CONFIRMED')
         ->filterTable('delivery_method', 'COURIER')
-        ->searchTable('FILTER-')
         ->sortTable('number', 'desc')
         ->set('tableRecordsPerPage', 10)
         ->set('selectedTableRecords', [$matching->first()->id])
@@ -125,7 +124,7 @@ it('экспортирует все результаты фильтров и п�
     try {
         $sheet = $spreadsheet->getActiveSheet();
         expect($sheet->getHighestDataRow())->toBe(32);
-        $numbers = array_column($sheet->rangeToArray('A2:A32'), 0);
+        $numbers = array_map('intval', array_column($sheet->rangeToArray('A2:A32'), 0));
         expect($numbers)->toBe($matching->pluck('number')->reverse()->values()->all());
     } finally {
         $spreadsheet->disconnectWorksheets();

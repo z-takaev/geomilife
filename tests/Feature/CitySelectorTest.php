@@ -76,6 +76,19 @@ it('ограничивает подсказки и исключает отклю
         ->assertViewHas('searchResults', fn ($cities): bool => $cities->count() === 5 && $cities->every->is_active);
 });
 
+it('показывает регион в подсказках города', function (): void {
+    City::query()->create([
+        'cdek_code' => 44,
+        'name' => 'Киров',
+        'region' => 'Кировская область',
+        'is_active' => true,
+    ]);
+
+    Livewire::test(CitySelector::class)
+        ->set('query', 'Киров')
+        ->assertSee('Кировская область');
+});
+
 it('ищет символы SQL-шаблонов буквально', function (string $query): void {
     City::query()->create(['cdek_code' => 44, 'name' => 'Москва', 'is_active' => true]);
     Livewire::test(CitySelector::class)->set('query', $query)

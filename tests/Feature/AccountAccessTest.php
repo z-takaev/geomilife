@@ -21,11 +21,10 @@ function createAccountUser(string $email, bool $emailVerified = true): User
     return $user;
 }
 
-function createAccountOrder(User $user, string $number): Order
+function createAccountOrder(User $user): Order
 {
     return Order::query()->create([
         'user_id' => $user->getKey(),
-        'number' => $number,
         'status' => 'NEW',
         'payment_status' => 'PENDING',
         'delivery_method' => 'COURIER',
@@ -60,13 +59,13 @@ it('перенаправляет пользователя без подтвер�
 it('показывает пользователю только принадлежащий ему заказ', function (): void {
     $owner = createAccountUser('owner@example.com');
     $otherUser = createAccountUser('other@example.com');
-    $ownOrder = createAccountOrder($owner, 'ORDER-001');
-    $otherOrder = createAccountOrder($otherUser, 'ORDER-002');
+    $ownOrder = createAccountOrder($owner);
+    $otherOrder = createAccountOrder($otherUser);
 
     $this->actingAs($owner)
         ->get(route('orders.show', $ownOrder))
         ->assertOk()
-        ->assertSee('ORDER-001');
+        ->assertSee((string) $ownOrder->number);
 
     $this->actingAs($owner)
         ->get(route('orders.show', $otherOrder))

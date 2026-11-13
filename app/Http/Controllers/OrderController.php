@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\Orders\RepeatOrderAction;
 use App\Http\Requests\Orders\CancelOrderRequest;
 use App\Models\Order;
 use App\Navigation\BreadcrumbItem;
@@ -72,5 +73,15 @@ final class OrderController extends Controller
         $lifecycle->cancel($order, $user, $reason, onlyIfNew: true);
 
         return redirect()->route('orders.show', $order)->with('order_message', __('Запрос отмены принят. Состояние возврата отображается в заказе.'));
+    }
+
+    public function repeat(Request $request, Order $order, RepeatOrderAction $repeatOrder): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($order->user_id === $user->id, 404);
+
+        $repeatOrder->execute($user, $order);
+
+        return redirect()->route('checkout');
     }
 }
