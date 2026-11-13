@@ -25,10 +25,9 @@ final class CitySeeder extends Seeder
                 'courier_delivery_price' => Money::fromRubles(300),
                 'door_delivery_price' => Money::fromRubles(100),
                 'floor_lifting_price' => Money::fromRubles(50),
-                'pickup_name' => 'Тестовая точка самовывоза GeoMiLife',
-                'pickup_address' => 'Владикавказ, ул. Тестовая, 1',
+                'pickup_address' => 'ул. Тамаева 35, Владикавказ',
                 'pickup_working_hours' => 'Пн–Пт 09:00–18:00',
-                'pickup_phone' => '+7 (999) 000-00-00',
+                'pickup_phone' => '+7 (988) 873-10-20',
             ],
         );
     }

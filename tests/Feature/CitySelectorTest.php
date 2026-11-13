@@ -68,12 +68,14 @@ it('не возвращает отключенный или удаленный �
 })->with([true, false]);
 
 it('ограничивает подсказки и исключает отключенные города', function (): void {
-    for ($code = 1; $code <= 7; $code++) {
+    $citySearchLimit = (int) config('pagination.per_page.city_search');
+
+    for ($code = 1; $code <= $citySearchLimit + 2; $code++) {
         City::query()->create(['cdek_code' => $code, 'name' => 'Город '.$code, 'is_active' => true]);
     }
-    City::query()->create(['cdek_code' => 8, 'name' => 'Город скрытый', 'is_active' => false]);
+    City::query()->create(['cdek_code' => $citySearchLimit + 3, 'name' => 'Город скрытый', 'is_active' => false]);
     Livewire::test(CitySelector::class)->set('query', ' Город ')
-        ->assertViewHas('searchResults', fn ($cities): bool => $cities->count() === 5 && $cities->every->is_active);
+        ->assertViewHas('searchResults', fn ($cities): bool => $cities->count() === $citySearchLimit && $cities->every->is_active);
 });
 
 it('показывает регион в подсказках города', function (): void {

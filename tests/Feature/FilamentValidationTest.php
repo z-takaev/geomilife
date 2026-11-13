@@ -277,7 +277,7 @@ it('проверяет уникальность email после нормали�
     ])->call('create')->assertHasFormErrors(['email' => 'unique']);
 });
 
-it('не записывает дробное и неположительное количество напрямую в базу', function (int|string $value): void {
+it('не записывает количество вне допустимого диапазона напрямую в базу', function (int $value): void {
     expect(fn () => DB::transaction(fn () => CheckoutFixtures::variant(['value' => $value])))
         ->toThrow(QueryException::class);
-})->with([0, -1, '1.5', '1.0']);
+})->with([0, -1, 1000000000]);

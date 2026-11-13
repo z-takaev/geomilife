@@ -151,7 +151,11 @@ final class SavedDeliveryLocationService
 
     private function removeOverflow(Builder $query, int $keepId): void
     {
-        $ids = $this->orderByRecent(clone $query)->whereKeyNot($keepId)->skip((int) config('orders.saved_locations_limit') - 1)->pluck('id');
+        $ids = $this->orderByRecent(clone $query)
+            ->whereKeyNot($keepId)
+            ->skip((int) config('orders.saved_locations_limit') - 1)
+            ->take(PHP_INT_MAX)
+            ->pluck('id');
 
         if ($ids->isNotEmpty()) {
             $query->whereKey($ids)->delete();

@@ -27,14 +27,8 @@ final class CategorySeeder extends Seeder
             ['name' => 'Специи', 'image' => 'spices.png'],
             ['name' => 'Полезные сладости', 'image' => 'healthy-sweets.png'],
             ['name' => 'Бакалея', 'image' => 'groceries.png'],
-            [
-                'name' => 'Средства',
-                'image' => 'care-products.png',
-                'children' => [
-                    'Стиральные порошки',
-                    'Средства гигиены',
-                ],
-            ],
+            ['name' => 'Средства личной гигиены', 'image' => 'care-products.png'],
+            ['name' => 'Другое', 'image' => 'groceries.png'],
         ];
 
         foreach ($categories as $index => $data) {
@@ -49,18 +43,6 @@ final class CategorySeeder extends Seeder
                 name: $data['name'],
                 processImage: static fn (Image $image): Image => $image->fit(Fit::Fill, 240, 240, backgroundColor: 'rgba(255, 255, 255, 0)'),
             );
-
-            foreach ($data['children'] ?? [] as $childIndex => $childName) {
-                Category::query()->updateOrCreate(
-                    ['slug' => Str::slug($childName)],
-                    [
-                        'parent_id' => $category->getKey(),
-                        'name' => $childName,
-                        'order' => $childIndex + 1,
-                        'is_active' => true,
-                    ],
-                );
-            }
         }
     }
 }

@@ -182,36 +182,45 @@ final class CheckoutService
             throw ValidationException::withMessages(['delivery_point_code' => __('Выберите пункт получения.')]);
         }
 
-        return DB::transaction(function () use ($form, $idempotencyKey, $calculation, $deliveryMethod): Order {
-            $user = auth()->user();
+        $lockName = 'checkout:'.$idempotencyKey;
+        $lock = DB::selectOne('SELECT GET_LOCK(?, 10) AS acquired', [$lockName]);
 
-            if ($user !== null) {
-                User::query()
-                    ->whereKey($user->getKey())
-                    ->lockForUpdate()
-                    ->firstOrFail();
-            }
+        if ((int) ($lock->acquired ?? 0) !== 1) {
+            throw ValidationException::withMessages(['idempotency_key' => __('Не удалось заблокировать оформление заказа. Попробуйте ещё раз.')]);
+        }
 
-            DB::select('SELECT pg_advisory_xact_lock(hashtext(?))', ['checkout:'.$idempotencyKey]);
+        try {
+            return DB::transaction(function () use ($form, $idempotencyKey, $calculation, $deliveryMethod): Order {
+                $user = auth()->user();
 
-            if ($existing = $this->findPlacedOrder($idempotencyKey)) {
-                return $existing;
-            }
+                if ($user !== null) {
+                    User::query()
+                        ->whereKey($user->getKey())
+                        ->lockForUpdate()
+                        ->firstOrFail();
+                }
 
-            if (Order::query()->where('idempotency_key', $idempotencyKey)->exists()) {
-                throw ValidationException::withMessages(['idempotency_key' => __('Оформление недоступно. Обновите страницу.')]);
-            }
+                if ($existing = $this->findPlacedOrder($idempotencyKey)) {
+                    return $existing;
+                }
 
-            $this->assertCurrentItems($calculation);
-            $order = $this->createOrderRecord($user, $form, $calculation, $idempotencyKey);
-            $this->saveItems($order, $calculation['items']);
-            $this->rememberDelivery($user, $deliveryMethod, $calculation);
+                if (Order::query()->where('idempotency_key', $idempotencyKey)->exists()) {
+                    throw ValidationException::withMessages(['idempotency_key' => __('Оформление недоступно. Обновите страницу.')]);
+                }
 
-            app(CartService::class)->removeOrderedItems($calculation['items']);
-            $this->notifications->queue($order, 'CREATED', 'created:'.$order->id);
+                $this->assertCurrentItems($calculation);
+                $order = $this->createOrderRecord($user, $form, $calculation, $idempotencyKey);
+                $this->saveItems($order, $calculation['items']);
+                $this->rememberDelivery($user, $deliveryMethod, $calculation);
 
-            return $order;
-        });
+                app(CartService::class)->removeOrderedItems($calculation['items']);
+                $this->notifications->queue($order, 'CREATED', 'created:'.$order->id);
+
+                return $order;
+            });
+        } finally {
+            DB::selectOne('SELECT RELEASE_LOCK(?)', [$lockName]);
+        }
     }
 
     /**

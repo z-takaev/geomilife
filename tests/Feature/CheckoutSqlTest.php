@@ -70,7 +70,7 @@ it('повтор уведомления читает свежий заказ б�
     app(OrderNotificationService::class)->retryPending();
 
     $orderQueries = collect(DB::getQueryLog())->filter(
-        fn (array $query): bool => preg_match('/^select .* from "orders" /i', $query['query']) === 1,
+        fn (array $query): bool => preg_match('/^select .* from [`"]orders[`"] /i', $query['query']) === 1,
     );
     DB::disableQueryLog();
 
@@ -141,7 +141,7 @@ it('не перечитывает один заказ подряд без изм
     $duplicateOrderReads = 0;
 
     foreach ($queries as $query) {
-        $isOrderRead = preg_match('/^select .* from "orders" where /i', $query['query']) === 1
+        $isOrderRead = preg_match('/^select .* from [`"]orders[`"] where /i', $query['query']) === 1
             && ! str_contains($query['query'], 'for update');
 
         if ($isOrderRead && $previousOrderRead === $query['bindings']) {
@@ -178,13 +178,13 @@ it('блокирует заказанные строки корзины одни
     $component->call('placeOrder')->assertHasNoErrors();
 
     $lockedCartReads = collect(DB::getQueryLog())->filter(
-        fn (array $query): bool => preg_match('/^select .* from "cart_items" /i', $query['query']) === 1
+        fn (array $query): bool => preg_match('/^select .* from [`"]cart_items[`"] /i', $query['query']) === 1
             && str_contains($query['query'], 'for update'),
     );
     DB::disableQueryLog();
 
     expect($lockedCartReads)->toHaveCount(1)
-        ->and($user->orders()->sole()->items()->sum('quantity'))->toBe($itemCount * 2)
+        ->and((int) $user->orders()->sole()->items()->sum('quantity'))->toBe($itemCount * 2)
         ->and($cart->items()->orderBy('product_variant_id')->pluck('quantity', 'product_variant_id')->all())->toBe([
             $variantIds[0] => 2,
             $unrelatedVariant->id => 5,

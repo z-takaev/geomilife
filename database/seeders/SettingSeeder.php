@@ -12,7 +12,7 @@ use Spatie\Image\Image;
 
 final class SettingSeeder extends Seeder
 {
-    public const array DEFAULT_BENEFITS = [
+    public const array BENEFITS = [
         ['title' => 'Натуральные продукты', 'description' => 'Мёд, масла, орехи и травы'],
         ['title' => 'Своё производство', 'description' => 'Знаем состав и контролируем каждый этап'],
         ['title' => 'Доставка СДЭК', 'description' => 'Отправляем заказы по всей России'],
@@ -20,9 +20,6 @@ final class SettingSeeder extends Seeder
         ['title' => 'Документы о качестве', 'description' => 'Все сертификаты доступны на сайте'],
     ];
 
-    /**
-     * @var array<string, string>
-     */
     private const array IMAGES = [
         'story_image' => 'company-story.jpg',
         'banner_wide_image' => 'promo-natural-ossetia.jpg',
@@ -42,18 +39,15 @@ final class SettingSeeder extends Seeder
     public function run(): void
     {
         $setting = Setting::query()->updateOrCreate([], [
-            'benefits' => self::DEFAULT_BENEFITS,
+            'benefits' => self::BENEFITS,
             'phone' => '+7 (988) 873-10-20',
             'email' => 'geomilife@bk.ru',
             'admin_email' => 'geomilife@bk.ru',
             'address' => 'ул. Тамаева 35, Владикавказ',
-            'working_hours' => 'Пн–Пт: 09:00–18:00, Сб–Вс: выходной',
+            'working_hours' => 'Пн–Пт: 09:00–18:00',
             'yandex_map_id' => '386e39964882c544c6f7899214774d2ed29e17f97df68f795e37fa871ea1573f',
-            'instagram_url' => 'https://www.instagram.com/geomilife/',
-            'youtube_url' => 'https://www.youtube.com/@geomilife8532',
-            'vk_url' => 'https://vk.ru/geomilifee',
-            'telegram_url' => 'https://t.me/+79888731020',
-            'whatsapp_url' => 'https://wa.me/79888731020',
+            'telegram_url' => 'https://t.me/GeoMiLife15',
+            'whatsapp_url' => 'https://wa.me/message/QHHLK5QIFYXQF1',
             'footer_title' => 'Натуральные продукты GeoMiLife',
             'footer_description' => 'Сыродавленные масла, урбеч и полезные продукты собственного производства с доставкой по России.',
             'story_title' => 'Из сердца Осетии — с заботой о вашем здоровье',
@@ -62,19 +56,14 @@ final class SettingSeeder extends Seeder
         ]);
 
         foreach (self::IMAGES as $collection => $fileName) {
-            $this->addImage($setting, $collection, $fileName);
+            app(FixtureImages::class)->attach(
+                model: $setting,
+                file: 'Setting/'.$fileName,
+                collection: $collection,
+                processImage: $collection === 'story_image'
+                    ? static fn (Image $image): Image => $image->fit(Fit::Crop, 1800, 1200)
+                    : null,
+            );
         }
-    }
-
-    private function addImage(Setting $setting, string $collection, string $fileName): void
-    {
-        app(FixtureImages::class)->attach(
-            model: $setting,
-            file: 'Setting/'.$fileName,
-            collection: $collection,
-            processImage: $collection === 'story_image'
-                ? static fn (Image $image): Image => $image->fit(Fit::Crop, 1800, 1200)
-                : null,
-        );
     }
 }

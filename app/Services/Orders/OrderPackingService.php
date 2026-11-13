@@ -38,7 +38,7 @@ final class OrderPackingService
 
         $boxes = ShippingBox::query()
             ->where('is_active', true)
-            ->orderByRaw('CAST(length AS BIGINT) * width * height')
+            ->orderByRaw('CAST(length AS UNSIGNED) * width * height')
             ->orderBy('id')
             ->get();
 

@@ -5,7 +5,7 @@
 - Livewire 4.4.7.
 - Alpine.js 3.17.4.
 - Filament 5.9.0.
-- PostgreSQL 18.
+- MySQL 8.4.
 - Redis.
 - `spatie/laravel-medialibrary` 11.23.9 для работы с медиафайлами.
 - Mailpit для локальной проверки писем.

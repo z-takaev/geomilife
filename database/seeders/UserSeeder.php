@@ -18,8 +18,8 @@ final class UserSeeder extends Seeder
         User::query()->updateOrCreate(
             ['email' => 'user@user.ru'],
             [
-                'first_name' => 'Пользователь',
-                'last_name' => 'Тестовый',
+                'first_name' => 'Иван',
+                'last_name' => 'Иванов',
                 'password' => Hash::make('user@user.ru'),
                 'city_id' => $city->getKey(),
             ],

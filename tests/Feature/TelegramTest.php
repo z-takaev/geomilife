@@ -30,21 +30,18 @@ it('отключает уведомления и очищает реквизит
         ->and($user->fresh()->telegram_notifications_enabled)->toBeFalse();
 });
 
-it('показывает подключённое имя Telegram только когда оно задано', function (bool $hasUsername): void {
+it('не показывает имя подключённого пользователя Telegram', function (): void {
     $user = User::query()->create(['first_name' => 'Иван', 'email' => 'buyer@example.com', 'password' => 'Password123']);
     $user->forceFill([
         'telegram_chat_id' => 123,
-        'telegram_username' => $hasUsername ? 'buyer' : null,
+        'telegram_username' => 'buyer',
         'telegram_notifications_enabled' => true,
     ])->save();
 
-    $component = Livewire::actingAs($user)->test(UserProfile::class)
-        ->assertSee('Подключен');
-
-    $hasUsername
-        ? $component->assertSee('@buyer')
-        : $component->assertDontSee('Имя пользователя Telegram не задано');
-})->with([true, false]);
+    Livewire::actingAs($user)->test(UserProfile::class)
+        ->assertSee('Подключен')
+        ->assertDontSee('@buyer');
+});
 
 it('не создает ссылку подключения без настроенного бота', function (): void {
     config(['telegram.bot_token' => '', 'telegram.bot_username' => '']);

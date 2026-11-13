@@ -49,11 +49,11 @@ it('показывает пять исходных преимуществ на �
             && ! $field->isDeletable() && ! $field->isReorderable()
             && $field->isCollapsible() && $field->isCollapsed()
             && $field->hasItemLabels())
-        ->assertSchemaStateSet(['benefits' => SettingSeeder::DEFAULT_BENEFITS]);
+        ->assertSchemaStateSet(['benefits' => SettingSeeder::BENEFITS]);
 
     Auth::shouldUse('web');
     $response = $this->get(route('home'))->assertOk();
-    foreach (SettingSeeder::DEFAULT_BENEFITS as $benefit) {
+    foreach (SettingSeeder::BENEFITS as $benefit) {
         $response->assertSee($benefit['title'])->assertSee($benefit['description']);
     }
 });
@@ -140,7 +140,7 @@ it('группирует изображения баннеров по раскл
 });
 
 it('сохраняет тексты пяти преимуществ и выводит изменения на главной с обновлением кеша', function (): void {
-    $benefits = SettingSeeder::DEFAULT_BENEFITS;
+    $benefits = SettingSeeder::BENEFITS;
     $benefits[0] = ['title' => 'Новое преимущество', 'description' => '<script>Новый текст</script>'];
     Setting::cached();
 
@@ -166,11 +166,11 @@ it('отклоняет изменение количества преимуще�
         ->fillForm([...$this->formData, 'benefits' => $benefits])
         ->call('save')->assertHasFormErrors(['benefits']);
 
-    expect(Setting::query()->sole()->benefits)->toBe(SettingSeeder::DEFAULT_BENEFITS);
+    expect(Setting::query()->sole()->benefits)->toBe(SettingSeeder::BENEFITS);
 })->with([0, 4, 6]);
 
 it('не сохраняет пустой текст преимущества', function (string $field): void {
-    $benefits = SettingSeeder::DEFAULT_BENEFITS;
+    $benefits = SettingSeeder::BENEFITS;
     $benefits[0][$field] = '';
 
     $component = Livewire::test(ManageSettings::class)
@@ -178,5 +178,5 @@ it('не сохраняет пустой текст преимущества', f
     $itemKey = array_key_first($component->get('data.benefits'));
     $component->call('save')->assertHasFormErrors(["benefits.{$itemKey}.{$field}" => 'required']);
 
-    expect(Setting::query()->sole()->benefits)->toBe(SettingSeeder::DEFAULT_BENEFITS);
+    expect(Setting::query()->sole()->benefits)->toBe(SettingSeeder::BENEFITS);
 })->with(['title', 'description']);

@@ -34,7 +34,7 @@ final class CheckoutFixtures
 
         return Setting::query()->updateOrCreate([], [
             'privacy_policy' => $path,
-            'benefits' => SettingSeeder::DEFAULT_BENEFITS,
+            'benefits' => SettingSeeder::BENEFITS,
         ]);
     }
 

@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Services\Cart\CartService;
 use App\Support\Values\Money;
 use Illuminate\Http\Client\Factory;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
@@ -98,6 +99,17 @@ it('повтор одного оформления возвращает суще
     $this->assertDatabaseCount('orders', 1);
     $this->assertDatabaseCount('order_items', 1);
     expect(Order::query()->sole()->idempotency_key)->toBe($key);
+});
+
+it('освобождает блокировку после оформления заказа', function (): void {
+    $city = CheckoutFixtures::city();
+    app(CartService::class)->add(CheckoutFixtures::variant()->getKey(), 1);
+    $component = CheckoutFixtures::form($city);
+    $key = $component->get('idempotency_key');
+
+    $component->call('placeOrder')->assertHasNoErrors();
+
+    expect((int) DB::scalar('SELECT IS_FREE_LOCK(?)', ['checkout:'.$key]))->toBe(1);
 });
 
 it('отклоняет пустую корзину без сохранения заказа', function (): void {

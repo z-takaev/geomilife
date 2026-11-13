@@ -37,6 +37,16 @@ it('учитывает пять миллиметров с каждой стор�
         ->and($packages[0]['weight'])->toBe(600);
 });
 
+it('выбирает меньшую по объёму подходящую коробку', function (): void {
+    fulfillmentBox(['name' => 'Большая коробка', 'length' => 500, 'width' => 500, 'height' => 500]);
+    $smallerBox = fulfillmentBox();
+
+    $packages = app(OrderPackingService::class)->pack([fulfillmentPackingItem()]);
+
+    expect($packages)->toHaveCount(1)
+        ->and($packages[0]['box_id'])->toBe($smallerBox->id);
+});
+
 it('не использует внешние габариты как полезное пространство', function (): void {
     fulfillmentBox();
 
