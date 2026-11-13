@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Models\Page;
 use App\Models\Seo;
 use App\Support\Seo\SeoManager;
+use Database\Seeders\SeoSeeder;
 
 it('использует SEO модели и экранирует значения метаданных', function (): void {
     $page = Page::query()->create(['key' => 'about', 'slug' => 'about', 'title' => 'О нас', 'is_active' => true]);
@@ -38,4 +39,35 @@ it('сбрасывает состояние SEO при переходе к др�
     $manager->forRoute('contacts', 'Контакты');
     expect($manager->getTitle())->toBe('Контакты')->and($manager->getType())->toBe('website')
         ->and($manager->getImage())->toBe(asset('default.webp'))->and($manager->getSchemas())->toBe([]);
+});
+
+it('создает SEO только для индексируемых статических страниц', function (): void {
+    $this->seed(SeoSeeder::class);
+
+    expect(Seo::query()->whereNotNull('route_name')->orderBy('route_name')->pluck('route_name')->all())->toBe([
+        'articles.index',
+        'catalog.index',
+        'contacts',
+        'faqs',
+        'home',
+        'news.index',
+        'promos.index',
+        'reviews',
+    ]);
+});
+
+it('сохраняет номер страницы в canonical списков', function (): void {
+    $this->get(route('news.index', ['page' => 2, 'filter' => 'ignored']))
+        ->assertOk()
+        ->assertSee('<link rel="canonical" href="'.route('news.index', ['page' => 2]).'">', false);
+});
+
+it('закрывает от индексации поиск и страницы ошибок', function (): void {
+    $this->get(route('search', ['q' => 'масло']))
+        ->assertOk()
+        ->assertSee('<meta name="robots" content="noindex, follow">', false);
+
+    $this->get('/missing-page')
+        ->assertNotFound()
+        ->assertSee('<meta name="robots" content="noindex, follow">', false);
 });

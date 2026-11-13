@@ -40,7 +40,9 @@ function createAccountOrder(User $user): Order
 it('открывает профиль и список заказов авторизованному пользователю', function (): void {
     $user = createAccountUser('owner@example.com');
 
-    $this->actingAs($user)->get(route('profile.show'))->assertOk();
+    $this->actingAs($user)->get(route('profile.show'))
+        ->assertOk()
+        ->assertSee('<meta name="robots" content="noindex, nofollow">', false);
     $this->actingAs($user)->get(route('orders.index'))->assertOk();
 });
 

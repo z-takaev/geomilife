@@ -35,12 +35,20 @@ it('показывает общие страницы результата без
         ->assertSee($text)
         ->assertDontSee('secret@example.test')
         ->assertDontSee('Секретный покупатель')
-        ->assertSee('<meta name="robots" content="noindex, nofollow">', false);
+        ->assertSee('<meta name="robots" content="noindex, follow">', false);
 })->with([
     ['checkout.success', 'Заказ успешно оформлен'],
     ['payment.success', 'Платёж завершён'],
     ['payment.fail', 'Оплата не завершена'],
 ]);
+
+it('закрывает оформление заказа от индексации', function (): void {
+    app(CartService::class)->add(CheckoutFixtures::variant()->getKey(), 1);
+
+    $this->get(route('checkout'))
+        ->assertOk()
+        ->assertSee('<meta name="robots" content="noindex, follow">', false);
+});
 
 it('обрабатывает все страницы результата в контроллере оформления', function (string $route, string $method): void {
     expect(Route::getRoutes()->getByName($route)?->getActionName())

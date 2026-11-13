@@ -21,7 +21,9 @@ final class ReviewController extends Controller
         seo()->forRoute(
             routeName: 'reviews',
             fallbackTitle: __('Отзывы'),
-        )->schema(BreadcrumbSchema::make($breadcrumbs));
+        )
+            ->canonicalForPagination()
+            ->schema(BreadcrumbSchema::make($breadcrumbs));
 
         $reviews = Review::query()
             ->select(['id', 'author_name', 'text', 'rating', 'source', 'reviewed_at'])

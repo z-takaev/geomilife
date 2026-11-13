@@ -21,7 +21,9 @@ final class PromoController extends Controller
         seo()->forRoute(
             routeName: 'promos.index',
             fallbackTitle: __('Акции'),
-        )->schema(BreadcrumbSchema::make($breadcrumbs));
+        )
+            ->canonicalForPagination()
+            ->schema(BreadcrumbSchema::make($breadcrumbs));
 
         $promos = Promo::query()
             ->with('media')

@@ -22,7 +22,9 @@ final class NewsController extends Controller
         seo()->forRoute(
             routeName: 'news.index',
             fallbackTitle: __('Новости'),
-        )->schema(BreadcrumbSchema::make($breadcrumbs));
+        )
+            ->canonicalForPagination()
+            ->schema(BreadcrumbSchema::make($breadcrumbs));
 
         $newsItems = News::query()
             ->with('media')

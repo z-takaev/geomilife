@@ -22,6 +22,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PromoController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\RobotsController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TbankWebhookController;
@@ -112,6 +113,7 @@ Route::middleware('auth:filament')->prefix('admin/orders')->name('admin.orders.'
 });
 
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+Route::get('/robots.txt', RobotsController::class)->name('robots');
 
 Route::post('/telegram/webhook', TelegramWebhookController::class)->name('telegram.webhook');
 

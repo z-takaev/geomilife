@@ -21,13 +21,11 @@ final class HomeSlideFactory extends Factory
             'desktop' => 'hero-opening.jpg',
             'mobile' => 'hero-opening-mobile.webp',
             'link_url' => '/articles',
-            'order' => 1,
         ],
         [
             'desktop' => 'hero-oils-promo.jpg',
             'mobile' => 'hero-oils-promo-mobile.webp',
             'link_url' => '/promos',
-            'order' => 2,
         ],
     ];
 
@@ -62,8 +60,7 @@ final class HomeSlideFactory extends Factory
 
         return [
             'link_url' => $slide['link_url'],
-            'open_in_new_tab' => false,
-            'order' => $slide['order'],
+            'open_in_new_tab' => true,
             'is_active' => true,
         ];
     }

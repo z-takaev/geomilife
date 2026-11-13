@@ -28,7 +28,7 @@ final class CategorySeeder extends Seeder
             ['name' => 'Полезные сладости', 'image' => 'healthy-sweets.png'],
             ['name' => 'Бакалея', 'image' => 'groceries.png'],
             ['name' => 'Средства личной гигиены', 'image' => 'care-products.png'],
-            ['name' => 'Другое', 'image' => 'groceries.png'],
+            ['name' => 'Другое', 'image' => 'other.png'],
         ];
 
         foreach ($categories as $index => $data) {

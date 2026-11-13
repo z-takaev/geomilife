@@ -22,7 +22,9 @@ final class ArticleController extends Controller
         seo()->forRoute(
             routeName: 'articles.index',
             fallbackTitle: __('Статьи'),
-        )->schema(BreadcrumbSchema::make($breadcrumbs));
+        )
+            ->canonicalForPagination()
+            ->schema(BreadcrumbSchema::make($breadcrumbs));
 
         $articles = Article::query()
             ->with('media')

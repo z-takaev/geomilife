@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <title>@yield('title') — {{ config('app.name', __('Geomilife')) }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="robots" content="noindex, follow">
 
     <link rel="stylesheet" href="{{ asset('assets/fonts/fonts.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/icon/icomoon/style.css') }}">

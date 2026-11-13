@@ -24,6 +24,8 @@ final class SeoManager
 
     private string $type = 'website';
 
+    private ?string $canonicalUrl;
+
     public function __construct()
     {
         $this->reset();
@@ -89,6 +91,17 @@ final class SeoManager
         return $this;
     }
 
+    public function canonicalForPagination(): self
+    {
+        $page = request()->integer('page');
+
+        if ($page > 1) {
+            $this->canonicalUrl = request()->url().'?'.http_build_query(['page' => $page]);
+        }
+
+        return $this;
+    }
+
     public function getTitle(): string
     {
         return $this->title;
@@ -111,7 +124,7 @@ final class SeoManager
 
     public function getCanonicalUrl(): string
     {
-        return request()->url();
+        return $this->canonicalUrl ?? request()->url();
     }
 
     public function getLocale(): string
@@ -153,6 +166,7 @@ final class SeoManager
         $this->description = $this->filledValue(config('seo.description'));
         $this->image = $this->normalizeUrl(config('seo.image'));
         $this->type = 'website';
+        $this->canonicalUrl = null;
         $this->schemas = [];
     }
 

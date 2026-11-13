@@ -48,6 +48,8 @@ it('включает в карту сайта только доступные д
     $this->get(route('sitemap'))
         ->assertOk()
         ->assertHeader('Content-Type', 'application/xml; charset=UTF-8')
+        ->assertDontSee(route('search'), false)
+        ->assertDontSee(route('checkout'), false)
         ->assertSee(route('page', $activePage), false)
         ->assertDontSee(route('page', $inactivePage), false)
         ->assertSee(route('catalog.category', $category), false)

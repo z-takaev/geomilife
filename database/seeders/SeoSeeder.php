@@ -20,13 +20,6 @@ final class SeoSeeder extends Seeder
             'articles.index',
             'promos.index',
             'catalog.index',
-            'search',
-            'checkout',
-            'checkout.success',
-            'payment.success',
-            'payment.fail',
-            'profile.show',
-            'orders.index',
         ];
 
         foreach ($routeNames as $routeName) {

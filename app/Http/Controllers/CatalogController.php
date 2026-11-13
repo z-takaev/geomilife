@@ -22,7 +22,9 @@ final class CatalogController extends Controller
         seo()->forRoute(
             routeName: 'catalog.index',
             fallbackTitle: __('Каталог'),
-        )->schema(BreadcrumbSchema::make($breadcrumbs));
+        )
+            ->canonicalForPagination()
+            ->schema(BreadcrumbSchema::make($breadcrumbs));
 
         return view('catalog.index', compact('category', 'breadcrumbs'));
     }
@@ -55,6 +57,7 @@ final class CatalogController extends Controller
             seoable: $category,
             fallbackTitle: $category->name,
         )
+            ->canonicalForPagination()
             ->image($category->getFirstMediaUrl('image'))
             ->schema(BreadcrumbSchema::make($breadcrumbs));
 
