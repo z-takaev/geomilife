@@ -137,13 +137,8 @@
                 <div class="profile-telegram__controls">
                     <span
                         class="profile-telegram__status profile-telegram__status--connected">{{ __('Подключен') }}</span>
-                    <div class="profile-telegram__account">
-                        @if ($user->telegram_username)
-                            <span class="profile-telegram__username">{{ '@' . $user->telegram_username }}</span>
-                        @endif
-                        <button type="button" class="profile-text-button profile-telegram__disconnect"
-                            wire:click="disconnectTelegram">{{ __('Отключить') }}</button>
-                    </div>
+                    <button type="button" class="profile-text-button profile-telegram__disconnect"
+                        wire:click="disconnectTelegram">{{ __('Отключить') }}</button>
                 </div>
             @elseif ($telegramBotConfigured)
                 <div class="profile-telegram__controls">

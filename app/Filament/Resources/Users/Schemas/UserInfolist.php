@@ -17,9 +17,9 @@ final class UserInfolist
             TextEntry::make('last_name')->label('Фамилия'),
             TextEntry::make('email')->label('Email'),
             TextEntry::make('phone')->label('Телефон'),
-            TextEntry::make('birth_date')->label('Дата рождения')->date('d.m.Y'),
+            TextEntry::make('birth_date')->label('Дата рождения')->date('d.m.Y')->placeholder('—'),
             TextEntry::make('city.name')->label('Город'),
-            TextEntry::make('telegram_username')->label('Telegram'),
+            TextEntry::make('telegram_username')->label('Telegram')->placeholder('—'),
             TextEntry::make('created_at')->label('Дата регистрации')->dateTime('d.m.Y H:i'),
             IconEntry::make('is_blocked')->label('Заблокирован')->boolean(),
         ])->columns(2);

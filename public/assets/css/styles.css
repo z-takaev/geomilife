@@ -16221,12 +16221,6 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
     align-items: center;
     gap: 16px;
 }
-.profile-telegram__account {
-    display: flex;
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 3px;
-}
 .profile-telegram__disconnect {
     color: var(--primary);
     font-weight: 500;
