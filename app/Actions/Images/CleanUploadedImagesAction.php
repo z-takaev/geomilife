@@ -13,17 +13,17 @@ final class CleanUploadedImagesAction
 
     public function run(): void
     {
-        $publicStoragePath = storage_path('app/public');
+        $imagesStoragePath = storage_path('app/public/images');
 
-        $this->filesystem->ensureDirectoryExists($publicStoragePath);
+        $this->filesystem->ensureDirectoryExists($imagesStoragePath);
 
-        foreach ($this->filesystem->directories($publicStoragePath) as $directory) {
+        foreach ($this->filesystem->directories($imagesStoragePath) as $directory) {
             if (! $this->filesystem->deleteDirectory($directory)) {
                 throw new RuntimeException("Не удалось удалить директорию {$directory}.");
             }
         }
 
-        foreach ($this->filesystem->files($publicStoragePath) as $file) {
+        foreach ($this->filesystem->files($imagesStoragePath) as $file) {
             if ($file->getFilename() === '.gitignore') {
                 continue;
             }
