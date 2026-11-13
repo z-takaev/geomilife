@@ -24,7 +24,6 @@ return new class extends Migration
             $table->unsignedBigInteger('door_delivery_price')->default(0);
             $table->unsignedBigInteger('courier_delivery_price')->nullable();
             $table->unsignedBigInteger('floor_lifting_price')->nullable();
-            $table->string('pickup_name')->nullable();
             $table->text('pickup_address')->nullable();
             $table->string('pickup_working_hours')->nullable();
             $table->string('pickup_phone')->nullable();

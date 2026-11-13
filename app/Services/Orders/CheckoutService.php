@@ -84,7 +84,6 @@ final class CheckoutService
 
             if ($deliveryMethod === DeliveryMethodEnum::PICKUP->value) {
                 $address += [
-                    'name' => $city->pickup_name,
                     'address' => $city->pickup_address,
                     'working_hours' => $city->pickup_working_hours,
                     'phone' => $city->pickup_phone,

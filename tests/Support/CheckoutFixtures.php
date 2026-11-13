@@ -50,7 +50,6 @@ final class CheckoutFixtures
             'courier_delivery_price' => Money::fromRubles(300),
             'door_delivery_price' => Money::fromRubles(100),
             'floor_lifting_price' => Money::fromRubles(50),
-            'pickup_name' => 'Точка выдачи',
             'pickup_address' => 'улица Тестовая, 15',
             'pickup_working_hours' => 'Пн–Пт 10:00–18:00',
             'pickup_phone' => '+79991234567',

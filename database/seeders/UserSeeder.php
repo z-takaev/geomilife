@@ -20,6 +20,7 @@ final class UserSeeder extends Seeder
             [
                 'first_name' => 'Иван',
                 'last_name' => 'Иванов',
+                'phone' => '+7 (988) 873-10-20',
                 'password' => Hash::make('user@user.ru'),
                 'city_id' => $city->getKey(),
             ],

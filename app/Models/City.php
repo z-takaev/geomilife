@@ -25,7 +25,6 @@ final class City extends Model
         'is_courier_available',
         'is_cdek_excluded',
         'door_delivery_price',
-        'pickup_name',
         'pickup_address',
         'pickup_working_hours',
         'pickup_phone',

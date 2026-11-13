@@ -22,7 +22,6 @@ final class EditCity extends EditRecord
             'is_active',
             'is_suggested',
             'is_cdek_excluded',
-            'pickup_name',
             'pickup_address',
             'pickup_working_hours',
             'pickup_phone',

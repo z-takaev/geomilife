@@ -46,7 +46,6 @@ final class CityForm
     public static function validationRules(bool $pickupAvailable, bool $courierAvailable): array
     {
         return [
-            'pickup_name' => [Rule::requiredIf($pickupAvailable), 'nullable', 'string', 'max:100'],
             'pickup_address' => [Rule::requiredIf($pickupAvailable), 'nullable', 'string', 'max:200'],
             'pickup_working_hours' => [Rule::requiredIf($pickupAvailable), 'nullable', 'string', 'max:50'],
             'pickup_phone' => [Rule::requiredIf($pickupAvailable), 'nullable', 'string', 'max:40', 'regex:'.PhoneFormat::FORMATTED_OR_COMPACT_PATTERN],
@@ -59,7 +58,6 @@ final class CityForm
     private static function pickupFields(): array
     {
         $fields = [
-            TextInput::make('pickup_name')->label('Название точки самовывоза'),
             Textarea::make('pickup_address')->label('Адрес самовывоза'),
             TextInput::make('pickup_working_hours')->label('График самовывоза'),
             TextInput::make('pickup_phone')

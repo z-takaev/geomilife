@@ -59,7 +59,7 @@ it('сохраняет все настройки доставки города',
     $city = CheckoutFixtures::city();
     $data = [
         'is_suggested' => true, 'is_cdek_excluded' => false,
-        'pickup_name' => 'Новая точка', 'pickup_address' => 'Мира, 100',
+        'pickup_address' => 'Мира, 100',
         'pickup_working_hours' => 'Ежедневно', 'pickup_phone' => '+7 (999) 123-45-67',
         'courier_delivery_price' => 500, 'door_delivery_price' => 200, 'floor_lifting_price' => 80,
     ];
@@ -96,8 +96,8 @@ it('проверяет реквизиты доставки в форме гор�
     Livewire::test(EditCity::class, ['record' => $city->id])->fillForm([$field => $value])
         ->call('save')->assertHasFormErrors([$field => $rule]);
 })->with([
-    ['pickup_name', '', 'required'], ['pickup_address', '', 'required'],
-    ['pickup_working_hours', '', 'required'], ['pickup_phone', '', 'required'],
+    ['pickup_address', '', 'required'], ['pickup_working_hours', '', 'required'],
+    ['pickup_phone', '', 'required'],
     ['pickup_phone', 'не телефон', 'regex'], ['door_delivery_price', '', 'required'],
     ['courier_delivery_price', -1, 'min'], ['floor_lifting_price', '1.5', 'integer'],
 ]);

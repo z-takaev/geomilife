@@ -171,7 +171,7 @@
                         <div class="checkout-address checkout-delivery-details"
                             wire:key="delivery-details-{{ $form->city_id }}-{{ $form->delivery_method }}">
                             @if ($form->delivery_method === \App\Enums\Orders\DeliveryMethodEnum::PICKUP->value)
-                                <div class="checkout-info"><strong>{{ $city->pickup_name }}</strong>
+                                <div class="checkout-info">
                                     <p>{{ $city->pickup_address }}</p>
                                     <p>{{ $city->pickup_working_hours }}</p>
                                     <p>{{ $city->pickup_phone }}</p>
