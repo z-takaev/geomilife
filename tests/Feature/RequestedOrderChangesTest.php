@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Actions\Orders\RepeatOrderAction;
 use App\Enums\Orders\OrderStatusEnum;
 use App\Http\Controllers\CheckoutController;
+use App\Livewire\Checkout;
 use App\Livewire\CitySelector;
 use App\Livewire\RegistrationCitySelector;
 use App\Livewire\UserProfile;
@@ -82,8 +83,39 @@ it('использует общий лимит подсказок города',
 })->with([
     [CitySelector::class, 'query', 'searchResults'],
     [RegistrationCitySelector::class, 'query', 'cities'],
+    [Checkout::class, 'city_search', 'cities'],
     [UserProfile::class, 'city_search', 'cities'],
 ]);
+
+it('начинает поиск города с трех символов', function (string $component, string $property, string $collection): void {
+    $city = CheckoutFixtures::city(['name' => 'Киров', 'region' => 'Кировская область']);
+
+    if ($component === UserProfile::class) {
+        $this->actingAs(CheckoutFixtures::user(['city_id' => $city->id]));
+    }
+
+    Livewire::test($component)
+        ->set($property, 'Ки')
+        ->assertViewHas($collection, fn ($cities): bool => $cities->isEmpty())
+        ->set($property, 'Кир')
+        ->assertViewHas($collection, fn ($cities): bool => $cities->modelKeys() === [$city->id]);
+})->with([
+    [CitySelector::class, 'query', 'searchResults'],
+    [RegistrationCitySelector::class, 'query', 'cities'],
+    [Checkout::class, 'city_search', 'cities'],
+    [UserProfile::class, 'city_search', 'cities'],
+]);
+
+it('использует настроенную минимальную длину поиска города', function (): void {
+    config(['cities.search_min_length' => 4]);
+    $city = CheckoutFixtures::city(['name' => 'Киров']);
+
+    Livewire::test(CitySelector::class)
+        ->set('query', 'Кир')
+        ->assertViewHas('searchResults', fn ($cities): bool => $cities->isEmpty())
+        ->set('query', 'Киро')
+        ->assertViewHas('searchResults', fn ($cities): bool => $cities->modelKeys() === [$city->id]);
+});
 
 it('подтверждает оплату на месте и выдачу одним действием', function (): void {
     $order = fulfillmentOrder([

@@ -90,8 +90,7 @@
             <div class="footer-bottom-content">
                 <div class="footer-copyright">
                     <p class="text-caption-01 fw-medium text-white">
-                        {{-- TODO: Подставлять текущий год --}}
-                        {{ __('«Geomilife» 2026 - производитель масла') }}
+                        {{ __('«Geomilife» :year - производитель масла', ['year' => now()->year]) }}
                     </p>
                     <a class="footer-developer" href="https://web-chip.ru" target="_blank"
                         aria-label="{{ __('Разработано в: Web-Chip') }}">

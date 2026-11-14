@@ -86,7 +86,7 @@
         </div>
     </div>
 
-    @if ($product !== null)
+    @if ($product !== null && (filled($product->description) || $product->attributeValues->isNotEmpty()))
         <x-products.details :product="$product" prefix="quick-view" class="quick-view-tabs" wire:loading.remove
             wire:key="quick-view-information-{{ $opening }}" />
     @endif

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use App\Actions\Cities\GetCitySuggestionsAction;
 use App\Models\City;
 use App\Services\Cities\CurrentCityService;
 use Illuminate\Contracts\View\View;
@@ -31,24 +32,11 @@ final class CitySelector extends Component
         $this->dispatch('city-selected', id: $city->getKey(), name: $city->name);
     }
 
-    public function render(): View
+    public function render(GetCitySuggestionsAction $getCitySuggestions): View
     {
         $currentCity = app(CurrentCityService::class)->current();
         $shouldDetectCity = $currentCity === null && auth()->user()?->city_id === null;
-        $query = mb_substr(trim($this->query), 0, 255);
-        $searchResults = collect();
-
-        if ($query !== '') {
-            $searchResults = City::query()
-                ->where('is_active', true)
-                ->searchByName($query)
-                ->orderByDesc('is_suggested')
-                ->orderBy('name')
-                ->orderBy('region')
-                ->orderBy('id')
-                ->limit((int) config('pagination.per_page.city_search'))
-                ->get();
-        }
+        $searchResults = $getCitySuggestions->run($this->query);
 
         $cities = City::query()
             ->where('is_active', true)
@@ -67,6 +55,6 @@ final class CitySelector extends Component
             ->groupBy(static fn (City $city): string => mb_strtoupper(mb_substr($city->name, 0, 1)))
             ->splitIn(3);
 
-        return view('livewire.city-selector', compact('currentCity', 'shouldDetectCity', 'query', 'searchResults', 'featuredCities', 'cityColumns'));
+        return view('livewire.city-selector', compact('currentCity', 'shouldDetectCity', 'searchResults', 'featuredCities', 'cityColumns'));
     }
 }

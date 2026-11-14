@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use App\Actions\Cities\GetCitySuggestionsAction;
 use App\Livewire\Forms\UserProfileForm;
 use App\Models\City;
 use App\Services\Cities\CurrentCityService;
@@ -102,24 +103,13 @@ final class UserProfile extends Component
         $telegramService->disconnect(auth()->user());
     }
 
-    public function render(TelegramConnectionService $telegramService): View
+    public function render(TelegramConnectionService $telegramService, GetCitySuggestionsAction $getCitySuggestions): View
     {
         $user = auth()->user();
         $addresses = $user->addresses()->with('city')->orderByDesc('is_default')->latest()->get();
         $deliveryPoints = $user->savedDeliveryPoints()->with('city')->orderByDesc('is_default')->latest()->get();
         $telegramBotConfigured = $telegramService->isConfigured();
-        $citySearch = trim($this->city_search);
-        $cities = mb_strlen($citySearch) < 3
-            ? collect()
-            : City::query()
-                ->where('is_active', true)
-                ->searchByName($citySearch)
-                ->orderByDesc('is_suggested')
-                ->orderBy('name')
-                ->orderBy('region')
-                ->orderBy('id')
-                ->limit((int) config('pagination.per_page.city_search'))
-                ->get();
+        $cities = $getCitySuggestions->run($this->city_search);
 
         return view('livewire.user-profile', compact('user', 'addresses', 'deliveryPoints', 'telegramBotConfigured', 'cities'));
     }

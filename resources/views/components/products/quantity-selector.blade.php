@@ -14,8 +14,8 @@
     <input @class([
         'product-card-quantity__input' => $compact,
         'quantity-product quick-view-quantity__input' => !$compact,
-    ]) type="number" name="quantity" min="1" step="1" inputmode="numeric"
-        x-model.number="quantity" x-on:change="normalizeQuantity" aria-label="{{ __('Количество') }}">
+    ]) type="number" name="quantity" min="1" step="1"
+        x-model.number="quantity" readonly aria-label="{{ __('Количество') }}">
     <button type="button" @class([
         'product-card-quantity__button product-card-quantity__plus' => $compact,
         'btn-quantity plus-prd quick-view-quantity__button' => !$compact,

@@ -16,7 +16,7 @@
                     {{ __('Начните вводить свой город и выберите его из списка.') }}
                 </p>
 
-                <div class="city-selection__search" role="search" x-data="citySearch()"
+                <div class="city-selection__search checkout-suggestions" role="search" x-data="citySearch()"
                     x-on:click.outside="suggestionsOpen = false" x-on:keydown.escape.stop="suggestionsOpen = false">
                     <label class="visually-hidden" for="citySearch">{{ __('Ваш город') }}</label>
                     <input id="citySearch" type="search" placeholder="{{ __('Ваш город') }}" autocomplete="off"
@@ -30,17 +30,14 @@
                         <i class="icon icon-close" aria-hidden="true"></i>
                     </button>
 
-                    @if ($query !== '')
+                    @if (mb_strlen(trim($query)) >= (int) config('cities.search_min_length'))
                         <ul id="citySearchResults" class="city-selection__results" aria-live="polite"
-                            x-show="suggestionsOpen && $wire.query.trim() !== ''">
+                            x-show="suggestionsOpen && Array.from($wire.query.trim()).length >= {{ (int) config('cities.search_min_length') }}">
                             @forelse ($searchResults as $city)
                                 <li wire:key="city-result-{{ $city->getKey() }}">
                                     <button type="button" wire:click="select({{ $city->getKey() }})"
                                         wire:loading.attr="disabled" wire:target="query, select">
-                                        <span>{{ __($city->name) }}{{ $city->region ? ',' : '' }}</span>
-                                        @if ($city->region)
-                                            <small>{{ $city->region }}</small>
-                                        @endif
+                                        <x-cities.suggestion :city="$city" />
                                     </button>
                                 </li>
                             @empty

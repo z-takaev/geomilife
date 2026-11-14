@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use App\Actions\Cities\GetCitySuggestionsAction;
 use App\Enums\Orders\DeliveryMethodEnum;
 use App\Enums\Orders\PaymentMethodEnum;
 use App\Livewire\Forms\CheckoutForm;
@@ -247,7 +248,7 @@ final class Checkout extends Component
         $this->redirect(route('checkout.success'));
     }
 
-    public function render(): View
+    public function render(GetCitySuggestionsAction $getCitySuggestions): View
     {
         $checkoutData = session('checkout.presentation.'.$this->idempotency_key, []);
         $items = $checkoutData['items'] ?? [];
@@ -261,7 +262,7 @@ final class Checkout extends Component
         $deliveryPoints = $this->pointSuggestions($points);
         $city = $this->form->selectedCity();
         $availableDeliveryMethods = app(CheckoutService::class)->availableDeliveryMethods($city);
-        $cities = $this->citySuggestions();
+        $cities = $getCitySuggestions->run($this->city_search);
         $addresses = auth()->user()?->addresses()->with('city')->orderByDesc('is_default')->get() ?? collect();
         $contactFields = [
             ['name' => 'first_name', 'label' => __('Имя'), 'type' => 'text', 'autocomplete' => 'given-name', 'placeholder' => __('Введите имя')],
@@ -433,15 +434,6 @@ final class Checkout extends Component
                 $this->saved_delivery_point_id = $point->id;
             }
         }
-    }
-
-    private function citySuggestions(): Collection
-    {
-        $citySearch = trim($this->city_search);
-
-        return mb_strlen($citySearch) < 3 ? collect() : City::query()->where('is_active', true)
-            ->searchByName($citySearch)
-            ->orderByDesc('is_suggested')->orderBy('name')->get();
     }
 
     private function pointSuggestions(Collection $points): Collection

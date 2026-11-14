@@ -37,7 +37,7 @@ final class ReviewForm
                 Select::make('source')
                     ->label('Источник отзыва')
                     ->options(ReviewSourceEnum::class)
-                    ->placeholder('Не указан'),
+                    ->required(),
                 Textarea::make('text')
                     ->label('Текст отзыва')
                     ->required()

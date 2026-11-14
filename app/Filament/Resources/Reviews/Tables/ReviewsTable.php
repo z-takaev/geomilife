@@ -25,8 +25,7 @@ final class ReviewsTable
                     ->label('Рейтинг')
                     ->sortable(),
                 TextColumn::make('source')
-                    ->label('Источник')
-                    ->placeholder('Не указан'),
+                    ->label('Источник'),
                 IconColumn::make('is_active')
                     ->label('Активен')
                     ->boolean()

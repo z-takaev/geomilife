@@ -125,28 +125,24 @@
                             <input id="checkout-city" type="text" role="combobox" aria-autocomplete="list"
                                 aria-controls="checkout-city-results" x-bind:aria-expanded="open" x-ref="searchInput"
                                 wire:model="city_search"
-                                x-on:input.debounce.300ms="if (Array.from($event.target.value.trim()).length >= 3) $wire.$commit()"
+                                x-on:input.debounce.300ms="if (Array.from($event.target.value.trim()).length >= {{ (int) config('cities.search_min_length') }}) $wire.$commit()"
                                 x-on:focus="show()" x-on:input="show()" x-on:click="show()"
-                                x-on:keydown.enter.prevent placeholder="{{ __('Выберите город (от 3 символов)') }}"
+                                x-on:keydown.enter.prevent placeholder="{{ __('Начните вводить город') }}"
                                 autocomplete="off" maxlength="255" required>
                             <ul id="checkout-city-results" class="city-selection__results" role="listbox"
                                 aria-label="{{ __('Города') }}" x-ref="searchResults" x-cloak
-                                x-show="open && Array.from($wire.city_search.trim()).length >= 3">
+                                x-show="open && Array.from($wire.city_search.trim()).length >= {{ (int) config('cities.search_min_length') }}">
                                 @forelse ($cities as $option)
                                     <li wire:key="checkout-city-{{ $option->id }}">
                                         <button type="button" role="option"
                                             aria-selected="{{ $form->city_id === $option->id ? 'true' : 'false' }}"
                                             wire:click="selectCity({{ $option->id }})" x-on:click="open = false"
                                             wire:loading.attr="disabled" wire:target="city_search, selectCity">
-                                            <span>{{ $option->name }}</span>
-                                            @if ($option->region)
-                                                <small>{{ $option->region }}</small>
-                                            @endif
+                                            <x-cities.suggestion :city="$option" />
                                         </button>
                                     </li>
                                 @empty
-                                    <li class="checkout-suggestions__empty">
-                                        {{ __('Город не найден. Попробуйте изменить запрос.') }}</li>
+                                    <li class="city-selection__status">{{ __('Города не найдены') }}</li>
                                 @endforelse
                             </ul>
                         </div>

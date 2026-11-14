@@ -51,8 +51,7 @@
                                                 </button>
                                             </div>
                                             <div class="quantity-price text-black fw-medium">
-                                                <span>{{ $item['quantity'] }}</span><span>{{ __('×') }}</span><span
-                                                    class="tf-mini-card-price">{{ $item['price']->format() }}</span>
+                                                <span class="tf-mini-card-price">{{ $item['total']->format() }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -81,28 +80,10 @@
             </div>
         </div>
     </div>
-    <div class="modal modalCentered fade modal-log merge-confirmation" id="mergeCart" tabindex="-1"
-        aria-labelledby="mergeCartTitle" x-ref="mergeModal" wire:ignore.self>
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                {{-- TODO: Убрать дублирование модалки --}}
-                <button type="button" class="icon-close-popup" data-bs-dismiss="modal"
-                    aria-label="{{ __('Решить позже') }}">
-                    <i class="icon icon-close" aria-hidden="true"></i>
-                </button>
-                <div class="modal-body">
-                    <h3 class="title-pop text-black" id="mergeCartTitle">{{ __('Объединить корзины?') }}</h3>
-                    <p class="merge-confirmation__description">
-                        {{ __('Добавить товары гостевой корзины в корзину аккаунта?') }}</p>
-                    <div class="merge-confirmation__actions">
-                        <button type="button" class="tf-btn style-stroke" wire:click="decline"
-                            wire:loading.attr="disabled"
-                            wire:target="merge, decline">{{ __('Не объединять') }}</button>
-                        <button type="button" class="tf-btn animate-btn" wire:click="merge"
-                            wire:loading.attr="disabled" wire:target="merge, decline">{{ __('Объединить') }}</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <x-modals.merge-confirmation id="mergeCart" :title="__('Объединить корзины?')" :description="__('Добавить товары гостевой корзины в корзину аккаунта?')" x-ref="mergeModal" wire:ignore.self>
+        <button type="button" class="tf-btn style-stroke" wire:click="decline" wire:loading.attr="disabled"
+            wire:target="merge, decline">{{ __('Не объединять') }}</button>
+        <button type="button" class="tf-btn animate-btn" wire:click="merge" wire:loading.attr="disabled"
+            wire:target="merge, decline">{{ __('Объединить') }}</button>
+    </x-modals.merge-confirmation>
 </div>

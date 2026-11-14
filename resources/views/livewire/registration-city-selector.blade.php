@@ -5,15 +5,12 @@
     <input id="registration-city" type="search" wire:model.live.debounce.300ms="query"
         placeholder="{{ __('Начните вводить город') }}" autocomplete="off" maxlength="255" required x-ref="searchInput"
         x-on:focus="show()" x-on:input="show()">
-    @if (mb_strlen(trim($query)) >= 3)
+    @if (mb_strlen(trim($query)) >= (int) config('cities.search_min_length'))
         <ul class="city-selection__results" x-show="open">
             @forelse ($cities as $city)
                 <li wire:key="registration-city-{{ $city->id }}">
                     <button type="button" wire:click="select({{ $city->id }})" x-on:click="open = false">
-                        <span>{{ $city->name }}</span>
-                        @if ($city->region)
-                            <small>{{ $city->region }}</small>
-                        @endif
+                        <x-cities.suggestion :city="$city" />
                     </button>
                 </li>
             @empty

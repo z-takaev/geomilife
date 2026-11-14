@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\Filament\FilamentUserRoleEnum;
 use App\Enums\Products\ProductUnitEnum;
+use App\Enums\Reviews\ReviewSourceEnum;
 use App\Filament\Resources\Articles\Pages\CreateArticle;
 use App\Filament\Resources\Cities\Pages\EditCity;
 use App\Filament\Resources\Faqs\Pages\CreateFaq;
@@ -19,6 +20,7 @@ use App\Models\City;
 use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\Review;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Select;
@@ -186,6 +188,18 @@ it('не принимает будущую дату отзыва', function (): 
     Livewire::test(CreateReview::class)->fillForm([
         'author_name' => 'Покупатель', 'reviewed_at' => today()->addDay()->toDateString(), 'rating' => '5', 'text' => 'Отзыв',
     ])->call('create')->assertHasFormErrors(['reviewed_at' => 'before_or_equal']);
+});
+
+it('требует источник отзыва', function (): void {
+    Livewire::test(CreateReview::class)->fillForm([
+        'author_name' => 'Покупатель',
+        'reviewed_at' => today()->toDateString(),
+        'rating' => '5',
+        'source' => null,
+        'text' => 'Отзыв',
+    ])->call('create')->assertHasFormErrors(['source' => 'required']);
+
+    expect(Review::factory()->make()->source)->toBeInstanceOf(ReviewSourceEnum::class);
 });
 
 it('проверяет телефон пользователя на сервере', function (): void {

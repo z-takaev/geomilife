@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use App\Actions\Cities\GetCitySuggestionsAction;
 use App\Models\City;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
@@ -45,20 +46,9 @@ final class RegistrationCitySelector extends Component
         $this->query = $city->optionLabel();
     }
 
-    public function render(): View
+    public function render(GetCitySuggestionsAction $getCitySuggestions): View
     {
-        $search = mb_substr(trim($this->query), 0, 255);
-        $cities = mb_strlen($search) < 3
-            ? collect()
-            : City::query()
-                ->where('is_active', true)
-                ->searchByName($search)
-                ->orderByDesc('is_suggested')
-                ->orderBy('name')
-                ->orderBy('region')
-                ->orderBy('id')
-                ->limit((int) config('pagination.per_page.city_search'))
-                ->get();
+        $cities = $getCitySuggestions->run($this->query);
 
         return view('livewire.registration-city-selector', compact('cities'));
     }

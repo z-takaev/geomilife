@@ -6,6 +6,7 @@ use App\Enums\Products\ProductUnitEnum;
 use App\Livewire\CatalogProducts;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductAttribute;
 use App\Models\ProductVariant;
 use App\Repositories\Products\ProductRepository;
 use App\Support\Values\Money;
@@ -108,6 +109,41 @@ it('открывает только доступный товар', function ():
     $this->get(route('products.show', $inactiveProduct))->assertNotFound();
     $this->get(route('products.show', $productWithoutActiveVariant))->assertNotFound();
 });
+
+it('показывает только заполненные сведения о товаре', function (bool $hasDescription, bool $hasCharacteristics): void {
+    $category = createCatalogCategory('Масла', 'product-details-'.$hasDescription.'-'.$hasCharacteristics);
+    $product = createCatalogProduct($category, 'Товар', 'details-'.$hasDescription.'-'.$hasCharacteristics, 500);
+
+    if ($hasDescription) {
+        $product->update(['description' => 'Полезное описание товара']);
+    }
+
+    if ($hasCharacteristics) {
+        $attribute = ProductAttribute::query()->create(['name' => 'Состав', 'slug' => 'composition-'.$hasDescription]);
+        $product->attributeValues()->create([
+            'product_attribute_id' => $attribute->id,
+            'value' => '100% масло',
+        ]);
+    }
+
+    $response = $this->get(route('products.show', $product))->assertOk();
+
+    $hasDescription
+        ? $response->assertSee('Полезное описание товара')
+        : $response->assertDontSee('product-description-tab', false);
+    $hasCharacteristics
+        ? $response->assertSee('100% масло')
+        : $response->assertDontSee('product-characteristics-tab', false);
+
+    if (! $hasDescription && ! $hasCharacteristics) {
+        $response->assertDontSee('product-description-section', false);
+    }
+})->with([
+    'есть оба блока' => [true, true],
+    'есть только описание' => [true, false],
+    'есть только характеристики' => [false, true],
+    'нет данных' => [false, false],
+]);
 
 it('не открывает категорию с неактивным родителем', function (): void {
     $parent = createCatalogCategory('Родитель', 'parent', false);

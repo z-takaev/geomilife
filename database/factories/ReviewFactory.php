@@ -24,7 +24,7 @@ final class ReviewFactory extends Factory
             'author_name' => fake()->firstName(),
             'text' => fake()->realText(300),
             'rating' => fake()->randomFloat(1, 1, 5),
-            'source' => fake()->optional()->randomElement(ReviewSourceEnum::cases()),
+            'source' => fake()->randomElement(ReviewSourceEnum::cases()),
             'reviewed_at' => fake()->dateTimeBetween('-1 year'),
             'is_active' => true,
         ];

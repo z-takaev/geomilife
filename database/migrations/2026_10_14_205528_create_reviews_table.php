@@ -14,7 +14,7 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
 
-            $table->string('source')->nullable();
+            $table->string('source');
             $table->decimal('rating', 2, 1);
             $table->string('author_name');
             $table->text('text');

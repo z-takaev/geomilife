@@ -96,11 +96,13 @@
         </div>
     </section>
 
-    <section class="product-description-section">
-        <div class="container">
-            <x-products.details :product="$product" prefix="product" />
-        </div>
-    </section>
+    @if (filled($product->description) || $product->attributeValues->isNotEmpty())
+        <section class="product-description-section">
+            <div class="container">
+                <x-products.details :product="$product" prefix="product" />
+            </div>
+        </section>
+    @endif
 
     @if ($recommendedProducts->isNotEmpty())
         <x-products.slider :title="__('Рекомендуемые товары')" :all-products-url="route('catalog.index')">

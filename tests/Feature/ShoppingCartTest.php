@@ -51,6 +51,7 @@ it('хранит гостевую корзину в сессии и считае
         ->assertDispatched('cart-updated', count: 2);
     expect(session('cart.items'))->toBe([$variant->id => 2]);
     expect(app(CartService::class)->count())->toBe(2);
+    expect(app(CartService::class)->items()[0]['total']->toRubles())->toBe('1780.00');
     $this->assertDatabaseCount('carts', 0);
     Livewire::test(ShoppingCart::class)->call('remove', $variant->id)->assertSee('Корзина пока пуста.');
 });

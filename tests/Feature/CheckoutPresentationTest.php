@@ -36,5 +36,5 @@ it('возвращает определённый системой город г
 it('оставляет выбор города пустым если город пользователя и системы неизвестен', function (): void {
     Livewire::test(Checkout::class)->call('selectCity', CheckoutFixtures::city()->id)
         ->call('chooseAnotherDeliveryPoint')->assertSet('form.city_id', null)->assertSet('city_search', '')
-        ->assertSee('Выберите город (от 3 символов)');
+        ->assertSee('Начните вводить город');
 });

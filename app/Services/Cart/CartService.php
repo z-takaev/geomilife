@@ -57,6 +57,7 @@ final class CartService
                 'image' => $variant->product->getFirstMediaUrl('image', 'thumbnail'),
                 'quantity' => $quantity,
                 'price' => $price,
+                'total' => $price->multiply($quantity),
             ];
         }
 
@@ -79,7 +80,7 @@ final class CartService
         $total = Money::fromMinor(0);
 
         foreach ($this->items() as $item) {
-            $total = $total->add($item['price']->multiply($item['quantity']));
+            $total = $total->add($item['total']);
         }
 
         return $total;
