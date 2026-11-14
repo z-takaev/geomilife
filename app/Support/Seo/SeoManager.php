@@ -42,7 +42,7 @@ final class SeoManager
     public function forRoute(string $routeName, string $fallbackTitle): self
     {
         return $this->resolve(
-            seo: Seo::cachedRoutes()->get($routeName),
+            seo: Seo::cached()->get($routeName),
             fallbackTitle: $fallbackTitle,
         );
     }

@@ -17,17 +17,11 @@ final class User extends Authenticatable implements MustVerifyEmail
     use Notifiable;
 
     protected $fillable = [
-        'first_name',
-        'last_name',
-        'birth_date',
-        'phone',
-        'email',
-        'password',
-        'is_blocked',
         'city_id',
-        'telegram_chat_id',
-        'telegram_username',
-        'telegram_notifications_enabled',
+        'first_name', 'last_name',
+        'birth_date', 'phone', 'email',
+        'password', 'is_blocked',
+        'telegram_chat_id', 'telegram_username', 'telegram_notifications_enabled',
     ];
 
     protected $hidden = [

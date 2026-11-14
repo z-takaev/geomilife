@@ -14,8 +14,7 @@ final class OrderNotificationEvent extends Model
 
     protected $fillable = [
         'order_id',
-        'event',
-        'event_key',
+        'event', 'event_key',
         'dispatched_at',
     ];
 

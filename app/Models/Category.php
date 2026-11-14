@@ -19,14 +19,16 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 final class Category extends Model implements HasMedia, Seoable
 {
-    use HasFactory, HasSeo, HasSlug, HasTreeStructure, InteractsWithMedia;
+    use HasFactory;
+    use HasSeo;
+    use HasSlug;
+    use HasTreeStructure;
+    use InteractsWithMedia;
 
     protected $fillable = [
         'parent_id',
-        'name',
-        'slug',
-        'order',
-        'is_active',
+        'name', 'slug',
+        'order', 'is_active',
     ];
 
     protected function casts(): array

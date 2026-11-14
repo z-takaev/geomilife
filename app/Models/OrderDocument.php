@@ -15,10 +15,8 @@ final class OrderDocument extends Model
     use HasFactory;
 
     protected $fillable = [
-        'order_id',
-        'type',
-        'uuid',
-        'state',
+        'order_id', 'uuid',
+        'type', 'state',
         'error',
     ];
 

@@ -15,10 +15,8 @@ final class ProductAttributeValue extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'product_id',
-        'product_attribute_id',
-        'value',
-        'order',
+        'product_id', 'product_attribute_id',
+        'value', 'order',
     ];
 
     protected function casts(): array

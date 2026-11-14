@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Orders;
 
-use App\Enums\Cdek\CdekShipmentWorkflowStateEnum;
+use App\Enums\Cdek\CdekShipmentOperationStateEnum;
 use App\Enums\Orders\DeliveryMethodEnum;
 use App\Enums\Orders\OrderStatusEnum;
 use App\Enums\Orders\PaymentStatusEnum;
@@ -90,7 +90,7 @@ final class ReconcileOrdersCommand extends Command
                     try {
                         $shipments = app(CdekShipmentService::class);
                         if ($order->status->isReadyToShip()
-                            && ($order->shipment === null || $order->shipment->operation_state?->is(CdekShipmentWorkflowStateEnum::ABSENT))) {
+                            && ($order->shipment === null || $order->shipment->operation_state?->is(CdekShipmentOperationStateEnum::ABSENT))) {
                             $shipments->create($order);
                         } else {
                             $shipments->sync($order);

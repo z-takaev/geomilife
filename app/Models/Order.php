@@ -22,28 +22,16 @@ final class Order extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
-        'city_id',
-        'payment_method',
-        'subtotal',
-        'delivery_details',
-        'packages',
+        'user_id', 'city_id',
+        'status', 'payment_status',
+        'payment_method', 'delivery_method',
+        'subtotal', 'total', 'delivery_price',
+        'packages', 'delivery_details',
+        'idempotency_key', 'checkout_session_hash',
+        'cancellation_state', 'cancellation_reason', 'cancelled_at',
+        'customer_name', 'customer_phone', 'customer_email',
+        'delivery_address', 'comment',
         'is_preorder',
-        'idempotency_key',
-        'checkout_session_hash',
-        'cancellation_state',
-        'cancellation_reason',
-        'cancelled_at',
-        'status',
-        'payment_status',
-        'delivery_method',
-        'delivery_price',
-        'total',
-        'customer_name',
-        'customer_phone',
-        'customer_email',
-        'delivery_address',
-        'comment',
     ];
 
     protected function casts(): array
@@ -73,9 +61,7 @@ final class Order extends Model
         });
 
         self::created(static function (self $order): void {
-            if ($order->number === null) {
-                $order->forceFill(['number' => $order->getKey() + 999])->saveQuietly();
-            }
+            $order->assignNumberIfMissing();
         });
     }
 
@@ -102,5 +88,12 @@ final class Order extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(OrderDocument::class);
+    }
+
+    private function assignNumberIfMissing(): void
+    {
+        if ($this->number === null) {
+            $this->forceFill(['number' => $this->getKey() + 999])->saveQuietly();
+        }
     }
 }

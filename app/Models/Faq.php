@@ -12,13 +12,12 @@ use Illuminate\Support\Facades\Cache;
 
 final class Faq extends Model
 {
-    use HasFactory, HasOrder;
+    use HasFactory;
+    use HasOrder;
 
     protected $fillable = [
-        'question',
-        'answer',
-        'order',
-        'is_active',
+        'question', 'answer',
+        'order', 'is_active',
     ];
 
     protected function casts(): array

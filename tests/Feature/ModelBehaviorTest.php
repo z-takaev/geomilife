@@ -6,10 +6,12 @@ use App\Models\Article;
 use App\Models\City;
 use App\Models\FilamentUser;
 use App\Models\Order;
+use App\Models\ProductAttribute;
 use App\Models\ProductVariant;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\Values\Money;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\CheckoutFixtures;
 
@@ -82,4 +84,24 @@ it('задаёт ключ идемпотентности при создании
     ]);
 
     expect(Str::isUuid($order->idempotency_key))->toBeTrue();
+});
+
+it('определяет возможность удаления характеристики без лишнего запроса', function (): void {
+    $attribute = ProductAttribute::query()->create(['name' => 'Вкус']);
+    $product = CheckoutFixtures::variant()->product;
+    $attribute->productValues()->create([
+        'product_id' => $product->getKey(),
+        'value' => 'Ореховый',
+    ]);
+
+    expect($attribute->canBeDeleted())->toBeFalse();
+
+    $attribute = ProductAttribute::query()->withCount('productValues')->findOrFail($attribute->getKey());
+    DB::flushQueryLog();
+    DB::enableQueryLog();
+
+    expect($attribute->canBeDeleted())->toBeFalse()
+        ->and(DB::getQueryLog())->toBeEmpty();
+
+    DB::disableQueryLog();
 });

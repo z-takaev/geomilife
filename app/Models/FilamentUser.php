@@ -15,27 +15,15 @@ final class FilamentUser extends Authenticatable implements FilamentUserContract
 {
     use Notifiable;
 
-    /**
-     * @var list<string>
-     */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'role',
+        'name', 'email',
+        'password', 'role',
     ];
 
-    /**
-     * @var list<string>
-     */
     protected $hidden = [
-        'password',
-        'remember_token',
+        'password', 'remember_token',
     ];
 
-    /**
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [

@@ -13,14 +13,10 @@ final class SavedDeliveryPoint extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
-        'city_id',
-        'code',
-        'type',
-        'address',
-        'work_time',
-        'is_default',
-        'last_used_at',
+        'user_id', 'city_id',
+        'code', 'type',
+        'address', 'work_time',
+        'is_default', 'last_used_at',
     ];
 
     protected function casts(): array

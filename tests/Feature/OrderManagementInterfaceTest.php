@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\Cdek\CdekPrintStateEnum;
 use App\Enums\Cdek\CdekRequestStateEnum;
-use App\Enums\Cdek\CdekShipmentWorkflowStateEnum;
+use App\Enums\Cdek\CdekShipmentOperationStateEnum;
 use App\Enums\Filament\FilamentUserRoleEnum;
 use App\Enums\Orders\OrderStatusEnum;
 use App\Enums\Orders\PaymentMethodEnum;
@@ -173,7 +173,7 @@ it('типизирует состояния интеграции СДЭК без
     $order = fulfillmentOrder();
     $shipment = $order->shipment()->create([
         'request_state' => CdekRequestStateEnum::SUCCESSFUL,
-        'operation_state' => CdekShipmentWorkflowStateEnum::REGISTERED,
+        'operation_state' => CdekShipmentOperationStateEnum::REGISTERED,
     ]);
     $document = $order->documents()->create([
         'type' => 'WAYBILL',
@@ -181,7 +181,7 @@ it('типизирует состояния интеграции СДЭК без
     ]);
 
     expect($shipment->fresh()->request_state)->toBe(CdekRequestStateEnum::SUCCESSFUL)
-        ->and($shipment->fresh()->operation_state)->toBe(CdekShipmentWorkflowStateEnum::REGISTERED)
+        ->and($shipment->fresh()->operation_state)->toBe(CdekShipmentOperationStateEnum::REGISTERED)
         ->and($document->fresh()->state)->toBe(CdekPrintStateEnum::READY);
 });
 

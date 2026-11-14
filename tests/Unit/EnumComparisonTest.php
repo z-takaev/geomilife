@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Enums\Cdek\CdekOrderStatusEnum;
 use App\Enums\Cdek\CdekPrintStateEnum;
 use App\Enums\Cdek\CdekRequestStateEnum;
-use App\Enums\Cdek\CdekShipmentWorkflowStateEnum;
+use App\Enums\Cdek\CdekShipmentOperationStateEnum;
 use App\Enums\Filament\FilamentUserRoleEnum;
 use App\Enums\Orders\DeliveryMethodEnum;
 use App\Enums\Orders\OrderStatusEnum;
@@ -28,7 +28,7 @@ it('сравнивает все варианты одного enum через is
     [CdekRequestStateEnum::class],
     [CdekPrintStateEnum::class],
     [CdekOrderStatusEnum::class],
-    [CdekShipmentWorkflowStateEnum::class],
+    [CdekShipmentOperationStateEnum::class],
     [TbankPaymentStatusEnum::class],
 ]);
 
@@ -47,7 +47,7 @@ it('отклоняет enum другого типа и строковое зна
     [CdekRequestStateEnum::class],
     [CdekPrintStateEnum::class],
     [CdekOrderStatusEnum::class],
-    [CdekShipmentWorkflowStateEnum::class],
+    [CdekShipmentOperationStateEnum::class],
     [TbankPaymentStatusEnum::class],
 ]);
 

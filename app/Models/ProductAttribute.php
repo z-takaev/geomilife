@@ -11,11 +11,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class ProductAttribute extends Model
 {
-    use HasFactory, HasSlug;
+    use HasFactory;
+    use HasSlug;
 
     protected $fillable = [
-        'name',
-        'slug',
+        'name', 'slug',
     ];
 
     public function productValues(): HasMany
@@ -25,7 +25,11 @@ final class ProductAttribute extends Model
 
     public function canBeDeleted(): bool
     {
-        return ! ($this->product_values_exists ?? $this->productValues()->exists());
+        if (array_key_exists('product_values_count', $this->attributes)) {
+            return (int) $this->product_values_count === 0;
+        }
+
+        return ! $this->productValues()->exists();
     }
 
     protected function getSlugSourceAttribute(): string

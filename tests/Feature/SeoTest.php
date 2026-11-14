@@ -17,11 +17,11 @@ it('использует SEO модели и экранирует значени
 
 it('сбрасывает кеш SEO маршрутов после изменения и удаления', function (): void {
     $seo = Seo::query()->create(['route_name' => 'home', 'title' => 'Первый заголовок']);
-    expect(Seo::cachedRoutes()->get('home')->title)->toBe('Первый заголовок');
+    expect(Seo::cached()->get('home')->title)->toBe('Первый заголовок');
     $seo->update(['title' => 'Новый заголовок']);
-    expect(Seo::cachedRoutes()->get('home')->title)->toBe('Новый заголовок');
+    expect(Seo::cached()->get('home')->title)->toBe('Новый заголовок');
     $seo->delete();
-    expect(Seo::cachedRoutes()->has('home'))->toBeFalse();
+    expect(Seo::cached()->has('home'))->toBeFalse();
 });
 
 it('использует резервные значения для пустых SEO полей', function (): void {

@@ -12,12 +12,8 @@ final class ShippingBox extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
-        'length',
-        'width',
-        'height',
-        'weight',
-        'is_active',
+        'name', 'is_active',
+        'length', 'width', 'height', 'weight',
     ];
 
     protected function casts(): array

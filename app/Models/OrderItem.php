@@ -17,24 +17,18 @@ final class OrderItem extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'order_id',
-        'product_id',
-        'product_variant_id',
-        'product_name',
-        'variant_name',
-        'sku',
-        'price',
-        'old_price',
-        'quantity',
-        'total',
+        'order_id', 'product_id', 'product_variant_id',
+        'sku', 'product_name', 'variant_name',
+        'price', 'old_price',
+        'quantity', 'total',
     ];
 
     protected function casts(): array
     {
         return [
+            'quantity' => 'integer',
             'price' => Money::class,
             'old_price' => Money::class,
-            'quantity' => 'integer',
             'total' => Money::class,
         ];
     }

@@ -6,7 +6,7 @@ namespace App\Filament\Resources\Orders\Pages;
 
 use App\Enums\Cdek\CdekPrintStateEnum;
 use App\Enums\Cdek\CdekRequestStateEnum;
-use App\Enums\Cdek\CdekShipmentWorkflowStateEnum;
+use App\Enums\Cdek\CdekShipmentOperationStateEnum;
 use App\Enums\Orders\OrderStatusEnum;
 use App\Enums\Orders\PaymentStatusEnum;
 use App\Filament\Resources\Orders\OrderResource;
@@ -103,8 +103,8 @@ final class ViewOrder extends ViewRecord
                         && $this->getRecord()->cancellation_state === null
                         && $this->getRecord()->shipment?->uuid === null
                         && ! in_array($this->getRecord()->shipment?->operation_state, [
-                            CdekShipmentWorkflowStateEnum::CREATING,
-                            CdekShipmentWorkflowStateEnum::REGISTERING,
+                            CdekShipmentOperationStateEnum::CREATING,
+                            CdekShipmentOperationStateEnum::REGISTERING,
                         ], true))
                     ->action(fn () => $this->perform(fn () => CreateCdekShipmentJob::dispatch($this->getRecord()->id))),
 

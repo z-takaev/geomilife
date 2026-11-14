@@ -21,15 +21,16 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 final class News extends Model implements HasMedia, HasRichContent, Seoable
 {
-    use HasFactory, HasSeo, HasSlug, InteractsWithMedia, InteractsWithRichContent;
+    use HasFactory;
+    use HasSeo;
+    use HasSlug;
+    use InteractsWithMedia;
+    use InteractsWithRichContent;
 
     protected $fillable = [
-        'title',
-        'slug',
-        'excerpt',
-        'content',
-        'published_at',
-        'is_active',
+        'title', 'slug',
+        'excerpt', 'content',
+        'published_at', 'is_active',
     ];
 
     protected function casts(): array
@@ -54,9 +55,7 @@ final class News extends Model implements HasMedia, HasRichContent, Seoable
 
     public function isAvailable(): bool
     {
-        return $this->is_active
-            && $this->published_at !== null
-            && $this->published_at->lte(today());
+        return $this->is_active && $this->published_at->lte(today());
     }
 
     public function registerMediaCollections(): void

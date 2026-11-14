@@ -19,18 +19,10 @@ final class ProductVariant extends Model
 
     protected $fillable = [
         'product_id',
-        'sku',
-        'unit',
-        'value',
-        'price',
-        'old_price',
-        'weight',
-        'length',
-        'width',
-        'height',
-        'is_active',
-        'is_preorder',
-        'order',
+        'sku', 'unit', 'value',
+        'price', 'old_price',
+        'weight', 'length', 'width', 'height',
+        'is_active', 'is_preorder', 'order',
     ];
 
     protected function casts(): array

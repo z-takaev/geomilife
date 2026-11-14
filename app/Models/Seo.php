@@ -17,8 +17,7 @@ final class Seo extends Model
 
     protected $fillable = [
         'route_name',
-        'title',
-        'description',
+        'title', 'description',
     ];
 
     protected static function booted(): void
@@ -41,10 +40,7 @@ final class Seo extends Model
         return $this->morphTo();
     }
 
-    /**
-     * @return Collection<string, self>
-     */
-    public static function cachedRoutes(): Collection
+    public static function cached(): Collection
     {
         return Cache::remember(
             (string) config('cache.items.seo_routes.key'),

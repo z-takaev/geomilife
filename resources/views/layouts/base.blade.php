@@ -36,9 +36,9 @@
     @include('layouts.partials.navigation.mobile')
     <livewire:favorites />
     <livewire:shopping-cart />
-    <livewire:product-quick-view />
-    <livewire:search-suggestions />
     <livewire:city-selector />
+    <livewire:search-suggestions />
+    <livewire:product-quick-view />
     @guest
         @include('auth.partials.login')
         @include('auth.partials.register')
@@ -61,6 +61,7 @@
     <script src="{{ asset('assets/js/alpine.js') }}"></script>
     <script src="{{ asset('assets/js/main.js') }}"></script>
 
+    {{-- TODO: Вынести эту логику --}}
     @guest
         @php
             $authModal = match (true) {

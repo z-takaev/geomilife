@@ -15,21 +15,21 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 final class HomeSlide extends Model implements HasMedia
 {
-    use HasFactory, HasOrder, InteractsWithMedia;
+    use HasFactory;
+    use HasOrder;
+    use InteractsWithMedia;
 
     protected $fillable = [
-        'link_url',
-        'open_in_new_tab',
-        'order',
-        'is_active',
+        'link_url', 'order',
+        'open_in_new_tab', 'is_active',
     ];
 
     protected function casts(): array
     {
         return [
-            'open_in_new_tab' => 'boolean',
             'order' => 'integer',
             'is_active' => 'boolean',
+            'open_in_new_tab' => 'boolean',
         ];
     }
 
@@ -44,9 +44,6 @@ final class HomeSlide extends Model implements HasMedia
         });
     }
 
-    /**
-     * @return Collection<int, self>
-     */
     public static function cached(): Collection
     {
         return Cache::remember(

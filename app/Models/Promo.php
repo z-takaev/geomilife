@@ -23,15 +23,16 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 final class Promo extends Model implements HasMedia, HasRichContent, Seoable
 {
-    use HasFactory, HasSeo, HasSlug, InteractsWithMedia, InteractsWithRichContent;
+    use HasFactory;
+    use HasSeo;
+    use HasSlug;
+    use InteractsWithMedia;
+    use InteractsWithRichContent;
 
     protected $fillable = [
-        'title',
-        'slug',
-        'excerpt',
-        'content',
-        'start_at',
-        'end_at',
+        'title', 'slug',
+        'excerpt', 'content',
+        'start_at', 'end_at',
         'is_active',
     ];
 
@@ -73,15 +74,10 @@ final class Promo extends Model implements HasMedia, HasRichContent, Seoable
         $today = today();
 
         return $this->is_active
-            && $this->start_at !== null
-            && $this->end_at !== null
             && $this->start_at->lte($today)
             && $this->end_at->gte($today);
     }
 
-    /**
-     * @return Collection<int, self>
-     */
     public static function cached(): Collection
     {
         return Cache::remember(

@@ -13,17 +13,10 @@ final class Address extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
-        'city_id',
-        'street',
-        'house',
-        'building',
-        'apartment',
-        'entrance',
-        'floor',
-        'intercom',
-        'is_default',
-        'last_used_at',
+        'user_id', 'city_id',
+        'street', 'house', 'building', 'apartment',
+        'entrance', 'floor', 'intercom',
+        'is_default', 'last_used_at',
     ];
 
     protected function casts(): array

@@ -17,9 +17,6 @@ final class Setting extends Model implements HasMedia
 {
     use InteractsWithMedia;
 
-    /**
-     * @var list<string>
-     */
     public const array IMAGE_COLLECTIONS = [
         'story_image',
         'banner_wide_image',
@@ -36,29 +33,13 @@ final class Setting extends Model implements HasMedia
         'banner_triple_third_mobile_image',
     ];
 
-    /**
-     * @var list<string>
-     */
     protected $fillable = [
-        'snow_enabled',
-        'benefits',
-        'privacy_policy',
-        'phone',
-        'email',
-        'admin_email',
-        'address',
-        'working_hours',
-        'yandex_map_id',
-        'footer_title',
-        'footer_description',
-        'instagram_url',
-        'youtube_url',
-        'vk_url',
-        'telegram_url',
-        'whatsapp_url',
-        'story_title',
-        'story_description',
-        'story_video_url',
+        'phone', 'email', 'address', 'working_hours',
+        'admin_email', 'yandex_map_id',
+        'footer_title', 'footer_description',
+        'instagram_url', 'youtube_url', 'vk_url', 'telegram_url', 'whatsapp_url',
+        'story_title', 'story_description', 'story_video_url',
+        'benefits', 'privacy_policy', 'snow_enabled',
     ];
 
     protected function casts(): array
@@ -116,9 +97,10 @@ final class Setting extends Model implements HasMedia
         );
     }
 
-    public function privacyPolicyUrl(): string
+    public function privacyPolicyUrl(): ?string
     {
-        return $this->privacy_policy ? Storage::disk('public')->url($this->privacy_policy) : '';
+        return $this->privacy_policy ?
+            Storage::disk('public')->url($this->privacy_policy) : null;
     }
 
     public function yandexMapUrl(): ?string

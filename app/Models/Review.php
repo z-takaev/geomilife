@@ -16,12 +16,9 @@ final class Review extends Model
     use HasFactory;
 
     protected $fillable = [
-        'author_name',
-        'text',
-        'rating',
-        'source',
-        'reviewed_at',
-        'is_active',
+        'author_name', 'text',
+        'rating', 'source',
+        'reviewed_at', 'is_active',
     ];
 
     protected function casts(): array
@@ -50,9 +47,6 @@ final class Review extends Model
         $query->where('is_active', true);
     }
 
-    /**
-     * @return Collection<int, self>
-     */
     public static function cached(): Collection
     {
         return Cache::remember(

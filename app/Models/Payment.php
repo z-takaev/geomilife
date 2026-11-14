@@ -16,19 +16,12 @@ final class Payment extends Model
 
     protected $fillable = [
         'order_id',
-        'provider',
-        'bank_order_id',
-        'payment_url',
-        'provider_status',
-        'operation_state',
-        'error',
-        'refund_requested_at',
-        'refunded_at',
-        'last_checked_at',
-        'transaction_id',
-        'amount',
-        'status',
-        'payload',
+        'amount', 'status', 'payment_url',
+        'provider', 'bank_order_id',
+        'provider_status', 'operation_state',
+        'error', 'payload',
+        'refund_requested_at', 'refunded_at',
+        'last_checked_at', 'transaction_id',
     ];
 
     protected function casts(): array

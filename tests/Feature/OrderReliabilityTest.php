@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\Cdek\CdekPrintStateEnum;
-use App\Enums\Cdek\CdekShipmentWorkflowStateEnum;
+use App\Enums\Cdek\CdekShipmentOperationStateEnum;
 use App\Enums\Orders\OrderDocumentTypeEnum;
 use App\Enums\Orders\OrderStatusEnum;
 use App\Enums\Orders\PaymentMethodEnum;
@@ -195,7 +195,7 @@ it('не ставит документы после конкурентного �
         Event::forget($event);
     }
     expect($changed)->toBeTrue()
-        ->and($shipment->fresh()->operation_state)->toBe(CdekShipmentWorkflowStateEnum::CANCELLING);
+        ->and($shipment->fresh()->operation_state)->toBe(CdekShipmentOperationStateEnum::CANCELLING);
     Queue::assertNotPushed(PrepareCdekDocumentsJob::class);
 });
 

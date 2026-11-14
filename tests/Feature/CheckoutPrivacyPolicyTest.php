@@ -15,7 +15,8 @@ it('не создаёт документ политики при заполне�
 
     $this->seed(SettingSeeder::class);
 
-    expect(Setting::query()->sole()->privacy_policy)->toBeNull();
+    expect(Setting::query()->sole()->privacy_policy)->toBeNull()
+        ->and(Setting::query()->sole()->privacyPolicyUrl())->toBeNull();
     expect(Storage::disk('public')->allFiles('documents/privacy-policy'))->toBeEmpty();
 });
 

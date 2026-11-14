@@ -19,14 +19,14 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 final class Page extends Model implements HasMedia, HasRichContent, Seoable
 {
-    use HasSeo, InteractsWithMedia, InteractsWithRichContent;
+    use HasSeo;
+    use InteractsWithMedia;
+    use InteractsWithRichContent;
 
     protected $fillable = [
         'key',
-        'title',
-        'slug',
-        'content',
-        'is_active',
+        'title', 'slug',
+        'content', 'is_active',
     ];
 
     protected function casts(): array

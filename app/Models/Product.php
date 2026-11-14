@@ -22,16 +22,15 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 final class Product extends Model implements HasMedia, Seoable
 {
-    use HasFactory, HasSeo, HasSlug, InteractsWithMedia;
+    use HasFactory;
+    use HasSeo;
+    use HasSlug;
+    use InteractsWithMedia;
 
     protected $fillable = [
         'category_id',
-        'name',
-        'slug',
-        'description',
-        'is_new',
-        'is_hit',
-        'is_active',
+        'name', 'slug', 'description',
+        'is_new', 'is_hit', 'is_active',
     ];
 
     protected function casts(): array
@@ -123,9 +122,6 @@ final class Product extends Model implements HasMedia, Seoable
         );
     }
 
-    /**
-     * @return Collection<int, Media>
-     */
     public function images(): Collection
     {
         return $this->getMedia('image')

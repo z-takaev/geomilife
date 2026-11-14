@@ -6,7 +6,7 @@ namespace App\Enums\Cdek;
 
 use Filament\Support\Contracts\HasLabel;
 
-enum CdekShipmentWorkflowStateEnum: string implements HasLabel
+enum CdekShipmentOperationStateEnum: string implements HasLabel
 {
     case CREATING = 'CREATING';
     case REGISTERING = 'REGISTERING';

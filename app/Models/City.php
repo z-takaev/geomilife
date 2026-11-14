@@ -16,20 +16,11 @@ final class City extends Model
 
     protected $fillable = [
         'cdek_code',
-        'name',
-        'region',
-        'sub_region',
-        'is_active',
-        'is_suggested',
-        'is_pickup_available',
-        'is_courier_available',
-        'is_cdek_excluded',
-        'door_delivery_price',
-        'pickup_address',
-        'pickup_working_hours',
-        'pickup_phone',
-        'courier_delivery_price',
-        'floor_lifting_price',
+        'name', 'region', 'sub_region',
+        'is_active', 'is_suggested',
+        'is_pickup_available', 'is_courier_available', 'is_cdek_excluded',
+        'door_delivery_price', 'courier_delivery_price', 'floor_lifting_price',
+        'pickup_address', 'pickup_working_hours', 'pickup_phone',
     ];
 
     protected function casts(): array
@@ -38,12 +29,12 @@ final class City extends Model
             'cdek_code' => 'integer',
             'is_active' => 'boolean',
             'is_suggested' => 'boolean',
+            'is_cdek_excluded' => 'boolean',
             'is_pickup_available' => 'boolean',
             'is_courier_available' => 'boolean',
             'courier_delivery_price' => Money::class,
             'floor_lifting_price' => Money::class,
             'door_delivery_price' => Money::class,
-            'is_cdek_excluded' => 'boolean',
         ];
     }
 
