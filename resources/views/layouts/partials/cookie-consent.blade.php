@@ -5,6 +5,6 @@
     </p>
 
     <button class="cookie-consent__button" type="button" data-cookie-consent-accept>
-        {{ __('ПРИНЯТЬ') }}
+        {{ __('Принять') }}
     </button>
 </div>

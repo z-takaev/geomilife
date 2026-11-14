@@ -32,6 +32,7 @@ final class HomeController extends Controller
         $slides = HomeSlide::cached();
         $promos = Promo::cached();
         $reviews = Review::cached();
+
         $featuredCategories = $this->categoryRepository->getFeatured();
 
         $hitProducts = $this->productRepository->getHitProducts();

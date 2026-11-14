@@ -85,6 +85,7 @@
         aria-labelledby="mergeCartTitle" x-ref="mergeModal" wire:ignore.self>
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
+                {{-- TODO: Убрать дублирование модалки --}}
                 <button type="button" class="icon-close-popup" data-bs-dismiss="modal"
                     aria-label="{{ __('Решить позже') }}">
                     <i class="icon icon-close" aria-hidden="true"></i>

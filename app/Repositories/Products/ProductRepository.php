@@ -25,7 +25,7 @@ final class ProductRepository
     {
         return $this->cardQuery()
             ->where('is_hit', true)
-            ->latest('id')
+            ->inRandomOrder()
             ->limit($limit)
             ->get();
     }
@@ -34,7 +34,7 @@ final class ProductRepository
     {
         return $this->cardQuery()
             ->where('is_new', true)
-            ->latest('id')
+            ->inRandomOrder()
             ->limit($limit)
             ->get();
     }
@@ -43,7 +43,7 @@ final class ProductRepository
     {
         return $this->cardQuery()
             ->discounted()
-            ->latest('id')
+            ->inRandomOrder()
             ->limit($limit)
             ->get();
     }
@@ -53,8 +53,7 @@ final class ProductRepository
         return $this->cardQuery()
             ->whereKeyNot($product->getKey())
             ->orderByRaw('case when category_id = ? then 0 else 1 end', [$product->category_id])
-            ->orderByDesc('is_hit')
-            ->latest('id')
+            ->inRandomOrder()
             ->limit($limit)
             ->get();
     }

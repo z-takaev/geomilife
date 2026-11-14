@@ -13,7 +13,7 @@
             <a href="#" class="text-caption-01 text-black mb-8">
                 {{ __(settings()?->address) }}
             </a>
-            <a href="tel:{{ preg_replace('/[^\d+]/', '', settings()?->phone) }}" class="h5 fw-medium text-black mb-12">
+            <a href="{{ phone_href(settings()?->phone) }}" class="h5 fw-medium text-black mb-12">
                 {{ __(settings()?->phone) }}
             </a>
             <a href="mailto:{{ settings()?->email }}" class="text-caption-01 text-black mb-20">

@@ -45,6 +45,7 @@
             </div>
         </div>
     </div>
+
     <div class="modal modalCentered fade modal-log merge-confirmation" id="mergeWishlist" tabindex="-1"
         aria-labelledby="mergeWishlistTitle" x-ref="mergeModal" wire:ignore.self>
         <div class="modal-dialog modal-dialog-centered">

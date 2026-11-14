@@ -19,7 +19,7 @@
                             </span>
                             <div>
                                 <p class="contacts-info-card__label">{{ __('Телефон') }}</p>
-                                <a href="tel:{{ preg_replace('/[^\d+]/', '', settings()?->phone) }}"
+                                <a href="{{ phone_href(settings()?->phone) }}"
                                     class="contacts-info-card__value link-primary">
                                     {{ __(settings()?->phone) }}
                                 </a>

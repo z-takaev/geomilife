@@ -1,10 +1,12 @@
 <x-auth.modal id="login" class="modal-log">
     <h3 class="title-pop text-black text-center">{{ __('Вход') }}</h3>
+
     @if (session('auth_status') && session('auth_modal') === 'login')
         <x-auth.notice>
             {{ session('auth_status') }}
         </x-auth.notice>
     @endif
+
     <form action="{{ route('login') }}" method="POST" class="form-log">
         @csrf
         <div class="form-content">
@@ -21,9 +23,11 @@
                     {{ __('Забыли пароль?') }}
                 </a>
             </div>
+
             <button type="submit" class="tf-btn animate-btn w-100">
                 {{ __('Войти') }}
             </button>
+
             <p class="dont-have text-caption-01 text-center">
                 {{ __('Ещё не зарегистрированы?') }}
                 <a href="#register" data-bs-toggle="modal"

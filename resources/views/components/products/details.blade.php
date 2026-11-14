@@ -9,11 +9,13 @@
             data-bs-target="#{{ $prefix }}-characteristics" aria-controls="{{ $prefix }}-characteristics"
             aria-selected="false">{{ __('Характеристики') }}</button>
     </nav>
+
     <div class="tab-content product-detail-tabs__content">
         <div class="tab-pane fade show active" id="{{ $prefix }}-description" role="tabpanel"
             aria-labelledby="{{ $prefix }}-description-tab" tabindex="0">
             <p>{{ $product->description ?: __('Описание отсутствует') }}</p>
         </div>
+
         <div class="tab-pane fade" id="{{ $prefix }}-characteristics" role="tabpanel"
             aria-labelledby="{{ $prefix }}-characteristics-tab" tabindex="0">
             <dl class="product-characteristics__list">

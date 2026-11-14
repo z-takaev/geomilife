@@ -14,8 +14,15 @@ final class SearchSuggestions extends Component
 {
     public string $query = '';
 
+    public function updatedQuery(): void
+    {
+        $this->validateOnly('query');
+    }
+
     public function submit(): void
     {
+        $this->validate();
+
         $query = mb_substr(trim($this->query), 0, 255);
 
         if ($query === '') {
@@ -39,5 +46,12 @@ final class SearchSuggestions extends Component
         }
 
         return view('livewire.search-suggestions', compact('query', 'categories', 'products'));
+    }
+
+    protected function rules(): array
+    {
+        return [
+            'query' => ['string', 'max:255'],
+        ];
     }
 }

@@ -22,9 +22,6 @@
 </head>
 
 <body>
-    @include('layouts.partials.back-to-top')
-    @include('layouts.partials.page-loader')
-
     <main id="wrapper">
         @include('layouts.partials.header')
 
@@ -34,16 +31,19 @@
     </main>
 
     @include('layouts.partials.navigation.mobile')
+
     <livewire:favorites />
     <livewire:shopping-cart />
     <livewire:city-selector />
     <livewire:search-suggestions />
     <livewire:product-quick-view />
+
     @guest
-        @include('auth.partials.login')
-        @include('auth.partials.register')
-        @include('auth.partials.forgot-password')
+        <x-auth.modals />
     @endguest
+
+    @include('layouts.partials.back-to-top')
+    @include('layouts.partials.page-loader')
     @include('layouts.partials.cookie-consent')
     @include('layouts.partials.notifications')
 
@@ -60,25 +60,6 @@
     @stack('scripts')
     <script src="{{ asset('assets/js/alpine.js') }}"></script>
     <script src="{{ asset('assets/js/main.js') }}"></script>
-
-    {{-- TODO: Вынести эту логику --}}
-    @guest
-        @php
-            $authModal = match (true) {
-                $errors->signIn->any() => 'login',
-                $errors->signUp->any() => 'register',
-                $errors->forgotPassword->any() => 'forgotPassword',
-                session('auth_modal') !== null => session('auth_modal'),
-                request()->string('auth')->toString() === 'login' => 'login',
-                default => null,
-            };
-        @endphp
-        @if ($authModal !== null)
-            <script>
-                bootstrap.Modal.getOrCreateInstance(document.getElementById(@js($authModal))).show();
-            </script>
-        @endif
-    @endguest
 </body>
 
 </html>

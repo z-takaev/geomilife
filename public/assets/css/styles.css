@@ -15959,6 +15959,7 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
 }
 
 .cookie-consent__button {
+    text-transform: uppercase;
     flex-shrink: 0;
     padding: 10px 20px;
     border: 0;

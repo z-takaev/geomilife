@@ -7,6 +7,7 @@ namespace App\Services\Favorites;
 use App\Models\Product;
 use App\Repositories\Products\ProductRepository;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
@@ -19,7 +20,7 @@ final class FavoriteService
      */
     public function ids(array $guestIds = []): array
     {
-        return auth()->check()
+        return Auth::check()
             ? ($this->productIds ??= auth()->user()->favorites()->pluck('product_id')->all())
             : $this->validateGuestIds($guestIds);
     }
@@ -75,7 +76,7 @@ final class FavoriteService
     {
         abort_unless(Product::query()->available()->whereKey($productId)->exists(), 404);
 
-        if (! auth()->check()) {
+        if (! Auth::check()) {
             return $this->validateGuestIds([...$guestIds, $productId]);
         }
 
@@ -90,7 +91,7 @@ final class FavoriteService
      */
     public function remove(int $productId, array $guestIds = []): array
     {
-        if (! auth()->check()) {
+        if (! Auth::check()) {
             return array_values(array_diff($this->validateGuestIds($guestIds), [$productId]));
         }
 
@@ -105,7 +106,7 @@ final class FavoriteService
      */
     public function shouldSuggestMerge(array $guestIds): bool
     {
-        return auth()->check()
+        return Auth::check()
             && session('favorites.merge_declined') !== auth()->id()
             && $this->validateGuestIds($guestIds) !== [];
     }
@@ -115,7 +116,7 @@ final class FavoriteService
      */
     public function merge(array $guestIds): void
     {
-        abort_unless(auth()->check(), 403);
+        abort_unless(Auth::check(), 403);
 
         $ids = $this->availableGuestIds($guestIds);
 
@@ -133,7 +134,7 @@ final class FavoriteService
      */
     public function declineMerge(): void
     {
-        abort_unless(auth()->check(), 403);
+        abort_unless(Auth::check(), 403);
 
         session()->put('favorites.merge_declined', auth()->id());
     }

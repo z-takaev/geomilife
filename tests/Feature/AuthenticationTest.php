@@ -47,6 +47,37 @@ it('регистрация ищет активный город и показы�
         ->assertSeeHtml('name="city_id"');
 });
 
+it('проверяет длину запроса при поиске города регистрации', function (): void {
+    Livewire::test(RegistrationCitySelector::class)
+        ->set('query', str_repeat('а', 256))
+        ->assertHasErrors(['query' => 'max']);
+});
+
+it('открывает модалку входа после ошибки авторизации', function (): void {
+    $this->followingRedirects()
+        ->from(route('home'))
+        ->post(route('login'), [
+            'email' => 'modal@example.com',
+            'password' => 'wrong-password',
+        ])
+        ->assertOk()
+        ->assertSee("document.getElementById('login')", false);
+});
+
+it('открывает модалку авторизации из сессии или параметра запроса', function (
+    array $session,
+    array $query,
+    string $expectedModal,
+): void {
+    $this->withSession($session)
+        ->get(route('home', $query))
+        ->assertOk()
+        ->assertSee("document.getElementById('{$expectedModal}')", false);
+})->with([
+    'модалка из сессии' => [['auth_modal' => 'register'], [], 'register'],
+    'вход из параметра запроса' => [[], ['auth' => 'login'], 'login'],
+]);
+
 it('регистрирует пользователя с нормализованной почтой и отправляет подтверждение', function (): void {
     Notification::fake();
     $city = registrationCity();

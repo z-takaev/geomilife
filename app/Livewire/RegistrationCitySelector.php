@@ -24,6 +24,8 @@ final class RegistrationCitySelector extends Component
 
     public function updatedQuery(): void
     {
+        $this->validateOnly('query');
+
         if ($this->selected_city_id === null) {
             return;
         }
@@ -59,5 +61,12 @@ final class RegistrationCitySelector extends Component
                 ->get();
 
         return view('livewire.registration-city-selector', compact('cities'));
+    }
+
+    protected function rules(): array
+    {
+        return [
+            'query' => ['string', 'max:255'],
+        ];
     }
 }

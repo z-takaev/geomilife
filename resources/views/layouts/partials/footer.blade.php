@@ -4,7 +4,8 @@
             <div class="footer-inner">
                 <div id="about" class="inner-left">
                     <a href="{{ url('/') }}" class="logo-site">
-                        <img loading="lazy" src="{{ asset('assets/images/logo/logo-white.svg') }}" alt="">
+                        <img loading="lazy" src="{{ asset('assets/images/logo/logo-white.svg') }}"
+                            alt="Логотип GeoMiLife">
                     </a>
                     @if (settings()?->footer_title)
                         <h5 class="title text-white font-main">
@@ -30,7 +31,7 @@
                                 <span class="infor-address font-main text-white">
                                     {{ __(settings()?->address) }}
                                 </span>
-                                <a href="tel:{{ preg_replace('/[^\d+]/', '', settings()?->phone) }}"
+                                <a href="{{ phone_href(settings()?->phone) }}"
                                     class="link infor-phone font-main">{{ __(settings()?->phone) }}</a>
                                 <a href="mailto:{{ settings()?->email }}"
                                     class="link infor-email font-main text-decoration-underline">{{ __(settings()?->email) }}</a>
@@ -89,6 +90,7 @@
             <div class="footer-bottom-content">
                 <div class="footer-copyright">
                     <p class="text-caption-01 fw-medium text-white">
+                        {{-- TODO: Подставлять текущий год --}}
                         {{ __('«Geomilife» 2026 - производитель масла') }}
                     </p>
                     <a class="footer-developer" href="https://web-chip.ru" target="_blank"

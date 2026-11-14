@@ -17,6 +17,13 @@ it('подключает общие интерактивные компонен�
         ->assertSeeLivewire('product-quick-view');
 });
 
+it('не выводит сообщение заказа на главной странице', function (): void {
+    $this->withSession(['order_message' => 'Сообщение заказа'])
+        ->get(route('home'))
+        ->assertOk()
+        ->assertDontSee('Сообщение заказа');
+});
+
 it('открывает быстрый просмотр товара с выбранной фасовкой', function (): void {
     $category = Category::query()->create(['name' => 'Масла', 'slug' => 'oils', 'is_active' => true]);
     $product = Product::query()->create([

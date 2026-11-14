@@ -11,9 +11,6 @@ use Illuminate\Support\Facades\Cache;
 
 final class CategoryRepository
 {
-    /**
-     * @return Collection<int, Category>
-     */
     public function getActiveCatalog(): Collection
     {
         $categories = Cache::memo()->remember(
@@ -30,26 +27,17 @@ final class CategoryRepository
         return $this->buildTree($categories);
     }
 
-    /**
-     * @return Collection<int, Category>
-     */
     public function getFeatured(int $limit = 12): Collection
     {
         return $this->getActiveCatalog()->take($limit)->values();
     }
 
-    /**
-     * @return Collection<int, Category>
-     */
     public function getActiveChildren(Category $category): Collection
     {
         return $this->findCategory($this->getActiveCatalog(), (int) $category->getKey())?->children
             ?? new Collection;
     }
 
-    /**
-     * @return Collection<int, Category>
-     */
     public function search(string $searchQuery): Collection
     {
         $searchQuery = trim($searchQuery);
@@ -90,10 +78,6 @@ final class CategoryRepository
         Cache::memo()->forget((string) config('cache.items.catalog_categories.key'));
     }
 
-    /**
-     * @param  Collection<int, Category>  $categories
-     * @return Collection<int, Category>
-     */
     private function buildTree(Collection $categories): Collection
     {
         $rootCategories = new Collection;
@@ -131,9 +115,6 @@ final class CategoryRepository
         });
     }
 
-    /**
-     * @param  Collection<int, Category>  $categories
-     */
     private function findCategory(Collection $categories, int $categoryId): ?Category
     {
         foreach ($categories as $category) {

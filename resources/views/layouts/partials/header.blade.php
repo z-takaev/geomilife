@@ -15,7 +15,7 @@
             <div class="topbar-center">
                 <ul class="tf-list">
                     <li>
-                        <a href="tel:{{ preg_replace('/[^\d+]/', '', settings()?->phone) }}" class="info link-primary">
+                        <a href="{{ phone_href(settings()?->phone) }}" class="info link-primary">
                             <i class="icon icon-phone-call"></i>
                             {{ __(settings()?->phone) }}
                         </a>
@@ -66,7 +66,7 @@
                     @if (settings()?->whatsapp_url)
                         <li>
                             <a href="{{ settings()?->whatsapp_url }}" class="social-links__link"
-                                aria-label="{{ __('Ватсап') }}" target="_blank" rel="noopener noreferrer">
+                                aria-label="{{ __('Whatsapp') }}" target="_blank" rel="noopener noreferrer">
                                 <i class="social-icon social-icon--whatsapp" aria-hidden="true"></i>
                             </a>
                         </li>

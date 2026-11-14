@@ -6,6 +6,7 @@ namespace App\Livewire;
 
 use App\Services\Favorites\FavoriteService;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 final class Favorites extends Component
@@ -26,7 +27,7 @@ final class Favorites extends Component
             $this->dispatch('favorites-merge-suggested');
         }
 
-        if (auth()->check()) {
+        if (Auth::check()) {
             $this->skipRender();
         }
 
@@ -43,7 +44,7 @@ final class Favorites extends Component
             $message = __('Товар добавлен в избранное.');
         }
 
-        if (! auth()->check()) {
+        if (! Auth::check()) {
             $this->guestIds = $ids;
         }
 
@@ -55,7 +56,7 @@ final class Favorites extends Component
     {
         $ids = $favorites->remove($productId, $this->guestIds);
 
-        if (! auth()->check()) {
+        if (! Auth::check()) {
             $this->guestIds = $ids;
         }
 
@@ -84,7 +85,7 @@ final class Favorites extends Component
     {
         $items = $favorites->items($this->guestIds);
         $ids = $favorites->ids($this->guestIds);
-        $authenticated = auth()->check();
+        $authenticated = Auth::check();
 
         return view('livewire.favorites', compact('items', 'ids', 'authenticated'));
     }

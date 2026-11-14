@@ -13,15 +13,14 @@
 @endpush
 
 @section('content')
-    @if (session('order_message'))
-        <div class="container">
-            <div class="checkout-info" role="status">{{ session('order_message') }}</div>
-        </div>
-    @endif
     @include('home.partials.main-slider')
+
     @include('home.partials.benefits')
+
     @include('home.partials.featured-categories')
+
     @include('home.partials.wide-banner')
+
     @if ($hitProducts->isNotEmpty())
         <x-products.slider :title="__('Хиты продаж')" :all-products-url="route('catalog.index')">
             @foreach ($hitProducts as $product)
@@ -29,7 +28,9 @@
             @endforeach
         </x-products.slider>
     @endif
+
     @include('home.partials.two-banners')
+
     @if ($newProducts->isNotEmpty())
         <x-products.slider :title="__('Новинки')" :all-products-url="route('catalog.index')">
             @foreach ($newProducts as $product)
@@ -37,7 +38,9 @@
             @endforeach
         </x-products.slider>
     @endif
+
     @include('home.partials.three-banners')
+
     @if ($discountedProducts->isNotEmpty())
         <x-products.slider :title="__('Товары со скидкой')" :all-products-url="route('catalog.index')">
             @foreach ($discountedProducts as $product)
@@ -45,7 +48,10 @@
             @endforeach
         </x-products.slider>
     @endif
+
     @include('home.partials.latest-promos')
+
     @include('home.partials.company-story')
+
     @include('home.partials.reviews')
 @endsection

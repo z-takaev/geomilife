@@ -62,6 +62,12 @@ it('возвращает пустой результат для пустого �
         ->assertDontSee('Льняное масло');
 });
 
+it('проверяет длину запроса поисковых подсказок', function (): void {
+    Livewire::test(SearchSuggestions::class)
+        ->set('query', str_repeat('а', 256))
+        ->assertHasErrors(['query' => 'max']);
+});
+
 it('не интерпретирует символы поиска как SQL-шаблон', function (string $query): void {
     $category = Category::query()->create(['name' => 'Масла', 'slug' => 'oils', 'is_active' => true]);
     createSearchProduct($category, 'Масло', 'oil');

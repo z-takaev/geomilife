@@ -1,5 +1,6 @@
 <x-auth.modal id="register" class="modal-log register">
     <h3 class="title-pop text-black text-center">{{ __('Регистрация') }}</h3>
+
     <form action="{{ route('register') }}" method="POST" class="form-log">
         @csrf
         <div class="form-content">
@@ -24,9 +25,11 @@
                         class="text-decoration-underline fw-medium text-primary link-2">{{ __('пользовательское соглашение') }}</a>
                 </x-auth.form.checkbox>
             </div>
+
             <button type="submit" class="tf-btn animate-btn w-100">
                 {{ __('Создать аккаунт') }}
             </button>
+
             <p class="dont-have text-caption-01 text-center">
                 {{ __('Уже есть аккаунт?') }}
                 <a href="#login" data-bs-toggle="modal"

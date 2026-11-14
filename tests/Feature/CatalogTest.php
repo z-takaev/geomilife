@@ -7,7 +7,9 @@ use App\Livewire\CatalogProducts;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Repositories\Products\ProductRepository;
 use App\Support\Values\Money;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 
 function createCatalogCategory(string $name, string $slug, bool $isActive = true, ?Category $parent = null): Category
@@ -50,6 +52,38 @@ function createCatalogProduct(
 
     return $product;
 }
+
+it('выбирает товарные подборки в случайном порядке', function (): void {
+    $category = createCatalogCategory('Масла', 'oils');
+    $product = createCatalogProduct($category, 'Основной товар', 'main-product', 500, oldPrice: 700);
+    $product->update(['is_hit' => true, 'is_new' => true]);
+    $recommended = createCatalogProduct($category, 'Рекомендованный товар', 'recommended-product', 600);
+
+    $repository = app(ProductRepository::class);
+    $queries = [];
+    DB::listen(static function ($query) use (&$queries): void {
+        if (str_contains($query->sql, 'from `products`')) {
+            $queries[] = mb_strtolower($query->sql);
+        }
+    });
+
+    $repository->getHitProducts();
+    $repository->getNewProducts();
+    $repository->getDiscountedProducts();
+    $repository->getRecommendedProducts($product);
+
+    expect($queries)->toHaveCount(4);
+
+    foreach ($queries as $query) {
+        expect($query)->toContain('rand()');
+    }
+
+    expect($queries[3])
+        ->toContain('case when category_id = ? then 0 else 1 end')
+        ->and(strpos($queries[3], 'case when category_id = ? then 0 else 1 end'))
+        ->toBeLessThan(strpos($queries[3], 'rand()'));
+    expect($recommended->category_id)->toBe($product->category_id);
+});
 
 it('показывает в каталоге только доступные товары', function (): void {
     $category = createCatalogCategory('Масла', 'oils');
