@@ -13,7 +13,12 @@ return new class extends Migration
     {
         Schema::create('product_variants', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+            $table->timestamps();
+
+            $table->foreignId('product_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
             $table->string('sku')->unique();
             $table->string('unit');
             $table->unsignedInteger('value');
@@ -27,7 +32,6 @@ return new class extends Migration
             $table->boolean('is_active')->default(false);
             $table->boolean('is_preorder')->default(false);
             $table->integer('order')->default(0);
-            $table->timestamps();
 
             $table->index(['product_id', 'is_active', 'order']);
         });

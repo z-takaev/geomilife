@@ -33,18 +33,6 @@ Route::get('/', HomeController::class)->name('home');
 
 Route::get('/contacts', ContactController::class)->name('contacts');
 
-Route::get('/catalog', [CatalogController::class, 'index'])->name('catalog.index');
-Route::get('/catalog/{category}', [CatalogController::class, 'show'])->name('catalog.category');
-
-Route::get('/search', SearchController::class)->name('search');
-
-Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
-
-Route::get('/checkout', CheckoutController::class)->name('checkout');
-Route::get('/checkout/success', [CheckoutController::class, 'orderSuccess'])->name('checkout.success');
-Route::get('/payment/success', [CheckoutController::class, 'paymentSuccess'])->name('payment.success');
-Route::get('/payment/fail', [CheckoutController::class, 'paymentFail'])->name('payment.fail');
-
 Route::get('/faqs', FaqController::class)->name('faqs');
 
 Route::get('/reviews', ReviewController::class)->name('reviews');
@@ -65,6 +53,18 @@ Route::controller(PromoController::class)->prefix('promos')->name('promos.')->gr
     Route::get('/', 'index')->name('index');
     Route::get('/{promo}', 'show')->name('show');
 });
+
+Route::get('/catalog', [CatalogController::class, 'index'])->name('catalog.index');
+Route::get('/catalog/{category}', [CatalogController::class, 'show'])->name('catalog.category');
+
+Route::get('/search', SearchController::class)->name('search');
+
+Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
+
+Route::get('/checkout', CheckoutController::class)->name('checkout');
+Route::get('/checkout/success', [CheckoutController::class, 'orderSuccess'])->name('checkout.success');
+Route::get('/payment/success', [CheckoutController::class, 'paymentSuccess'])->name('payment.success');
+Route::get('/payment/fail', [CheckoutController::class, 'paymentFail'])->name('payment.fail');
 
 Route::middleware('guest')->group(function (): void {
     Route::post('/login', [SignInController::class, 'login'])

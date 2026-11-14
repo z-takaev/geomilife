@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\Orders\OrderDocumentTypeEnum;
 use App\Models\Order;
 use App\Services\Orders\OrderDocumentService;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -17,12 +18,12 @@ final class OrderDocumentController extends Controller
 
     public function waybill(Order $order, OrderDocumentService $documents): StreamedResponse
     {
-        return $this->download($documents->downloadCdekDocument($order, 'WAYBILL'), 'order-'.$order->id.'-cdek-waybill.pdf');
+        return $this->download($documents->downloadCdekDocument($order, OrderDocumentTypeEnum::WAYBILL), 'order-'.$order->id.'-cdek-waybill.pdf');
     }
 
     public function barcodes(Order $order, OrderDocumentService $documents): StreamedResponse
     {
-        return $this->download($documents->downloadCdekDocument($order, 'BARCODES'), 'order-'.$order->id.'-cdek-barcodes.pdf');
+        return $this->download($documents->downloadCdekDocument($order, OrderDocumentTypeEnum::BARCODES), 'order-'.$order->id.'-cdek-barcodes.pdf');
     }
 
     private function download(string $contents, string $filename): StreamedResponse

@@ -12,13 +12,14 @@ return new class extends Migration
     {
         Schema::create('news', function (Blueprint $table): void {
             $table->id();
+            $table->timestamps();
+
             $table->string('title');
             $table->string('slug')->unique();
             $table->text('excerpt')->nullable();
             $table->text('content')->nullable();
             $table->timestamp('published_at');
             $table->boolean('is_active')->default(false);
-            $table->timestamps();
 
             $table->index(['is_active', 'published_at', 'id'], 'news_active_published_idx');
         });

@@ -12,14 +12,18 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('category_id')->constrained()->restrictOnDelete();
+            $table->timestamps();
+
+            $table->foreignId('category_id')
+                ->constrained()
+                ->restrictOnDelete();
+
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
             $table->boolean('is_new')->default(false);
             $table->boolean('is_hit')->default(false);
             $table->boolean('is_active')->default(false);
-            $table->timestamps();
 
             $table->index(['category_id', 'is_active', 'id']);
         });

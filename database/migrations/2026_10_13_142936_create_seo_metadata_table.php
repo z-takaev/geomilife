@@ -12,11 +12,13 @@ return new class extends Migration
     {
         Schema::create('seo_metadata', function (Blueprint $table): void {
             $table->id();
+            $table->timestamps();
+
             $table->nullableMorphs('seoable');
+
             $table->string('route_name')->nullable()->unique();
             $table->string('title')->nullable();
-            $table->text('description')->nullable();
-            $table->timestamps();
+            $table->string('description')->nullable();
 
             $table->unique(['seoable_type', 'seoable_id']);
         });

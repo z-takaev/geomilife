@@ -12,11 +12,12 @@ return new class extends Migration
     {
         Schema::create('faqs', function (Blueprint $table): void {
             $table->id();
+            $table->timestamps();
+
             $table->text('question');
-            $table->text('answer')->nullable();
+            $table->text('answer');
             $table->integer('order')->default(0);
             $table->boolean('is_active')->default(false);
-            $table->timestamps();
         });
     }
 

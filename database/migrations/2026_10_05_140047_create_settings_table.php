@@ -12,30 +12,31 @@ return new class extends Migration
     {
         Schema::create('settings', function (Blueprint $table): void {
             $table->id();
-            $table->boolean('snow_enabled')->default(false);
-            $table->json('benefits')->nullable();
-            $table->string('phone')->nullable();
-            $table->string('email')->nullable();
+            $table->timestamps();
+
             $table->string('admin_email')->nullable();
-            $table->text('address')->nullable();
-            $table->text('working_hours')->nullable();
+            $table->string('email')->nullable();
+            $table->string('address')->nullable();
+            $table->string('phone')->nullable();
+            $table->string('working_hours')->nullable();
             $table->string('yandex_map_id', 64)->nullable();
 
-            $table->string('footer_title')->nullable();
-            $table->text('footer_description')->nullable();
-            $table->text('instagram_url')->nullable();
-            $table->text('youtube_url')->nullable();
-            $table->text('vk_url')->nullable();
-            $table->text('telegram_url')->nullable();
-            $table->text('whatsapp_url')->nullable();
+            $table->string('instagram_url')->nullable();
+            $table->string('youtube_url')->nullable();
+            $table->string('vk_url')->nullable();
+            $table->string('telegram_url')->nullable();
+            $table->string('whatsapp_url')->nullable();
+
+            $table->json('benefits')->nullable();
 
             $table->string('story_title')->nullable();
             $table->text('story_description')->nullable();
-            $table->text('story_video_url')->nullable();
+            $table->string('story_video_url')->nullable();
 
+            $table->string('footer_title')->nullable();
+            $table->string('footer_description')->nullable();
             $table->string('privacy_policy')->nullable();
-
-            $table->timestamps();
+            $table->boolean('snow_enabled')->default(false);
         });
     }
 

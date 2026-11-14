@@ -12,21 +12,29 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table): void {
             $table->id();
+            $table->timestamps();
+
+            $table->foreignId('city_id')
+                ->nullable()
+                ->constrained()
+                ->nullOnDelete();
+
             $table->string('first_name');
             $table->string('last_name')->nullable();
             $table->date('birth_date')->nullable();
             $table->string('phone')->nullable()->unique();
             $table->string('email')->unique();
+
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->boolean('is_blocked')->default(false);
-            $table->foreignId('city_id')->nullable()->constrained()->nullOnDelete();
+
             $table->bigInteger('telegram_chat_id')->nullable();
             $table->string('telegram_username')->nullable();
-            $table->boolean('telegram_notifications_enabled')->default(true);
+            $table->boolean('telegram_notifications_enabled')->default(false);
             $table->string('telegram_link_token', 64)->nullable()->unique();
+
             $table->rememberToken();
-            $table->timestamps();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table): void {

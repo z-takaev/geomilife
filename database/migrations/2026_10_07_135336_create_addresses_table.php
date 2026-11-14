@@ -12,8 +12,16 @@ return new class extends Migration
     {
         Schema::create('addresses', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('city_id')->constrained()->restrictOnDelete();
+            $table->timestamps();
+
+            $table->foreignId('user_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
+            $table->foreignId('city_id')
+                ->constrained()
+                ->restrictOnDelete();
+
             $table->string('street')->nullable();
             $table->string('house')->nullable();
             $table->string('building')->nullable();
@@ -23,7 +31,6 @@ return new class extends Migration
             $table->string('intercom')->nullable();
             $table->boolean('is_default')->default(false);
             $table->timestamp('last_used_at')->nullable()->index();
-            $table->timestamps();
 
             $table->index(['user_id', 'is_default']);
         });

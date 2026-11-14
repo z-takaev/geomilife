@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-final class OrderNotificationDelivery extends Model
+final class OrderNotificationEvent extends Model
 {
     use HasFactory;
 

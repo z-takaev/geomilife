@@ -12,15 +12,22 @@ return new class extends Migration
     {
         Schema::create('saved_delivery_points', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('city_id')->constrained()->cascadeOnDelete();
+            $table->timestamps();
+
+            $table->foreignId('user_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
+            $table->foreignId('city_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
             $table->string('code');
             $table->string('type');
             $table->string('address');
             $table->text('work_time')->nullable();
             $table->boolean('is_default')->default(false);
             $table->timestamp('last_used_at')->nullable();
-            $table->timestamps();
 
             $table->unique(['user_id', 'code']);
             $table->index(['user_id', 'last_used_at']);

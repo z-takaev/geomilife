@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\Orders\PaymentMethodEnum;
 use App\Models\Order;
 use App\Models\User;
 use App\Support\Values\Money;
@@ -28,6 +29,7 @@ function createAccountOrder(User $user): Order
         'status' => 'NEW',
         'payment_status' => 'PENDING',
         'delivery_method' => 'COURIER',
+        'payment_method' => PaymentMethodEnum::ONLINE,
         'delivery_price' => Money::fromRubles(300),
         'total' => Money::fromRubles(1500),
         'customer_name' => 'Покупатель',

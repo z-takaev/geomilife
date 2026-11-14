@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Orders;
 
 use App\Models\Order;
-use App\Models\OrderNotificationDelivery;
+use App\Models\OrderNotificationEvent;
 use App\Notifications\Orders\DeliveryQuoteErrorNotification;
 use App\Notifications\Orders\OrderUpdateNotification;
 use Illuminate\Support\Facades\Cache;
@@ -20,7 +20,7 @@ final class OrderNotificationService
      */
     public function queue(Order $order, string $event, string $eventKey): void
     {
-        $eventRecord = OrderNotificationDelivery::query()->firstOrCreate(
+        $eventRecord = OrderNotificationEvent::query()->firstOrCreate(
             ['order_id' => $order->id, 'event_key' => hash('sha256', $eventKey)],
             ['event' => $event],
         );
@@ -50,18 +50,18 @@ final class OrderNotificationService
      */
     public function retryPending(): void
     {
-        OrderNotificationDelivery::query()
+        OrderNotificationEvent::query()
             ->whereNull('dispatched_at')
             ->eachById(
-                fn (OrderNotificationDelivery $eventRecord) => $this->queueEvent($eventRecord),
+                fn (OrderNotificationEvent $eventRecord) => $this->queueEvent($eventRecord),
             );
     }
 
-    private function queueEvent(OrderNotificationDelivery $eventRecord): void
+    private function queueEvent(OrderNotificationEvent $eventRecord): void
     {
         try {
             DB::transaction(function () use ($eventRecord): void {
-                $eventRecord = OrderNotificationDelivery::query()
+                $eventRecord = OrderNotificationEvent::query()
                     ->lockForUpdate()
                     ->findOrFail($eventRecord->id);
 

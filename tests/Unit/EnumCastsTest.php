@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\Filament\FilamentUserRoleEnum;
 use App\Enums\Orders\DeliveryMethodEnum;
+use App\Enums\Orders\OrderDocumentTypeEnum;
 use App\Enums\Orders\OrderStatusEnum;
 use App\Enums\Orders\PaymentMethodEnum;
 use App\Enums\Orders\PaymentStatusEnum;
@@ -11,6 +12,7 @@ use App\Enums\Products\ProductUnitEnum;
 use App\Enums\Reviews\ReviewSourceEnum;
 use App\Models\FilamentUser;
 use App\Models\Order;
+use App\Models\OrderDocument;
 use App\Models\Payment;
 use App\Models\ProductVariant;
 use App\Models\Review;
@@ -31,6 +33,7 @@ it('преобразует сохранённые значения в enum пр�
     'статус оплаты заказа' => [Order::class, 'payment_status', PaymentStatusEnum::class],
     'способ оплаты' => [Order::class, 'payment_method', PaymentMethodEnum::class],
     'способ доставки' => [Order::class, 'delivery_method', DeliveryMethodEnum::class],
+    'тип документа заказа' => [OrderDocument::class, 'type', OrderDocumentTypeEnum::class],
     'статус платежа' => [Payment::class, 'status', PaymentStatusEnum::class],
     'единица измерения товара' => [ProductVariant::class, 'unit', ProductUnitEnum::class],
     'источник отзыва' => [Review::class, 'source', ReviewSourceEnum::class],

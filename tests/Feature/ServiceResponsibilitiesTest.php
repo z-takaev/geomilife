@@ -8,7 +8,7 @@ use App\Enums\Orders\OrderStatusEnum;
 use App\Enums\Orders\PaymentMethodEnum;
 use App\Enums\Orders\PaymentStatusEnum;
 use App\Models\FilamentUser;
-use App\Models\OrderNotificationDelivery;
+use App\Models\OrderNotificationEvent;
 use App\Services\Cart\CartService;
 use App\Services\Orders\OrderLifecycleService;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -80,7 +80,7 @@ it('фиксирует оплату и выдачу при самовывозе 
 
     expect($order->fresh()->payment_status)->toBe(PaymentStatusEnum::PAID)
         ->and($order->fresh()->status)->toBe(OrderStatusEnum::DELIVERED)
-        ->and(OrderNotificationDelivery::query()->where('order_id', $order->id)->count())->toBe(1);
+        ->and(OrderNotificationEvent::query()->where('order_id', $order->id)->count())->toBe(1);
     Http::assertNothingSent();
 })->with([FilamentUserRoleEnum::ADMIN, FilamentUserRoleEnum::MANAGER]);
 

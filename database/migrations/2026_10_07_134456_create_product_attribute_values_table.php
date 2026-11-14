@@ -12,8 +12,15 @@ return new class extends Migration
     {
         Schema::create('product_attribute_values', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('product_attribute_id')->constrained()->cascadeOnDelete();
+
+            $table->foreignId('product_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
+            $table->foreignId('product_attribute_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
             $table->string('value');
             $table->integer('order')->default(0);
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Orders\Schemas;
 
+use App\Enums\Orders\OrderDocumentTypeEnum;
 use App\Filament\Resources\Orders\Pages\ViewOrder;
 use App\Filament\Resources\Users\UserResource;
 use App\Models\Order;
@@ -156,16 +157,12 @@ final class OrderInfolist
                     ->visible(fn (Order $record): bool => $record->documents->isEmpty())->columnSpanFull(),
                 RepeatableEntry::make('documents')->label('Документы')->schema([
                     TextEntry::make('type')->label('Документ')
-                        ->formatStateUsing(fn (string $state): string => match ($state) {
-                            'WAYBILL' => 'Квитанция',
-                            'BARCODES' => 'Наклейки',
-                            default => $state,
-                        }),
+                        ->formatStateUsing(fn (OrderDocumentTypeEnum $state): string => $state->getLabel()),
                     TextEntry::make('state')->label('Статус')->badge()
                         ->placeholder('Состояние неизвестно'),
                     TextEntry::make('download')->label('Действие')->state('Скачать')
                         ->url(fn (OrderDocument $record): string => route(
-                            $record->type === 'WAYBILL' ? 'admin.orders.cdek-waybill' : 'admin.orders.cdek-barcodes',
+                            $record->type->isWaybill() ? 'admin.orders.cdek-waybill' : 'admin.orders.cdek-barcodes',
                             $record->order_id,
                         ))
                         ->visible(fn (OrderDocument $record): bool => $record->state?->isReady() ?? false),

@@ -10,19 +10,24 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('order_notification_deliveries', function (Blueprint $table): void {
+        Schema::create('order_notification_events', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('order_id')->constrained()->cascadeOnDelete();
+            $table->timestamps();
+
+            $table->foreignId('order_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
             $table->string('event');
             $table->string('event_key');
             $table->timestamp('dispatched_at')->nullable()->index();
-            $table->timestamps();
+
             $table->unique(['order_id', 'event_key']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('order_notification_deliveries');
+        Schema::dropIfExists('order_notification_events');
     }
 };

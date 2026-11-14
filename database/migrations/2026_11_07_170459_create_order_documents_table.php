@@ -12,12 +12,17 @@ return new class extends Migration
     {
         Schema::create('order_documents', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('order_id')->constrained()->cascadeOnDelete();
+            $table->timestamps();
+
+            $table->foreignId('order_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
             $table->string('type');
             $table->uuid('uuid')->nullable();
             $table->string('state')->nullable();
             $table->text('error')->nullable();
-            $table->timestamps();
+
             $table->unique(['order_id', 'type']);
         });
     }

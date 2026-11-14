@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 use App\Enums\Cdek\CdekPrintStateEnum;
 use App\Enums\Cdek\CdekShipmentWorkflowStateEnum;
+use App\Enums\Orders\OrderDocumentTypeEnum;
 use App\Enums\Orders\OrderStatusEnum;
 use App\Enums\Orders\PaymentMethodEnum;
 use App\Jobs\Orders\PrepareCdekDocumentsJob;
 use App\Models\Order;
 use App\Models\OrderDocument;
-use App\Models\OrderNotificationDelivery;
+use App\Models\OrderNotificationEvent;
 use App\Models\OrderShipment;
 use App\Services\Cdek\Exceptions\CdekApiException;
 use App\Services\Orders\CdekShipmentService;
@@ -47,9 +48,9 @@ it('сохраняет событие при сбое постановки в о
     }
 
     expect($order->fresh()->status)->toBe(OrderStatusEnum::CONFIRMED)
-        ->and(OrderNotificationDelivery::query()->sole()->dispatched_at)->toBeNull();
+        ->and(OrderNotificationEvent::query()->sole()->dispatched_at)->toBeNull();
     app(OrderNotificationService::class)->retryPending();
-    expect(OrderNotificationDelivery::query()->sole()->dispatched_at)->not->toBeNull();
+    expect(OrderNotificationEvent::query()->sole()->dispatched_at)->not->toBeNull();
     $this->assertDatabaseCount('jobs', 1);
     app(OrderNotificationService::class)->retryPending();
     $this->assertDatabaseCount('jobs', 1);
@@ -58,7 +59,7 @@ it('сохраняет событие при сбое постановки в о
 it('откатывает статус если событие не удалось сохранить', function (): void {
     Notification::fake();
     $order = fulfillmentOrder();
-    $event = 'eloquent.creating: '.OrderNotificationDelivery::class;
+    $event = 'eloquent.creating: '.OrderNotificationEvent::class;
     Event::listen($event, static function (): void {
         throw new RuntimeException('Запись события не удалась');
     });
@@ -69,7 +70,7 @@ it('откатывает статус если событие не удалос�
         Event::forget($event);
     }
     expect($order->fresh()->status)->toBe(OrderStatusEnum::NEW);
-    $this->assertDatabaseCount('order_notification_deliveries', 0);
+    $this->assertDatabaseCount('order_notification_events', 0);
     Notification::assertNothingSent();
 });
 
@@ -99,7 +100,7 @@ it('восстанавливает просроченный захват фор�
     $document->forceFill(['updated_at' => now()->subMinutes(10)])->save();
     fakeCdekDocuments($document);
 
-    expect(app(OrderDocumentService::class)->downloadCdekDocument($order, 'WAYBILL'))->toBe('%PDF-1.4 test');
+    expect(app(OrderDocumentService::class)->downloadCdekDocument($order, OrderDocumentTypeEnum::WAYBILL))->toBe('%PDF-1.4 test');
     Http::assertSentCount(4);
     expect($document->fresh()->state)->toBe(CdekPrintStateEnum::READY);
 });
@@ -109,7 +110,7 @@ it('не повторяет создание документа при свеж�
     $order->shipment()->create(['uuid' => '11111111-1111-4111-8111-111111111111', 'request_state' => 'SUCCESSFUL']);
     $order->documents()->create(['type' => 'WAYBILL', 'state' => 'CREATING']);
 
-    expect(fn () => app(OrderDocumentService::class)->downloadCdekDocument($order, 'WAYBILL'))->toThrow(ValidationException::class);
+    expect(fn () => app(OrderDocumentService::class)->downloadCdekDocument($order, OrderDocumentTypeEnum::WAYBILL))->toThrow(ValidationException::class);
     Http::assertNothingSent();
 });
 
@@ -129,7 +130,7 @@ it('повторно использует UUID появившийся между
         }
     });
     try {
-        expect(app(OrderDocumentService::class)->downloadCdekDocument($order, 'WAYBILL'))->toBe('%PDF-1.4 test');
+        expect(app(OrderDocumentService::class)->downloadCdekDocument($order, OrderDocumentTypeEnum::WAYBILL))->toBe('%PDF-1.4 test');
     } finally {
         Event::forget($event);
     }
@@ -227,11 +228,11 @@ it('выдерживает паузу после неизвестного рез
             'statuses' => [['code' => 'READY', 'date_time' => now()->toIso8601String()]]]]);
     });
     $service = app(OrderDocumentService::class);
-    expect(fn () => $service->downloadCdekDocument($order, 'WAYBILL'))->toThrow(CdekApiException::class);
-    expect(fn () => $service->downloadCdekDocument($order, 'WAYBILL'))->toThrow(ValidationException::class);
+    expect(fn () => $service->downloadCdekDocument($order, OrderDocumentTypeEnum::WAYBILL))->toThrow(CdekApiException::class);
+    expect(fn () => $service->downloadCdekDocument($order, OrderDocumentTypeEnum::WAYBILL))->toThrow(ValidationException::class);
     expect($creates)->toBe(1);
     $this->travel(3)->minutes();
-    expect($service->downloadCdekDocument($order, 'WAYBILL'))->toBe('%PDF-1.4 test')
+    expect($service->downloadCdekDocument($order, OrderDocumentTypeEnum::WAYBILL))->toBe('%PDF-1.4 test')
         ->and($creates)->toBe(2);
 })->with([[false, false], [true, false], [false, true], [true, true]]);
 

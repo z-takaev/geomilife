@@ -7,7 +7,7 @@ use App\Enums\Orders\PaymentStatusEnum;
 use App\Enums\Tbank\TbankPaymentStatusEnum;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\OrderNotificationDelivery;
+use App\Models\OrderNotificationEvent;
 use App\Models\Payment;
 use App\Services\Cart\CartService;
 use App\Services\Orders\OrderNotificationService;
@@ -62,7 +62,7 @@ it('считает количество товаров в карточках б�
 it('повтор уведомления читает свежий заказ без неиспользуемой предварительной загрузки', function (): void {
     config(['telegram.manager_chat_id' => 'test-manager']);
     $order = PaymentFixtures::order();
-    $event = OrderNotificationDelivery::query()->create([
+    $event = OrderNotificationEvent::query()->create([
         'order_id' => $order->id, 'event' => 'CREATED', 'event_key' => hash('sha256', 'sql-test'),
     ]);
     DB::enableQueryLog();

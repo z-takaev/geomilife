@@ -12,11 +12,12 @@ return new class extends Migration
     {
         Schema::create('home_slides', function (Blueprint $table): void {
             $table->id();
+            $table->timestamps();
+
             $table->text('link_url')->nullable();
             $table->boolean('open_in_new_tab')->default(false);
             $table->integer('order')->default(0);
             $table->boolean('is_active')->default(false);
-            $table->timestamps();
         });
     }
 

@@ -12,12 +12,17 @@ return new class extends Migration
     {
         Schema::create('order_items', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('order_id')->constrained()->cascadeOnDelete();
+
+            $table->foreignId('order_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
             $table->unsignedBigInteger('product_id');
             $table->unsignedBigInteger('product_variant_id');
+
+            $table->string('sku');
             $table->string('product_name');
             $table->string('variant_name');
-            $table->string('sku');
             $table->unsignedBigInteger('price');
             $table->unsignedBigInteger('old_price')->nullable();
             $table->integer('quantity');

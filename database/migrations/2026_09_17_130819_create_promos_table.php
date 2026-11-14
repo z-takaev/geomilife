@@ -12,6 +12,8 @@ return new class extends Migration
     {
         Schema::create('promos', function (Blueprint $table): void {
             $table->id();
+            $table->timestamps();
+
             $table->string('title');
             $table->string('slug')->unique();
             $table->text('excerpt')->nullable();
@@ -19,7 +21,6 @@ return new class extends Migration
             $table->timestamp('start_at');
             $table->timestamp('end_at');
             $table->boolean('is_active')->default(false);
-            $table->timestamps();
 
             $table->index(['is_active', 'start_at', 'id'], 'promos_active_start_idx');
         });

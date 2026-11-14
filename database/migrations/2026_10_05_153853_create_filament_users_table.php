@@ -13,12 +13,14 @@ return new class extends Migration
     {
         Schema::create('filament_users', function (Blueprint $table): void {
             $table->id();
+            $table->timestamps();
+
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
             $table->string('role')->default(FilamentUserRoleEnum::MANAGER);
+
             $table->rememberToken();
-            $table->timestamps();
         });
     }
 

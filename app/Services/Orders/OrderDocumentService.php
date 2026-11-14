@@ -6,6 +6,7 @@ namespace App\Services\Orders;
 
 use App\Enums\Cdek\CdekPrintStateEnum;
 use App\Enums\Cdek\CdekRequestStateEnum;
+use App\Enums\Orders\OrderDocumentTypeEnum;
 use App\Models\Order;
 use App\Models\OrderDocument;
 use App\Services\Cdek\CdekService;
@@ -49,11 +50,11 @@ final class OrderDocumentService
      */
     public function prepareCdekDocuments(Order $order): void
     {
-        foreach (['WAYBILL', 'BARCODES'] as $type) {
+        foreach (OrderDocumentTypeEnum::cases() as $type) {
             $document = $this->prepareDocument($order, $type);
 
             if ($document->uuid !== null && in_array($document->state, [CdekPrintStateEnum::ACCEPTED, CdekPrintStateEnum::PROCESSING], true)) {
-                $result = $type === 'WAYBILL' ? $this->cdek->getWaybill($document->uuid) : $this->cdek->getBarcodes($document->uuid);
+                $result = $type->isWaybill() ? $this->cdek->getWaybill($document->uuid) : $this->cdek->getBarcodes($document->uuid);
 
                 $document->update([
                     'state' => $result->status ?? $document->state,
@@ -66,9 +67,9 @@ final class OrderDocumentService
     /**
      * Проверяет готовность документа СДЭК и возвращает содержимое PDF.
      */
-    public function downloadCdekDocument(Order $order, string $type): string
+    public function downloadCdekDocument(Order $order, OrderDocumentTypeEnum $type): string
     {
-        $document = $order->documents()->where('type', $type)->first();
+        $document = $order->documents()->where('type', $type->value)->first();
 
         if ($document === null || $document->uuid === null
             || in_array($document->state, [CdekPrintStateEnum::INVALID, CdekPrintStateEnum::REMOVED], true)) {
@@ -80,7 +81,7 @@ final class OrderDocumentService
         }
 
         if (! $document->state?->isReady()) {
-            $result = $type === 'WAYBILL' ? $this->cdek->getWaybill($document->uuid) : $this->cdek->getBarcodes($document->uuid);
+            $result = $type->isWaybill() ? $this->cdek->getWaybill($document->uuid) : $this->cdek->getBarcodes($document->uuid);
 
             $document->update(['state' => $result->status, 'error' => $result->operation->errors[0]['message'] ?? null]);
 
@@ -90,7 +91,7 @@ final class OrderDocumentService
         }
 
         try {
-            return $type === 'WAYBILL' ? $this->cdek->downloadWaybill($document->uuid) : $this->cdek->downloadBarcodes($document->uuid);
+            return $type->isWaybill() ? $this->cdek->downloadWaybill($document->uuid) : $this->cdek->downloadBarcodes($document->uuid);
         } catch (CdekApiException $exception) {
             if ($exception->statusCode !== 404) {
                 throw $exception;
@@ -102,12 +103,8 @@ final class OrderDocumentService
         }
     }
 
-    private function prepareDocument(Order $order, string $type): OrderDocument
+    private function prepareDocument(Order $order, OrderDocumentTypeEnum $type): OrderDocument
     {
-        if (! in_array($type, ['WAYBILL', 'BARCODES'], true)) {
-            throw ValidationException::withMessages(['document' => __('Неизвестный тип документа.')]);
-        }
-
         $shipment = $order->shipment()->first();
 
         if ($shipment?->uuid === null || ! $shipment->request_state?->is(CdekRequestStateEnum::SUCCESSFUL)) {
@@ -145,10 +142,10 @@ final class OrderDocumentService
         });
     }
 
-    private function requestDocument(Order $order, OrderDocument $document, string $shipmentUuid, string $type): void
+    private function requestDocument(Order $order, OrderDocument $document, string $shipmentUuid, OrderDocumentTypeEnum $type): void
     {
         try {
-            $result = $type === 'WAYBILL' ? $this->cdek->createWaybill($shipmentUuid) : $this->cdek->createBarcodes($shipmentUuid);
+            $result = $type->isWaybill() ? $this->cdek->createWaybill($shipmentUuid) : $this->cdek->createBarcodes($shipmentUuid);
 
             $document->update([
                 'uuid' => $result->uuid,
@@ -162,7 +159,7 @@ final class OrderDocumentService
                     : CdekPrintStateEnum::INVALID,
                 'error' => $exception->getMessage(),
             ]);
-            app(OrderNotificationService::class)->queue($order, 'DOCUMENT_FAILED', 'document-failed:'.$type.':'.hash('sha256', $exception->getMessage()));
+            app(OrderNotificationService::class)->queue($order, 'DOCUMENT_FAILED', 'document-failed:'.$type->value.':'.hash('sha256', $exception->getMessage()));
             throw $exception;
         }
     }
