@@ -1,4 +1,9 @@
-window.productVariantSelector = function (variants, initialVariantId = null, productUrl = null) {
+window.productVariantSelector = function (
+    variants,
+    initialVariantId = null,
+    productUrl = null,
+    closeQuickViewAfterAdding = false,
+) {
     const hasInitialVariant = variants.some((variant) => variant.id === initialVariantId);
 
     return {
@@ -37,6 +42,9 @@ window.productVariantSelector = function (variants, initialVariantId = null, pro
             this.normalizeQuantity();
             if (this.selectedVariantId && (await this.$store.cart.add(this.selectedVariantId, this.quantity))) {
                 this.quantity = 1;
+                if (closeQuickViewAfterAdding) {
+                    bootstrap.Offcanvas.getInstance(document.getElementById('quickView'))?.hide();
+                }
             }
         },
 

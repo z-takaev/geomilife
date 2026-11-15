@@ -57,7 +57,10 @@
                                     </div>
                                 </li>
                             @empty
-                                <li role="status">{{ __('Корзина пока пуста.') }}</li>
+                                <li class="mini-cart-empty" role="status">
+                                    <span class="icon icon-ShoppingCartSimple" aria-hidden="true"></span>
+                                    <span>{{ __('Корзина пока пуста.') }}</span>
+                                </li>
                             @endforelse
                         </ul>
                     </div>
@@ -74,7 +77,7 @@
                             class="tf-btn animate-btn w-100">{{ __('Оформить заказ') }}</a>
                     </div>
                 @endif
-                <div class="text-center"><button type="button"
+                <div class="canvas-footer__continue text-center"><button type="button"
                         class="fw-semibold text-primary link-2 text-decoration-underline"
                         data-bs-dismiss="offcanvas">{{ __('Продолжить покупки') }}</button></div>
             </div>

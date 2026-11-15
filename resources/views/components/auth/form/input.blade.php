@@ -18,7 +18,7 @@
     <label for="{{ $id }}" class="tf-lable">
         {{ $label }}
         @if ($required && $requiredMarker)
-            <span class="text-secondary">*</span>
+            <span class="text-primary">*</span>
         @endif
     </label>
     <input type="{{ $type }}" id="{{ $id }}" name="{{ $name }}" value="{{ $value }}"

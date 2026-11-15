@@ -49,7 +49,7 @@
                             </li>
                         </ul>
                     @else
-                        <x-empty-state :title="__('Вопросы и ответы пока не добавлены.')" />
+                        <x-empty-state :title="__('Вопросы и ответы пока не добавлены.')" icon="icon-package" />
                     @endif
                 </div>
 

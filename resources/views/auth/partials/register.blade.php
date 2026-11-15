@@ -4,19 +4,19 @@
     <form action="{{ route('register') }}" method="POST" class="form-log">
         @csrf
         <div class="form-content">
-            <x-auth.form.input id="first-name" name="first_name" :label="__('Имя')" :value="$errors->signUp->any() ? old('first_name') : ''" :placeholder="__('Имя')"
+            <x-auth.form.input id="first-name" name="first_name" :label="__('Имя')" :value="$errors->signUp->any() ? old('first_name') : ''" :placeholder="__('Введите ваше имя')"
                 autocomplete="given-name" error-bag="signUp" required />
-            <x-auth.form.input id="last-name" name="last_name" :label="__('Фамилия')" :value="$errors->signUp->any() ? old('last_name') : ''" :placeholder="__('Фамилия')"
+            <x-auth.form.input id="last-name" name="last_name" :label="__('Фамилия')" :value="$errors->signUp->any() ? old('last_name') : ''" :placeholder="__('Введите вашу фамилию')"
                 autocomplete="family-name" error-bag="signUp" required />
             <x-auth.form.input id="email" name="email" type="email" :label="__('Email')" :value="$errors->signUp->any() ? old('email') : ''"
-                :placeholder="__('Email')" autocomplete="email" error-bag="signUp" required />
+                :placeholder="__('Введите ваш email')" autocomplete="email" error-bag="signUp" required />
             <x-auth.form.input id="registration-phone" name="phone" type="tel" :label="__('Телефон')"
                 :value="$errors->signUp->any() ? old('phone') : ''" :placeholder="__('+7 (___) ___-__-__')" autocomplete="tel" inputmode="tel" maxlength="18" data-phone-mask
                 error-bag="signUp" required />
             <livewire:registration-city-selector :selected-city-id="$errors->signUp->any() && old('city_id') ? (int) old('city_id') : null" />
-            <x-auth.form.password id="password" name="password" :label="__('Пароль')" :placeholder="__('Пароль')"
+            <x-auth.form.password id="password" name="password" :label="__('Пароль')" :placeholder="__('Придумайте пароль')"
                 autocomplete="new-password" error-bag="signUp" required />
-            <x-auth.form.password id="password2" name="password_confirmation" :label="__('Подтвердите пароль')" :placeholder="__('Подтвердите пароль')"
+            <x-auth.form.password id="password2" name="password_confirmation" :label="__('Подтвердите пароль')" :placeholder="__('Введите пароль ещё раз')"
                 autocomplete="new-password" error-bag="signUp" required />
             <div class="check-bottom">
                 <x-auth.form.checkbox id="agree" name="terms" error-bag="signUp" :checked="$errors->signUp->any() && old('terms')" required>

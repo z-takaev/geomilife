@@ -13,7 +13,7 @@
                     </div>
                 @empty
                     <div class="col-12">
-                        <x-empty-state :title="__('Акции пока не добавлены.')" />
+                        <x-empty-state :title="__('Акции пока не добавлены.')" icon="icon-package" />
                     </div>
                 @endforelse
             </div>

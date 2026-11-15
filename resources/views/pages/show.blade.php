@@ -29,7 +29,7 @@
                                 {{ $page->getRichContentAttribute('content') }}
                             </div>
                         @else
-                            <x-empty-state :title="__('Информация пока не добавлена.')" />
+                            <x-empty-state :title="__('Информация пока не добавлена.')" icon="icon-package" />
                         @endif
                     </div>
                 </article>

@@ -11,8 +11,8 @@
         @csrf
         <div class="form-content">
             <x-auth.form.input id="email3" name="email" type="email" :label="__('Email')" :value="$errors->signIn->any() ? old('email') : ''"
-                :placeholder="__('Email')" autocomplete="email" error-bag="signIn" required />
-            <x-auth.form.password id="password-log" name="password" :label="__('Пароль')" :placeholder="__('Пароль')"
+                :placeholder="__('Введите ваш email')" autocomplete="email" error-bag="signIn" required />
+            <x-auth.form.password id="password-log" name="password" :label="__('Пароль')" :placeholder="__('Введите ваш пароль')"
                 autocomplete="current-password" error-bag="signIn" required />
             <div class="check-bottom">
                 <x-auth.form.checkbox id="save" name="remember" error-bag="signIn" :checked="$errors->signIn->any() && old('remember')">

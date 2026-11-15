@@ -6,13 +6,14 @@
 
 @section('content')
     <x-breadcrumbs :title="__('Мои заказы')" :breadcrumbs="$breadcrumbs" />
+
     <section class="flat-spacing orders-page">
         <div class="container">
             <div class="orders-page__heading">
                 <div><span class="profile-eyebrow">{{ __('Личный кабинет') }}</span>
                     <h2>{{ __('История заказов') }}</h2>
                     <p>{{ __('Состав, получение и состояние ваших покупок') }}</p>
-                </div><a href="{{ route('catalog.index') }}" class="tf-btn">{{ __('В каталог') }}</a>
+                </div>
             </div>
             <div class="orders-list">
                 @forelse ($orders as $order)
@@ -46,11 +47,11 @@
                         </div>
                     </article>
                 @empty
-                    <div class="orders-empty">
-                        <h3>{{ __('У вас пока нет заказов') }}</h3>
-                        <p>{{ __('Выберите товары в каталоге — здесь появится история ваших покупок.') }}</p><a
-                            href="{{ route('catalog.index') }}" class="tf-btn">{{ __('Перейти в каталог') }}</a>
-                    </div>
+                    <x-empty-state :title="__('У вас пока нет заказов')" :description="__('Здесь появится история ваших покупок после оформления вашего первого заказа.')" icon="icon-package">
+                        <a href="{{ route('catalog.index') }}" class="tf-btn animate-btn">
+                            {{ __('Перейти в каталог') }}
+                        </a>
+                    </x-empty-state>
                 @endforelse
             </div>
             <div class="orders-pagination">{{ $orders->links() }}</div>

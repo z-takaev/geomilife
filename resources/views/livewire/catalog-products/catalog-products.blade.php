@@ -51,7 +51,7 @@
                             </div>
                         @endif
                     @else
-                        <x-empty-state :title="__('Товары не найдены')" :description="__('Попробуйте изменить параметры фильтрации.')" />
+                        <x-empty-state :title="__('Товары не найдены')" :description="__('Попробуйте изменить параметры фильтрации.')" icon="icon-magnifying-glass" />
                     @endif
                 </div>
             </div>

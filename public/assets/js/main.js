@@ -753,6 +753,8 @@
             callbacks: {
                 open: function () {
                     isPopupOpen = true;
+                    document.documentElement.classList.add('story-video-open');
+                    document.body.classList.add('story-video-open');
 
                     if (loadVideo()) {
                         return;
@@ -763,6 +765,8 @@
                 },
                 close: function () {
                     isPopupOpen = false;
+                    document.documentElement.classList.remove('story-video-open');
+                    document.body.classList.remove('story-video-open');
                     videoPlayer?.pause();
                 },
             },

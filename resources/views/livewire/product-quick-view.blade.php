@@ -46,7 +46,7 @@
         </div>
 
         <div class="canvas-body ps-md-0 tf-quick-view" wire:loading.remove
-            wire:key="quick-view-product-{{ $opening }}" x-data="productVariantSelector(@js($productViewModel?->variantOptions ?? []), @js($productViewModel->selectedVariant['id'] ?? null), @js($productViewModel?->productUrl))">
+            wire:key="quick-view-product-{{ $opening }}" x-data="productVariantSelector(@js($productViewModel?->variantOptions ?? []), @js($productViewModel->selectedVariant['id'] ?? null), @js($productViewModel?->productUrl), true)">
             @if ($product !== null)
 
                 <div class="quickview-product-info">

@@ -46,7 +46,7 @@
                         <div class="order-items">
                             @foreach ($order->items as $item)
                                 <article class="order-item">
-                                    <div><strong>{{ $item->product_name }}</strong>
+                                    <div><strong class="order-item__name">{{ $item->product_name }}</strong>
                                         <p>{{ $item->variant_name }}</p>
                                         <small>{{ __('Артикул: :sku', ['sku' => $item->sku]) }}</small>
                                     </div>

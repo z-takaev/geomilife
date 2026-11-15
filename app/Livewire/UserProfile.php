@@ -27,7 +27,7 @@ final class UserProfile extends Component
         $this->form->first_name = $user->first_name;
         $this->form->last_name = $user->last_name ?? '';
         $this->form->birth_date = $user->birth_date?->format('Y-m-d');
-        $this->form->phone = $user->phone;
+        $this->form->phone = PhoneFormat::format((string) $user->phone);
         $this->form->city_id = $user->city_id;
         $this->city_search = $user->city?->optionLabel() ?? '';
     }
@@ -61,6 +61,7 @@ final class UserProfile extends Component
 
         $user->fill($validated);
         $user->save();
+        $this->form->phone = PhoneFormat::format((string) $user->phone);
         app(CurrentCityService::class)->select($validated['city_id']);
         $this->dispatch('notify', message: __('Данные профиля сохранены.'), type: 'success');
     }

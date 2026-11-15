@@ -15,7 +15,7 @@
         @csrf
         <div class="form-content">
             <x-auth.form.input id="email2" name="email" type="email" :label="__('Email')" :value="$errors->forgotPassword->any() ? old('email') : ''"
-                :placeholder="__('Email')" autocomplete="email" error-bag="forgotPassword" :required-marker="false" required />
+                :placeholder="__('Введите ваш email')" autocomplete="email" error-bag="forgotPassword" required />
 
             <button type="submit" class="tf-btn animate-btn w-100">
                 {{ __('Отправить ссылку') }}

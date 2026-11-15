@@ -7,7 +7,9 @@
                 </div>
             </div>
             <form wire:submit="saveProfile" class="profile-form">
-                <label>{{ __('Имя') }}<input type="text" wire:model="form.first_name" autocomplete="given-name">
+                <label>
+                    <span class="profile-form__label">{{ __('Имя') }}<span class="text-primary">*</span></span>
+                    <input type="text" wire:model="form.first_name" autocomplete="given-name" required>
                     @error('form.first_name')
                         <small>{{ $message }}</small>
                     @enderror
@@ -22,19 +24,24 @@
                         <small>{{ $message }}</small>
                     @enderror
                 </label>
-                <label>{{ __('Телефон') }}<input type="tel" wire:model="form.phone" autocomplete="tel"
-                        placeholder="{{ __('+7 (___) ___-__-__') }}" inputmode="tel" maxlength="18" data-phone-mask>
+                <label>
+                    <span class="profile-form__label">{{ __('Телефон') }}<span class="text-primary">*</span></span>
+                    <input type="tel" wire:model="form.phone" autocomplete="tel"
+                        placeholder="{{ __('+7 (___) ___-__-__') }}" inputmode="tel" maxlength="18" data-phone-mask
+                        required>
                     @error('form.phone')
                         <small>{{ $message }}</small>
                     @enderror
                 </label>
                 <fieldset class="profile-form__wide checkout-suggestions" x-data="checkoutSuggestions()"
                     x-on:click.outside="open = false" x-on:keydown.escape.stop.prevent="close()">
-                    <label for="profile-city">{{ __('Город по умолчанию') }}</label>
+                    <label for="profile-city">
+                        <span class="profile-form__label">{{ __('Город') }}<span class="text-primary">*</span></span>
+                    </label>
                     <div class="checkout-suggestions__input">
                         <input id="profile-city" type="search" wire:model.live.debounce.300ms="city_search"
                             placeholder="{{ __('Начните вводить город') }}" autocomplete="off" maxlength="255"
-                            x-ref="searchInput" x-on:focus="show()" x-on:input="show()">
+                            x-ref="searchInput" x-on:focus="show()" x-on:input="show()" required>
                         @if (mb_strlen(trim($city_search)) >= (int) config('cities.search_min_length'))
                             <ul class="city-selection__results" x-show="open">
                                 @forelse ($cities as $city)
@@ -66,8 +73,6 @@
                     <h2>{{ __('Адреса') }}</h2>
                 </div>
             </div>
-            <p class="profile-muted">
-                {{ __('Адреса сохраняются при оформлении заказа. Можно сохранить до 10 адресов.') }}</p>
             @forelse ($addresses as $address)
                 <article wire:key="address-{{ $address->id }}"
                     class="profile-address {{ $address->is_default ? 'profile-address--active' : '' }}">
@@ -88,7 +93,8 @@
                             wire:confirm="{{ __('Удалить этот адрес?') }}">{{ __('Удалить') }}</button>
                     </div>
                 </article>
-            @empty <p class="profile-muted">{{ __('Сохранённых адресов пока нет.') }}</p>
+            @empty
+                <p class="profile-muted">{{ __('Сохранённых адресов пока нет.') }}</p>
             @endforelse
 
         </section>
@@ -98,8 +104,6 @@
                     <h2>{{ __('Пункты получения') }}</h2>
                 </div>
             </div>
-            <p class="profile-muted">
-                {{ __('Пункты сохраняются при оформлении заказа. Можно сохранить до 10 пунктов.') }}</p>
             @forelse ($deliveryPoints as $point)
                 <article wire:key="point-{{ $point->id }}"
                     class="profile-address {{ $point->is_default ? 'profile-address--active' : '' }}">

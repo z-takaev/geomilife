@@ -2,7 +2,7 @@
 
 <section {{ $attributes->class(['s-page-title', 'inner-page-title']) }}>
     <div class="container">
-        <nav aria-label="{{ __('Хлебные крошки') }}">
+        <nav class="breadcrumbs-scroll" aria-label="{{ __('Хлебные крошки') }}">
             <ol class="breadcrums">
                 @foreach ($breadcrumbs->items() as $item)
                     @if (!$loop->first)

@@ -34,7 +34,10 @@
                         </div>
                     </li>
                 @empty
-                    <li wire:key="favorites-empty" role="status">{{ __('В избранном пока нет товаров.') }}</li>
+                    <li class="mini-cart-empty" wire:key="favorites-empty" role="status">
+                        <span class="icon icon-heart-stroke" aria-hidden="true"></span>
+                        <span>{{ __('В избранном пока нет товаров.') }}</span>
+                    </li>
                 @endforelse
             </ul>
         </div>

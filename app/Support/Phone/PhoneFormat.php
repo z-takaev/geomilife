@@ -34,4 +34,21 @@ final class PhoneFormat
 
         return '+'.$digits;
     }
+
+    public static function format(string $value): string
+    {
+        $normalizedValue = self::normalize($value);
+
+        if (! preg_match(self::COMPACT_PATTERN, $normalizedValue)) {
+            return $value;
+        }
+
+        return sprintf(
+            '+7 (%s) %s-%s-%s',
+            substr($normalizedValue, 2, 3),
+            substr($normalizedValue, 5, 3),
+            substr($normalizedValue, 8, 2),
+            substr($normalizedValue, 10, 2),
+        );
+    }
 }

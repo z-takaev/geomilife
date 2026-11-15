@@ -9,7 +9,7 @@
     <label for="{{ $id }}" class="tf-lable">
         {{ $label }}
         @if ($required)
-            <span class="text-secondary">*</span>
+            <span class="text-primary">*</span>
         @endif
     </label>
     <div class="password-wrapper">

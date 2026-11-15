@@ -12,9 +12,6 @@
             <div class="modal-body city-selection">
                 <h2 id="citySelectionTitle" class="city-selection__title">
                     {{ __($currentCity?->name ?? 'Выберите город') }}</h2>
-                <p class="city-selection__description">
-                    {{ __('Начните вводить свой город и выберите его из списка.') }}
-                </p>
 
                 <div class="city-selection__search checkout-suggestions" role="search" x-data="citySearch()"
                     x-on:click.outside="suggestionsOpen = false" x-on:keydown.escape.stop="suggestionsOpen = false">

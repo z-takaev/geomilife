@@ -105,7 +105,7 @@
     @endif
 
     @if ($recommendedProducts->isNotEmpty())
-        <x-products.slider :title="__('Рекомендуемые товары')" :all-products-url="route('catalog.index')">
+        <x-products.slider :title="__('Похожие товары')" :all-products-url="route('catalog.index')">
             @foreach ($recommendedProducts as $recommendedProduct)
                 <x-products.card :product="$recommendedProduct" :wire:key="'product-card-recommended-'.$recommendedProduct->getKey()" />
             @endforeach

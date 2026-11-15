@@ -1,6 +1,6 @@
 <div class="tf-field checkout-suggestions" x-data="checkoutSuggestions()" x-on:click.outside="open = false"
     x-on:keydown.escape.stop.prevent="close()">
-    <label for="registration-city" class="tf-lable">{{ __('Город') }} <span class="text-secondary">*</span></label>
+    <label for="registration-city" class="tf-lable">{{ __('Город') }} <span class="text-primary">*</span></label>
     <input type="hidden" name="city_id" value="{{ $selected_city_id }}">
     <input id="registration-city" type="search" wire:model.live.debounce.300ms="query"
         placeholder="{{ __('Начните вводить город') }}" autocomplete="off" maxlength="255" required x-ref="searchInput"

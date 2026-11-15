@@ -11,7 +11,7 @@
                         @forelse ($reviews as $review)
                             <x-reviews.card :review="$review" :expandable="true" />
                         @empty
-                            <x-empty-state :title="__('Отзывы пока не добавлены.')" />
+                            <x-empty-state :title="__('Отзывы пока не добавлены.')" icon="icon-package" />
                         @endforelse
                     </div>
 

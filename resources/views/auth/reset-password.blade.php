@@ -19,12 +19,12 @@
                             <input type="hidden" name="token" value="{{ $token }}">
                             <div class="form-content">
                                 <x-auth.form.input id="reset-email" name="email" type="email" :label="__('Email')"
-                                    :value="old('email', $email)" :placeholder="__('Email')" autocomplete="email" error-bag="resetPassword"
+                                    :value="old('email', $email)" :placeholder="__('Введите ваш email')" autocomplete="email" error-bag="resetPassword"
                                     required />
                                 <x-auth.form.password id="reset-password" name="password" :label="__('Новый пароль')"
-                                    :placeholder="__('Новый пароль')" autocomplete="new-password" error-bag="resetPassword" required />
+                                    :placeholder="__('Введите новый пароль')" autocomplete="new-password" error-bag="resetPassword" required />
                                 <x-auth.form.password id="reset-password-confirmation" name="password_confirmation"
-                                    :label="__('Подтвердите новый пароль')" :placeholder="__('Подтвердите новый пароль')" autocomplete="new-password"
+                                    :label="__('Подтвердите новый пароль')" :placeholder="__('Введите новый пароль ещё раз')" autocomplete="new-password"
                                     error-bag="resetPassword" required />
                                 <button type="submit" class="tf-btn animate-btn w-100">
                                     {{ __('Сохранить новый пароль') }}

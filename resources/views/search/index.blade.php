@@ -89,11 +89,7 @@
                         </div>
                     @endif
                 @else
-                    <div class="catalog-empty">
-                        <span class="icon icon-magnifying-glass" aria-hidden="true"></span>
-                        <h2>{{ __('Товары не найдены') }}</h2>
-                        <p>{{ __('Попробуйте изменить поисковый запрос.') }}</p>
-                    </div>
+                    <x-empty-state :title="__('Товары не найдены')" :description="__('Попробуйте изменить поисковый запрос.')" icon="icon-magnifying-glass" />
                 @endif
             </section>
         </div>
