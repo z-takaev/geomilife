@@ -4,15 +4,70 @@ declare(strict_types=1);
 
 namespace App\Services\Orders;
 
+use App\Models\ProductVariant;
 use App\Models\ShippingBox;
 use App\Support\Shipping\PackingBoxAdapter;
 use App\Support\Shipping\PackingItemAdapter;
 use DVDoug\BoxPacker\Packer;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
 
 final class OrderPackingService
 {
+    /**
+     * Проверяет, помещается ли вариант с учётом поворота хотя бы в одну упаковку.
+     */
+    public function canFitInAnyBox(int $length, int $width, int $height, Collection $boxes): bool
+    {
+        $itemDimensions = [$length, $width, $height];
+        sort($itemDimensions);
+
+        foreach ($boxes as $box) {
+            $adapter = new PackingBoxAdapter($box, 0);
+            $boxDimensions = [$adapter->getInnerLength(), $adapter->getInnerWidth(), $adapter->getInnerDepth()];
+            sort($boxDimensions);
+
+            if ($itemDimensions[0] <= $boxDimensions[0]
+                && $itemDimensions[1] <= $boxDimensions[1]
+                && $itemDimensions[2] <= $boxDimensions[2]) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Возвращает артикулы активных вариантов, для которых нет подходящей упаковки.
+     */
+    public function unpackableActiveVariantSkus(Collection $boxes, int $limit = 6): array
+    {
+        $skus = [];
+
+        foreach (ProductVariant::query()
+            ->select(['id', 'sku', 'length', 'width', 'height'])
+            ->active()
+            ->orderBy('id')
+            ->cursor() as $variant) {
+            $dimensions = [$variant->length, $variant->width, $variant->height];
+
+            if (! in_array(null, $dimensions, true)
+                && min($dimensions) > 0
+                && $this->canFitInAnyBox($dimensions[0], $dimensions[1], $dimensions[2], $boxes)) {
+                continue;
+            }
+
+            $skus[] = $variant->sku;
+
+            if (count($skus) >= $limit) {
+                break;
+            }
+        }
+
+        return $skus;
+    }
+
     /**
      * Распределяет товары по доступным коробкам и проверяет ограничения СДЭК.
      */

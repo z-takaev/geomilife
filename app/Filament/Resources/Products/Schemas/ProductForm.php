@@ -12,6 +12,8 @@ use App\Filament\Resources\Seo\Schemas\SeoForm;
 use App\Models\Category;
 use App\Models\ProductAttribute;
 use App\Models\ProductVariant;
+use App\Models\ShippingBox;
+use App\Services\Orders\OrderPackingService;
 use App\Support\Values\Money;
 use Closure;
 use Filament\Actions\Action;
@@ -20,6 +22,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Flex;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Tabs;
@@ -213,6 +216,24 @@ final class ProductForm
             ]);
     }
 
+    public static function sendPackagingErrorNotification(array $variants): bool
+    {
+        $sku = self::unpackableVariantSku($variants);
+
+        if ($sku === null) {
+            return false;
+        }
+
+        Notification::make()
+            ->danger()
+            ->title('Товар нельзя сохранить')
+            ->body(__('Активный вариант :sku не помещается ни в одну доступную упаковку.', compact('sku')))
+            ->persistent()
+            ->send();
+
+        return true;
+    }
+
     private static function transportFields(): array
     {
         $fields = [];
@@ -292,5 +313,65 @@ final class ProductForm
         return collect([$value !== null && $unit !== null ? "{$value} {$unit}" : null, $price])
             ->filter()
             ->join(' · ') ?: 'Новый вариант';
+    }
+
+    private static function variantRecordId(string|int $key): ?int
+    {
+        return preg_match('/^record-(\d+)$/', (string) $key, $matches) === 1
+            ? (int) $matches[1]
+            : null;
+    }
+
+    private static function unpackableVariantSku(array $variants): ?string
+    {
+        $boxes = ShippingBox::query()->where('is_active', true)->get();
+
+        if ($boxes->isEmpty()) {
+            return null;
+        }
+
+        $recordIds = collect(array_keys($variants))
+            ->map(self::variantRecordId(...))
+            ->filter()
+            ->values();
+        $existingVariants = ProductVariant::query()
+            ->whereKey($recordIds)
+            ->get()
+            ->keyBy('id');
+
+        foreach ($variants as $key => $variant) {
+            if (! is_array($variant) || ! filter_var($variant['is_active'] ?? false, FILTER_VALIDATE_BOOL)) {
+                continue;
+            }
+
+            $dimensions = array_map(
+                static fn (string $field): int|false => filter_var($variant[$field] ?? null, FILTER_VALIDATE_INT),
+                ['length', 'width', 'height'],
+            );
+
+            if (in_array(false, $dimensions, true) || min($dimensions) < 1) {
+                continue;
+            }
+
+            $existingVariant = $existingVariants->get(self::variantRecordId($key));
+
+            if ($existingVariant?->is_active
+                && $dimensions === [$existingVariant->length, $existingVariant->width, $existingVariant->height]) {
+                continue;
+            }
+
+            if (app(OrderPackingService::class)->canFitInAnyBox(
+                $dimensions[0],
+                $dimensions[1],
+                $dimensions[2],
+                $boxes,
+            )) {
+                continue;
+            }
+
+            return (string) ($variant['sku'] ?? 'без артикула');
+        }
+
+        return null;
     }
 }
