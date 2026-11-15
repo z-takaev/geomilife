@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Livewire\Checkout;
 use App\Services\Cart\CartService;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\Support\CheckoutFixtures;
 
@@ -37,4 +38,19 @@ it('оставляет выбор города пустым если город 
     Livewire::test(Checkout::class)->call('selectCity', CheckoutFixtures::city()->id)
         ->call('chooseAnotherDeliveryPoint')->assertSet('form.city_id', null)->assertSet('city_search', '')
         ->assertSee('Начните вводить город');
+});
+
+it('не ищет уже выбранный город повторно', function (): void {
+    $city = CheckoutFixtures::city();
+    DB::enableQueryLog();
+
+    Livewire::test(Checkout::class)->call('selectCity', $city->id);
+
+    $searchQueries = collect(DB::getQueryLog())->filter(
+        fn (array $query): bool => str_contains($query['query'], 'from `cities`')
+            && str_contains($query['query'], 'like'),
+    );
+    DB::disableQueryLog();
+
+    expect($searchQueries)->toBeEmpty();
 });

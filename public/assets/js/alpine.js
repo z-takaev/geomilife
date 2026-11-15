@@ -63,14 +63,31 @@ window.addEventListener('catalog-filters-applied', () => {
 
 document.addEventListener('alpine:init', () => {
     Alpine.store('cart', {
-        count: 0,
+        hasItems: false,
         busy: false,
+        itemsLoaded: false,
         wire: null,
         async add(variantId, quantity) {
             if (!this.wire || this.busy) return false;
             this.busy = true;
             try {
-                return await this.wire.add(variantId, quantity);
+                const added = await this.wire.add(variantId, quantity);
+                if (added) this.itemsLoaded = true;
+
+                return added;
+            } finally {
+                this.busy = false;
+            }
+        },
+        async open() {
+            if (!this.wire || this.busy) return;
+            this.busy = true;
+            try {
+                if (!this.itemsLoaded) {
+                    await this.wire.loadItems();
+                    this.itemsLoaded = true;
+                }
+                bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('shoppingCart')).show();
             } finally {
                 this.busy = false;
             }
@@ -81,12 +98,27 @@ document.addEventListener('alpine:init', () => {
         ids: [],
         ready: false,
         busy: false,
+        itemsLoaded: false,
         wire: null,
         async perform(action, ...parameters) {
             if (!this.ready || this.busy) return;
             this.busy = true;
             try {
                 await this.wire[action](...parameters);
+                if (action !== 'decline') this.itemsLoaded = true;
+            } finally {
+                this.busy = false;
+            }
+        },
+        async open() {
+            if (!this.ready || this.busy) return;
+            this.busy = true;
+            try {
+                if (!this.itemsLoaded) {
+                    await this.wire.loadItems();
+                    this.itemsLoaded = true;
+                }
+                bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('wishList')).show();
             } finally {
                 this.busy = false;
             }
@@ -94,7 +126,7 @@ document.addEventListener('alpine:init', () => {
     });
 });
 
-window.wishlistBrowser = function (wire, authenticated, accountIds) {
+window.wishlistBrowser = function (wire, authenticated, accountIds, itemsLoaded) {
     const storageKey = 'guest-wishlist';
 
     return {
@@ -103,6 +135,7 @@ window.wishlistBrowser = function (wire, authenticated, accountIds) {
             if (store.wire === wire) return;
             store.wire = wire;
             store.ready = false;
+            store.itemsLoaded = itemsLoaded;
             let guestIds = [];
             try {
                 const saved = JSON.parse(sessionStorage.getItem(storageKey) ?? '[]');
@@ -113,7 +146,10 @@ window.wishlistBrowser = function (wire, authenticated, accountIds) {
                 guestIds = [];
             }
             store.ids = authenticated ? accountIds : guestIds;
-            if (guestIds.length > 0) await wire.initialize(guestIds);
+            if (guestIds.length > 0) {
+                await wire.initialize(guestIds);
+                store.itemsLoaded = true;
+            }
             store.ready = true;
         },
         update(ids) {
@@ -126,11 +162,12 @@ window.wishlistBrowser = function (wire, authenticated, accountIds) {
     };
 };
 
-window.shoppingCart = function (wire, count) {
+window.shoppingCart = function (wire, hasItems, itemsLoaded) {
     return {
         init() {
             this.$store.cart.wire = wire;
-            this.$store.cart.count = count;
+            this.$store.cart.hasItems = hasItems;
+            this.$store.cart.itemsLoaded = itemsLoaded;
         },
     };
 };

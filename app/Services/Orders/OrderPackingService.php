@@ -91,11 +91,7 @@ final class OrderPackingService
             $itemCount += $item['quantity'];
         }
 
-        $boxes = ShippingBox::query()
-            ->where('is_active', true)
-            ->orderByRaw('CAST(length AS UNSIGNED) * width * height')
-            ->orderBy('id')
-            ->get();
+        $boxes = ShippingBox::cached();
 
         if ($boxes->isEmpty()) {
             throw ValidationException::withMessages(['delivery' => __('Нет доступных коробок для отправки СДЭК.')]);

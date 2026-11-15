@@ -324,7 +324,7 @@ final class ProductForm
 
     private static function unpackableVariantSku(array $variants): ?string
     {
-        $boxes = ShippingBox::query()->where('is_active', true)->get();
+        $boxes = ShippingBox::cached();
 
         if ($boxes->isEmpty()) {
             return null;

@@ -22,7 +22,9 @@ final class ProductController extends Controller
     public function show(string $product, Request $request): View
     {
         $product = $this->productRepository->getDetails($product);
+
         abort_if($product === null, 404);
+
         $productViewModel = new ProductViewModel($product, $request->integer('variant'));
 
         $breadcrumbs = Breadcrumbs::make(

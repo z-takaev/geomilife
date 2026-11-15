@@ -6,6 +6,7 @@ use App\Enums\Orders\PaymentMethodEnum;
 use App\Livewire\Checkout;
 use App\Models\Order;
 use App\Services\Cart\CartService;
+use App\Support\Phone\PhoneFormat;
 use App\Support\Values\Money;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Support\Facades\DB;
@@ -74,7 +75,7 @@ it('подставляет профиль и сохраняет другого �
     $this->actingAs($user);
     app(CartService::class)->add(CheckoutFixtures::variant()->getKey(), 1);
     Livewire::test(Checkout::class)->assertSet('form.first_name', $user->first_name)
-        ->assertSet('form.last_name', $user->last_name)->assertSet('form.phone', $user->phone)->assertSet('form.email', $user->email);
+        ->assertSet('form.last_name', $user->last_name)->assertSet('form.phone', PhoneFormat::format($user->phone))->assertSet('form.email', $user->email);
 
     CheckoutFixtures::form($city)->call('placeOrder')->assertHasNoErrors();
 
@@ -99,6 +100,26 @@ it('повтор одного оформления возвращает суще
     $this->assertDatabaseCount('orders', 1);
     $this->assertDatabaseCount('order_items', 1);
     expect(Order::query()->sole()->idempotency_key)->toBe($key);
+});
+
+it('хранит подтверждённый расчёт вне сессии', function (): void {
+    $city = CheckoutFixtures::city();
+    app(CartService::class)->add(CheckoutFixtures::variant()->getKey(), 1);
+
+    CheckoutFixtures::form($city)->assertSee('890 ₽');
+
+    expect(session('checkout'))->toBeNull();
+});
+
+it('очищает устаревшие расчёты checkout из сессии', function (): void {
+    session()->put('checkout', [
+        'quotes' => ['old-key' => ['total_minor' => 89000]],
+        'presentation' => ['old-key' => ['points' => array_fill(0, 100, ['code' => 'OLD'])]],
+    ]);
+
+    Livewire::test(Checkout::class);
+
+    expect(session('checkout'))->toBeNull();
 });
 
 it('освобождает блокировку после оформления заказа', function (): void {

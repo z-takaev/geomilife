@@ -30,8 +30,10 @@ final class SearchController extends Controller
             fallbackTitle: __('Поиск'),
         )->schema(BreadcrumbSchema::make($breadcrumbs));
 
+        // TODO: Добавить FormRequest
         $queryValue = $request->query('q', '');
         $query = is_string($queryValue) ? mb_substr(trim($queryValue), 0, 255) : '';
+
         $categories = $this->categoryRepository->search($query);
         $products = $this->productRepository->search($query);
 

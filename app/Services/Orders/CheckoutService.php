@@ -32,6 +32,7 @@ final class CheckoutService
         private readonly SavedDeliveryLocationService $locations,
         private readonly OrderPackingService $packing,
         private readonly OrderNotificationService $notifications,
+        private readonly CheckoutStateService $state,
     ) {}
 
     /**
@@ -68,10 +69,8 @@ final class CheckoutService
         $cartData = $this->calculateCart();
         $items = $cartData['items'];
         $subtotal = $cartData['subtotal'];
-        $city = City::query()
-            ->whereKey($form['city_id'] ?? null)
-            ->where('is_active', true)
-            ->first();
+        $cityId = filter_var($form['city_id'] ?? null, FILTER_VALIDATE_INT);
+        $city = $cityId === false ? null : City::cachedById($cityId);
         $deliveryMethod = $form['delivery_method'] ?? '';
         $deliveryPrice = Money::fromMinor(0);
         $deliveryDetails = [];
@@ -163,7 +162,7 @@ final class CheckoutService
         }
 
         $calculation = $this->calculateOrder($form);
-        $saved = session('checkout.quotes.'.$idempotencyKey);
+        $saved = $this->state->quote($idempotencyKey);
 
         if (! is_array($saved) || $quotedTotalMinor !== ($saved['total_minor'] ?? null)
             || $calculation['total']->minorAmount() !== $quotedTotalMinor || ! hash_equals($saved['fingerprint'] ?? '', $calculation['fingerprint'])) {

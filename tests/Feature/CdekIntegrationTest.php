@@ -11,6 +11,7 @@ use App\Services\Cdek\CdekService;
 use App\Services\Cdek\Exceptions\CdekApiException;
 use App\Support\Values\Money;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function (): void {
@@ -112,6 +113,26 @@ it('обновляет справочник без дублей и сохран�
     expect($city->fresh()->name)->toBe('Москва')->and($city->fresh()->is_active)->toBeFalse()
         ->and($city->fresh()->is_pickup_available)->toBeTrue()
         ->and($city->fresh()->courier_delivery_price->toRubles())->toBe('500.00');
+});
+
+it('сбрасывает кеш городов после синхронизации справочника', function (): void {
+    $city = City::query()->create([
+        'cdek_code' => 44,
+        'name' => 'Старое имя',
+        'is_active' => true,
+        'is_suggested' => true,
+    ]);
+    City::cached();
+    City::cachedById($city->id);
+    Http::fake([
+        'cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600]),
+        'cdek.test/v2/location/cities*' => Http::response([['code' => 44, 'city' => 'Новое имя']]),
+    ]);
+
+    app(SyncDeliveryCitiesAction::class)->run();
+
+    expect(Cache::has((string) config('cache.items.city_selector.key')))->toBeFalse()
+        ->and(City::cachedById($city->id)?->name)->toBe('Новое имя');
 });
 
 it('загружает следующую страницу после полной страницы справочника', function (): void {

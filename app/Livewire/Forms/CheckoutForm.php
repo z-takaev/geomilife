@@ -15,6 +15,10 @@ use Livewire\Form;
 
 final class CheckoutForm extends Form
 {
+    private ?int $resolvedCityId = null;
+
+    private ?City $resolvedCity = null;
+
     public string $first_name = '';
 
     public string $last_name = '';
@@ -63,7 +67,19 @@ final class CheckoutForm extends Form
 
     public function selectedCity(): ?City
     {
-        return $this->city_id === null ? null : City::query()->find($this->city_id);
+        if ($this->city_id === null) {
+            $this->resolvedCityId = null;
+            $this->resolvedCity = null;
+
+            return null;
+        }
+
+        if ($this->resolvedCityId !== $this->city_id) {
+            $this->resolvedCityId = $this->city_id;
+            $this->resolvedCity = City::cachedById($this->city_id);
+        }
+
+        return $this->resolvedCity;
     }
 
     protected function rules(): array

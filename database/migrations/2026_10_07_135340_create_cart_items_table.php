@@ -23,6 +23,8 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             $table->integer('quantity');
+
+            $table->unique(['cart_id', 'product_variant_id']);
         });
     }
 

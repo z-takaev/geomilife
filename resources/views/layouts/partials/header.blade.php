@@ -147,18 +147,17 @@
                             </li>
                         @endauth
                         <li>
-                            <a href="#wishList" data-bs-toggle="offcanvas" class="nav-icon-item text-primary link">
+                            <a href="#wishList" class="nav-icon-item text-primary link" x-data
+                                x-on:click.prevent="$store.wishlist.open()">
                                 <i class="icon icon-heart-stroke"></i>
                             </a>
                         </li>
                         <li>
-                            <a href="#shoppingCart" data-bs-toggle="offcanvas"
-                                class="nav-icon-item text-primary link" x-data
-                                x-bind:class="{ 'has-num': $store.cart.count > 0 }">
+                            <a href="#shoppingCart" class="nav-icon-item text-primary link" x-data
+                                x-on:click.prevent="$store.cart.open()"
+                                x-bind:class="{ 'has-indicator': $store.cart.hasItems }">
                                 <i class="icon icon-ShoppingCartSimple"></i>
-                                <span class="number-count text-caption-02" x-show="$store.cart.count > 0" x-cloak>
-                                    <span x-text="$store.cart.count">0</span>
-                                </span>
+                                <span class="cart-indicator" x-show="$store.cart.hasItems" x-cloak></span>
                             </a>
                         </li>
                     </ul>

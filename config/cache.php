@@ -165,6 +165,26 @@ return [
             'ttl' => 3600,
         ],
 
+        'city_selector' => [
+            'key' => 'city_selector_options',
+        ],
+
+        'cities' => [
+            'key_prefix' => 'cities.',
+        ],
+
+        'favorite_ids' => [
+            'key_prefix' => 'favorite_ids.',
+        ],
+
+        'shipping_boxes' => [
+            'key' => 'shipping_boxes.active',
+        ],
+
+        'checkout_state' => [
+            'ttl' => 1800,
+        ],
+
         'catalog_categories' => [
             'key' => 'catalog_categories_flat',
             'ttl' => 3600,

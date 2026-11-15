@@ -3,6 +3,7 @@
         @if (session('order_message'))
             <div class="checkout-info" role="status">{{ session('order_message') }}</div>
         @endif
+
         <form wire:submit="placeOrder" class="checkout-page" novalidate>
             <div class="checkout-page__main">
                 @guest
@@ -173,6 +174,7 @@
                                     <p>{{ $city->pickup_phone }}</p>
                                     <small>{{ __('Приходите после уведомления о готовности. Время получения согласует менеджер.') }}</small>
                                 </div>
+                                {{-- TODO: Заменить на $form->delivery_method->isCourier?  --}}
                             @elseif ($form->delivery_method === \App\Enums\Orders\DeliveryMethodEnum::COURIER->value)
                                 <div class="checkout-address__heading">
                                     <i class="icon icon-MapPin" aria-hidden="true"></i>

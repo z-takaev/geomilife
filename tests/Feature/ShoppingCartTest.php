@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Services\Cart\CartService;
 use App\Services\Orders\CheckoutService;
 use App\Support\Values\Money;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
@@ -48,12 +49,22 @@ it('читает актуальные количества для корзины
 it('хранит гостевую корзину в сессии и считает количество и итог', function (): void {
     $variant = cartVariant();
     Livewire::test(ShoppingCart::class)->call('add', $variant->id, 2)->assertViewHas('count', 2)->assertViewHas('total', fn (Money $total): bool => $total->toRubles() === '1780.00')
-        ->assertDispatched('cart-updated', count: 2);
+        ->assertDispatched('cart-updated', hasItems: true);
     expect(session('cart.items'))->toBe([$variant->id => 2]);
     expect(app(CartService::class)->count())->toBe(2);
     expect(app(CartService::class)->items()[0]['total']->toRubles())->toBe('1780.00');
     $this->assertDatabaseCount('carts', 0);
     Livewire::test(ShoppingCart::class)->call('remove', $variant->id)->assertSee('Корзина пока пуста.');
+});
+
+it('передаёт в шапку только признак наличия товаров без подсчёта количества', function (): void {
+    $variant = cartVariant();
+    $user = cartUser();
+    $user->cart()->create()->items()->create(['product_variant_id' => $variant->id, 'quantity' => 7]);
+
+    Livewire::actingAs($user)->test(ShoppingCart::class)
+        ->assertViewHas('hasItems', true)
+        ->assertViewHas('count', 0);
 });
 
 it('сохраняет вариации пользователя в базе и увеличивает количество без дублей', function (): void {
@@ -193,4 +204,23 @@ it('не объединяет смешанную гостевую корзину
     expect($cart->quantities())->toBe([])
         ->and(session('cart.items'))->toBe([$available->id => 1, $preorder->id => 1]);
     $this->assertDatabaseCount('cart_items', 0);
+});
+
+it('загружает содержимое существующей корзины только при открытии', function (): void {
+    $variant = cartVariant();
+    $user = cartUser();
+    $user->cart()->create()->items()->create(['product_variant_id' => $variant->id, 'quantity' => 2]);
+
+    Livewire::actingAs($user)->test(ShoppingCart::class)
+        ->assertDontSee($variant->product->name)
+        ->assertViewHas('count', 0)
+        ->assertViewHas('hasItems', true)
+        ->call('loadItems')
+        ->assertSee($variant->product->name);
+});
+
+it('гарантирует уникальность варианта внутри корзины на уровне базы', function (): void {
+    expect(collect(Schema::getIndexes('cart_items'))->contains(
+        fn (array $index): bool => $index['columns'] === ['cart_id', 'product_variant_id'] && $index['unique'],
+    ))->toBeTrue();
 });

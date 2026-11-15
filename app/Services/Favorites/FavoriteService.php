@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Repositories\Products\ProductRepository;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
@@ -21,7 +22,10 @@ final class FavoriteService
     public function ids(array $guestIds = []): array
     {
         return Auth::check()
-            ? ($this->productIds ??= auth()->user()->favorites()->pluck('product_id')->all())
+            ? ($this->productIds ??= Cache::memo()->rememberForever(
+                $this->cacheKey(),
+                static fn (): array => auth()->user()->favorites()->pluck('product_id')->all(),
+            ))
             : $this->validateGuestIds($guestIds);
     }
 
@@ -81,7 +85,7 @@ final class FavoriteService
         }
 
         auth()->user()->favorites()->firstOrCreate(['product_id' => $productId]);
-        $this->productIds = null;
+        $this->forgetCache();
 
         return $this->ids();
     }
@@ -96,7 +100,7 @@ final class FavoriteService
         }
 
         auth()->user()->favorites()->where('product_id', $productId)->delete();
-        $this->productIds = null;
+        $this->forgetCache();
 
         return $this->ids();
     }
@@ -126,7 +130,7 @@ final class FavoriteService
             }
         });
 
-        $this->productIds = null;
+        $this->forgetCache();
     }
 
     /**
@@ -137,5 +141,16 @@ final class FavoriteService
         abort_unless(Auth::check(), 403);
 
         session()->put('favorites.merge_declined', auth()->id());
+    }
+
+    private function forgetCache(): void
+    {
+        Cache::memo()->forget($this->cacheKey());
+        $this->productIds = null;
+    }
+
+    private function cacheKey(): string
+    {
+        return (string) config('cache.items.favorite_ids.key_prefix').auth()->id();
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\ShippingBox;
 use App\Services\Orders\OrderPackingService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 function fulfillmentBox(array $attributes = []): ShippingBox
@@ -45,6 +46,25 @@ it('выбирает меньшую по объёму подходящую ко�
 
     expect($packages)->toHaveCount(1)
         ->and($packages[0]['box_id'])->toBe($smallerBox->id);
+});
+
+it('бессрочно кеширует активные коробки и сбрасывает кеш после изменения', function (): void {
+    $box = fulfillmentBox();
+
+    expect(ShippingBox::cached())->toHaveCount(1);
+
+    DB::enableQueryLog();
+    expect(ShippingBox::cached())->toHaveCount(1);
+    $boxQueries = collect(DB::getQueryLog())->filter(
+        fn (array $query): bool => str_contains($query['query'], 'from `shipping_boxes`'),
+    );
+    DB::disableQueryLog();
+
+    expect($boxQueries)->toBeEmpty();
+
+    $box->update(['is_active' => false]);
+
+    expect(ShippingBox::cached())->toBeEmpty();
 });
 
 it('не использует внешние габариты как полезное пространство', function (): void {

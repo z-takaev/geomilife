@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Services\Favorites\FavoriteService;
 use App\Support\Values\Money;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
@@ -63,6 +64,29 @@ it('не создаёт дубли при повторном добавлени�
     app(FavoriteService::class)->add($product->id);
     app(FavoriteService::class)->add($product->id);
     expect($user->favorites()->count())->toBe(1);
+});
+
+it('кеширует идентификаторы избранного аккаунта и сбрасывает кеш при изменении', function (): void {
+    $user = favoriteUser();
+    $first = favoriteProduct('Первый товар');
+    $second = favoriteProduct('Второй товар');
+    $user->favorites()->create(['product_id' => $first->id]);
+    $this->actingAs($user);
+
+    expect((new FavoriteService)->ids())->toBe([$first->id]);
+
+    DB::enableQueryLog();
+    expect((new FavoriteService)->ids())->toBe([$first->id]);
+    $favoriteQueries = collect(DB::getQueryLog())->filter(
+        fn (array $query): bool => str_contains($query['query'], 'from `favorites`'),
+    );
+    DB::disableQueryLog();
+
+    expect($favoriteQueries)->toBeEmpty();
+
+    (new FavoriteService)->add($second->id);
+
+    expect((new FavoriteService)->ids())->toBe([$first->id, $second->id]);
 });
 
 it('автоматически переносит гостевой список в пустой аккаунт', function (): void {
@@ -186,4 +210,16 @@ it('не перерисовывает список аккаунта при пр�
         ->assertDispatched('favorites-merge-suggested')
         ->call('decline')->assertRenderSkipped()
         ->assertDispatched('favorites-merge-resolved');
+});
+
+it('загружает товары аккаунта только при открытии избранного', function (): void {
+    $user = favoriteUser();
+    $product = favoriteProduct();
+    $user->favorites()->create(['product_id' => $product->id]);
+
+    Livewire::actingAs($user)->test(Favorites::class)
+        ->assertDontSee($product->name)
+        ->assertViewHas('ids', [$product->id])
+        ->call('loadItems')
+        ->assertSee($product->name);
 });

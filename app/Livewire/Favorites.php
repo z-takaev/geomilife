@@ -13,9 +13,15 @@ final class Favorites extends Component
 {
     public array $guestIds = [];
 
+    public bool $items_loaded = false;
+
     public function initialize(array $guestIds, FavoriteService $favorites): void
     {
         $this->guestIds = $favorites->availableGuestIds($guestIds);
+
+        if ($this->guestIds !== [] && ! Auth::check()) {
+            $this->items_loaded = true;
+        }
 
         if ($favorites->shouldSuggestMerge($this->guestIds)) {
             if ($favorites->ids() === []) {
@@ -36,6 +42,8 @@ final class Favorites extends Component
 
     public function toggle(int $productId, FavoriteService $favorites): void
     {
+        $this->items_loaded = true;
+
         if (in_array($productId, $favorites->ids($this->guestIds), true)) {
             $ids = $favorites->remove($productId, $this->guestIds);
             $message = __('Товар удалён из избранного.');
@@ -54,6 +62,7 @@ final class Favorites extends Component
 
     public function remove(int $productId, FavoriteService $favorites): void
     {
+        $this->items_loaded = true;
         $ids = $favorites->remove($productId, $this->guestIds);
 
         if (! Auth::check()) {
@@ -67,6 +76,7 @@ final class Favorites extends Component
     public function merge(FavoriteService $favorites): void
     {
         $favorites->merge($this->guestIds);
+        $this->items_loaded = true;
         $this->guestIds = [];
         $this->dispatch('favorites-merged');
         $this->dispatch('favorites-merge-resolved');
@@ -81,10 +91,15 @@ final class Favorites extends Component
         $this->dispatch('favorites-merge-resolved');
     }
 
+    public function loadItems(): void
+    {
+        $this->items_loaded = true;
+    }
+
     public function render(FavoriteService $favorites): View
     {
-        $items = $favorites->items($this->guestIds);
         $ids = $favorites->ids($this->guestIds);
+        $items = $this->items_loaded ? $favorites->items($this->guestIds) : collect();
         $authenticated = Auth::check();
 
         return view('livewire.favorites', compact('items', 'ids', 'authenticated'));

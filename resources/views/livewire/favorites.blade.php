@@ -1,4 +1,4 @@
-<div wire:ignore.self x-data="wishlistBrowser($wire, @js($authenticated), @js($ids))" x-on:favorites-updated.window="update($event.detail.ids)"
+<div wire:ignore.self x-data="wishlistBrowser($wire, @js($authenticated), @js($ids), @js($items_loaded))" x-on:favorites-updated.window="update($event.detail.ids)"
     x-on:favorites-merged.window="clearGuest()"
     x-on:favorites-merge-suggested.window="bootstrap.Modal.getOrCreateInstance($refs.mergeModal).show()"
     x-on:favorites-merge-resolved.window="bootstrap.Modal.getOrCreateInstance($refs.mergeModal).hide()">

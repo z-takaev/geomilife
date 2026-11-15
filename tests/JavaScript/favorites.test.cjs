@@ -6,12 +6,24 @@ const vm = require('node:vm');
 function browser(saved = null) {
     const storage = new Map(saved === null ? [] : [['guest-wishlist', saved]]);
     const stores = {};
+    const shown = [];
+    const elements = new Map([
+        ['shoppingCart', { id: 'shoppingCart' }],
+        ['wishList', { id: 'wishList' }],
+    ]);
     const context = {
         window: { addEventListener() {}, location: { origin: 'https://shop.test' } },
         URL,
         document: {
             addEventListener(name, callback) { if (name === 'alpine:init') callback(); },
-            getElementById() { return null; },
+            getElementById(id) { return elements.get(id) ?? null; },
+        },
+        bootstrap: {
+            Offcanvas: {
+                getOrCreateInstance(element) {
+                    return { show() { shown.push(element.id); } };
+                },
+            },
         },
         Alpine: { store(name, value) { stores[name] = value; } },
         sessionStorage: {
@@ -21,8 +33,8 @@ function browser(saved = null) {
         },
     };
     vm.runInNewContext(readFileSync('public/assets/js/alpine.js', 'utf8'), context);
-    return { storage, stores, window: context.window, component(wire, authenticated = false, ids = []) {
-        const component = context.window.wishlistBrowser(wire, authenticated, ids);
+    return { storage, stores, shown, window: context.window, component(wire, authenticated = false, ids = [], itemsLoaded = false) {
+        const component = context.window.wishlistBrowser(wire, authenticated, ids, itemsLoaded);
         component.$store = stores;
         return component;
     } };
@@ -137,6 +149,28 @@ test('сбой запроса корзины освобождает блокир
     assert.equal(app.stores.cart.busy, false);
     assert.equal(await app.stores.cart.add(4, 2), true);
     assert.equal(calls, 2);
+});
+
+test('корзина открывается только после первой загрузки товаров', async () => {
+    const app = browser();
+    let loaded = false;
+    app.stores.cart.wire = { async loadItems() { loaded = true; } };
+
+    await app.stores.cart.open();
+
+    assert.equal(loaded, true);
+    assert.deepEqual(app.shown, ['shoppingCart']);
+});
+
+test('избранное открывается только после первой загрузки товаров', async () => {
+    const app = browser();
+    let loaded = false;
+    await app.component({ async loadItems() { loaded = true; } }).init();
+
+    await app.stores.wishlist.open();
+
+    assert.equal(loaded, true);
+    assert.deepEqual(app.shown, ['wishList']);
 });
 
 

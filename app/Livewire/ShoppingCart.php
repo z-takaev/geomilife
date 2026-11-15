@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Livewire;
 
 use App\Services\Cart\CartService;
+use App\Support\Values\Money;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
 final class ShoppingCart extends Component
 {
+    public bool $items_loaded = false;
+
     public function mount(CartService $cart): void
     {
         if ($cart->shouldSuggestMerge()) {
@@ -22,7 +25,8 @@ final class ShoppingCart extends Component
     {
         try {
             $cart->add($variantId, $quantity);
-            $this->dispatch('cart-updated', count: $cart->count());
+            $this->items_loaded = true;
+            $this->dispatch('cart-updated', hasItems: $cart->hasItems());
             $this->dispatch('notify', message: __('Товар добавлен в корзину.'), type: 'success');
 
             return true;
@@ -38,7 +42,8 @@ final class ShoppingCart extends Component
     {
         try {
             $quantity = $cart->changeQuantity($variantId, $change);
-            $this->dispatch('cart-updated', count: $cart->count());
+            $this->items_loaded = true;
+            $this->dispatch('cart-updated', hasItems: $cart->hasItems());
 
             if ($quantity === 0) {
                 $this->dispatch('notify', message: __('Товар удалён из корзины.'), type: 'success');
@@ -52,7 +57,8 @@ final class ShoppingCart extends Component
     public function remove(int $variantId, CartService $cart): void
     {
         $cart->remove($variantId);
-        $this->dispatch('cart-updated', count: $cart->count());
+        $this->items_loaded = true;
+        $this->dispatch('cart-updated', hasItems: $cart->hasItems());
         $this->dispatch('notify', message: __('Товар удалён из корзины.'), type: 'success');
     }
 
@@ -60,7 +66,8 @@ final class ShoppingCart extends Component
     {
         try {
             $cart->merge();
-            $this->dispatch('cart-updated', count: $cart->count());
+            $this->items_loaded = true;
+            $this->dispatch('cart-updated', hasItems: $cart->hasItems());
             $this->dispatch('cart-merge-resolved');
             $this->dispatch('notify', message: __('Корзины объединены.'), type: 'success');
         } catch (ValidationException $exception) {
@@ -76,12 +83,18 @@ final class ShoppingCart extends Component
         $this->dispatch('cart-merge-resolved');
     }
 
+    public function loadItems(): void
+    {
+        $this->items_loaded = true;
+    }
+
     public function render(CartService $cart): View
     {
-        $items = $cart->items();
-        $count = $cart->count();
-        $total = $cart->total();
+        $items = $this->items_loaded ? $cart->items() : [];
+        $count = $this->items_loaded ? array_sum(array_column($items, 'quantity')) : 0;
+        $hasItems = $this->items_loaded ? $items !== [] : $cart->hasItems();
+        $total = $this->items_loaded ? $cart->total() : Money::fromMinor(0);
 
-        return view('livewire.shopping-cart', compact('items', 'count', 'total'));
+        return view('livewire.shopping-cart', compact('items', 'count', 'hasItems', 'total'));
     }
 }

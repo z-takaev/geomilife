@@ -21,26 +21,30 @@ final class SyncDeliveryCitiesAction
         $page = 0;
         $synchronizedCitiesCount = 0;
 
-        do {
-            $cities = $this->cdekService->getCities($page, self::PAGE_SIZE);
+        try {
+            do {
+                $cities = $this->cdekService->getCities($page, self::PAGE_SIZE);
 
-            $records = array_map(
-                fn (CdekCityResponseDto $city): array => $this->toRecord($city),
-                $cities,
-            );
-
-            if ($records !== []) {
-                City::query()->upsert(
-                    $records,
-                    ['cdek_code'],
-                    ['name', 'region', 'sub_region', 'updated_at'],
+                $records = array_map(
+                    fn (CdekCityResponseDto $city): array => $this->toRecord($city),
+                    $cities,
                 );
-            }
 
-            $citiesCount = count($cities);
-            $synchronizedCitiesCount += $citiesCount;
-            $page++;
-        } while ($citiesCount === self::PAGE_SIZE);
+                if ($records !== []) {
+                    City::query()->upsert(
+                        $records,
+                        ['cdek_code'],
+                        ['name', 'region', 'sub_region', 'updated_at'],
+                    );
+                }
+
+                $citiesCount = count($cities);
+                $synchronizedCitiesCount += $citiesCount;
+                $page++;
+            } while ($citiesCount === self::PAGE_SIZE);
+        } finally {
+            City::forgetCache();
+        }
 
         return $synchronizedCitiesCount;
     }

@@ -6,6 +6,7 @@ namespace App\Services\Cart;
 
 use App\Models\ProductVariant;
 use App\Support\Values\Money;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -69,7 +70,45 @@ final class CartService
      */
     public function count(): int
     {
-        return array_sum(array_column($this->items(), 'quantity'));
+        $quantities = $this->quantities();
+
+        if ($quantities === []) {
+            return 0;
+        }
+
+        $availableVariantIds = ProductVariant::query()
+            ->whereKey(array_keys($quantities))
+            ->available()
+            ->pluck('id');
+
+        return $availableVariantIds->sum(
+            static fn (int $variantId): int => (int) $quantities[$variantId],
+        );
+    }
+
+    /**
+     * Проверяет наличие хотя бы одного доступного товара в корзине.
+     */
+    public function hasItems(): bool
+    {
+        if ($this->cachedItems !== null) {
+            return $this->cachedItems !== [];
+        }
+
+        if (! auth()->check()) {
+            $variantIds = array_keys(session(self::SESSION_KEY, []));
+
+            return $variantIds !== [] && ProductVariant::query()
+                ->whereKey($variantIds)
+                ->available()
+                ->exists();
+        }
+
+        return ProductVariant::query()
+            ->available()
+            ->whereHas('cartItems.cart', static fn (Builder $query): Builder => $query
+                ->where('user_id', auth()->id()))
+            ->exists();
     }
 
     /**

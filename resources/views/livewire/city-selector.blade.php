@@ -1,7 +1,8 @@
 <div class="modal modalCentered fade modal-city-selection" id="citySelection" tabindex="-1"
-    aria-labelledby="citySelectionTitle" aria-hidden="true" wire:ignore.self x-data
-    x-on:city-selected="bootstrap.Modal.getInstance($el)?.hide()"
-    @if ($shouldDetectCity) wire:init="detect" @endif>
+    aria-labelledby="citySelectionTitle" aria-hidden="true" wire:ignore.self x-data x-init="$el.addEventListener('show.bs.modal', () => $wire.loadOptions())"
+    x-on:city-selected="bootstrap.Modal.getInstance($el)?.hide()" @if ($shouldDetectCity)
+    wire:init="detect"
+    @endif>
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <button type="button" class="icon-close-popup city-selection__close" data-bs-dismiss="modal"

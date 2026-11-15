@@ -14,7 +14,8 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
 
-            $table->nullableMorphs('seoable');
+            $table->string('seoable_type')->nullable();
+            $table->unsignedBigInteger('seoable_id')->nullable();
 
             $table->string('route_name')->nullable()->unique();
             $table->string('title')->nullable();

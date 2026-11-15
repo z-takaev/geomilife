@@ -10,11 +10,13 @@ use App\Enums\Orders\PaymentMethodEnum;
 use App\Livewire\Forms\CheckoutForm;
 use App\Models\Address;
 use App\Models\City;
+use App\Models\SavedDeliveryPoint;
 use App\Models\Setting;
 use App\Services\Cart\CartService;
 use App\Services\Cdek\Exceptions\CdekApiException;
 use App\Services\Cities\CurrentCityService;
 use App\Services\Orders\CheckoutService;
+use App\Services\Orders\CheckoutStateService;
 use App\Services\Orders\OrderNotificationService;
 use App\Services\Orders\OrderPaymentService;
 use App\Services\Tbank\Exceptions\TbankApiException;
@@ -22,6 +24,7 @@ use App\Support\Email\EmailNormalizer;
 use App\Support\Phone\PhoneFormat;
 use App\Support\Values\Money;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -49,19 +52,27 @@ final class Checkout extends Component
 
     public ?int $saved_delivery_point_id = null;
 
+    private ?EloquentCollection $cachedAddresses = null;
+
+    private ?EloquentCollection $cachedSavedDeliveryPoints = null;
+
     protected $listeners = ['city-selected' => 'selectCity', 'city-detected' => 'useDetectedCity'];
 
     public function mount(CurrentCityService $cities): void
     {
+        session()->forget('checkout');
         $this->idempotency_key = (string) Str::uuid();
         $user = auth()->user();
         $this->form->first_name = $user?->first_name ?? '';
         $this->form->last_name = $user?->last_name ?? '';
         $this->form->phone = PhoneFormat::format((string) $user?->phone);
         $this->form->email = $user?->email ?? '';
-        $point = $user?->savedDeliveryPoints()->where('is_default', true)
-            ->whereHas('city', static fn ($query) => $query->where('is_active', true)->where('is_cdek_excluded', false)->where('cdek_code', '>', 0))
-            ->first();
+        $point = $this->savedDeliveryPoints()->first(
+            static fn (SavedDeliveryPoint $point): bool => $point->is_default
+                && $point->city?->is_active
+                && ! $point->city->is_cdek_excluded
+                && $point->city->cdek_code > 0,
+        );
 
         if ($point !== null) {
             $this->selectSavedDeliveryPoint($point->id);
@@ -98,9 +109,8 @@ final class Checkout extends Component
 
     public function selectCity(int $id, ?string $name = null): void
     {
-        $city = City::query()
-            ->where('is_active', true)
-            ->findOrFail($id);
+        $city = City::cachedById($id);
+        abort_if($city === null, 404);
         $this->form->city_id = $city->id;
         $this->city_search = $city->optionLabel();
         $this->handleFormChange('city_id');
@@ -116,7 +126,8 @@ final class Checkout extends Component
     public function selectAddress(int $addressId): void
     {
         abort_unless(auth()->check(), 403);
-        $address = auth()->user()->addresses()->with('city')->findOrFail($addressId);
+        $address = $this->addresses()->firstWhere('id', $addressId);
+        abort_if($address === null, 404);
         $this->fillAddress($address);
         $this->form->city_id = $address->city_id;
         $this->city_search = $address->city?->optionLabel() ?? '';
@@ -155,8 +166,8 @@ final class Checkout extends Component
     public function selectSavedDeliveryPoint(int $pointId): void
     {
         abort_unless(auth()->check(), 403);
-        $point = auth()->user()->savedDeliveryPoints()
-            ->findOrFail($pointId);
+        $point = $this->savedDeliveryPoints()->firstWhere('id', $pointId);
+        abort_if($point === null, 404);
         $this->form->city_id = $point->city_id;
         $this->city_search = $point->city?->optionLabel() ?? '';
         $this->form->delivery_method = DeliveryMethodEnum::CDEK->value;
@@ -180,11 +191,14 @@ final class Checkout extends Component
         try {
             $calculation = app(CheckoutService::class)->calculateOrder($this->form->orderData());
             $this->quoted_total_minor = $calculation['total']->minorAmount();
-            session()->put('checkout.quotes.'.$this->idempotency_key, [
-                'fingerprint' => $calculation['fingerprint'],
-                'total_minor' => $this->quoted_total_minor,
-            ]);
-            session()->put('checkout.presentation.'.$this->idempotency_key, $this->calculationData($calculation));
+            app(CheckoutStateService::class)->store(
+                $this->idempotency_key,
+                [
+                    'fingerprint' => $calculation['fingerprint'],
+                    'total_minor' => $this->quoted_total_minor,
+                ],
+                $this->calculationData($calculation),
+            );
         } catch (ValidationException $exception) {
             $this->invalidateQuote();
 
@@ -219,8 +233,10 @@ final class Checkout extends Component
                 throw ValidationException::withMessages(['quote' => __(self::CDEK_QUOTE_ERROR)]);
             }
 
-            $this->dispatch('cart-updated', count: app(CartService::class)->count());
+            $this->dispatch('cart-updated', hasItems: app(CartService::class)->hasItems());
         }
+
+        app(CheckoutStateService::class)->forget($this->idempotency_key);
 
         if ($order->wasRecentlyCreated && $order->payment_method->isOnline()) {
             try {
@@ -251,20 +267,22 @@ final class Checkout extends Component
 
     public function render(GetCitySuggestionsAction $getCitySuggestions): View
     {
-        $checkoutData = session('checkout.presentation.'.$this->idempotency_key, []);
+        $checkoutData = app(CheckoutStateService::class)->presentation($this->idempotency_key);
         $items = $checkoutData['items'] ?? [];
         $subtotal = Money::fromMinor($checkoutData['subtotal_minor'] ?? 0);
         $deliveryPrice = Money::fromMinor($checkoutData['delivery_minor'] ?? 0);
         $total = Money::fromMinor($checkoutData['total_minor'] ?? 0);
         $isPreorder = $checkoutData['is_preorder'] ?? false;
         $deliveryReady = ($checkoutData['delivery_ready'] ?? false) && ! $this->getErrorBag()->has('quote') && ! $this->getErrorBag()->has('form.delivery_point_code');
-        $points = collect($checkoutData['points'] ?? []);
+        $city = $this->form->selectedCity();
+        $points = $this->deliveryPoints($city, $checkoutData['packages'] ?? []);
         $selectedDeliveryPoint = $points->firstWhere('code', $this->form->delivery_point_code);
         $deliveryPoints = $this->pointSuggestions($points);
-        $city = $this->form->selectedCity();
         $availableDeliveryMethods = app(CheckoutService::class)->availableDeliveryMethods($city);
-        $cities = $getCitySuggestions->run($this->city_search);
-        $addresses = auth()->user()?->addresses()->with('city')->orderByDesc('is_default')->get() ?? collect();
+        $cities = $this->form->city_id !== null && $this->city_search === $city?->optionLabel()
+            ? collect()
+            : $getCitySuggestions->run($this->city_search);
+        $addresses = $this->addresses();
         $contactFields = [
             ['name' => 'first_name', 'label' => __('Имя'), 'type' => 'text', 'autocomplete' => 'given-name', 'placeholder' => __('Введите имя')],
             ['name' => 'last_name', 'label' => __('Фамилия'), 'type' => 'text', 'autocomplete' => 'family-name', 'placeholder' => __('Введите фамилию')],
@@ -282,7 +300,7 @@ final class Checkout extends Component
             ['name' => 'apartment', 'label' => __('Квартира / офис'), 'required' => true],
             ['name' => 'intercom', 'label' => __('Домофон'), 'required' => false],
         ];
-        $savedPoints = auth()->user()?->savedDeliveryPoints()->with('city')->orderByDesc('is_default')->get() ?? collect();
+        $savedPoints = $this->savedDeliveryPoints();
 
         $doorDeliveryPrice = ($city?->door_delivery_price ?? Money::fromMinor(0))->format();
         $floorLiftingPrice = ($city?->floor_lifting_price ?? Money::fromMinor(0))->format();
@@ -347,14 +365,6 @@ final class Checkout extends Component
 
     private function calculationData(array $calculation): array
     {
-        $points = [];
-
-        if ($this->form->delivery_method === DeliveryMethodEnum::CDEK->value && array_key_exists(DeliveryMethodEnum::CDEK->value, app(CheckoutService::class)->availableDeliveryMethods($calculation['city']))) {
-            foreach (app(CheckoutService::class)->deliveryPoints($calculation['city'], $calculation['packages']) as $point) {
-                $points[] = ['code' => $point->code, 'address' => $point->address, 'work_time' => $point->workTime, 'type' => $point->type];
-            }
-        }
-
         return [
             'items' => $calculation['items'],
             'subtotal_minor' => $calculation['subtotal']->minorAmount(),
@@ -362,7 +372,7 @@ final class Checkout extends Component
             'total_minor' => $calculation['total']->minorAmount(),
             'details' => $calculation['details'],
             'is_preorder' => $calculation['is_preorder'],
-            'points' => $points,
+            'packages' => $calculation['packages'],
             'delivery_ready' => $calculation['city'] !== null
                 && array_key_exists($this->form->delivery_method, app(CheckoutService::class)->availableDeliveryMethods($calculation['city']))
                 && ($this->form->delivery_method !== DeliveryMethodEnum::CDEK->value || $calculation['point'] !== null),
@@ -391,8 +401,7 @@ final class Checkout extends Component
 
     private function invalidateQuote(): void
     {
-        session()->forget('checkout.quotes.'.$this->idempotency_key);
-        session()->put('checkout.presentation.'.$this->idempotency_key.'.delivery_ready', false);
+        app(CheckoutStateService::class)->markDeliveryNotReady($this->idempotency_key);
     }
 
     private function handleCityChange(): void
@@ -419,7 +428,9 @@ final class Checkout extends Component
         }
 
         if ($this->form->delivery_method === DeliveryMethodEnum::COURIER->value && auth()->check()) {
-            $address = auth()->user()->addresses()->where('is_default', true)->where('city_id', $this->form->city_id)->first();
+            $address = $this->addresses()->first(
+                fn (Address $address): bool => $address->is_default && $address->city_id === $this->form->city_id,
+            );
 
             if ($address !== null) {
                 $this->fillAddress($address);
@@ -427,16 +438,32 @@ final class Checkout extends Component
         }
 
         if ($this->form->delivery_method === DeliveryMethodEnum::CDEK->value && auth()->check()) {
-            $point = auth()->user()->savedDeliveryPoints()
-                ->where('is_default', true)
-                ->where('city_id', $this->form->city_id)
-                ->first();
+            $point = $this->savedDeliveryPoints()->first(
+                fn (SavedDeliveryPoint $point): bool => $point->is_default && $point->city_id === $this->form->city_id,
+            );
 
             if ($point !== null) {
                 $this->form->delivery_point_code = $point->code;
                 $this->saved_delivery_point_id = $point->id;
             }
         }
+    }
+
+    private function deliveryPoints(?City $city, array $packages): Collection
+    {
+        if ($city === null
+            || $this->form->delivery_method !== DeliveryMethodEnum::CDEK->value
+            || ! array_key_exists(DeliveryMethodEnum::CDEK->value, app(CheckoutService::class)->availableDeliveryMethods($city))) {
+            return collect();
+        }
+
+        return collect(app(CheckoutService::class)->deliveryPoints($city, $packages))
+            ->map(static fn ($point): array => [
+                'code' => $point->code,
+                'address' => $point->address,
+                'work_time' => $point->workTime,
+                'type' => $point->type,
+            ]);
     }
 
     private function pointSuggestions(Collection $points): Collection
@@ -446,5 +473,21 @@ final class Checkout extends Component
         return $pointSearch === '' ? collect() : $points->filter(
             static fn (array $point): bool => mb_stripos($point['code'].' '.$point['address'], $pointSearch) !== false,
         );
+    }
+
+    private function addresses(): EloquentCollection
+    {
+        return $this->cachedAddresses ??= auth()->user()?->addresses()
+            ->with('city')
+            ->orderByDesc('is_default')
+            ->get() ?? new EloquentCollection;
+    }
+
+    private function savedDeliveryPoints(): EloquentCollection
+    {
+        return $this->cachedSavedDeliveryPoints ??= auth()->user()?->savedDeliveryPoints()
+            ->with('city')
+            ->orderByDesc('is_default')
+            ->get() ?? new EloquentCollection;
     }
 }

@@ -17,6 +17,10 @@ final class RegistrationCitySelector extends Component
 
     public function mount(?int $selectedCityId = null): void
     {
+        if ($selectedCityId === null) {
+            return;
+        }
+
         $city = City::query()->where('is_active', true)->find($selectedCityId);
 
         $this->selected_city_id = $city?->id;

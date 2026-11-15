@@ -15,6 +15,7 @@ final class CatalogController extends Controller
     public function index(): View
     {
         $category = null;
+
         $breadcrumbs = Breadcrumbs::make(
             BreadcrumbItem::make(__('Каталог'), route('catalog.index')),
         );

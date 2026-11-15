@@ -28,7 +28,7 @@ final class CurrentCityService
         $cityId = (int) $cityId;
 
         if (! array_key_exists($cityId, $this->cities)) {
-            $this->cities[$cityId] = City::query()->where('is_active', true)->find($cityId);
+            $this->cities[$cityId] = City::cachedById($cityId);
         }
 
         return $this->cities[$cityId];
@@ -39,7 +39,8 @@ final class CurrentCityService
      */
     public function select(int $cityId): City
     {
-        $city = City::query()->where('is_active', true)->findOrFail($cityId);
+        $city = City::cachedById($cityId);
+        abort_if($city === null, 404);
         $user = auth()->user();
 
         if ($user !== null) {
@@ -106,7 +107,7 @@ final class CurrentCityService
 
         return $result['id'] === null
             ? null
-            : City::query()->where('is_active', true)->find($result['id']);
+            : City::cachedById((int) $result['id']);
     }
 
     private function requestCity(string $ip): ?City

@@ -1,7 +1,7 @@
-<div x-data="shoppingCart($wire, @js($count))"
+<div x-data="shoppingCart($wire, @js($hasItems), @js($items_loaded))"
     x-on:cart-merge-suggested.window="bootstrap.Modal.getOrCreateInstance($refs.mergeModal).show()"
     x-on:cart-merge-resolved.window="bootstrap.Modal.getOrCreateInstance($refs.mergeModal).hide()"
-    x-on:cart-updated.window="$store.cart.count = $event.detail.count">
+    x-on:cart-updated.window="$store.cart.hasItems = $event.detail.hasItems">
     <div class="offcanvas offcanvas-end canvas-shop-cart" id="shoppingCart" x-ref="canvas" wire:ignore.self>
         <div class="canvas-wrapper">
             <div class="canvas-header">
@@ -71,7 +71,7 @@
                     <h4 class="tf-cart-total-text">{{ __('Итого') }}</h4>
                     <h4 class="tf-totals-total-value">{{ $total->format() }}</h4>
                 </div>
-                @if ($count > 0)
+                @if ($hasItems)
                     <div class="group-btn">
                         <a href="{{ route('checkout') }}"
                             class="tf-btn animate-btn w-100">{{ __('Оформить заказ') }}</a>

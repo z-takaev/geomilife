@@ -55,11 +55,11 @@ final class Setting extends Model implements HasMedia
     protected static function booted(): void
     {
         self::saved(static function (): void {
-            Cache::forget((string) config('cache.items.settings.key'));
+            Cache::memo()->forget((string) config('cache.items.settings.key'));
         });
 
         self::deleted(static function (): void {
-            Cache::forget((string) config('cache.items.settings.key'));
+            Cache::memo()->forget((string) config('cache.items.settings.key'));
         });
     }
 
@@ -88,7 +88,7 @@ final class Setting extends Model implements HasMedia
 
     public static function cached(): ?self
     {
-        return Cache::remember(
+        return Cache::memo()->remember(
             (string) config('cache.items.settings.key'),
             (int) config('cache.items.settings.ttl'),
             static fn (): ?self => self::query()

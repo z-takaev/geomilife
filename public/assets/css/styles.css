@@ -2358,24 +2358,19 @@ header.header-sticky .header-inner {
 .tf-header .nav-icon-item:focus-visible {
     color: var(--primary) !important;
 }
-.nav-icon-item .number-count {
-    width: 16px;
-    height: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-white);
+.nav-icon-item .cart-indicator {
+    width: 10px;
+    height: 10px;
     background-color: var(--primary);
     border-radius: 50%;
 }
-.nav-icon-item.has-num.text-white .number-count {
+.nav-icon-item.has-indicator.text-white .cart-indicator {
     background-color: var(--white);
-    color: var(--primary);
 }
-.nav-icon-item.has-num .number-count {
+.nav-icon-item.has-indicator .cart-indicator {
     position: absolute;
-    top: -5.75px;
-    right: -8px;
+    top: -2px;
+    right: -4px;
 }
 .account-menu__toggle {
     padding: 0;
@@ -2427,7 +2422,7 @@ header.header-sticky .header-inner {
     .nav-icon-item {
         font-size: 20px;
     }
-    .nav-icon-item.has-num {
+    .nav-icon-item.has-indicator {
         margin-right: 8px;
     }
 }
@@ -2959,6 +2954,10 @@ header.header-sticky .header-inner {
     }
 }
 @media (max-width: 575px) {
+    .nav-icon-item .cart-indicator {
+        width: 8px;
+        height: 8px;
+    }
     .nav-icon-list {
         gap: 12px;
     }
@@ -6818,7 +6817,7 @@ select.select-2 {
 }
 .s-page-title.inner-page-title .page-title {
     color: var(--text-black);
-    font-size: clamp(30px, 4vw, 42px);
+    font-size: clamp(30px, 4vw, 36px);
     line-height: 1.15;
 }
 .s-page-title .img-item-bg {

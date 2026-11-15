@@ -12,6 +12,7 @@ use Illuminate\Contracts\View\View;
 
 final class CheckoutController extends Controller
 {
+    // TODO: Заменить метод
     public function __invoke(CartService $cart): View
     {
         abort_if($cart->count() === 0, 404);
