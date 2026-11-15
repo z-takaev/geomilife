@@ -19,6 +19,7 @@ use App\Services\Orders\OrderNotificationService;
 use App\Services\Orders\OrderPaymentService;
 use App\Services\Tbank\Exceptions\TbankApiException;
 use App\Support\Email\EmailNormalizer;
+use App\Support\Phone\PhoneFormat;
 use App\Support\Values\Money;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
@@ -56,7 +57,7 @@ final class Checkout extends Component
         $user = auth()->user();
         $this->form->first_name = $user?->first_name ?? '';
         $this->form->last_name = $user?->last_name ?? '';
-        $this->form->phone = $user?->phone ?? '';
+        $this->form->phone = PhoneFormat::format((string) $user?->phone);
         $this->form->email = $user?->email ?? '';
         $point = $user?->savedDeliveryPoints()->where('is_default', true)
             ->whereHas('city', static fn ($query) => $query->where('is_active', true)->where('is_cdek_excluded', false)->where('cdek_code', '>', 0))
@@ -335,7 +336,9 @@ final class Checkout extends Component
                 $this->form->{$field} = $this->other_recipient_contacts[$field] ?? '';
             } else {
                 $this->other_recipient_contacts[$field] = $this->form->{$field};
-                $this->form->{$field} = $user->{$field} ?? '';
+                $this->form->{$field} = $field === 'phone'
+                    ? PhoneFormat::format((string) $user->{$field})
+                    : ($user->{$field} ?? '');
             }
         }
 

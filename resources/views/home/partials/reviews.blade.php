@@ -14,7 +14,7 @@
 
             <div class="home-reviews-grid">
                 @foreach ($reviews as $review)
-                    <x-reviews.card :review="$review" />
+                    <x-reviews.card :review="$review" :expandable="true" />
                 @endforeach
             </div>
         </div>

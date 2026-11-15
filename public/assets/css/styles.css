@@ -16117,7 +16117,6 @@ body.story-video-open {
         gap: 12px;
     }
 
-    .checkout-product__price,
     .checkout-product__prices {
         grid-column: 2;
     }
