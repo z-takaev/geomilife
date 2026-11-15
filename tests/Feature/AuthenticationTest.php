@@ -244,6 +244,18 @@ it('отправляет ссылку сброса без раскрытия с�
     }
 })->with([true, false]);
 
+it('не позволяет редактировать email на странице сброса пароля', function (): void {
+    $response = $this->get(route('password.reset', [
+        'token' => 'reset-token',
+        'email' => 'buyer@example.com',
+    ]));
+
+    $response->assertOk();
+
+    expect($response->getContent())
+        ->toMatch('/<input[^>]*name="email"[^>]*readonly[^>]*>/');
+});
+
 it('сбрасывает пароль одноразовым токеном и обновляет remember token', function (): void {
     $user = authenticationUser('buyer@example.com');
     $oldRememberToken = $user->remember_token;

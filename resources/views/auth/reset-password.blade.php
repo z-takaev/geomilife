@@ -12,15 +12,14 @@
                     <div class="modal-content">
                         <h3 class="title-pop text-black text-center">{{ __('Новый пароль') }}</h3>
                         <p class="desc-pop text-center">
-                            {{ __('Укажите email и новый пароль для аккаунта.') }}
+                            {{ __('Укажите новый пароль для аккаунта.') }}
                         </p>
                         <form action="{{ route('password.update') }}" method="POST" class="form-log">
                             @csrf
                             <input type="hidden" name="token" value="{{ $token }}">
                             <div class="form-content">
                                 <x-auth.form.input id="reset-email" name="email" type="email" :label="__('Email')"
-                                    :value="old('email', $email)" :placeholder="__('Введите ваш email')" autocomplete="email" error-bag="resetPassword"
-                                    required />
+                                    :value="$email" autocomplete="email" error-bag="resetPassword" readonly required />
                                 <x-auth.form.password id="reset-password" name="password" :label="__('Новый пароль')"
                                     :placeholder="__('Введите новый пароль')" autocomplete="new-password" error-bag="resetPassword" required />
                                 <x-auth.form.password id="reset-password-confirmation" name="password_confirmation"
