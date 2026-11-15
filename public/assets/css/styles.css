@@ -28,6 +28,20 @@
     * Components
 
  ------------------------------------------------------------------------------ */
+/*--------- Root ---------- */
+:root {
+    --primary: #904130; /* Основной фирменный цвет кнопок, заголовков и ссылок. */
+    --primary-2: #7e7c6c; /* Дополнительный фирменный оливковый цвет. */
+    --secondary: #efe8e2; /* Светлый фирменный акцент для состояний наведения и выделений. */
+    --surface: #f8f5f2; /* Фоновая поверхность секций и карточек. */
+    --text-black: #000000; /* Основной цвет текста. */
+    --text-secondary: #6c6a5c; /* Вторичный цвет текста, дат и старых цен. */
+    --text-white: #ffffff; /* Цвет текста на тёмных элементах. */
+    --white: #ffffff; /* Белый цвет нетекстовых элементов. */
+    --black: #000000; /* Чёрный цвет нетекстовых элементов. */
+    --line: #e5ddd6; /* Основной цвет границ и разделителей. */
+}
+
 /*--------- Abstracts variable ---------- */
 html,
 body,
@@ -2946,7 +2960,7 @@ header.header-sticky .header-inner {
 }
 @media (max-width: 575px) {
     .nav-icon-list {
-        gap: 9px;
+        gap: 12px;
     }
     .nav-icon-item {
         font-size: 18px;
@@ -14256,7 +14270,6 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle {
 @media (max-width: 767px) {
     .product-detail,
     .product-description-section {
-        margin-bottom: 56px;
         padding-bottom: 56px;
     }
 

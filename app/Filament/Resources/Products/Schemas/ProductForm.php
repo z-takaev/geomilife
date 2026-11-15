@@ -155,6 +155,7 @@ final class ProductForm
                                                         ->label('Доступен по предзаказу')
                                                         ->grow(false),
                                                 ])
+                                                    ->from('sm')
                                                     ->columnSpanFull(),
                                             ]),
                                     ])

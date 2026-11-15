@@ -1,0 +1,101 @@
+@media (max-width: 639px) {
+    .visit-site-button {
+        padding-inline: 0.625rem;
+    }
+
+    .visit-site-button__label {
+        display: none;
+    }
+
+    .filament-tree-children {
+        margin-left: 0.75rem !important;
+    }
+
+    .filament-tree-node-content > .fi-ta-cell > .flex {
+        min-width: 0;
+        margin-left: 0.25rem;
+    }
+
+    .filament-tree-node-title,
+    .filament-tree-node-title > .flex,
+    .filament-tree-node-title > .flex > .flex:first-child,
+    .filament-tree-node-title > .flex > .flex:first-child > div {
+        min-width: 0;
+    }
+
+    .filament-tree-toggle-container:empty {
+        display: none;
+    }
+
+    .filament-tree-node-title,
+    .filament-tree-node-title > .flex {
+        overflow: hidden;
+    }
+
+    .filament-tree-node-title > .flex > .flex:first-child {
+        width: 0;
+        flex: 1 1 0;
+        overflow: hidden;
+    }
+
+    .filament-tree-node-title > .flex > .flex:first-child > div {
+        flex: 1 1 0;
+        overflow: hidden;
+    }
+
+    .filament-tree-node-title > .flex > .flex:first-child span {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .filament-tree-node-title > .flex > .flex:last-child {
+        padding-left: 0.25rem !important;
+    }
+
+    .filament-tree-node-actions {
+        flex-shrink: 0;
+        gap: 0.5rem !important;
+        margin-right: 0.25rem;
+        margin-left: 0.25rem;
+    }
+
+    .order-processing-stages {
+        display: grid;
+        gap: 0.5rem;
+    }
+
+    .order-processing-stages__item {
+        display: grid;
+        justify-items: start;
+        gap: 0.5rem;
+        min-width: 0;
+    }
+
+    .order-processing-stages__arrow {
+        margin-left: 0.75rem;
+        transform: rotate(90deg);
+    }
+
+    .order-processing-stages .fi-badge,
+    .order-processing-stages .fi-badge-label {
+        max-width: 100%;
+        white-space: normal;
+    }
+}
+
+@media (min-width: 640px) {
+    .order-processing-stages {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .order-processing-stages__item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+}

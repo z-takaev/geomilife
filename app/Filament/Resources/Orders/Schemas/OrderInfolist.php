@@ -93,12 +93,12 @@ final class OrderInfolist
                         TableColumn::make('Цена')->width('120px')->alignment(Alignment::End),
                         TableColumn::make('Сумма')->width('120px')->alignment(Alignment::End),
                     ])->schema([
-                        TextEntry::make('sku')->placeholder('—'),
-                        TextEntry::make('product_name')->placeholder('—'),
-                        TextEntry::make('variant_name')->placeholder('—'),
-                        TextEntry::make('quantity')->placeholder('—'),
-                        TextEntry::make('price')->formatStateUsing(fn ($state): string => $state->format())->placeholder('—'),
-                        TextEntry::make('total')->formatStateUsing(fn ($state): string => $state->format())->placeholder('—'),
+                        TextEntry::make('sku')->label('Артикул')->placeholder('—'),
+                        TextEntry::make('product_name')->label('Товар')->placeholder('—'),
+                        TextEntry::make('variant_name')->label('Фасовка')->placeholder('—'),
+                        TextEntry::make('quantity')->label('Количество')->placeholder('—'),
+                        TextEntry::make('price')->label('Цена')->formatStateUsing(fn ($state): string => $state->format())->placeholder('—'),
+                        TextEntry::make('total')->label('Сумма')->formatStateUsing(fn ($state): string => $state->format())->placeholder('—'),
                     ])->visible(fn (Order $record): bool => $record->items->isNotEmpty())
                     ->columnSpanFull(),
                 TextEntry::make('subtotal')->label('Товары')->formatStateUsing(fn ($state): string => $state->format())->placeholder('—'),

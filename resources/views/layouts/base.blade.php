@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="{{ asset('assets/icon/icomoon/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/styles.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/theme.css') }}">
     @stack('styles')
 
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">

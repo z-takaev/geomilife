@@ -31,6 +31,7 @@ use Filament\Navigation\NavigationBuilder;
 use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Support\Assets\Css;
 use Filament\Support\Colors\Color;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Contracts\View\View;
@@ -61,6 +62,9 @@ final class AdminPanelProvider extends PanelProvider
             ->brandLogo(asset('assets/images/logo/logo-default.svg'))
             ->darkModeBrandLogo(asset('assets/images/logo/logo-white.svg'))
             ->brandLogoHeight('2.5rem')
+            ->assets([
+                Css::make('admin-styles', asset('assets/css/filament.css')),
+            ])
             ->unsavedChangesAlerts()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
