@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\Orders\PaymentMethodEnum;
+use App\Enums\Orders\PaymentStatusEnum;
 use App\Models\Order;
 use App\Models\User;
 use App\Notifications\Orders\DeliveryQuoteErrorNotification;
@@ -94,7 +95,7 @@ it('письмо гостю содержит номер заказа и собы
             }
             $mail = $notification->toMail($notifiable);
             expect($mail->subject)->toContain((string) $notification->order->number)
-                ->and(implode(' ', $mail->introLines))->toContain('возврат')
+                ->and(implode(' ', $mail->introLines))->toContain('Возврат')
                 ->and($mail->actionUrl)->toBeNull();
 
             return true;
@@ -138,10 +139,11 @@ it('включает сохранённый состав и сведения з�
 
     foreach ([$html, $plain] as $body) {
         expect($body)->toContain((string) $order->number, $order->created_at->format('d.m.Y'),
-            'Крем из оформленного заказа', '250 мл', 'SNAPSHOT-250', '600 ₽', '2 × 600 ₽',
+            'Крем из оформленного заказа', '250 мл', '600 ₽', '2 × 600 ₽',
             '1 200 ₽', '350 ₽', '1 550 ₽', $order->customer_name, $order->customer_phone,
             $order->customer_email, 'Позвоните перед выдачей')
-            ->not->toContain('Новое название каталога', '9 999 ₽', '<script>', '600.00', 'Открыть заказ', 'signature=', 'Оплатить заказ можно на странице заказа');
+            ->not->toContain('SNAPSHOT-250', 'Артикул', 'Новое название каталога', '9 999 ₽', '<script>',
+                '600.00', 'Открыть заказ', 'signature=', 'Оплатить заказ можно на странице заказа', 'Что дальше');
     }
 
     expect($mail->actionUrl)->toBeNull();
@@ -156,11 +158,11 @@ it('показывает способ получения и адрес из за
         ->toContain('бесплатно');
 })->with([
     'самовывоз' => ['PICKUP', ['city' => 'Владикавказ', 'address' => 'ул. Мира, 10', 'working_hours' => '10:00–19:00'],
-        ['Самовывоз', 'ул. Мира, 10', '10:00–19:00', 'Приходите после уведомления о готовности']],
+        ['Самовывоз', 'ул. Мира, 10', '10:00–19:00', 'Вы сможете забрать заказ по указанному адресу после уведомления о готовности']],
     'курьер' => ['COURIER', ['city' => 'Владикавказ', 'street' => 'ул. Ленина', 'house' => '5', 'apartment' => '12'],
         ['Курьер', 'ул. Ленина', 'дом 5', 'кв. 12', 'Время доставки согласует менеджер']],
     'сдэк' => ['CDEK', ['city' => 'Москва', 'address' => 'ул. Тверская, 15', 'code' => 'MSK123', 'work_time' => '09:00–20:00'],
-        ['СДЭК', 'ул. Тверская, 15', 'MSK123', '09:00–20:00', 'Трек-номер появится после подготовки отправления']],
+        ['СДЭК', 'ул. Тверская, 15', 'MSK123', '09:00–20:00', 'Мы сообщим вам, когда заказ будет передан в СДЭК']],
 ]);
 
 it('не предлагает отложенную оплату в письме о создании заказа', function (string $method, string $status): void {
@@ -172,8 +174,9 @@ it('не предлагает отложенную оплату в письме 
     $mail = (new OrderUpdateNotification($order, 'CREATED'))->toMail(new AnonymousNotifiable);
     $body = (string) $mail->render();
 
-    expect($body)->toContain($order->payment_method->getLabel(), $order->payment_status->getLabel())
-        ->not->toContain('Оплатите до', 'Оплатить заказ можно на странице заказа');
+    expect($body)->toContain($order->payment_method->getLabel())
+        ->not->toContain(PaymentStatusEnum::from($status)->getLabel(), 'Статус оплаты', 'Оплатите до',
+            'Оплатить заказ можно на странице заказа');
 })->with([
     ['ONLINE', 'UNPAID'],
     ['ONLINE', 'PAID'],
@@ -202,8 +205,40 @@ it('оставляет уведомления об изменениях коро
     $order->shipment()->create(['cdek_number' => '1234567890']);
     $mail = (new OrderUpdateNotification($order, 'SHIPPED'))->toMail(new AnonymousNotifiable);
 
-    expect((string) $mail->render())->toContain('1234567890')
-        ->not->toContain('Товары в заказе', 'Комментарий к заказу');
+    expect((string) $mail->render())->toContain("Заказ №{$order->number} передан в СДЭК.", '1234567890')
+        ->not->toContain('Товары в заказе', 'Комментарий к заказу', 'Здравствуйте',
+            'Спасибо за заказ в GeoMiLife', $order->total->format());
+});
+
+it('понятно сообщает об изменении статуса без приветствия суммы и благодарности', function (string $event, string $message): void {
+    $order = notificationOrder(CheckoutFixtures::user());
+    $mail = (new OrderUpdateNotification($order, $event))->toMail(new AnonymousNotifiable);
+    $body = (string) $mail->render();
+
+    expect($body)->toContain($message)
+        ->not->toContain('Здравствуйте', 'Спасибо за заказ в GeoMiLife', $order->total->format());
+})->with([
+    'подтверждён' => ['CONFIRMED', 'Мы подтвердили заказ'],
+    'готов к выдаче' => ['READY_FOR_PICKUP', 'готов к выдаче'],
+    'готов к отправке' => ['READY_TO_SHIP', 'готовится к передаче в СДЭК'],
+    'доставлен' => ['DELIVERED', 'доставлен'],
+]);
+
+it('указывает номер и причину в письме об отмене', function (): void {
+    $order = notificationOrder();
+    $order->update(['cancellation_reason' => 'Товар закончился']);
+    $body = (string) (new OrderUpdateNotification($order, 'CANCELLED'))->toMail(new AnonymousNotifiable)->render();
+
+    expect($body)->toContain("Ваш заказ №{$order->number} был отменён.", 'Причина: Товар закончился')
+        ->not->toContain('Здравствуйте', 'Спасибо за заказ в GeoMiLife', $order->total->format());
+});
+
+it('кратко сообщает о подтверждённом банком возврате', function (): void {
+    $order = notificationOrder();
+    $body = (string) (new OrderUpdateNotification($order, 'REFUNDED'))->toMail(new AnonymousNotifiable)->render();
+
+    expect($body)->toContain("Возврат оплаты по заказу №{$order->number} подтверждён банком.")
+        ->not->toContain('Здравствуйте', 'Спасибо за заказ в GeoMiLife', $order->total->format());
 });
 
 it('ссылка из письма владельцу требует входа и проверяет владельца заказа', function (): void {

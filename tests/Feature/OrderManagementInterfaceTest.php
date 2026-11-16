@@ -8,6 +8,7 @@ use App\Enums\Cdek\CdekShipmentOperationStateEnum;
 use App\Enums\Filament\FilamentUserRoleEnum;
 use App\Enums\Orders\OrderStatusEnum;
 use App\Enums\Orders\PaymentMethodEnum;
+use App\Filament\Resources\Orders\OrderResource;
 use App\Filament\Resources\Orders\Pages\ListOrders;
 use App\Filament\Resources\Orders\Pages\ViewOrder;
 use App\Filament\Resources\Users\UserResource;
@@ -238,6 +239,11 @@ it('показывает этапы и подтверждает следующи
     $component->callMountedAction()->assertHasNoActionErrors();
     expect($order->fresh()->status)->toBe(OrderStatusEnum::CONFIRMED);
 })->with([FilamentUserRoleEnum::ADMIN, FilamentUserRoleEnum::MANAGER]);
+
+it('подключает версионированные стили панели для корректной цепочки этапов', function (): void {
+    $this->get(OrderResource::getUrl())->assertOk()
+        ->assertSee('assets/css/filament.css?v=', false);
+});
 
 it('объясняет ожидание онлайн-оплаты и запрещает изменение статуса', function (): void {
     $order = fulfillmentOrder(['payment_status' => 'PENDING']);

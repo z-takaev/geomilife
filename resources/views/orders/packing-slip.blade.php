@@ -52,6 +52,51 @@
             font-weight: bold;
         }
 
+        .totals {
+            margin: 16px 0;
+            border: 2px solid #222;
+            padding: 8px 12px;
+        }
+
+        .totals__row {
+            display: table;
+            width: 100%;
+            padding: 3px 0;
+        }
+
+        .totals__label,
+        .totals__value {
+            display: table-cell;
+        }
+
+        .totals__value {
+            text-align: right;
+        }
+
+        .totals__total {
+            border-top: 1px solid #999;
+            font-size: 13px;
+            font-weight: bold;
+            padding-top: 7px;
+            margin-top: 4px;
+        }
+
+        .package {
+            border: 1px solid #777;
+            padding: 10px;
+            margin-top: 12px;
+            page-break-inside: avoid;
+        }
+
+        .package h3 {
+            font-size: 12px;
+            margin: 0 0 5px;
+        }
+
+        .package table {
+            margin-bottom: 0;
+        }
+
         .details {
             white-space: pre-wrap;
         }
@@ -67,8 +112,7 @@
     <p>{{ __('Дата оформления') }}: {{ $order->created_at->format('d.m.Y H:i') }}</p>
     <p>{{ __('Получатель') }}: {{ $order->customer_name }} · {{ $order->customer_phone }}</p>
     <p>{{ __('Способ получения') }}: {{ $deliveryLabel }}</p>
-    <p>{{ __('Статус заказа') }}: {{ $order->status->getLabel() }} · {{ __('Оплата') }}:
-        {{ $order->payment_status->getLabel() }}</p>
+    <p>{{ __('Оплата') }}: {{ $order->payment_status->getLabel() }}</p>
     @if ($order->is_preorder)
         <p class="notice">{{ __('Предзаказ. Точные сроки согласовываются с менеджером.') }}</p>
     @endif
@@ -106,21 +150,53 @@
             @endforeach
         </tbody>
     </table>
-    <p>{{ __('Товары') }}: {{ $order->subtotal->format() }} · {{ __('Доставка') }}:
-        {{ $order->delivery_price->format() }} · {{ __('Итого') }}: {{ $order->total->format() }}</p>
+    <div class="totals">
+        <div class="totals__row">
+            <span class="totals__label">{{ __('Товары') }}</span>
+            <span class="totals__value">{{ $order->subtotal->format() }}</span>
+        </div>
+        <div class="totals__row">
+            <span class="totals__label">{{ __('Доставка') }}</span>
+            <span class="totals__value">{{ $order->delivery_price->format() }}</span>
+        </div>
+        <div class="totals__row totals__total">
+            <span class="totals__label">{{ __('Итого') }}</span>
+            <span class="totals__value">{{ $order->total->format() }}</span>
+        </div>
+    </div>
     @if ($order->comment)
         <p>{{ __('Комментарий покупателя') }}: {{ $order->comment }}</p>
     @endif
     @if ($packages)
         <h2>{{ __('Распределение по коробкам') }}</h2>
-        @foreach ($packages as $package)
-            <p><strong>{{ __('Место №:number', ['number' => $package['number']]) }}</strong> ·
-                {{ $package['box_name'] ?? __('Коробка') }} · {{ $package['length'] }} × {{ $package['width'] }} ×
-                {{ $package['height'] }} {{ __('мм') }} · {{ $package['weight'] }} {{ __('г') }}</p>
-            @foreach ($package['contents'] as $packedItem)
-                <p>{{ $packedItem['sku'] }} · {{ $packedItem['label'] }} · {{ $packedItem['quantity'] }}
-                    {{ __('шт.') }}</p>
-            @endforeach
+        @foreach ($packages as $packageIndex => $package)
+            <section class="package">
+                <h3>{{ __('Коробка :current из :total', ['current' => $packageIndex + 1, 'total' => count($packages)]) }}
+                </h3>
+                <p>{{ __('Место №:number', ['number' => $package['number']]) }} ·
+                    {{ $package['box_name'] ?? __('Коробка') }} · {{ $package['length'] }} × {{ $package['width'] }}
+                    ×
+                    {{ $package['height'] }} {{ __('мм') }} · {{ $package['weight'] }} {{ __('г') }}</p>
+                <strong>{{ __('Содержимое коробки') }}</strong>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>{{ __('Артикул') }}</th>
+                            <th>{{ __('Товар / фасовка') }}</th>
+                            <th>{{ __('Количество') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($package['contents'] as $packedItem)
+                            <tr>
+                                <td>{{ $packedItem['sku'] }}</td>
+                                <td>{{ $packedItem['label'] }}</td>
+                                <td>{{ $packedItem['quantity'] }} {{ __('шт.') }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </section>
         @endforeach
     @endif
     <p class="signatures">{{ __('Собрал') }}: ____________________ {{ __('Проверил') }}: ____________________</p>

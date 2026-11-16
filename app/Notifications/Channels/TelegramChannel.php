@@ -19,13 +19,22 @@ final class TelegramChannel
             throw new RuntimeException('Telegram не настроен для отправки уведомления.');
         }
 
+        $payload = [
+            'chat_id' => $chatId,
+            'text' => $notification->toTelegram($notifiable),
+            'link_preview_options' => ['is_disabled' => true],
+        ];
+        $action = method_exists($notification, 'telegramAction') ? $notification->telegramAction() : null;
+
+        if ($action !== null) {
+            $payload['reply_markup'] = [
+                'inline_keyboard' => [[$action]],
+            ];
+        }
+
         $response = Http::connectTimeout(5)
             ->timeout(15)
-            ->post('https://api.telegram.org/bot'.$token.'/sendMessage', [
-                'chat_id' => $chatId,
-                'text' => $notification->toTelegram($notifiable),
-                'link_preview_options' => ['is_disabled' => true],
-            ]);
+            ->post('https://api.telegram.org/bot'.$token.'/sendMessage', $payload);
 
         if (! $response->successful() || $response->json('ok') !== true) {
             throw new RuntimeException('Telegram не принял уведомление. Проверьте доступ бота к чату.');

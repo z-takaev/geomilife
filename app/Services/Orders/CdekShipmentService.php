@@ -252,7 +252,6 @@ final class CdekShipmentService
             packages: $packages, shipmentPoint: (string) config('orders.cdek.shipment_point'),
             deliveryPoint: $order->delivery_address['code'],
             sender: new CdekContactDto(name: (string) config('orders.cdek.sender_name'), phone: $phone, company: (string) config('orders.cdek.sender_company')),
-            comment: $order->comment,
         );
     }
 
@@ -306,7 +305,7 @@ final class CdekShipmentService
                 default => null,
             };
 
-            if ($status !== null) {
+            if ($status !== null && filled($shipment->cdek_number)) {
                 app(OrderLifecycleService::class)->updateStatusFromShipment($order, $status);
             }
 

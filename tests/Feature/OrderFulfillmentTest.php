@@ -81,7 +81,8 @@ it('отправляет тариф 136 внешние размеры с окр�
             && $request['packages'][0]['length'] === 26
             && $request['packages'][0]['width'] === 8
             && $request['packages'][0]['height'] === 7
-            && $request['packages'][0]['weight'] === 600;
+            && $request['packages'][0]['weight'] === 600
+            && ! isset($request['comment']);
     });
     expect($order->fresh()->shipment->uuid)->toBe($uuid)
         ->and(fulfillmentValue($order->fresh()->status))->toBe('READY_TO_SHIP');
@@ -184,6 +185,24 @@ it('не считает создание заявки и прибытие в п�
     'прибыл в ПВЗ' => ['READY_FOR_DELIVERY', 'SHIPPED'],
     'получен' => ['DELIVERED', 'DELIVERED'],
 ]);
+
+it('не переводит заказ в отправленные до получения трек-номера', function (): void {
+    $uuid = '11111111-1111-4111-8111-111111111111';
+    $order = fulfillmentOrder(['status' => 'READY_TO_SHIP']);
+    OrderShipment::query()->create(['order_id' => $order->id, 'uuid' => $uuid, 'request_state' => 'ACCEPTED']);
+    $response = fulfillmentCdekResponse($uuid, 'RECEIVED_AT_SHIPMENT_WAREHOUSE');
+    unset($response['entity']['cdek_number']);
+    Http::fake([
+        'cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600]),
+        'cdek.test/v2/orders/'.$uuid => Http::response($response),
+        'cdek.test/v2/print/*' => Http::response(['entity' => ['uuid' => '22222222-2222-4222-8222-222222222222']]),
+    ]);
+
+    app(CdekShipmentService::class)->sync($order);
+
+    expect(fulfillmentValue($order->fresh()->status))->toBe('READY_TO_SHIP')
+        ->and($order->fresh()->shipment->cdek_number)->toBeNull();
+});
 
 it('не изменяет отменённый заказ после запоздалого статуса перевозчика', function (): void {
     $uuid = '11111111-1111-4111-8111-111111111111';

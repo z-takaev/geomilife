@@ -7,6 +7,8 @@
     <x-seo />
     @stack('meta')
 
+    <link rel="preload" href="{{ asset('assets/fonts/Montserrat-VariableFont_wght.woff2') }}" as="font"
+        type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ asset('assets/fonts/fonts.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/icon/icomoon/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">

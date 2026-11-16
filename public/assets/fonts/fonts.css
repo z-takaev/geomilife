@@ -3,7 +3,7 @@
   font-style: normal;
   font-weight: 100 900;
   font-display: swap;
-  src: url("Montserrat-VariableFont_wght.ttf") format("truetype-variations");
+  src: url("Montserrat-VariableFont_wght.woff2") format("woff2");
 }
 
 @font-face {
@@ -11,5 +11,5 @@
   font-style: italic;
   font-weight: 100 900;
   font-display: swap;
-  src: url("Montserrat-Italic-VariableFont_wght.ttf") format("truetype-variations");
+  src: url("Montserrat-Italic-VariableFont_wght.woff2") format("woff2");
 }

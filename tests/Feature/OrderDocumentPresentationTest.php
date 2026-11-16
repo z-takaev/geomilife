@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Filament\Resources\Orders\Pages\ViewOrder;
+use App\ViewModel\Orders\PackingSlipViewModel;
 use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
@@ -64,4 +65,14 @@ it('показывает причины ошибок отправления и �
         ->assertSee('Причина ошибки')
         ->assertSee('Не удалось зарегистрировать отправление')
         ->assertSee('Не удалось сформировать квитанцию');
+});
+
+it('формирует понятную накладную для сборки без статуса заказа', function (): void {
+    $order = fulfillmentOrder();
+    fulfillmentOrderItem($order);
+    $html = view('orders.packing-slip', (new PackingSlipViewModel($order))->data())->render();
+
+    expect($html)->not->toContain('Статус заказа')
+        ->toContain('Товары', $order->subtotal->format(), 'Доставка', $order->delivery_price->format(),
+            'Итого', $order->total->format(), 'Коробка 1 из 1', 'Содержимое коробки');
 });

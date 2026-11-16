@@ -15,9 +15,6 @@
 @if (filled($item->variant_name))
 {{ $item->variant_name }}<br>
 @endif
-@if (filled($item->sku))
-{{ __('Артикул: :sku', ['sku' => $item->sku]) }}<br>
-@endif
 {{ __(':quantity × :price', ['quantity' => $item->quantity, 'price' => $item->price->format()]) }}<br>
 <strong>{{ __('Сумма: :total', ['total' => $item->total->format()]) }}</strong>
 </p>
@@ -30,8 +27,7 @@
 </x-mail::panel>
 
 <h2>{{ __('Оплата') }}</h2>
-<p>{{ __('Способ оплаты: :method', ['method' => $presentation['paymentLabel']]) }}<br>
-{{ __('Статус оплаты: :status', ['status' => $order->payment_status->getLabel()]) }}</p>
+<p>{{ __('Способ оплаты: :method', ['method' => $presentation['paymentLabel']]) }}</p>
 
 <h2>{{ __('Получение заказа') }}</h2>
 <p><strong>{{ $presentation['deliveryLabel'] }}</strong><br>{{ $presentation['addressLabel'] }}</p>
@@ -54,9 +50,6 @@
 <h2>{{ __('Комментарий к заказу') }}</h2>
 <p>{{ $order->comment }}</p>
 @endif
-
-<h2>{{ __('Что дальше') }}</h2>
-<p>{{ $presentation['nextStep'] }}</p>
 
 @if ($actionUrl)
 <x-mail::button :url="$actionUrl">{{ __('Открыть заказ') }}</x-mail::button>

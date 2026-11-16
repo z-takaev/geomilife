@@ -63,7 +63,10 @@ final class AdminPanelProvider extends PanelProvider
             ->darkModeBrandLogo(asset('assets/images/logo/logo-white.svg'))
             ->brandLogoHeight('2.5rem')
             ->assets([
-                Css::make('admin-styles', asset('assets/css/filament.css')),
+                Css::make(
+                    'admin-styles',
+                    preg_replace('/^https?:/', '', asset('assets/css/filament.css')).'?v='.filemtime(public_path('assets/css/filament.css')),
+                ),
             ])
             ->unsavedChangesAlerts()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')

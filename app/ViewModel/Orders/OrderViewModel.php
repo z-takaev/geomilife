@@ -198,13 +198,9 @@ final class OrderViewModel
             'createdAtLabel' => $order->created_at->timezone($timezone)->format($dateFormat),
             'deliveryHint' => match (true) {
                 $order->is_preorder => __('Точные сроки доставки согласовываются отдельно с менеджером'),
-                $order->delivery_method->isPickup() => __('Приходите после уведомления о готовности.'),
+                $order->delivery_method->isPickup() => __('Вы сможете забрать заказ по указанному адресу после уведомления о готовности.'),
                 $order->delivery_method->isCourier() => __('Время доставки согласует менеджер.'),
-                default => __('Трек-номер появится после подготовки отправления.'),
-            },
-            'nextStep' => match (true) {
-                $order->payment_method->isOnline() && ! $order->payment_status->isPaid() => self::processingHint($order),
-                default => __('Мы сообщим вам об изменении статуса заказа отдельным письмом.'),
+                default => __('Мы сообщим вам, когда заказ будет передан в СДЭК.'),
             },
         ];
     }

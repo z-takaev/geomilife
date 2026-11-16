@@ -48,7 +48,6 @@
                                 <article class="order-item">
                                     <div><strong class="order-item__name">{{ $item->product_name }}</strong>
                                         <p>{{ $item->variant_name }}</p>
-                                        <small>{{ __('Артикул: :sku', ['sku' => $item->sku]) }}</small>
                                     </div>
                                     <div class="order-item__price"><span>{{ $item->price->format() }}
                                             {{ __('за шт.') }}</span>
@@ -83,7 +82,7 @@
                         @endif
                         @if ($order->delivery_method->isPickup())
                             <p class="order-muted">
-                                {{ __('Приходите после уведомления о готовности.') }}
+                                {{ __('Вы сможете забрать заказ по указанному адресу после уведомления о готовности.') }}
                             </p>
                         @endif
                         @if ($order->delivery_method->isCourier())

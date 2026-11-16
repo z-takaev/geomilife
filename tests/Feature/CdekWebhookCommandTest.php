@@ -15,31 +15,51 @@ beforeEach(function (): void {
     Http::fake(['cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600])]);
 });
 
-it('регистрирует подписку СДЭК на адрес маршрута и не создаёт повторную', function (): void {
+it('регистрирует подписку СДЭК и перерегистрирует существующую', function (): void {
     $webhook = ['uuid' => 'f359a4b2-b37f-4939-94af-b7315cf47d18',
         'type' => 'ORDER_STATUS', 'url' => 'https://shop.test/webhooks/cdek'];
-    Http::fake(['cdek.test/v2/webhooks' => Http::sequence()
-        ->push([])->push(['entity' => ['uuid' => $webhook['uuid']]])->push([$webhook])]);
+    Http::fake(['cdek.test/v2/webhooks*' => Http::sequence()
+        ->push([])
+        ->push(['entity' => ['uuid' => $webhook['uuid']]])
+        ->push([$webhook])
+        ->push(['entity' => ['uuid' => $webhook['uuid']]])
+        ->push(['entity' => ['uuid' => $webhook['uuid']]])]);
 
     $this->artisan('cdek:webhook')->expectsOutputToContain('зарегистрирован')->assertSuccessful();
-    $this->artisan('cdek:webhook')->expectsOutputToContain('уже зарегистрирован')->assertSuccessful();
+    $this->artisan('cdek:webhook')->expectsOutputToContain('Удалён вебхук')->assertSuccessful();
 
     Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
         && $request->url() === 'https://cdek.test/v2/webhooks'
         && $request->data() === ['type' => 'ORDER_STATUS', 'url' => $webhook['url']]);
     expect(Http::recorded(fn (Request $request): bool => $request->method() === 'POST'
-        && $request->url() === 'https://cdek.test/v2/webhooks'))->toHaveCount(1);
+        && $request->url() === 'https://cdek.test/v2/webhooks'))->toHaveCount(2)
+        ->and(Http::recorded(fn (Request $request): bool => $request->method() === 'DELETE'
+            && $request->url() === 'https://cdek.test/v2/webhooks/'.$webhook['uuid']))->toHaveCount(1);
 });
 
 it('не считает подписку другого типа или адреса существующей регистрацией', function (string $type, string $url): void {
-    Http::fake(['cdek.test/v2/webhooks' => Http::sequence()
-        ->push([['uuid' => 'existing', 'type' => $type, 'url' => $url]])
-        ->push(['entity' => ['uuid' => 'created']])]);
+    $existingUuid = '11111111-1111-4111-8111-111111111111';
+    $createdUuid = '22222222-2222-4222-8222-222222222222';
+    $sequence = Http::sequence()->push([['uuid' => $existingUuid, 'type' => $type, 'url' => $url]]);
+
+    if ($type === 'ORDER_STATUS') {
+        $sequence->push(['entity' => ['uuid' => $existingUuid]]);
+    }
+
+    $sequence->push(['entity' => ['uuid' => $createdUuid]]);
+    Http::fake(['cdek.test/v2/webhooks*' => $sequence]);
 
     $this->artisan('cdek:webhook')->assertSuccessful();
 
     Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
         && $request->url() === 'https://cdek.test/v2/webhooks');
+
+    if ($type === 'ORDER_STATUS') {
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'DELETE'
+            && $request->url() === 'https://cdek.test/v2/webhooks/'.$existingUuid);
+    } else {
+        Http::assertNotSent(fn (Request $request): bool => $request->method() === 'DELETE');
+    }
 })->with([
     ['PRINT_FORM', 'https://shop.test/webhooks/cdek'],
     ['ORDER_STATUS', 'https://old-shop.test/webhooks/cdek'],

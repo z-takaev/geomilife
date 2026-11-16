@@ -276,7 +276,7 @@ it('задает ограничения текстовым полям и вло�
     }
     Livewire::test(CreateFaq::class)
         ->assertFormFieldExists('answer', fn ($field): bool => $field instanceof Textarea
-            && $field->getMaxLength() === 9999);
+            && $field->getMaxLength() === 1000);
     Livewire::test(CreateReview::class)
         ->assertFormFieldExists('text', fn ($field): bool => $field->getMaxLength() === 5000);
     Livewire::test(CreateProduct::class)
