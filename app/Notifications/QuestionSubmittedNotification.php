@@ -23,6 +23,7 @@ final class QuestionSubmittedNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
+            ->salutation(' ')
             ->subject(__('Новый вопрос с сайта'))
             ->greeting(__('Новый вопрос с сайта'))
             ->line(__('Имя: :name', ['name' => $this->name]))
