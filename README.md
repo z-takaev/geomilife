@@ -3,12 +3,8 @@
 - PHP 8.5 в среде Laravel Sail.
 - Laravel 13.34.0.
 - Livewire 4.4.7.
-- Alpine.js 3.17.4.
 - Filament 5.9.0.
 - MySQL 8.4.
-- Redis.
-- `spatie/laravel-medialibrary` 11.23.9 для работы с медиафайлами.
-- Mailpit для локальной проверки писем.
 
 ## Локальное развёртывание
 
@@ -80,3 +76,49 @@ sail artisan project:refresh
 ```bash
 sail artisan project:refresh --factories
 ```
+
+Для запуска без подтверждения удаления данных передайте опцию `--force`:
+
+```bash
+sail artisan project:refresh --force
+```
+
+### Синхронизация городов СДЭК
+
+```bash
+sail artisan cdek:sync-cities
+```
+
+Команда синхронизирует доступные города доставки с актуальным справочником СДЭК.
+
+### Регистрация вебхука СДЭК
+
+```bash
+sail artisan cdek:webhook
+```
+
+Команда удаляет ранее зарегистрированный вебхук статусов заказов и регистрирует новый. Для работы в `APP_URL` должен быть указан публичный HTTPS-адрес сайта.
+
+### Получение сообщений Telegram локально
+
+```bash
+sail artisan telegram:poll
+```
+
+Команда запускает получение сообщений Telegram-бота через long polling. Она доступна только в локальном окружении и требует настройки `TELEGRAM_BOT_TOKEN`.
+
+### Регистрация вебхука Telegram
+
+```bash
+sail artisan telegram:webhook
+```
+
+Команда регистрирует вебхук Telegram-бота. Для работы необходимо настроить `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET` и публичный HTTPS-адрес сайта в `APP_URL`.
+
+### Сверка заказов
+
+```bash
+sail artisan orders:reconcile
+```
+
+Команда сверяет платежи, отмены, возвраты и отправления заказов. В штатном режиме она запускается планировщиком каждую минуту.
