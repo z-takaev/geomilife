@@ -24,6 +24,7 @@ use App\Models\Review;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -274,8 +275,8 @@ it('задает ограничения текстовым полям и вло�
                 && $field->getFileAttachmentsMaxSize() === 5120);
     }
     Livewire::test(CreateFaq::class)
-        ->assertFormFieldExists('answer', fn ($field): bool => $field->getMaxLength() === 9999
-            && $field->getFileAttachmentsMaxSize() === 5120);
+        ->assertFormFieldExists('answer', fn ($field): bool => $field instanceof Textarea
+            && $field->getMaxLength() === 9999);
     Livewire::test(CreateReview::class)
         ->assertFormFieldExists('text', fn ($field): bool => $field->getMaxLength() === 5000);
     Livewire::test(CreateProduct::class)

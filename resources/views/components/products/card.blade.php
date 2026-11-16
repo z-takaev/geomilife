@@ -41,7 +41,7 @@
 
         <div class="card-product_info home-product-card__info">
             <a href="{{ $productViewModel->productUrl }}" x-bind:href="selectedProductUrl"
-                class="name-product home-product-card__name link-underline text-primary">
+                class="name-product home-product-card__name link-underline text-primary text-line-clamp-2">
                 {{ $product->name }}
             </a>
 

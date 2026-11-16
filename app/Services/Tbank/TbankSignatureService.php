@@ -7,6 +7,7 @@ namespace App\Services\Tbank;
 use App\Services\Tbank\Exceptions\TbankApiException;
 use InvalidArgumentException;
 
+// TODO: Убрать этот сервис
 final class TbankSignatureService
 {
     /**

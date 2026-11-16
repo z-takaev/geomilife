@@ -31,6 +31,13 @@ it('не позволяет вводить количество товара в�
         ->not->toContain('x-on:change');
 });
 
+it('ограничивает заголовки карточек новостей и статей двумя строками', function (): void {
+    expect(Blade::render('<x-news.card date="15 ноября" description="Описание" image="/news.jpg" title="Новость" />'))
+        ->toContain('entry_title h5 text-line-clamp-2')
+        ->and(Blade::render('<x-articles.card image="/article.jpg" title="Статья" />'))
+        ->toContain('article-list-title h5 text-line-clamp-2');
+});
+
 it('показывает в копирайте текущий год', function (): void {
     $this->travelTo(now()->setDate(2031, 4, 5));
 

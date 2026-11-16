@@ -61,6 +61,7 @@ final class AppServiceProvider extends ServiceProvider
         TextInput::configureUsing(static function (TextInput $component): void {
             $component->trim(static fn (TextInput $component): bool => ! $component->isPassword());
         });
+
         Textarea::configureUsing(static function (Textarea $component): void {
             $component->trim();
         });

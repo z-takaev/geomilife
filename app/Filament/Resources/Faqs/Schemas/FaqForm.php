@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Faqs\Schemas;
 
-use App\Support\Media\ImageMimeTypes;
-use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
@@ -21,14 +20,10 @@ final class FaqForm
                     ->maxLength(200)
                     ->required()
                     ->columnSpanFull(),
-                RichEditor::make('answer')
+                Textarea::make('answer')
                     ->label('Ответ')
                     ->required()
-                    ->maxLength(9999)
-                    ->fileAttachmentsAcceptedFileTypes(ImageMimeTypes::ALLOWED)
-                    ->fileAttachmentsMaxSize(5120)
-                    ->preventFileAttachmentPathTampering()
-                    ->resizableImages()
+                    ->maxLength(1000)
                     ->columnSpanFull(),
                 Toggle::make('is_active')
                     ->label('Активен')

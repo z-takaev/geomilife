@@ -10,11 +10,11 @@
                 <p class="date cl-text-2">{{ $date }}</p>
             </div>
             <h5 class="entry_title">
-                <a href="{{ $url }}" class="font-sora">
+                <a href="{{ $url }}" class="font-sora text-line-clamp-2">
                     {{ $title }}
                 </a>
             </h5>
-            <p class="home-offer-description">{{ $description }}</p>
+            <p class="home-offer-description text-line-clamp-3">{{ $description }}</p>
             <a href="{{ $url }}" class="home-offer-link">
                 {{ __('Смотреть') }}
                 <i class="icon icon-arrow-right" aria-hidden="true"></i>

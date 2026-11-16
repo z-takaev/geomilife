@@ -10,10 +10,10 @@
                 <time class="date cl-text-2">{{ $date }}</time>
             </div>
             <h2 class="entry_title h5">
-                <a href="{{ $url }}" class="text-primary font-sora">{{ $title }}</a>
+                <a href="{{ $url }}" class="text-primary font-sora text-line-clamp-2">{{ $title }}</a>
             </h2>
         </div>
-        <p class="entry_desc">{{ $description }}</p>
+        <p class="entry_desc text-line-clamp-3">{{ $description }}</p>
         <a href="{{ $url }}" class="tf-btn-line">{{ __('Смотреть') }}</a>
     </div>
 </article>
