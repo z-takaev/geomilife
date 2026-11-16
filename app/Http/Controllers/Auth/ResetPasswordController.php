@@ -19,7 +19,7 @@ final class ResetPasswordController extends Controller
 {
     public function showResetForm(Request $request, string $token): View
     {
-        seo()->title(__('Новый пароль'));
+        seo()->defaultTitle(__('Новый пароль'));
 
         return view('auth.reset-password', [
             'email' => $request->string('email')->toString(),

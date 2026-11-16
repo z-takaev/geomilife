@@ -57,6 +57,7 @@ final class CatalogController extends Controller
         seo()->forModel(
             seoable: $category,
             fallbackTitle: $category->name,
+            sectionTitle: __('Каталог'),
         )
             ->canonicalForPagination()
             ->image($category->getFirstMediaUrl('image'))

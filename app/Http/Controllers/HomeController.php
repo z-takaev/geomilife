@@ -25,6 +25,7 @@ final class HomeController extends Controller
         seo()->forRoute(
             routeName: 'home',
             fallbackTitle: config('app.name'),
+            appendSuffix: false,
         )
             ->schema(OrganizationSchema::make(settings()))
             ->schema(WebSiteSchema::make());

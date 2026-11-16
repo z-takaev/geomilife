@@ -18,7 +18,7 @@ final class EmailVerificationController extends Controller
             return redirect()->route('profile.show');
         }
 
-        seo()->title(__('Подтверждение email адреса'));
+        seo()->defaultTitle(__('Подтверждение email адреса'));
 
         return view('auth.verify-email');
     }

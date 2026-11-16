@@ -47,6 +47,7 @@ final class ArticleController extends Controller
         seo()->forModel(
             seoable: $article,
             fallbackTitle: $article->title,
+            sectionTitle: __('Статьи'),
         )
             ->image($article->getFirstMediaUrl('image'))
             ->type('article')

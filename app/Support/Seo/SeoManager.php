@@ -31,20 +31,34 @@ final class SeoManager
         $this->reset();
     }
 
-    public function forModel(Seoable $seoable, string $fallbackTitle): self
+    public function forModel(Seoable $seoable, string $fallbackTitle, ?string $sectionTitle = null): self
     {
         return $this->resolve(
             seo: $seoable->seo()->first(),
             fallbackTitle: $fallbackTitle,
+            sectionTitle: $sectionTitle,
         );
     }
 
-    public function forRoute(string $routeName, string $fallbackTitle): self
-    {
+    public function forRoute(
+        string $routeName,
+        string $fallbackTitle,
+        ?string $sectionTitle = null,
+        bool $appendSuffix = true,
+    ): self {
         return $this->resolve(
             seo: Seo::cached()->get($routeName),
             fallbackTitle: $fallbackTitle,
+            sectionTitle: $sectionTitle,
+            appendSuffix: $appendSuffix,
         );
+    }
+
+    public function defaultTitle(string $title, ?string $sectionTitle = null): self
+    {
+        $this->title = $this->buildDefaultTitle($title, $sectionTitle);
+
+        return $this;
     }
 
     public function title(string $title): self
@@ -147,27 +161,40 @@ final class SeoManager
         );
     }
 
-    private function resolve(?Seo $seo, string $fallbackTitle): self
-    {
+    private function resolve(
+        ?Seo $seo,
+        string $fallbackTitle,
+        ?string $sectionTitle = null,
+        bool $appendSuffix = true,
+    ): self {
         $this->reset();
 
         $this->title = $this->filledValue($seo?->title)
-            ?? $this->filledValue($fallbackTitle)
+            ?? ($appendSuffix
+                ? $this->buildDefaultTitle($fallbackTitle, $sectionTitle)
+                : $this->filledValue($fallbackTitle))
             ?? $this->title;
-        $this->description = $this->filledValue($seo?->description)
-            ?? $this->description;
+        $this->description = $this->filledValue($seo?->description);
 
         return $this;
     }
 
     private function reset(): void
     {
-        $this->title = $this->filledValue(config('seo.title')) ?? 'GeoMiLife';
-        $this->description = $this->filledValue(config('seo.description'));
+        $this->title = $this->filledValue(config('app.name')) ?? 'GeoMiLife';
+        $this->description = null;
         $this->image = $this->normalizeUrl(config('seo.image'));
         $this->type = 'website';
         $this->canonicalUrl = null;
         $this->schemas = [];
+    }
+
+    private function buildDefaultTitle(string $title, ?string $sectionTitle = null): string
+    {
+        return collect([$title, $sectionTitle, config('seo.title')])
+            ->map(fn (mixed $part): ?string => $this->filledValue($part))
+            ->filter()
+            ->implode(' - ');
     }
 
     private function filledValue(mixed $value): ?string

@@ -47,6 +47,7 @@ final class NewsController extends Controller
         seo()->forModel(
             seoable: $news,
             fallbackTitle: $news->title,
+            sectionTitle: __('Новости'),
         )
             ->image($news->getFirstMediaUrl('image'))
             ->type('article')

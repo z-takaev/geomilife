@@ -56,6 +56,7 @@ final class OrderController extends Controller
         seo()->forRoute(
             routeName: 'orders.show',
             fallbackTitle: __('Заказ №:number', ['number' => $order->number]),
+            sectionTitle: __('Мои заказы'),
         )->schema(BreadcrumbSchema::make($breadcrumbs));
 
         $presentation = OrderViewModel::data($order);

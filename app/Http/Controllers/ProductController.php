@@ -36,6 +36,7 @@ final class ProductController extends Controller
         seo()->forModel(
             seoable: $product,
             fallbackTitle: $product->name,
+            sectionTitle: $product->category->name,
         )
             ->image($product->getFirstMediaUrl('image'))
             ->type('product')

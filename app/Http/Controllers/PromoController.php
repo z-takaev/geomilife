@@ -46,6 +46,7 @@ final class PromoController extends Controller
         seo()->forModel(
             seoable: $promo,
             fallbackTitle: $promo->title,
+            sectionTitle: __('Акции'),
         )
             ->image($promo->getFirstMediaUrl('image'))
             ->type('article')
