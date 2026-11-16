@@ -251,20 +251,41 @@
                                     <h5>{{ __('Пункт получения СДЭК') }}</h5>
                                 </div>
                                 @if ($savedPoints->isNotEmpty())
-                                    <div class="checkout-saved-options">
-                                        <strong>{{ __('Ваши пункты получения') }}</strong>
-                                        @foreach ($savedPoints as $point)
-                                            <button type="button"
-                                                class="checkout-saved-option {{ $saved_delivery_point_id === $point->id ? 'is-selected' : '' }}"
-                                                wire:click="selectSavedDeliveryPoint({{ $point->id }})"
-                                                aria-pressed="{{ $saved_delivery_point_id === $point->id ? 'true' : 'false' }}"><i
-                                                    class="icon icon-MapPin"
-                                                    aria-hidden="true"></i><span><strong>{{ $point->code }}</strong><small>{{ $point->address }}</small></span></button>
-                                        @endforeach
-                                        <button type="button"
-                                            class="checkout-saved-option checkout-saved-option--new"
-                                            wire:click="chooseAnotherDeliveryPoint"><i class="icon icon-MapPin"
-                                                aria-hidden="true"></i><span><strong>{{ __('Другой пункт выдачи') }}</strong><small>{{ __('Выбрать город и пункт выдачи') }}</small></span></button>
+                                    <div class="checkout-saved-points" x-data="{ scroll(direction) { this.$refs.points.scrollBy({ left: direction * this.$refs.points.clientWidth, behavior: 'smooth' }) } }">
+                                        <div class="checkout-saved-points__heading">
+                                            <strong>{{ __('Ваши пункты получения') }}</strong>
+                                            <button type="button" class="order-text-button"
+                                                wire:click="chooseAnotherDeliveryPoint">{{ __('Выбрать другой') }}</button>
+                                        </div>
+                                        <div @class([
+                                            'checkout-saved-points__slider',
+                                            'checkout-saved-points__slider--with-controls' => $savedPoints->count() > 2,
+                                        ])>
+                                            @if ($savedPoints->count() > 2)
+                                                <button type="button"
+                                                    class="checkout-saved-points__control checkout-saved-points__control--previous"
+                                                    x-on:click="scroll(-1)"
+                                                    aria-label="{{ __('Предыдущие пункты выдачи') }}">
+                                                    <i class="icon icon-caret-left" aria-hidden="true"></i>
+                                                </button>
+                                            @endif
+                                            <div class="checkout-saved-points__track" x-ref="points">
+                                                @foreach ($savedPoints as $point)
+                                                    <button type="button"
+                                                        class="checkout-saved-option {{ $saved_delivery_point_id === $point->id ? 'is-selected' : '' }}"
+                                                        wire:click="selectSavedDeliveryPoint({{ $point->id }})"
+                                                        aria-pressed="{{ $saved_delivery_point_id === $point->id ? 'true' : 'false' }}"><span><strong>{{ $point->code }}</strong><small>{{ $point->address }}</small></span></button>
+                                                @endforeach
+                                            </div>
+                                            @if ($savedPoints->count() > 2)
+                                                <button type="button"
+                                                    class="checkout-saved-points__control checkout-saved-points__control--next"
+                                                    x-on:click="scroll(1)"
+                                                    aria-label="{{ __('Следующие пункты выдачи') }}">
+                                                    <i class="icon icon-caret-right" aria-hidden="true"></i>
+                                                </button>
+                                            @endif
+                                        </div>
                                     </div>
                                 @endif
                                 @if (!$selectedDeliveryPoint)

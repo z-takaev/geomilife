@@ -488,6 +488,7 @@ final class Checkout extends Component
         return $this->cachedSavedDeliveryPoints ??= auth()->user()?->savedDeliveryPoints()
             ->with('city')
             ->orderByDesc('is_default')
+            ->orderByDesc('last_used_at')
             ->get() ?? new EloquentCollection;
     }
 }

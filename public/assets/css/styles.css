@@ -16768,6 +16768,90 @@ body.story-video-open {
     background: var(--surface);
 }
 
+.checkout-saved-points {
+    display: grid;
+    min-width: 0;
+    gap: 12px;
+}
+
+.checkout-saved-points__heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.checkout-saved-points__slider {
+    position: relative;
+    min-width: 0;
+}
+
+.checkout-saved-points__slider--with-controls {
+    padding-inline: 22px;
+}
+
+.checkout-saved-points__track {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 2px;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    overscroll-behavior-inline: contain;
+}
+
+.checkout-saved-points__track::-webkit-scrollbar {
+    display: none;
+}
+
+.checkout-saved-points__track .checkout-saved-option {
+    flex: 0 0 min(300px, calc((100% - 10px) / 2));
+    min-width: 0;
+    min-height: 84px;
+    scroll-snap-align: start;
+}
+
+.checkout-saved-points__track .checkout-saved-option small {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.checkout-saved-points__control {
+    position: absolute;
+    z-index: 2;
+    top: 50%;
+    display: inline-flex;
+    width: 34px;
+    height: 34px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transform: translateY(-50%);
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--white);
+    color: var(--text-black);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
+    cursor: pointer;
+}
+
+.checkout-saved-points__control--previous {
+    left: 0;
+}
+
+.checkout-saved-points__control--next {
+    right: 0;
+}
+
+.checkout-saved-points__control:hover,
+.checkout-saved-points__control:focus-visible {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
 .checkout-door-option {
     display: flex;
     align-items: center;
@@ -17221,4 +17305,24 @@ body.story-video-open {
 .checkout-saved-option--new {
     border-style: dashed;
     background: var(--surface);
+}
+
+@media (max-width: 575px) {
+    .checkout-saved-points__heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .checkout-saved-points__track .checkout-saved-option {
+        flex-basis: calc(100% - 36px);
+    }
+
+    .checkout-saved-points__slider--with-controls {
+        padding-inline: 0;
+    }
+
+    .checkout-saved-points__control {
+        display: none;
+    }
 }
