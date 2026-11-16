@@ -6,6 +6,7 @@ namespace App\Services\Cdek;
 
 use App\DTO\Cdek\CdekCalculateTariffResponseDto;
 use App\DTO\Cdek\CdekCityResponseDto;
+use App\DTO\Cdek\CdekDeliveryPointCityCodesPageDto;
 use App\DTO\Cdek\CdekDeliveryPointResponseDto;
 use App\DTO\Cdek\CdekOperationResponseDto;
 use App\DTO\Cdek\CdekOrderResponseDto;
@@ -69,6 +70,37 @@ final class CdekResponseMapper
                 dimensions: $dimensions,
             );
         }, $this->records($data));
+    }
+
+    /** @param array<mixed> $data */
+    public function deliveryPointCityCodes(array $data): CdekDeliveryPointCityCodesPageDto
+    {
+        $points = $this->records($data);
+        $cityCodes = [];
+
+        foreach ($points as $point) {
+            $type = $this->string($point, 'type');
+            $status = $this->string($point, 'status');
+            $isHandout = $this->boolean($point, 'is_handout');
+
+            if ($type !== 'PVZ' || ! in_array($status, ['ACTIVE', 'CLOSED'], true)) {
+                throw CdekApiException::invalidResponse();
+            }
+
+            if ($status !== 'ACTIVE' || ! $isHandout) {
+                continue;
+            }
+
+            $cityCode = $this->integer($this->object($point, 'location'), 'city_code');
+
+            if ($cityCode < 1) {
+                throw CdekApiException::invalidResponse();
+            }
+
+            $cityCodes[] = $cityCode;
+        }
+
+        return new CdekDeliveryPointCityCodesPageDto($cityCodes, count($points));
     }
 
     /** @param array<mixed> $data */
@@ -340,6 +372,18 @@ final class CdekResponseMapper
         $value = $data[$key] ?? null;
 
         if (! is_int($value)) {
+            throw CdekApiException::invalidResponse();
+        }
+
+        return $value;
+    }
+
+    /** @param array<mixed> $data */
+    private function boolean(array $data, string $key): bool
+    {
+        $value = $data[$key] ?? null;
+
+        if (! is_bool($value)) {
             throw CdekApiException::invalidResponse();
         }
 

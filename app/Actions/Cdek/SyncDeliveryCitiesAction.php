@@ -7,6 +7,9 @@ namespace App\Actions\Cdek;
 use App\DTO\Cdek\CdekCityResponseDto;
 use App\Models\City;
 use App\Services\Cdek\CdekService;
+use App\Services\Cdek\Exceptions\CdekApiException;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 final class SyncDeliveryCitiesAction
 {
@@ -18,35 +21,102 @@ final class SyncDeliveryCitiesAction
 
     public function run(): int
     {
-        $page = 0;
-        $synchronizedCitiesCount = 0;
-
         try {
-            do {
-                $cities = $this->cdekService->getCities($page, self::PAGE_SIZE);
+            $deliveryPointCityCodes = $this->deliveryPointCityCodes();
 
-                $records = array_map(
-                    fn (CdekCityResponseDto $city): array => $this->toRecord($city),
-                    $cities,
-                );
+            if ($deliveryPointCityCodes === []) {
+                throw CdekApiException::invalidResponse();
+            }
 
-                if ($records !== []) {
-                    City::query()->upsert(
-                        $records,
-                        ['cdek_code'],
-                        ['name', 'region', 'sub_region', 'updated_at'],
-                    );
-                }
+            $records = $this->cityRecords($deliveryPointCityCodes);
 
-                $citiesCount = count($cities);
-                $synchronizedCitiesCount += $citiesCount;
-                $page++;
-            } while ($citiesCount === self::PAGE_SIZE);
+            if ($records === []) {
+                throw CdekApiException::invalidResponse();
+            }
+
+            DB::transaction(fn () => $this->synchronize($records));
         } finally {
             City::forgetCache();
         }
 
-        return $synchronizedCitiesCount;
+        return count($records);
+    }
+
+    /** @return list<int> */
+    private function deliveryPointCityCodes(): array
+    {
+        $cityCodes = [];
+        $page = 0;
+
+        do {
+            $deliveryPoints = $this->cdekService->getDeliveryPointCityCodes($page, self::PAGE_SIZE);
+
+            foreach ($deliveryPoints->cityCodes as $cityCode) {
+                $cityCodes[$cityCode] = $cityCode;
+            }
+
+            $page++;
+        } while ($deliveryPoints->itemsCount === self::PAGE_SIZE);
+
+        return array_values($cityCodes);
+    }
+
+    /**
+     * @param  list<int>  $deliveryPointCityCodes
+     * @return list<array<string, mixed>>
+     */
+    private function cityRecords(array $deliveryPointCityCodes): array
+    {
+        $availableCityCodes = array_fill_keys($deliveryPointCityCodes, true);
+        $records = [];
+        $page = 0;
+
+        do {
+            $cities = $this->cdekService->getCities($page, self::PAGE_SIZE);
+
+            foreach ($cities as $city) {
+                if (isset($availableCityCodes[$city->code])) {
+                    $records[$city->code] = $this->toRecord($city);
+                }
+            }
+
+            $citiesCount = count($cities);
+            $page++;
+        } while ($citiesCount === self::PAGE_SIZE);
+
+        return array_values($records);
+    }
+
+    /** @param list<array<string, mixed>> $records */
+    private function synchronize(array $records): void
+    {
+        City::query()->upsert(
+            $records,
+            ['cdek_code'],
+            ['name', 'region', 'sub_region', 'is_active', 'updated_at'],
+        );
+
+        $actualCityCodes = array_column($records, 'cdek_code');
+        $staleCityCodes = City::query()->whereNotIn('cdek_code', $actualCityCodes)->pluck('cdek_code');
+
+        $staleCityCodes->chunk(500)->each(static function ($cityCodes): void {
+            $referencedCityCodes = City::query()
+                ->whereIn('cdek_code', $cityCodes)
+                ->where(static fn (Builder $query): Builder => $query
+                    ->whereHas('users')
+                    ->orWhereHas('addresses')
+                    ->orWhereHas('orders')
+                    ->orWhereHas('savedDeliveryPoints'))
+                ->pluck('cdek_code');
+
+            City::query()
+                ->whereIn('cdek_code', $referencedCityCodes)
+                ->update(['is_active' => false]);
+
+            City::query()
+                ->whereIn('cdek_code', $cityCodes->diff($referencedCityCodes))
+                ->delete();
+        });
     }
 
     /**

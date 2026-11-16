@@ -13,6 +13,13 @@ final class SyncDeliveryCitiesJob implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
 
+    public int $timeout = 240;
+
+    public function __construct()
+    {
+        $this->onConnection('cdek');
+    }
+
     public function handle(SyncDeliveryCitiesAction $syncDeliveryCities): void
     {
         $syncDeliveryCities->run();

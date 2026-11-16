@@ -5,7 +5,9 @@ declare(strict_types=1);
 use App\Actions\Cdek\SyncDeliveryCitiesAction;
 use App\DTO\Cdek\CdekCityResponseDto;
 use App\DTO\Cdek\CdekGetDeliveryPointsRequestDto;
+use App\Models\Address;
 use App\Models\City;
+use App\Models\User;
 use App\Services\Cdek\CdekResponseMapper;
 use App\Services\Cdek\CdekService;
 use App\Services\Cdek\Exceptions\CdekApiException;
@@ -19,6 +21,16 @@ beforeEach(function (): void {
         'services.cdek.client_secret' => 'test-secret', 'services.cdek.connect_timeout' => 5, 'services.cdek.timeout' => 10]);
     Http::preventStrayRequests();
 });
+
+function cdekDeliveryPoint(int $cityCode, string $status = 'ACTIVE', bool $isHandout = true): array
+{
+    return [
+        'type' => 'PVZ',
+        'status' => $status,
+        'is_handout' => $isHandout,
+        'location' => ['city_code' => $cityCode],
+    ];
+}
 
 it('получает OAuth токен и повторно использует его для запросов городов', function (): void {
     Http::fake([
@@ -105,12 +117,13 @@ it('обновляет справочник без дублей и сохран�
         'is_pickup_available' => true, 'courier_delivery_price' => Money::fromRubles(500)]);
     Http::fake([
         'cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600]),
+        'cdek.test/v2/deliverypoints*' => Http::response([cdekDeliveryPoint(44), cdekDeliveryPoint(137)]),
         'cdek.test/v2/location/cities*' => Http::response([['code' => 44, 'city' => 'Москва', 'region' => 'Москва'], ['code' => 137, 'city' => 'Санкт-Петербург']]),
     ]);
     expect(app(SyncDeliveryCitiesAction::class)->run())->toBe(2);
     expect(app(SyncDeliveryCitiesAction::class)->run())->toBe(2);
     $this->assertDatabaseCount('cities', 2);
-    expect($city->fresh()->name)->toBe('Москва')->and($city->fresh()->is_active)->toBeFalse()
+    expect($city->fresh()->name)->toBe('Москва')->and($city->fresh()->is_active)->toBeTrue()
         ->and($city->fresh()->is_pickup_available)->toBeTrue()
         ->and($city->fresh()->courier_delivery_price->toRubles())->toBe('500.00');
 });
@@ -126,6 +139,7 @@ it('сбрасывает кеш городов после синхронизац
     City::cachedById($city->id);
     Http::fake([
         'cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600]),
+        'cdek.test/v2/deliverypoints*' => Http::response([cdekDeliveryPoint(44)]),
         'cdek.test/v2/location/cities*' => Http::response([['code' => 44, 'city' => 'Новое имя']]),
     ]);
 
@@ -137,8 +151,10 @@ it('сбрасывает кеш городов после синхронизац
 
 it('загружает следующую страницу после полной страницы справочника', function (): void {
     $cities = array_map(fn (int $code): array => ['code' => $code, 'city' => 'Город '.$code], range(1, 1000));
+    $deliveryPoints = array_map(fn (int $code): array => cdekDeliveryPoint($code), range(1, 1000));
     Http::fake([
         'cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600]),
+        'cdek.test/v2/deliverypoints*' => Http::sequence()->push($deliveryPoints)->push([cdekDeliveryPoint(1001)]),
         'cdek.test/v2/location/cities*' => Http::sequence()->push($cities)->push([['code' => 1001, 'city' => 'Последний']]),
     ]);
     expect(app(SyncDeliveryCitiesAction::class)->run())->toBe(1001);
@@ -149,10 +165,103 @@ it('загружает следующую страницу после полно
 it('не записывает частично страницу с поврежденным городом', function (): void {
     Http::fake([
         'cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600]),
+        'cdek.test/v2/deliverypoints*' => Http::response([cdekDeliveryPoint(44)]),
         'cdek.test/v2/location/cities*' => Http::response([['code' => 44, 'city' => 'Москва'], ['code' => 'invalid', 'city' => 'Ошибка']]),
     ]);
     expect(fn () => app(SyncDeliveryCitiesAction::class)->run())->toThrow(CdekApiException::class);
     $this->assertDatabaseCount('cities', 0);
+});
+
+it('получает коды городов только из активных пунктов выдачи', function (): void {
+    Http::fake([
+        'cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600]),
+        'cdek.test/v2/deliverypoints*' => Http::response([
+            cdekDeliveryPoint(44),
+            cdekDeliveryPoint(44),
+            cdekDeliveryPoint(137, 'CLOSED'),
+            cdekDeliveryPoint(146, isHandout: false),
+        ]),
+    ]);
+
+    $page = app(CdekService::class)->getDeliveryPointCityCodes();
+
+    expect($page->cityCodes)->toBe([44, 44])
+        ->and($page->itemsCount)->toBe(4);
+    Http::assertSent(fn (Request $request): bool => str_contains($request->url(), '/deliverypoints')
+        && $request['country_code'] === 'RU'
+        && $request['type'] === 'PVZ'
+        && $request['is_handout'] === true
+        && $request['page'] === 0
+        && $request['size'] === 1000);
+});
+
+it('сохраняет только города с активными пунктами выдачи', function (): void {
+    Http::fake([
+        'cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600]),
+        'cdek.test/v2/deliverypoints*' => Http::response([cdekDeliveryPoint(44), cdekDeliveryPoint(44), cdekDeliveryPoint(137, 'CLOSED')]),
+        'cdek.test/v2/location/cities*' => Http::response([
+            ['code' => 44, 'city' => 'Москва'],
+            ['code' => 137, 'city' => 'Санкт-Петербург'],
+        ]),
+    ]);
+
+    expect(app(SyncDeliveryCitiesAction::class)->run())->toBe(1);
+
+    $this->assertDatabaseHas('cities', ['cdek_code' => 44, 'is_active' => true]);
+    $this->assertDatabaseMissing('cities', ['cdek_code' => 137]);
+});
+
+it('удаляет несвязанные города без ПВЗ и отключает связанные', function (): void {
+    $actualCity = City::query()->create(['cdek_code' => 44, 'name' => 'Москва', 'is_active' => false]);
+    $staleCity = City::query()->create(['cdek_code' => 137, 'name' => 'Санкт-Петербург', 'is_active' => true]);
+    $referencedCity = City::query()->create(['cdek_code' => 146, 'name' => 'Тула', 'is_active' => true]);
+    $userCity = City::query()->create(['cdek_code' => 147, 'name' => 'Калуга', 'is_active' => true]);
+    $user = User::query()->create([
+        'city_id' => $userCity->id,
+        'first_name' => 'Иван',
+        'email' => 'ivan@example.com',
+        'password' => 'password',
+    ]);
+    Address::query()->create(['user_id' => $user->id, 'city_id' => $referencedCity->id]);
+    Http::fake([
+        'cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600]),
+        'cdek.test/v2/deliverypoints*' => Http::response([cdekDeliveryPoint(44)]),
+        'cdek.test/v2/location/cities*' => Http::response([['code' => 44, 'city' => 'Москва']]),
+    ]);
+
+    app(SyncDeliveryCitiesAction::class)->run();
+
+    expect($actualCity->fresh()->is_active)->toBeTrue()
+        ->and($staleCity->fresh())->toBeNull()
+        ->and($referencedCity->fresh()->is_active)->toBeFalse()
+        ->and($userCity->fresh()->is_active)->toBeFalse();
+});
+
+it('не изменяет города если список пунктов выдачи пуст', function (): void {
+    $city = City::query()->create(['cdek_code' => 44, 'name' => 'Москва', 'is_active' => true]);
+    Http::fake([
+        'cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600]),
+        'cdek.test/v2/deliverypoints*' => Http::response([]),
+    ]);
+
+    expect(fn () => app(SyncDeliveryCitiesAction::class)->run())->toThrow(CdekApiException::class);
+
+    expect($city->fresh()->is_active)->toBeTrue();
+});
+
+it('не изменяет города если не удалось загрузить все страницы пунктов выдачи', function (): void {
+    $city = City::query()->create(['cdek_code' => 44, 'name' => 'Москва', 'is_active' => true]);
+    $deliveryPoints = array_map(fn (int $index): array => cdekDeliveryPoint($index), range(1, 1000));
+    Http::fake([
+        'cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600]),
+        'cdek.test/v2/deliverypoints*' => Http::sequence()
+            ->push($deliveryPoints)
+            ->push(['unexpected' => true]),
+    ]);
+
+    expect(fn () => app(SyncDeliveryCitiesAction::class)->run())->toThrow(CdekApiException::class);
+
+    expect($city->fresh()->is_active)->toBeTrue();
 });
 
 it('всегда запрашивает только ПВЗ СДЭК', function (): void {

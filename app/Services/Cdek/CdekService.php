@@ -8,6 +8,7 @@ use App\DTO\Cdek\CdekCalculateTariffRequestDto;
 use App\DTO\Cdek\CdekCalculateTariffResponseDto;
 use App\DTO\Cdek\CdekCityResponseDto;
 use App\DTO\Cdek\CdekCreateOrderRequestDto;
+use App\DTO\Cdek\CdekDeliveryPointCityCodesPageDto;
 use App\DTO\Cdek\CdekDeliveryPointResponseDto;
 use App\DTO\Cdek\CdekGetDeliveryPointsRequestDto;
 use App\DTO\Cdek\CdekOperationResponseDto;
@@ -59,6 +60,25 @@ final class CdekService
     public function getDeliveryPoints(CdekGetDeliveryPointsRequestDto $filters): array
     {
         return $this->mapper->deliveryPoints($this->client->get('/v2/deliverypoints', $filters->toArray()));
+    }
+
+    public function getDeliveryPointCityCodes(int $page = 0, int $size = 1000): CdekDeliveryPointCityCodesPageDto
+    {
+        if ($page < 0) {
+            throw new InvalidArgumentException('Номер страницы не может быть отрицательным.');
+        }
+
+        if ($size < 1) {
+            throw new InvalidArgumentException('Размер страницы должен быть больше нуля.');
+        }
+
+        return $this->mapper->deliveryPointCityCodes($this->client->get('/v2/deliverypoints', [
+            'country_code' => 'RU',
+            'type' => 'PVZ',
+            'is_handout' => true,
+            'page' => $page,
+            'size' => $size,
+        ]));
     }
 
     /**

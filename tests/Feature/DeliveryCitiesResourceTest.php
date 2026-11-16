@@ -45,11 +45,26 @@ it('запускает синхронизацию СДЭК из заголовк
     Http::assertNothingSent();
 });
 
+it('дает синхронизации городов достаточно времени до повторной обработки', function (): void {
+    $job = new SyncDeliveryCitiesJob;
+    $retryAfter = (int) config('queue.connections.cdek.retry_after');
+
+    expect($job->timeout)->toBe(240)
+        ->and($job->connection)->toBe('cdek')
+        ->and($retryAfter)->toBeGreaterThan($job->timeout);
+});
+
 it('синхронизирует города существующим Action при выполнении задания', function (): void {
     config(['services.cdek.base_url' => 'https://cdek.test',
         'services.cdek.client_id' => 'test-client', 'services.cdek.client_secret' => 'test-secret']);
     Http::fake([
         'cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600]),
+        'cdek.test/v2/deliverypoints*' => Http::response([[
+            'type' => 'PVZ',
+            'status' => 'ACTIVE',
+            'is_handout' => true,
+            'location' => ['city_code' => 44],
+        ]]),
         'cdek.test/v2/location/cities*' => Http::response([['code' => 44, 'city' => 'Москва']]),
     ]);
 

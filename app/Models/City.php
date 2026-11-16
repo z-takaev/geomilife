@@ -61,6 +61,16 @@ final class City extends Model
         return $this->hasMany(Address::class);
     }
 
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function savedDeliveryPoints(): HasMany
+    {
+        return $this->hasMany(SavedDeliveryPoint::class);
+    }
+
     public function scopeSearchByName(Builder $query, string $search): void
     {
         $query->whereLike('name', '%'.addcslashes(trim($search), '\\%_').'%');
