@@ -11,7 +11,9 @@ use App\DTO\Cdek\CdekOrderPackageDto;
 use App\DTO\Cdek\CdekOrderResponseDto;
 use App\DTO\Cdek\CdekPaymentDto;
 use App\Enums\Cdek\CdekOrderStatusEnum;
+use App\Enums\Cdek\CdekPrintStateEnum;
 use App\Enums\Cdek\CdekShipmentOperationStateEnum;
+use App\Enums\Orders\OrderDocumentTypeEnum;
 use App\Enums\Orders\OrderStatusEnum;
 use App\Jobs\Orders\CreateCdekShipmentJob;
 use App\Jobs\Orders\PrepareCdekDocumentsJob;
@@ -127,7 +129,9 @@ final class CdekShipmentService
         try {
             $cdekOrder = $this->cdek->getOrder($shipment->uuid);
         } catch (CdekApiException $exception) {
-            if ($exception->statusCode === 404 && $shipment->operation_state?->is(CdekShipmentOperationStateEnum::CANCELLING)) {
+            if ($shipment->operation_state?->is(CdekShipmentOperationStateEnum::CANCELLING)
+                && ($exception->statusCode === 404
+                    || ($exception->statusCode === 400 && $exception->hasErrorCode('v2_entity_not_found')))) {
                 $shipment->update(['operation_state' => CdekShipmentOperationStateEnum::CANCELLED, 'error' => null, 'last_checked_at' => now()]);
 
                 return true;
@@ -243,7 +247,7 @@ final class CdekShipmentService
         }
 
         return new CdekCreateOrderRequestDto(
-            tariffCode: 136, number: (string) $order->number,
+            tariffCode: 136, number: $this->cdekOrderNumber($order),
             recipient: new CdekContactDto(name: $order->customer_name, phone: $order->customer_phone, email: $order->customer_email),
             packages: $packages, shipmentPoint: (string) config('orders.cdek.shipment_point'),
             deliveryPoint: $order->delivery_address['code'],
@@ -255,7 +259,7 @@ final class CdekShipmentService
     private function recoverShipment(Order $order, OrderShipment $shipment): bool
     {
         try {
-            $cdekOrder = $this->cdek->findOrder((string) $order->number);
+            $cdekOrder = $this->cdek->findOrder($this->shipmentOrderNumber($order, $shipment));
         } catch (CdekApiException $exception) {
             if ($exception->statusCode === 404) {
                 $sentAt = $shipment->payload['request_sent_at'] ?? $shipment->last_checked_at?->toIso8601String() ?? $shipment->created_at?->toIso8601String();
@@ -400,9 +404,60 @@ final class CdekShipmentService
 
     private function canPrepareDocuments(Order $order, OrderShipment $shipment, CdekOrderResponseDto $cdekOrder): bool
     {
-        return ($cdekOrder->operation->state?->isSuccessful() ?? false) && $cdekOrder->operation->errors === []
-                        && ! $order->status->isCancelled() && $order->cancellation_state === null
-                        && ! in_array($shipment->operation_state, [CdekShipmentOperationStateEnum::CANCELLING,
-                            CdekShipmentOperationStateEnum::CANCELLED, CdekShipmentOperationStateEnum::CANCEL_FAILED], true);
+        if (! ($cdekOrder->operation->state?->isSuccessful() ?? false) || $cdekOrder->operation->errors !== []
+            || $order->status->isCancelled() || $order->cancellation_state !== null
+            || in_array($shipment->operation_state, [CdekShipmentOperationStateEnum::CANCELLING,
+                CdekShipmentOperationStateEnum::CANCELLED, CdekShipmentOperationStateEnum::CANCEL_FAILED], true)) {
+            return false;
+        }
+
+        $states = $order->documents()
+            ->whereIn('type', array_map(static fn (OrderDocumentTypeEnum $type): string => $type->value, OrderDocumentTypeEnum::cases()))
+            ->pluck('state', 'type');
+        $pendingStates = [
+            CdekPrintStateEnum::PENDING->value,
+            CdekPrintStateEnum::CREATING->value,
+            CdekPrintStateEnum::ACCEPTED->value,
+            CdekPrintStateEnum::PROCESSING->value,
+            CdekPrintStateEnum::REMOVED->value,
+        ];
+
+        foreach (OrderDocumentTypeEnum::cases() as $type) {
+            $state = $states->get($type->value);
+
+            if ($state === null || in_array($state, $pendingStates, true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function cdekOrderNumber(Order $order): string
+    {
+        $prefix = config('orders.cdek.order_number_prefix');
+
+        if (! is_string($prefix) || trim($prefix) === '') {
+            return (string) $order->number;
+        }
+
+        $uniquePart = substr(str_replace('-', '', $order->idempotency_key), 0, 8);
+
+        return trim($prefix, '-').'-'.$order->number.'-'.$uniquePart;
+    }
+
+    private function shipmentOrderNumber(Order $order, OrderShipment $shipment): string
+    {
+        $storedNumber = $shipment->payload['request']['number'] ?? null;
+
+        if (is_string($storedNumber) && $storedNumber !== '') {
+            return $storedNumber;
+        }
+
+        if (is_int($storedNumber)) {
+            return (string) $storedNumber;
+        }
+
+        return $this->cdekOrderNumber($order);
     }
 }

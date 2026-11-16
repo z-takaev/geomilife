@@ -87,6 +87,52 @@ it('отправляет тариф 136 внешние размеры с окр�
         ->and(fulfillmentValue($order->fresh()->status))->toBe('READY_TO_SHIP');
 });
 
+it('добавляет к локальному номеру СДЭК уникальный идентификатор заказа', function (): void {
+    config(['orders.cdek.order_number_prefix' => 'geomilife']);
+    $uuid = '11111111-1111-4111-8111-111111111111';
+    $order = fulfillmentOrder([
+        'status' => 'READY_TO_SHIP',
+        'idempotency_key' => 'a1b2c3d4-1111-4222-8333-444444444444',
+    ]);
+    fulfillmentOrderItem($order);
+    Http::fake([
+        'cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600]),
+        'cdek.test/v2/orders' => Http::response(fulfillmentCdekResponse($uuid, state: 'ACCEPTED'), 202),
+    ]);
+
+    app(CdekShipmentService::class)->create($order);
+
+    Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
+        && str_ends_with($request->url(), '/v2/orders')
+        && $request['number'] === 'geomilife-'.$order->number.'-a1b2c3d4');
+    expect($order->fresh()->shipment->payload['request']['number'])
+        ->toBe('geomilife-'.$order->number.'-a1b2c3d4');
+});
+
+it('восстанавливает старую заявку по номеру сохранённого запроса', function (): void {
+    config(['orders.cdek.order_number_prefix' => 'geomilife']);
+    $uuid = '11111111-1111-4111-8111-111111111111';
+    $order = fulfillmentOrder(['status' => 'READY_TO_SHIP']);
+    $shipment = $order->shipment()->create([
+        'operation_state' => 'CREATING',
+        'payload' => [
+            'request' => ['number' => '1012'],
+            'request_sent_at' => now()->toIso8601String(),
+        ],
+    ]);
+    Http::fake([
+        'cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600]),
+        'cdek.test/v2/orders*' => Http::response(fulfillmentCdekResponse($uuid)),
+    ]);
+
+    app(CdekShipmentService::class)->sync($order);
+
+    Http::assertSent(fn (Request $request): bool => $request->method() === 'GET'
+        && str_contains($request->url(), '/v2/orders?')
+        && $request['im_number'] === '1012');
+    expect($shipment->fresh()->uuid)->toBe($uuid);
+});
+
 it('не повторяет создание заявки после принятого запроса и повторного запуска', function (): void {
     $uuid = '11111111-1111-4111-8111-111111111111';
     $order = fulfillmentOrder(['status' => 'READY_TO_SHIP']);

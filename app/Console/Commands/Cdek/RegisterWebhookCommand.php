@@ -26,13 +26,22 @@ final class RegisterWebhookCommand extends Command
 
         try {
             $cdek = app(CdekService::class);
+            $webhooks = $cdek->getWebhooks();
 
-            foreach ($cdek->getWebhooks() as $webhook) {
-                if ($webhook->type === 'ORDER_STATUS' && $webhook->url === $url) {
-                    $this->info("Вебхук СДЭК уже зарегистрирован: {$url}");
-
-                    return self::SUCCESS;
+            foreach ($webhooks as $webhook) {
+                if ($webhook->type !== 'ORDER_STATUS') {
+                    continue;
                 }
+
+                $deletion = $cdek->deleteWebhook($webhook->uuid);
+
+                if ($deletion->errors !== [] || ($deletion->state?->isInvalid() ?? false)) {
+                    $this->error("Не удалось удалить вебхук СДЭК: {$webhook->url}");
+
+                    return self::FAILURE;
+                }
+
+                $this->info("Удалён вебхук СДЭК: {$webhook->url}");
             }
 
             $registration = $cdek->createOrderStatusWebhook($url);

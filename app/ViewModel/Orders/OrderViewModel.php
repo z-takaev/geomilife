@@ -60,7 +60,7 @@ final class OrderViewModel
             return __('При выдаче подтвердите получение оплаты и передачу заказа покупателю.');
         }
 
-        return __('Проверьте заказ и выполните следующий шаг. Перед изменением статуса потребуется подтверждение.');
+        return __('Проверьте заказ и выполните следующий шаг.');
     }
 
     public static function transitionLabel(Order $order, OrderStatusEnum $status): string
@@ -198,7 +198,7 @@ final class OrderViewModel
             'createdAtLabel' => $order->created_at->timezone($timezone)->format($dateFormat),
             'deliveryHint' => match (true) {
                 $order->is_preorder => __('Точные сроки доставки согласовываются отдельно с менеджером'),
-                $order->delivery_method->isPickup() => __('Приходите после уведомления о готовности. Время получения согласует менеджер.'),
+                $order->delivery_method->isPickup() => __('Приходите после уведомления о готовности.'),
                 $order->delivery_method->isCourier() => __('Время доставки согласует менеджер.'),
                 default => __('Трек-номер появится после подготовки отправления.'),
             },

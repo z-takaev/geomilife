@@ -8,14 +8,17 @@ use App\Enums\Cdek\CdekPrintStateEnum;
 use App\Models\Order;
 use App\Services\Orders\OrderDocumentService;
 use App\Services\Orders\OrderNotificationService;
+use Illuminate\Contracts\Queue\ShouldBeUniqueUntilProcessing;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
-final class PrepareCdekDocumentsJob implements ShouldQueue
+final class PrepareCdekDocumentsJob implements ShouldBeUniqueUntilProcessing, ShouldQueue
 {
     use Queueable;
 
     public int $tries = 3;
+
+    public int $uniqueFor = 900;
 
     public function __construct(public int $orderId, public int $pollAttempt = 0) {}
 
@@ -36,9 +39,15 @@ final class PrepareCdekDocumentsJob implements ShouldQueue
                 if ($this->pollAttempt < 10) {
                     self::dispatch($order->id, $this->pollAttempt + 1)->delay(now()->addSeconds(30))->afterCommit();
                 } else {
+                    $service->markPendingCdekDocumentsFailed($order);
                     app(OrderNotificationService::class)->queue($order, 'DOCUMENT_FAILED', 'document-preparation-delayed');
                 }
             }
         }
+    }
+
+    public function uniqueId(): string
+    {
+        return (string) $this->orderId;
     }
 }

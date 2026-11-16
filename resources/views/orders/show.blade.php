@@ -83,7 +83,7 @@
                         @endif
                         @if ($order->delivery_method->isPickup())
                             <p class="order-muted">
-                                {{ __('Приходите после уведомления о готовности. Время получения согласует менеджер.') }}
+                                {{ __('Приходите после уведомления о готовности.') }}
                             </p>
                         @endif
                         @if ($order->delivery_method->isCourier())

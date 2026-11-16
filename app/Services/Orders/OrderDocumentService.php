@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Orders;
 
+use App\DTO\Cdek\CdekPrintResponseDto;
 use App\Enums\Cdek\CdekPrintStateEnum;
 use App\Enums\Cdek\CdekRequestStateEnum;
 use App\Enums\Orders\OrderDocumentTypeEnum;
@@ -57,11 +58,25 @@ final class OrderDocumentService
                 $result = $type->isWaybill() ? $this->cdek->getWaybill($document->uuid) : $this->cdek->getBarcodes($document->uuid);
 
                 $document->update([
-                    'state' => $result->status ?? $document->state,
+                    'state' => $this->resolvedPrintState($result, $document->state),
                     'error' => $result->operation->errors[0]['message'] ?? null,
                 ]);
             }
         }
+    }
+
+    public function markPendingCdekDocumentsFailed(Order $order): void
+    {
+        $order->documents()
+            ->whereIn('state', [
+                CdekPrintStateEnum::CREATING->value,
+                CdekPrintStateEnum::ACCEPTED->value,
+                CdekPrintStateEnum::PROCESSING->value,
+            ])
+            ->update([
+                'state' => CdekPrintStateEnum::INVALID->value,
+                'error' => __('СДЭК не подтвердил готовность документа за отведённое время.'),
+            ]);
     }
 
     /**
@@ -83,9 +98,10 @@ final class OrderDocumentService
         if (! $document->state?->isReady()) {
             $result = $type->isWaybill() ? $this->cdek->getWaybill($document->uuid) : $this->cdek->getBarcodes($document->uuid);
 
-            $document->update(['state' => $result->status, 'error' => $result->operation->errors[0]['message'] ?? null]);
+            $resolvedState = $this->resolvedPrintState($result, $document->state);
+            $document->update(['state' => $resolvedState, 'error' => $result->operation->errors[0]['message'] ?? null]);
 
-            if (! $result->status?->isReady()) {
+            if (! $resolvedState?->isReady()) {
                 throw ValidationException::withMessages(['document' => __('Документ ещё не готов. Повторите скачивание позже.')]);
             }
         }
@@ -162,5 +178,14 @@ final class OrderDocumentService
             app(OrderNotificationService::class)->queue($order, 'DOCUMENT_FAILED', 'document-failed:'.$type->value.':'.hash('sha256', $exception->getMessage()));
             throw $exception;
         }
+    }
+
+    private function resolvedPrintState(CdekPrintResponseDto $result, ?CdekPrintStateEnum $currentState): ?CdekPrintStateEnum
+    {
+        if ($result->url !== null) {
+            return CdekPrintStateEnum::READY;
+        }
+
+        return $result->status ?? $currentState;
     }
 }

@@ -180,6 +180,50 @@ it('принятие асинхронной отмены СДЭК не счит�
     Http::assertNotSent(fn (Request $request): bool => str_ends_with($request->url(), '/Cancel'));
 });
 
+it('завершает отмену если СДЭК больше не находит удалённую заявку', function (): void {
+    $order = PaymentFixtures::order(['status' => 'READY_TO_SHIP', 'delivery_method' => 'CDEK', 'payment_status' => 'PAID']);
+    $payment = PaymentFixtures::payment($order, ['status' => 'PAID', 'provider_status' => 'CONFIRMED']);
+    $shipment = OrderShipment::query()->create([
+        'order_id' => $order->id,
+        'uuid' => PaymentFixtures::SHIPMENT_UUID,
+        'status' => 'CREATED',
+        'request_state' => 'SUCCESSFUL',
+        'operation_state' => 'CANCELLING',
+    ]);
+    Http::fake(function (Request $request) use ($payment) {
+        if (str_contains($request->url(), '/oauth/token')) {
+            return Http::response(['access_token' => 'test-token', 'expires_in' => 3600]);
+        }
+        if (str_contains($request->url(), 'cdek.test')) {
+            return Http::response([
+                'requests' => [[
+                    'type' => 'GET',
+                    'date_time' => now()->toIso8601String(),
+                    'state' => 'INVALID',
+                    'errors' => [[
+                        'code' => 'v2_entity_not_found',
+                        'message' => 'Entity is not found by uuid '.PaymentFixtures::SHIPMENT_UUID,
+                    ]],
+                ]],
+                'related_entities' => [],
+            ], 400);
+        }
+
+        return Http::response(PaymentFixtures::state(
+            $payment,
+            str_ends_with($request->url(), '/Cancel') ? 'REFUNDED' : 'CONFIRMED',
+        ));
+    });
+
+    $order->update(['cancellation_state' => 'PENDING', 'cancellation_reason' => 'Отмена до сдачи']);
+    app(OrderLifecycleService::class)->resumeCancellation($order);
+
+    expect(PaymentFixtures::value($order->fresh()->status))->toBe('CANCELLED')
+        ->and(PaymentFixtures::value($order->fresh()->payment_status))->toBe('REFUNDED')
+        ->and($shipment->fresh()->operation_state->value)->toBe('CANCELLED')
+        ->and($shipment->fresh()->error)->toBeNull();
+});
+
 it('ошибка банковского возврата не восстанавливает отменённый заказ а повтор возвращает один раз', function (): void {
     $order = PaymentFixtures::order(['status' => 'CONFIRMED', 'payment_status' => 'PAID']);
     $payment = PaymentFixtures::payment($order, ['status' => 'PAID', 'provider_status' => 'CONFIRMED']);

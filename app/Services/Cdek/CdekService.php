@@ -185,6 +185,14 @@ final class CdekService
         return $this->mapper->webhooks($this->client->get('/v2/webhooks'));
     }
 
+    /**
+     * Удалить подписку на вебхуки по UUID.
+     */
+    public function deleteWebhook(string $uuid): CdekOperationResponseDto
+    {
+        return $this->mapper->operation($this->client->delete('/v2/webhooks/'.$this->uuid($uuid)));
+    }
+
     /** @return array<string, mixed> */
     private function printRequest(string $orderUuid, ?int $copyCount): array
     {

@@ -42,9 +42,7 @@ final class CdekApiException extends RuntimeException
     public static function fromResponse(Response $response): self
     {
         $data = $response->json();
-        $errors = is_array($data) && is_array($data['errors'] ?? null)
-            ? $data['errors']
-            : [];
+        $errors = is_array($data) ? self::responseErrors($data) : [];
         $message = is_array($data) && is_string($data['error_description'] ?? null)
             ? $data['error_description']
             : self::firstErrorMessage($errors);
@@ -54,6 +52,17 @@ final class CdekApiException extends RuntimeException
             $response->status(),
             $errors,
         );
+    }
+
+    public function hasErrorCode(string $code): bool
+    {
+        foreach ($this->errors as $error) {
+            if (is_array($error) && ($error['code'] ?? null) === $code) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -70,5 +79,27 @@ final class CdekApiException extends RuntimeException
         $message = $firstError['message'] ?? null;
 
         return is_string($message) ? $message : null;
+    }
+
+    /**
+     * @param  array<mixed>  $data
+     * @return list<mixed>
+     */
+    private static function responseErrors(array $data): array
+    {
+        $errors = is_array($data['errors'] ?? null) ? array_values($data['errors']) : [];
+        $requests = $data['requests'] ?? [];
+
+        if (! is_array($requests)) {
+            return $errors;
+        }
+
+        foreach ($requests as $request) {
+            if (is_array($request) && is_array($request['errors'] ?? null)) {
+                $errors = [...$errors, ...array_values($request['errors'])];
+            }
+        }
+
+        return $errors;
     }
 }

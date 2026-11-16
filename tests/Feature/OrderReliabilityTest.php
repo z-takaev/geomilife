@@ -17,6 +17,7 @@ use App\Services\Orders\CdekShipmentService;
 use App\Services\Orders\OrderDocumentService;
 use App\Services\Orders\OrderLifecycleService;
 use App\Services\Orders\OrderNotificationService;
+use Illuminate\Contracts\Queue\ShouldBeUniqueUntilProcessing;
 use Illuminate\Http\Client\Request;
 use Illuminate\Queue\Events\JobQueueing;
 use Illuminate\Support\Facades\DB;
@@ -103,6 +104,90 @@ it('восстанавливает просроченный захват фор�
     expect(app(OrderDocumentService::class)->downloadCdekDocument($order, OrderDocumentTypeEnum::WAYBILL))->toBe('%PDF-1.4 test');
     Http::assertSentCount(4);
     expect($document->fresh()->state)->toBe(CdekPrintStateEnum::READY);
+});
+
+it('скачивает наклейки по доступной ссылке при оставшемся статусе accepted', function (): void {
+    $order = fulfillmentOrder();
+    $order->shipment()->create(['uuid' => '11111111-1111-4111-8111-111111111111', 'request_state' => 'SUCCESSFUL']);
+    $document = $order->documents()->create([
+        'type' => 'BARCODES',
+        'uuid' => '22222222-2222-4222-8222-222222222222',
+        'state' => 'ACCEPTED',
+    ]);
+    Http::fake(static function (Request $request) use ($document) {
+        if (str_contains($request->url(), 'oauth/token')) {
+            return Http::response(['access_token' => 'token', 'expires_in' => 3600]);
+        }
+        if (str_ends_with($request->url(), '.pdf')) {
+            return Http::response('%PDF-1.4 barcode', 200, ['Content-Type' => 'application/pdf']);
+        }
+
+        return Http::response([
+            'entity' => [
+                'uuid' => $document->uuid,
+                'url' => 'https://refactoring.cdek.test/document.pdf',
+                'statuses' => [['code' => 'ACCEPTED', 'date_time' => now()->toIso8601String()]],
+            ],
+            'requests' => [[
+                'type' => 'GET',
+                'state' => 'SUCCESSFUL',
+                'date_time' => now()->toIso8601String(),
+                'errors' => [],
+                'warnings' => [],
+            ]],
+        ]);
+    });
+
+    expect(app(OrderDocumentService::class)->downloadCdekDocument($order, OrderDocumentTypeEnum::BARCODES))
+        ->toBe('%PDF-1.4 barcode')
+        ->and($document->fresh()->state)->toBe(CdekPrintStateEnum::READY);
+});
+
+it('не ставит несколько цепочек подготовки документов для одного заказа', function (): void {
+    $order = fulfillmentOrder();
+
+    PrepareCdekDocumentsJob::dispatch($order->id);
+    PrepareCdekDocumentsJob::dispatch($order->id);
+
+    expect(new PrepareCdekDocumentsJob($order->id))->toBeInstanceOf(ShouldBeUniqueUntilProcessing::class)
+        ->and(new PrepareCdekDocumentsJob($order->id)->uniqueId())->toBe((string) $order->id);
+    $this->assertDatabaseCount('jobs', 1);
+});
+
+it('завершает опрос документов после лимита попыток', function (): void {
+    Queue::fake();
+    $order = fulfillmentOrder();
+    $shipment = $order->shipment()->create([
+        'uuid' => '11111111-1111-4111-8111-111111111111',
+        'request_state' => 'SUCCESSFUL',
+    ]);
+    $document = $order->documents()->create([
+        'type' => 'BARCODES',
+        'uuid' => '22222222-2222-4222-8222-222222222222',
+        'state' => 'ACCEPTED',
+    ]);
+    $order->documents()->create([
+        'type' => 'WAYBILL',
+        'uuid' => '33333333-3333-4333-8333-333333333333',
+        'state' => 'READY',
+    ]);
+    Http::fake([
+        'refactoring.cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600]),
+        'refactoring.cdek.test/v2/print/barcodes/*' => Http::response([
+            'entity' => [
+                'uuid' => $document->uuid,
+                'statuses' => [['code' => 'ACCEPTED', 'date_time' => now()->toIso8601String()]],
+            ],
+        ]),
+        'refactoring.cdek.test/v2/orders/*' => Http::response(fulfillmentCdekResponse($shipment->uuid)),
+    ]);
+
+    (new PrepareCdekDocumentsJob($order->id, 10))->handle(app(OrderDocumentService::class));
+    app(CdekShipmentService::class)->sync($order);
+
+    expect($document->fresh()->state)->toBe(CdekPrintStateEnum::INVALID)
+        ->and($document->fresh()->error)->not->toBeNull();
+    Queue::assertNotPushed(PrepareCdekDocumentsJob::class);
 });
 
 it('не повторяет создание документа при свежем захвате', function (): void {

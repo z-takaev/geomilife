@@ -172,7 +172,7 @@
                                     <p>{{ $city->pickup_address }}</p>
                                     <p>{{ $city->pickup_working_hours }}</p>
                                     <p>{{ $city->pickup_phone }}</p>
-                                    <small>{{ __('Приходите после уведомления о готовности. Время получения согласует менеджер.') }}</small>
+                                    <small>{{ __('Приходите после уведомления о готовности.') }}</small>
                                 </div>
                                 {{-- TODO: Заменить на $form->delivery_method->isCourier?  --}}
                             @elseif ($form->delivery_method === \App\Enums\Orders\DeliveryMethodEnum::COURIER->value)
