@@ -30,6 +30,7 @@ final class ArticleController extends Controller
             ->with('media')
             ->published()
             ->latest('published_at')
+            ->latest('id')
             ->paginate(config('pagination.per_page.articles'));
 
         return view('articles.index', compact('articles', 'breadcrumbs'));

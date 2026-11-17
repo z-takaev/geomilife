@@ -9,6 +9,7 @@
                 <div class="col-lg-8">
                     <div class="news-archive-list">
                         @forelse ($newsItems as $news)
+                            {{-- TODO: поправить формать в конфиге --}}
                             <x-news.card :date="$news->published_at->translatedFormat('j F Y')" :description="$news->excerpt ?? ''" :image="$news->getFirstMediaUrl('image', 'card')" :title="$news->title"
                                 :url="route('news.show', $news)" />
                         @empty

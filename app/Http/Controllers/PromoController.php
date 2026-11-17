@@ -29,6 +29,7 @@ final class PromoController extends Controller
             ->with('media')
             ->current()
             ->latest('start_at')
+            ->latest('id')
             ->paginate(config('pagination.per_page.promos'));
 
         return view('promos.index', compact('promos', 'breadcrumbs'));

@@ -28,7 +28,6 @@ final class ReviewController extends Controller
         $reviews = Review::query()
             ->select(['id', 'author_name', 'text', 'rating', 'source', 'reviewed_at'])
             ->active()
-            ->latest('reviewed_at')
             ->latest('id')
             ->paginate(config('pagination.per_page.reviews'));
 

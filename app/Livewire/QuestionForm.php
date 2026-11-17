@@ -11,6 +11,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Component;
 
+// TODO: Переименовать в FeedbackForm
 final class QuestionForm extends Component
 {
     public QuestionSubmissionForm $form;

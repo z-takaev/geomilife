@@ -3,8 +3,14 @@
 declare(strict_types=1);
 
 use App\Jobs\Cdek\SyncDeliveryCitiesJob;
+use Illuminate\Support\Facades\Log;
 use App\Services\Orders\OrderNotificationService;
 use Illuminate\Support\Facades\Schedule;
+
+// TODO: убрать временную команду
+Schedule::call(function () {
+    Log::info('1');
+})->everyMinute()->name('test-log');
 
 Schedule::command('queue:work --stop-when-empty --max-time=50 --timeout=60')
     ->everyMinute()

@@ -33,11 +33,11 @@ Route::get('/', HomeController::class)->name('home');
 
 Route::get('/contacts', ContactController::class)->name('contacts');
 
+Route::get('/pages/{page}', PageController::class)->name('page');
+
 Route::get('/faqs', FaqController::class)->name('faqs');
 
 Route::get('/reviews', ReviewController::class)->name('reviews');
-
-Route::get('/pages/{page}', PageController::class)->name('page');
 
 Route::controller(NewsController::class)->prefix('news')->name('news.')->group(function (): void {
     Route::get('/', 'index')->name('index');

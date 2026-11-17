@@ -38,6 +38,7 @@
                             </div>
                         </div>
 
+                        {{-- TODO: Вынести в отдельный метод модели для проверки --}}
                         @if (settings()?->instagram_url ||
                                 settings()?->youtube_url ||
                                 settings()?->vk_url ||
@@ -116,7 +117,6 @@
                                 <p class="contacts-info-card__value">{!! nl2br(e(__(settings()?->working_hours))) !!}</p>
                             </div>
                         </div>
-
                     </div>
                 </div>
 

@@ -9,6 +9,7 @@
                 <article class="col-lg-9 content-detail-main-column">
                     <div class="content-detail-main">
                         <div class="content-detail-main-image">
+                            {{-- TODO: использовать изображение карточки и проверить в новостях и статьях --}}
                             <img loading="lazy" src="{{ $promo->getFirstMediaUrl('image') }}" alt="{{ $promo->title }}">
                         </div>
                         <div class="content-detail-heading">

@@ -39,9 +39,6 @@ final class Faq extends Model
         });
     }
 
-    /**
-     * @return Collection<int, self>
-     */
     public static function cached(): Collection
     {
         return Cache::remember(

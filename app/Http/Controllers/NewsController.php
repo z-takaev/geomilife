@@ -30,6 +30,7 @@ final class NewsController extends Controller
             ->with('media')
             ->published()
             ->latest('published_at')
+            ->latest('id')
             ->paginate(config('pagination.per_page.news'));
 
         return view('news.index', compact('newsItems', 'breadcrumbs'));
