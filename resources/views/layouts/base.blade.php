@@ -7,6 +7,10 @@
     <x-seo />
     @stack('meta')
 
+    @if (settings()?->snow_enabled)
+        <link rel="stylesheet" href="{{ asset('assets/css/snow.min.css') }}">
+    @endif
+
     <link rel="preload" href="{{ asset('assets/fonts/Montserrat.woff2') }}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ asset('assets/icon/icomoon/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
@@ -15,9 +19,6 @@
 
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <link rel="apple-touch-icon-precomposed" href="{{ asset('favicon.ico') }}">
-    @if (settings()?->snow_enabled)
-        <link rel="stylesheet" href="{{ asset('assets/css/snow.min.css') }}">
-    @endif
 </head>
 
 <body>

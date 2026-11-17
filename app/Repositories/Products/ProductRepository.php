@@ -12,6 +12,7 @@ use Illuminate\Support\Collection;
 
 final class ProductRepository
 {
+    // TODO: Изменить название метода
     public function getDetails(int|string $identifier): ?Product
     {
         return Product::query()
@@ -61,7 +62,7 @@ final class ProductRepository
     public function search(string $searchQuery): LengthAwarePaginator
     {
         return $this->applySearch($this->cardQuery(), $searchQuery)
-            ->latest('id')
+            ->latest()
             ->paginate(config('pagination.per_page.search'))
             ->withQueryString();
     }
@@ -69,13 +70,15 @@ final class ProductRepository
     public function searchSuggestions(string $searchQuery, int $limit = 5): Collection
     {
         if ($searchQuery === '') {
-            return collect();
+            return new Collection;
         }
 
         return $this->applySearch(Product::query()->available(), $searchQuery)
             ->select(['id', 'name', 'slug'])
             ->with(['media' => static fn (MorphMany $query): MorphMany => $query->where('collection_name', 'image')])
-            ->latest('id')->limit($limit)->get();
+            ->latest()
+            ->limit($limit)
+            ->get();
     }
 
     public function cardQuery(): Builder
@@ -89,6 +92,7 @@ final class ProductRepository
             ]);
     }
 
+    // TODO: Убрать метод
     private function applySearch(Builder $query, string $searchQuery): Builder
     {
         if ($searchQuery === '') {

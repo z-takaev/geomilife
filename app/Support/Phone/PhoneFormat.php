@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Phone;
 
+// TODO: Разобраться с классом
 final class PhoneFormat
 {
     private const string FORMATTED_BODY = '\\+7 \\(\\d{3}\\) \\d{3}-\\d{2}-\\d{2}';

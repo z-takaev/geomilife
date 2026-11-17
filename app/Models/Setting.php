@@ -63,6 +63,7 @@ final class Setting extends Model implements HasMedia
         });
     }
 
+    // TODO: Подумать над кастом? См PhoneFormat
     protected function phone(): Attribute
     {
         return Attribute::get(static function (?string $value): ?string {
@@ -105,6 +106,7 @@ final class Setting extends Model implements HasMedia
 
     public function yandexMapUrl(): ?string
     {
+        // TODO: Нужен ли preg_match?
         if (! is_string($this->yandex_map_id) || preg_match('/\A[a-f0-9]{64}\z/', $this->yandex_map_id) !== 1) {
             return null;
         }

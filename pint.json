@@ -1,4 +1,26 @@
 {
-    "$schema": "https://json.schemastore.org/pint.json",
-    "preset": "laravel"
+  "$schema": "https://json.schemastore.org/pint.json",
+  "preset": "laravel",
+  "rules": {
+    "class_attributes_separation": {
+      "elements": {
+        "method": "one",
+        "property": "one",
+        "const": "one"
+      }
+    },
+    "no_extra_blank_lines": {
+      "tokens": ["extra", "throw", "use", "curly_brace_block"]
+    },
+
+    "trailing_comma_in_multiline": {
+      "elements": ["arrays", "arguments", "parameters"]
+    },
+    "method_argument_space": {
+      "on_multiline": "ensure_fully_multiline"
+    },
+
+    "strict_comparison": true,
+    "simplified_null_return": true
+  }
 }

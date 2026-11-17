@@ -116,11 +116,13 @@ final class SeoManager
         return $this;
     }
 
+    // TODO: Зачем метод если есть title
     public function getTitle(): string
     {
         return $this->title;
     }
 
+    // TODO: Зачем метод если есть description
     public function getDescription(): ?string
     {
         return $this->description;
@@ -143,6 +145,7 @@ final class SeoManager
 
     public function getLocale(): string
     {
+        // TODO: У нас в проекте всегда локаль ru
         return match (app()->getLocale()) {
             'ru' => 'ru_RU',
             'en' => 'en_US',
@@ -150,9 +153,6 @@ final class SeoManager
         };
     }
 
-    /**
-     * @return list<array<string, mixed>>
-     */
     public function getSchemas(): array
     {
         return array_map(
@@ -197,6 +197,7 @@ final class SeoManager
             ->implode(' - ');
     }
 
+    // TODO: Нужен ли этот метод?
     private function filledValue(mixed $value): ?string
     {
         if (! is_string($value)) {
@@ -208,6 +209,7 @@ final class SeoManager
         return $value !== '' ? $value : null;
     }
 
+    // TODO: Нужен ли этот метод? Или вынести в общий саппорт?
     private function normalizeUrl(mixed $url): ?string
     {
         $url = $this->filledValue($url);

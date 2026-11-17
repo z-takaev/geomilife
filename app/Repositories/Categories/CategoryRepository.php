@@ -55,8 +55,7 @@ final class CategoryRepository
                 'children' => static fn (HasMany $query): HasMany => $query
                     ->active()
                     ->withCount('activeProducts')
-                    ->orderBy('order')
-                    ->orderBy('id'),
+                    ->orderBy('order'),
             ])
             ->orderBy('order');
 
@@ -69,7 +68,8 @@ final class CategoryRepository
             ->visible()
             ->whereLike('name', '%'.addcslashes($searchQuery, '\\%_').'%')
             ->with('media')
-            ->orderBy('order')->orderBy('id')->limit($limit)
+            ->orderBy('order')
+            ->limit($limit)
             ->get(['id', 'name', 'slug']);
     }
 
@@ -78,11 +78,11 @@ final class CategoryRepository
         Cache::memo()->forget((string) config('cache.items.catalog_categories.key'));
     }
 
+    // TODO: Подумать над выносом метода
     private function buildTree(Collection $categories): Collection
     {
         $rootCategories = new Collection;
 
-        /** @var array<int, list<Category>> $childrenByParentId */
         $childrenByParentId = [];
 
         foreach ($categories as $category) {
@@ -107,6 +107,7 @@ final class CategoryRepository
         return $rootCategories;
     }
 
+    // TODO: Как работает метод? И может вынести его из этого класса?
     private function withProductCounts(Collection $categories): Collection
     {
         return $categories->each(static function (Category $category): void {
