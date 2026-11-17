@@ -42,12 +42,14 @@ final class ReconcileOrdersCommand extends Command
                         $statuses->resumeCancellation($order);
                     } catch (Throwable $exception) {
                         report($exception);
-                        app(OrderNotificationService::class)->queue($order, 'CANCELLATION_FAILED',
-                            'cancel-reconcile-error:'.$order->id.':'.now()->format('Y-m-d-H'));
+                        app(OrderNotificationService::class)->queue(
+                            $order,
+                            'CANCELLATION_FAILED',
+                            'cancel-reconcile-error:'.$order->id.':'.now()->format('Y-m-d-H'),
+                        );
                     }
                 }
             });
-
     }
 
     private function reconcilePayments(OrderPaymentService $payments): void
@@ -68,12 +70,14 @@ final class ReconcileOrdersCommand extends Command
                         }
                     } catch (Throwable $exception) {
                         report($exception);
-                        app(OrderNotificationService::class)->queue($payment->order, 'PAYMENT_RECONCILE_FAILED',
-                            'payment-reconcile-error:'.$payment->id.':'.now()->format('Y-m-d-H'));
+                        app(OrderNotificationService::class)->queue(
+                            $payment->order,
+                            'PAYMENT_RECONCILE_FAILED',
+                            'payment-reconcile-error:'.$payment->id.':'.now()->format('Y-m-d-H'),
+                        );
                     }
                 }
             });
-
     }
 
     private function reconcileShipments(): void
@@ -97,8 +101,11 @@ final class ReconcileOrdersCommand extends Command
                         }
                     } catch (Throwable $exception) {
                         report($exception);
-                        app(OrderNotificationService::class)->queue($order, 'SHIPPING_FAILED',
-                            'shipment-check:'.$order->id.':'.now()->format('Y-m-d-H'));
+                        app(OrderNotificationService::class)->queue(
+                            $order,
+                            'SHIPPING_FAILED',
+                            'shipment-check:'.$order->id.':'.now()->format('Y-m-d-H'),
+                        );
                     }
                 }
             });

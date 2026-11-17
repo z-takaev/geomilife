@@ -37,25 +37,31 @@ it('сообщает менеджерам о новом заказе с подп
 
     app(OrderNotificationService::class)->queue($order, 'CREATED', 'created');
     Notification::assertSentOnDemandTimes(OrderUpdateNotification::class, 2);
-    Notification::assertSentOnDemand(OrderUpdateNotification::class,
+    Notification::assertSentOnDemand(
+        OrderUpdateNotification::class,
         fn (OrderUpdateNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notification->audience === 'MANAGER'
-            && $notifiable->routes['telegram'] === '-1001234567890');
+            && $notifiable->routes['telegram'] === '-1001234567890',
+    );
 });
 
 it('уведомляет о последующих статусах только покупателя', function (string $event): void {
     app(OrderNotificationService::class)->queue(fulfillmentOrder(), $event, $event);
 
     Notification::assertSentOnDemandTimes(OrderUpdateNotification::class, 1);
-    Notification::assertSentOnDemand(OrderUpdateNotification::class,
-        fn (OrderUpdateNotification $notification): bool => $notification->audience === 'BUYER');
+    Notification::assertSentOnDemand(
+        OrderUpdateNotification::class,
+        fn (OrderUpdateNotification $notification): bool => $notification->audience === 'BUYER',
+    );
 })->with(['CONFIRMED', 'READY_FOR_PICKUP', 'READY_TO_SHIP', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED']);
 
 it('сохраняет сообщения менеджерам об ошибках', function (string $event): void {
     app(OrderNotificationService::class)->queue(fulfillmentOrder(), $event, $event);
 
     Notification::assertSentOnDemandTimes(OrderUpdateNotification::class, 1);
-    Notification::assertSentOnDemand(OrderUpdateNotification::class,
-        fn (OrderUpdateNotification $notification): bool => $notification->audience === 'MANAGER');
+    Notification::assertSentOnDemand(
+        OrderUpdateNotification::class,
+        fn (OrderUpdateNotification $notification): bool => $notification->audience === 'MANAGER',
+    );
 })->with(['REFUND_FAILED', 'CANCELLATION_FAILED', 'SHIPPING_FAILED', 'DOCUMENT_FAILED', 'PAYMENT_RECONCILE_FAILED', 'CANCELLATION_REJECTED']);
 
 it('объясняет менеджерам причину технического уведомления', function (string $event, string $message): void {

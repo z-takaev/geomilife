@@ -125,7 +125,6 @@ final class OrderLifecycleService
 
             $lockedOrder->update(['status' => $status]);
             $this->notify($lockedOrder, $status->value, 'status:'.$status->value);
-
         });
     }
 

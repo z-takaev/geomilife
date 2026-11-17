@@ -128,8 +128,13 @@ it('не перечитывает один заказ подряд без изм
 
     if ($operation === 'notification') {
         app(OrderPaymentService::class)->handleBankNotification(new TbankPaymentNotificationDto(
-            'TEST_TERMINAL', $payment->transaction_id, $payment->bank_order_id,
-            $payment->amount, TbankPaymentStatusEnum::NEW, true, '0',
+            'TEST_TERMINAL',
+            $payment->transaction_id,
+            $payment->bank_order_id,
+            $payment->amount,
+            TbankPaymentStatusEnum::NEW,
+            true,
+            '0',
         ));
     } else {
         app(OrderPaymentService::class)->syncPayment($payment);

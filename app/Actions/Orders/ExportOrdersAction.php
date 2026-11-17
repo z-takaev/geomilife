@@ -36,7 +36,8 @@ final class ExportOrdersAction
                 foreach ((clone $query)->with('shipment')->lazy(200) as $order) {
                     foreach ($this->row($order) as $index => $value) {
                         $sheet->getCell([$index + 1, $rowNumber])->setValueExplicit(
-                            $value, is_int($value) ? DataType::TYPE_NUMERIC : DataType::TYPE_STRING,
+                            $value,
+                            is_int($value) ? DataType::TYPE_NUMERIC : DataType::TYPE_STRING,
                         );
                     }
 

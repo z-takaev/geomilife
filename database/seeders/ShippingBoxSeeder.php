@@ -28,7 +28,7 @@ final class ShippingBoxSeeder extends Seeder
                         'height' => $height,
                         'weight' => $weight,
                         'is_active' => true,
-                    ]
+                    ],
                 );
         }
     }

@@ -45,11 +45,13 @@ it('направляет уведомление на email получателя 
     $order = notificationOrder($user);
     app(OrderNotificationService::class)->queue($order, 'CREATED', 'created');
 
-    Notification::assertSentOnDemand(OrderUpdateNotification::class,
+    Notification::assertSentOnDemand(
+        OrderUpdateNotification::class,
         fn (OrderUpdateNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notification->audience === 'BUYER'
             && $notification->event === 'CREATED'
             && $notifiable->routes['mail'] === 'recipient@example.test'
-            && in_array('mail', $channels, true));
+            && in_array('mail', $channels, true),
+    );
 });
 
 it('добавляет Telegram покупателя только при включённых уведомлениях подключённого пользователя', function (bool $enabled): void {
@@ -59,20 +61,26 @@ it('добавляет Telegram покупателя только при вкл�
     ]);
     app(OrderNotificationService::class)->queue(notificationOrder($user), 'CREATED', 'created');
 
-    Notification::assertSentOnDemand(OrderUpdateNotification::class,
+    Notification::assertSentOnDemand(
+        OrderUpdateNotification::class,
         fn (OrderUpdateNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notification->audience === 'BUYER'
-            && (($notifiable->routes['telegram'] ?? null) === ($enabled ? '1234567' : null)));
+            && (($notifiable->routes['telegram'] ?? null) === ($enabled ? '1234567' : null)),
+    );
 })->with([true, false]);
 
 it('уведомляет менеджеров о новом заказе и не отправляет Telegram гостю', function (): void {
     app(OrderNotificationService::class)->queue(notificationOrder(), 'CREATED', 'created');
 
-    Notification::assertSentOnDemand(OrderUpdateNotification::class,
+    Notification::assertSentOnDemand(
+        OrderUpdateNotification::class,
         fn (OrderUpdateNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notification->audience === 'MANAGER'
             && $notifiable->routes['telegram'] === '-1001234567890'
-            && ! isset($notifiable->routes['mail']));
-    Notification::assertSentOnDemand(OrderUpdateNotification::class,
-        fn (OrderUpdateNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notification->audience === 'BUYER' && ! isset($notifiable->routes['telegram']));
+            && ! isset($notifiable->routes['mail']),
+    );
+    Notification::assertSentOnDemand(
+        OrderUpdateNotification::class,
+        fn (OrderUpdateNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notification->audience === 'BUYER' && ! isset($notifiable->routes['telegram']),
+    );
 });
 
 it('не создаёт повторных уведомлений при повторной обработке одного бизнес-события', function (): void {
@@ -88,7 +96,8 @@ it('письмо гостю содержит номер заказа и собы
     $order = notificationOrder();
     app(OrderNotificationService::class)->queue($order, 'REFUNDED', 'refund-1');
 
-    Notification::assertSentOnDemand(OrderUpdateNotification::class,
+    Notification::assertSentOnDemand(
+        OrderUpdateNotification::class,
         function (OrderUpdateNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool {
             if ($notification->audience !== 'BUYER') {
                 return false;
@@ -99,7 +108,8 @@ it('письмо гостю содержит номер заказа и собы
                 ->and($mail->actionUrl)->toBeNull();
 
             return true;
-        });
+        },
+    );
 });
 
 it('уведомляет менеджеров об ошибке расчёта сдэк без заказа и объединяет повторы', function (): void {
@@ -108,9 +118,11 @@ it('уведомляет менеджеров об ошибке расчёта �
     $service->notifyQuoteError(44, 'Ошибка API');
 
     Notification::assertSentOnDemandTimes(DeliveryQuoteErrorNotification::class, 1);
-    Notification::assertSentOnDemand(DeliveryQuoteErrorNotification::class,
+    Notification::assertSentOnDemand(
+        DeliveryQuoteErrorNotification::class,
         fn ($notification, array $channels, AnonymousNotifiable $notifiable): bool => $notifiable->routes['telegram'] === '-1001234567890'
-            && str_contains($notification->toTelegram($notifiable), '44'));
+            && str_contains($notification->toTelegram($notifiable), '44'),
+    );
 });
 
 it('включает сохранённый состав и сведения заказа в html и текстовое подтверждение', function (): void {
@@ -138,12 +150,33 @@ it('включает сохранённый состав и сведения з�
     $plain = (string) app(Markdown::class)->renderText($mail->markdown, $mail->data());
 
     foreach ([$html, $plain] as $body) {
-        expect($body)->toContain((string) $order->number, $order->created_at->format('d.m.Y'),
-            'Крем из оформленного заказа', '250 мл', '600 ₽', '2 × 600 ₽',
-            '1 200 ₽', '350 ₽', '1 550 ₽', $order->customer_name, $order->customer_phone,
-            $order->customer_email, 'Позвоните перед выдачей')
-            ->not->toContain('SNAPSHOT-250', 'Артикул', 'Новое название каталога', '9 999 ₽', '<script>',
-                '600.00', 'Открыть заказ', 'signature=', 'Оплатить заказ можно на странице заказа', 'Что дальше');
+        expect($body)->toContain(
+            (string) $order->number,
+            $order->created_at->format('d.m.Y'),
+            'Крем из оформленного заказа',
+            '250 мл',
+            '600 ₽',
+            '2 × 600 ₽',
+            '1 200 ₽',
+            '350 ₽',
+            '1 550 ₽',
+            $order->customer_name,
+            $order->customer_phone,
+            $order->customer_email,
+            'Позвоните перед выдачей',
+        )
+            ->not->toContain(
+                'SNAPSHOT-250',
+                'Артикул',
+                'Новое название каталога',
+                '9 999 ₽',
+                '<script>',
+                '600.00',
+                'Открыть заказ',
+                'signature=',
+                'Оплатить заказ можно на странице заказа',
+                'Что дальше',
+            );
     }
 
     expect($mail->actionUrl)->toBeNull();
@@ -175,8 +208,12 @@ it('не предлагает отложенную оплату в письме 
     $body = (string) $mail->render();
 
     expect($body)->toContain($order->payment_method->getLabel())
-        ->not->toContain(PaymentStatusEnum::from($status)->getLabel(), 'Статус оплаты', 'Оплатите до',
-            'Оплатить заказ можно на странице заказа');
+        ->not->toContain(
+            PaymentStatusEnum::from($status)->getLabel(),
+            'Статус оплаты',
+            'Оплатите до',
+            'Оплатить заказ можно на странице заказа',
+        );
 })->with([
     ['ONLINE', 'UNPAID'],
     ['ONLINE', 'PAID'],
@@ -206,8 +243,13 @@ it('оставляет уведомления об изменениях коро
     $mail = (new OrderUpdateNotification($order, 'SHIPPED'))->toMail(new AnonymousNotifiable);
 
     expect((string) $mail->render())->toContain("Заказ №{$order->number} передан в СДЭК.", '1234567890')
-        ->not->toContain('Товары в заказе', 'Комментарий к заказу', 'Здравствуйте',
-            'Спасибо за заказ в GeoMiLife', $order->total->format());
+        ->not->toContain(
+            'Товары в заказе',
+            'Комментарий к заказу',
+            'Здравствуйте',
+            'Спасибо за заказ в GeoMiLife',
+            $order->total->format(),
+        );
 });
 
 it('понятно сообщает об изменении статуса без приветствия суммы и благодарности', function (string $event, string $message): void {

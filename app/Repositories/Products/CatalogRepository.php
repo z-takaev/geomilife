@@ -64,14 +64,18 @@ final class CatalogRepository
             return ProductVariant::query()
                 ->select(['unit', 'value'])
                 ->active()
-                ->whereHas('product', static fn (Builder $query): Builder => $query
-                    ->active()
-                    ->whereIn('category_id', $categoryIds)
+                ->whereHas(
+                    'product',
+                    static fn (Builder $query): Builder => $query
+                        ->active()
+                        ->whereIn('category_id', $categoryIds),
                 )
                 ->distinct()
                 ->get()
                 ->sortBy(static fn (ProductVariant $variant): string => sprintf(
-                    '%02d-%010d', $unitOrder[$variant->unit->value], $variant->value,
+                    '%02d-%010d',
+                    $unitOrder[$variant->unit->value],
+                    $variant->value,
                 ))
                 ->map(static fn (ProductVariant $variant): array => [
                     'value' => $variant->unit->value.'|'.$variant->value,

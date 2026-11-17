@@ -73,6 +73,14 @@ it('формирует понятную накладную для сборки �
     $html = view('orders.packing-slip', (new PackingSlipViewModel($order))->data())->render();
 
     expect($html)->not->toContain('Статус заказа')
-        ->toContain('Товары', $order->subtotal->format(), 'Доставка', $order->delivery_price->format(),
-            'Итого', $order->total->format(), 'Коробка 1 из 1', 'Содержимое коробки');
+        ->toContain(
+            'Товары',
+            $order->subtotal->format(),
+            'Доставка',
+            $order->delivery_price->format(),
+            'Итого',
+            $order->total->format(),
+            'Коробка 1 из 1',
+            'Содержимое коробки',
+        );
 });

@@ -102,7 +102,14 @@ final class CatalogProducts extends Component
         [$categoryBackUrl, $categoryBackLabel] = $this->categoryBackLink();
 
         return view('livewire.catalog-products.catalog-products', compact(
-            'products', 'categories', 'packageOptions', 'sortOptions', 'hasMoreProducts', 'categoryBackUrl', 'categoryBackLabel', 'catalogKey',
+            'products',
+            'categories',
+            'packageOptions',
+            'sortOptions',
+            'hasMoreProducts',
+            'categoryBackUrl',
+            'categoryBackLabel',
+            'catalogKey',
         ));
     }
 
@@ -131,7 +138,11 @@ final class CatalogProducts extends Component
         $filters = $this->normalizeFilters();
         $sort = $this->normalizeSort();
         $products = $catalogRepository->getProducts(
-            $this->category, $filters, $sort, (int) $this->getPage(), $this->additionalPages,
+            $this->category,
+            $filters,
+            $sort,
+            (int) $this->getPage(),
+            $this->additionalPages,
         );
         $this->paginators['page'] = $products->currentPage();
         $this->additionalPages = min(max(0, $this->additionalPages), $products->lastPage() - $products->currentPage());

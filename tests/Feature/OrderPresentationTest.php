@@ -68,5 +68,4 @@ it('скрывает причину отмены от покупателя', fun
     $this->actingAs($user)->get(route('orders.show', $order))->assertOk()
         ->assertSee('Заказ отменён.')
         ->assertDontSee($order->cancellation_reason);
-
 });

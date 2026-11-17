@@ -26,7 +26,8 @@ it('отправляет вопрос администратору и очища
         ->assertDispatched('question-sent');
 
     Notification::assertSentOnDemandTimes(QuestionSubmittedNotification::class, 1);
-    Notification::assertSentOnDemand(QuestionSubmittedNotification::class,
+    Notification::assertSentOnDemand(
+        QuestionSubmittedNotification::class,
         function (QuestionSubmittedNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool {
             $mail = $notification->toMail($notifiable);
 
@@ -40,7 +41,8 @@ it('отправляет вопрос администратору и очища
                     'Контактный телефон: +7 (999) 123-45-67',
                     'Вопрос: Когда доставят заказ?',
                 ];
-        });
+        },
+    );
 });
 
 it('проверяет обязательные поля и формат телефона', function (): void {

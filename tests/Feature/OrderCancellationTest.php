@@ -65,8 +65,10 @@ it('покупатель не отменяет заказ после новог�
 it('менеджер отменяет оплаченный заказ и возвращает всю сумму включая доставку без дубля', function (): void {
     $order = PaymentFixtures::order(['status' => 'CONFIRMED', 'payment_status' => 'PAID']);
     $payment = PaymentFixtures::payment($order, ['status' => 'PAID', 'provider_status' => 'CONFIRMED']);
-    Http::fake(fn (Request $request) => Http::response(PaymentFixtures::state($payment,
-        str_ends_with($request->url(), '/Cancel') ? 'REFUNDED' : 'CONFIRMED')));
+    Http::fake(fn (Request $request) => Http::response(PaymentFixtures::state(
+        $payment,
+        str_ends_with($request->url(), '/Cancel') ? 'REFUNDED' : 'CONFIRMED',
+    )));
     $manager = PaymentFixtures::manager();
 
     app(OrderLifecycleService::class)->cancel($order, $manager, 'По просьбе покупателя');
@@ -95,8 +97,10 @@ it('отмена оплаты при получении не обращаетс�
 it('при авторизации снимает блокировку без утверждения о возврате списанных средств', function (): void {
     $order = PaymentFixtures::order(['payment_status' => 'AUTHORIZED']);
     $payment = PaymentFixtures::payment($order, ['status' => 'AUTHORIZED', 'provider_status' => 'AUTHORIZED']);
-    Http::fake(fn (Request $request) => Http::response(PaymentFixtures::state($payment,
-        str_ends_with($request->url(), '/Cancel') ? 'REVERSED' : 'AUTHORIZED')));
+    Http::fake(fn (Request $request) => Http::response(PaymentFixtures::state(
+        $payment,
+        str_ends_with($request->url(), '/Cancel') ? 'REVERSED' : 'AUTHORIZED',
+    )));
 
     app(OrderLifecycleService::class)->cancel($order, $order->user, 'Отмена');
 
@@ -125,8 +129,10 @@ it('возврат выполняется только после подтвер
             expect($deleted)->toBeTrue();
         }
 
-        return Http::response(PaymentFixtures::state($payment,
-            str_ends_with($request->url(), '/Cancel') ? 'REFUNDED' : 'CONFIRMED'));
+        return Http::response(PaymentFixtures::state(
+            $payment,
+            str_ends_with($request->url(), '/Cancel') ? 'REFUNDED' : 'CONFIRMED',
+        ));
     });
 
     app(OrderLifecycleService::class)->cancel($order, PaymentFixtures::manager(), 'Отмена до сдачи');
@@ -248,8 +254,10 @@ it('ошибка банковского возврата не восстанав
 it('возврат в обработке завершается по вебхуку а не по одному факту принятия запроса', function (): void {
     $order = PaymentFixtures::order(['payment_status' => 'PAID']);
     $payment = PaymentFixtures::payment($order, ['status' => 'PAID', 'provider_status' => 'CONFIRMED']);
-    Http::fake(fn (Request $request) => Http::response(PaymentFixtures::state($payment,
-        str_ends_with($request->url(), '/Cancel') ? 'REFUNDING' : 'CONFIRMED')));
+    Http::fake(fn (Request $request) => Http::response(PaymentFixtures::state(
+        $payment,
+        str_ends_with($request->url(), '/Cancel') ? 'REFUNDING' : 'CONFIRMED',
+    )));
 
     app(OrderLifecycleService::class)->cancel($order, $order->user, 'Отмена');
 
@@ -284,8 +292,10 @@ it('после временного сбоя СДЭК повторяет отм�
             return Http::response(PaymentFixtures::shipment($deleted ? 'CANCELED' : 'CREATED', $deleted ? 'DELETE' : 'CREATE'));
         }
 
-        return Http::response(PaymentFixtures::state($payment,
-            str_ends_with($request->url(), '/Cancel') ? 'REFUNDED' : 'CONFIRMED'));
+        return Http::response(PaymentFixtures::state(
+            $payment,
+            str_ends_with($request->url(), '/Cancel') ? 'REFUNDED' : 'CONFIRMED',
+        ));
     });
     $manager = PaymentFixtures::manager();
 

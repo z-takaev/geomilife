@@ -168,8 +168,10 @@ it('недоступность банка при сверке не меняет 
 it('позднюю оплату отменённого заказа возвращает полностью без восстановления', function (): void {
     $order = PaymentFixtures::order(['status' => 'CANCELLED']);
     $payment = PaymentFixtures::payment($order);
-    Http::fake(fn (Request $request) => Http::response(PaymentFixtures::state($payment,
-        str_ends_with($request->url(), '/Cancel') ? 'REFUNDED' : 'CONFIRMED')));
+    Http::fake(fn (Request $request) => Http::response(PaymentFixtures::state(
+        $payment,
+        str_ends_with($request->url(), '/Cancel') ? 'REFUNDED' : 'CONFIRMED',
+    )));
 
     $this->postJson(route('tbank.webhook'), PaymentFixtures::notification($payment, 'CONFIRMED'))->assertOk();
     $this->postJson(route('tbank.webhook'), PaymentFixtures::notification($payment, 'CONFIRMED'))->assertOk();

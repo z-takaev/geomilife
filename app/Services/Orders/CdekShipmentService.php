@@ -247,9 +247,11 @@ final class CdekShipmentService
         }
 
         return new CdekCreateOrderRequestDto(
-            tariffCode: 136, number: $this->cdekOrderNumber($order),
+            tariffCode: 136,
+            number: $this->cdekOrderNumber($order),
             recipient: new CdekContactDto(name: $order->customer_name, phone: $order->customer_phone, email: $order->customer_email),
-            packages: $packages, shipmentPoint: (string) config('orders.cdek.shipment_point'),
+            packages: $packages,
+            shipmentPoint: (string) config('orders.cdek.shipment_point'),
             deliveryPoint: $order->delivery_address['code'],
             sender: new CdekContactDto(name: (string) config('orders.cdek.sender_name'), phone: $phone, company: (string) config('orders.cdek.sender_company')),
         );

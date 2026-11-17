@@ -136,8 +136,12 @@ it('ищет ПВЗ по всему списку и показывает все 
         'is_pickup_available' => false, 'is_courier_available' => false]);
     addCdekCartItem();
     $points = array_map(fn (int $index) => new CdekDeliveryPointResponseDto(
-        code: 'MSK'.$index, type: 'PVZ',
-        cityCode: 44, address: 'Москва, Примерная, '.$index, latitude: 55.75, longitude: 37.61,
+        code: 'MSK'.$index,
+        type: 'PVZ',
+        cityCode: 44,
+        address: 'Москва, Примерная, '.$index,
+        latitude: 55.75,
+        longitude: 37.61,
         workTime: '09:00–20:00',
     ), range(1, 12));
     Cache::put('checkout:cdek:points:44:PVZ', $points, 300);

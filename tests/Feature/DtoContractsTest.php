@@ -43,8 +43,12 @@ it('отклоняет некорректные денежные данные р
 it('сериализует денежные поля СДЭК в рублях и сохраняет нулевые суммы', function (): void {
     $payment = new CdekPaymentDto(value: Money::fromMinor(0), vatSum: Money::fromMinor(123), vatRate: 0);
     $item = new CdekOrderItemDto(
-        name: 'Товар', wareKey: 'SKU', payment: $payment,
-        weight: 100, amount: 2, cost: Money::fromMinor(12345),
+        name: 'Товар',
+        wareKey: 'SKU',
+        payment: $payment,
+        weight: 100,
+        amount: 2,
+        cost: Money::fromMinor(12345),
     );
 
     expect($payment->toArray())->toBe(['value' => 0.0, 'vat_sum' => 1.23, 'vat_rate' => 0])

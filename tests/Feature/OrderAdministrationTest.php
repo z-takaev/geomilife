@@ -160,7 +160,8 @@ it('ставит города с курьером или самовывозом 
     expect($records->take(3)->modelKeys())->toBe([$both->id, $pickup->id, $courier->id]);
 
     $component->sortTable('name')->assertCanSeeTableRecords(
-        City::query()->orderBy('name')->limit(10)->get(), inOrder: true,
+        City::query()->orderBy('name')->limit(10)->get(),
+        inOrder: true,
     );
 });
 

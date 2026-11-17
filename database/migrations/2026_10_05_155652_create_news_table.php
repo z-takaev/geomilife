@@ -23,7 +23,6 @@ return new class extends Migration
 
             $table->index(['is_active', 'published_at', 'id'], 'news_active_published_idx');
         });
-
     }
 
     public function down(): void

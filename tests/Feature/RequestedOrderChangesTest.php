@@ -131,7 +131,6 @@ it('подтверждает оплату на месте и выдачу одн
 
     expect($order->fresh()->status)->toBe(OrderStatusEnum::DELIVERED)
         ->and($order->fresh()->payment_status->value)->toBe('PAID');
-
 });
 
 it('заменяет корзину владельца доступными товарами из заказа', function (): void {

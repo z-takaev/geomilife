@@ -24,7 +24,6 @@ return new class extends Migration
 
             $table->unique(['user_id', 'product_id']);
         });
-
     }
 
     public function down(): void
