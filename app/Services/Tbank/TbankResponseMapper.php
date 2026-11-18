@@ -14,6 +14,8 @@ use App\Enums\Tbank\TbankPaymentStatusEnum;
 use App\Services\Tbank\Exceptions\TbankApiException;
 use App\Support\Values\Money;
 
+// TODO: Для чего слой Mapper нужен?
+// TODO: Добавить phpdoblock для возвращаемых массивов dto
 final class TbankResponseMapper
 {
     public function initPayment(array $data): TbankInitPaymentResponseDto

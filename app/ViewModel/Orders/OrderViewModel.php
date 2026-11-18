@@ -10,6 +10,7 @@ use App\Enums\Orders\OrderStatusEnum;
 use App\Models\Order;
 use App\Services\Orders\OrderLifecycleService;
 
+// TODO: Подумать над этим слоем
 final class OrderViewModel
 {
     public static function processingStages(Order $order): array

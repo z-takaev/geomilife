@@ -9,6 +9,7 @@ use DVDoug\BoxPacker\Rotation;
 
 final readonly class PackingItemAdapter implements Item
 {
+    // TODO: Можно ли сюда принять dto вместо массива?
     public function __construct(public array $itemData) {}
 
     public function getDescription(): string

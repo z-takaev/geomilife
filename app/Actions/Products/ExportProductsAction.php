@@ -34,22 +34,27 @@ final class ExportProductsAction
     {
         return response()->streamDownload(function () use ($query): void {
             $spreadsheet = new Spreadsheet;
+
             try {
                 $sheet = $spreadsheet->getActiveSheet()->setTitle('Товары');
                 $sheet->fromArray(self::HEADERS);
                 $line = 2;
+
                 foreach ((clone $query)->with('variants')->lazy(200) as $product) {
                     $this->writeRow($sheet, $line++, $product);
+
                     foreach ($product->variants as $variant) {
                         $this->writeRow($sheet, $line++, $variant);
                     }
 
                     $line++;
                 }
+
                 $lastRow = max(1, $line - 2);
                 $sheet->freezePane('A2');
                 $sheet->getStyle('A1:R1')->getFont()->setBold(true);
                 $sheet->getStyle('A1:R'.$lastRow)->getAlignment()->setWrapText(true)->setVertical('top');
+
                 foreach (range('A', 'R') as $column) {
                     $sheet->getColumnDimension($column)->setWidth($column === 'D' ? 45 : 20);
                 }
@@ -70,6 +75,7 @@ final class ExportProductsAction
                 $instructions->getStyle('A1:B8')->getAlignment()->setWrapText(true);
                 $instructions->getStyle('A1:B1')->getFont()->setBold(true);
                 $spreadsheet->setActiveSheetIndex(0);
+
                 (new Xlsx($spreadsheet))->save('php://output');
             } finally {
                 $spreadsheet->disconnectWorksheets();
@@ -90,14 +96,17 @@ final class ExportProductsAction
                 intdiv($record->price->minorAmount(), 100), $record->old_price === null ? null : intdiv($record->old_price->minorAmount(), 100),
                 $yesNo($record->is_active), $yesNo($record->is_preorder),
                 $record->weight, $record->length, $record->width, $record->height];
+
         foreach ($values as $index => $value) {
             if ($value !== null) {
                 $sheet->getCell([$index + 1, $line])->setValueExplicit($value, is_string($value) ? DataType::TYPE_STRING : DataType::TYPE_NUMERIC);
             }
         }
+
         $sheet->getStyle('H'.$line)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_TEXT);
         $sheet->getStyle('I'.$line)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER);
         $sheet->getStyle('K'.$line.':L'.$line)->getNumberFormat()->setFormatCode('0');
+
         if ($isProduct) {
             $sheet->getStyle('A'.$line.':R'.$line)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('C6E0B4');
             $sheet->getStyle('A'.$line.':R'.$line)->getFont()->setBold(true);

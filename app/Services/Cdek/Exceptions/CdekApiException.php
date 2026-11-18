@@ -10,10 +10,6 @@ use Throwable;
 
 final class CdekApiException extends RuntimeException
 {
-    /**
-     * @param  array<mixed>  $errors
-     * @param  array<mixed>  $warnings
-     */
     public function __construct(
         string $message,
         public readonly ?int $statusCode = null,
@@ -65,9 +61,6 @@ final class CdekApiException extends RuntimeException
         return false;
     }
 
-    /**
-     * @param  array<mixed>  $errors
-     */
     private static function firstErrorMessage(array $errors): ?string
     {
         $firstError = $errors[0] ?? null;
@@ -81,10 +74,6 @@ final class CdekApiException extends RuntimeException
         return is_string($message) ? $message : null;
     }
 
-    /**
-     * @param  array<mixed>  $data
-     * @return list<mixed>
-     */
     private static function responseErrors(array $data): array
     {
         $errors = is_array($data['errors'] ?? null) ? array_values($data['errors']) : [];

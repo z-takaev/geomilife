@@ -85,6 +85,7 @@ Route::middleware('guest')->group(function (): void {
 Route::middleware('auth')->group(function (): void {
     Route::post('/logout', [SignInController::class, 'logout'])->name('logout');
 
+    // TODO: Обернуть в контроллер
     Route::get('/email/verify', [EmailVerificationController::class, 'showVerificationNotice'])
         ->name('verification.notice');
     Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verifyEmail'])
@@ -98,7 +99,7 @@ Route::middleware('auth')->group(function (): void {
 Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/profile', ProfileController::class)->name('profile.show');
 
-    Route::controller(OrderController::class)->prefix('orders')->name('orders.')->whereNumber('order')->group(function (): void {
+    Route::controller(OrderController::class)->prefix('orders')->name('orders.')->group(function (): void {
         Route::get('/', 'index')->name('index');
         Route::get('/{order}', 'show')->name('show');
         Route::post('/{order}/repeat', 'repeat')->middleware('throttle:6,1')->name('repeat');

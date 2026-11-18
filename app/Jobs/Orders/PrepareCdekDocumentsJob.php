@@ -34,12 +34,19 @@ final class PrepareCdekDocumentsJob implements ShouldBeUniqueUntilProcessing, Sh
         if ($order !== null && ! $order->status->isCancelled() && $order->cancellation_state === null) {
             $service->prepareCdekDocuments($order);
 
-            if ($order->documents()->whereIn('state', [CdekPrintStateEnum::CREATING->value,
-                CdekPrintStateEnum::ACCEPTED->value, CdekPrintStateEnum::PROCESSING->value])->exists()) {
+            // TODO: нельзя тут убрать value?
+            if ($order->documents()->whereIn('state', [
+                CdekPrintStateEnum::CREATING->value,
+                CdekPrintStateEnum::ACCEPTED->value,
+                CdekPrintStateEnum::PROCESSING->value
+            ])->exists()) {
                 if ($this->pollAttempt < 10) {
-                    self::dispatch($order->id, $this->pollAttempt + 1)->delay(now()->addSeconds(30))->afterCommit();
+                    self::dispatch($order->id, $this->pollAttempt + 1)
+                        ->delay(now()->addSeconds(30))
+                        ->afterCommit();
                 } else {
                     $service->markPendingCdekDocumentsFailed($order);
+
                     app(OrderNotificationService::class)->queue($order, 'DOCUMENT_FAILED', 'document-preparation-delayed');
                 }
             }

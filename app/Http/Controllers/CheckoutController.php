@@ -12,7 +12,7 @@ use Illuminate\Contracts\View\View;
 
 final class CheckoutController extends Controller
 {
-    // TODO: Заменить метод
+    // TODO: Заменить метод на index
     public function __invoke(CartService $cart): View
     {
         abort_if($cart->count() === 0, 404);
@@ -32,7 +32,7 @@ final class CheckoutController extends Controller
     public function orderSuccess(): View
     {
         $title = __('Заказ успешно оформлен');
-        $description = __('Подтверждение отправлено на указанный email.');
+        $description = __('Письмо о заказе отправлено на указанный email.');
         $icon = 'icon-CheckCircle';
 
         seo()->forRoute(
@@ -59,6 +59,7 @@ final class CheckoutController extends Controller
 
     public function paymentFail(): View
     {
+        // TODO: Поменять текст
         $title = __('Оплата не завершена');
         $description = (string) session('order_message', __('Заказ сохранён. Свяжитесь с нами для уточнения оплаты.'));
         $icon = 'icon-question';

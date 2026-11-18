@@ -49,6 +49,7 @@ final class AppServiceProvider extends ServiceProvider
 
             return $bot;
         });
+
         $this->app->scoped(FavoriteService::class);
         $this->app->scoped(CartService::class);
         $this->app->scoped(SeoManager::class);
@@ -58,6 +59,7 @@ final class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // TODO: Вынести в AdminPanelProvider?
         TextInput::configureUsing(static function (TextInput $component): void {
             $component->trim(static fn (TextInput $component): bool => ! $component->isPassword());
         });

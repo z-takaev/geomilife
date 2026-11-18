@@ -10,12 +10,6 @@ it('размещает список и детали заказов под общ
         ->and(route('orders.show', ['order' => 123], false))->toBe('/orders/123');
 });
 
-it('не предоставляет маршрут повторной отправки гостевого доступа', function (): void {
-    expect(Route::has('orders.guest.resend'))->toBeFalse();
-
-    $this->post('/orders/access')->assertNotFound();
-});
-
 it('размещает действия с заказом вне профиля и сохраняет защиту', function (string $action): void {
     $route = Route::getRoutes()->getByName('orders.'.$action);
 

@@ -6,6 +6,7 @@ namespace App\Support\Traits;
 
 use Illuminate\Database\Eloquent\Model;
 
+// TODO: Для чего нам этот трейт?
 trait HasOrder
 {
     protected static function bootHasOrder(): void

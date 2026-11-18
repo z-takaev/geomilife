@@ -15,6 +15,7 @@ use Illuminate\Support\Collection;
 
 final class CatalogRepository
 {
+    // TODO: Вынести константу в MONEY
     private const string PRICE_IN_RUBLES = '(product_variants.price / 100)';
 
     public function __construct(private readonly ProductRepository $products) {}
@@ -28,10 +29,13 @@ final class CatalogRepository
     ): LengthAwarePaginator {
         $perPage = config('pagination.per_page.catalog');
         $variants = $this->matchingVariants($filters);
+        // TODO: Убрать зависимость от ProductRepository
         $query = $this->products->cardQuery()
             ->when($category, fn (Builder $query): Builder => $query->whereIn('category_id', $this->categoryIds($category)));
+
         $total = (clone $query)->whereExists(clone $variants)->count();
 
+        // TODO: Понять нужен ли PRICE_IN_RUBLES
         $variants->selectRaw('id as catalog_variant_id, '.self::PRICE_IN_RUBLES.' as catalog_price');
 
         match ($sort) {
@@ -40,14 +44,18 @@ final class CatalogRepository
             default => null,
         };
 
+        // TODO: почему лимит 1?
         $variants->orderBy('order')->limit(1);
+        // TODO: Что делает запрос?
         $query->joinLateral($variants, 'selected_variant')
             ->addSelect(['selected_variant.catalog_variant_id', 'selected_variant.catalog_price']);
+
         $this->sortProducts($query, $sort);
 
         $lastPage = max(1, (int) ceil($total / $perPage));
         $page = min(max(1, $page), $lastPage);
         $additionalPages = min(max(0, $additionalPages), $lastPage - $page);
+
         $products = $query->offset(($page - 1) * $perPage)
             ->limit($perPage * ($additionalPages + 1))
             ->get();
@@ -59,6 +67,7 @@ final class CatalogRepository
     {
         return once(function () use ($category): array {
             $categoryIds = $this->categoryIds($category);
+            // TODO: зачем тут array_flip?
             $unitOrder = array_flip(array_column(ProductUnitEnum::cases(), 'value'));
 
             return ProductVariant::query()
@@ -71,12 +80,12 @@ final class CatalogRepository
                         ->whereIn('category_id', $categoryIds),
                 )
                 ->distinct()
-                ->get()
+                ->get() // TODO: Что за сортировка?
                 ->sortBy(static fn (ProductVariant $variant): string => sprintf(
                     '%02d-%010d',
                     $unitOrder[$variant->unit->value],
                     $variant->value,
-                ))
+                )) // TODO: какой формат получается после map?
                 ->map(static fn (ProductVariant $variant): array => [
                     'value' => $variant->unit->value.'|'.$variant->value,
                     'label' => $variant->label(),
@@ -86,9 +95,12 @@ final class CatalogRepository
         });
     }
 
+    // TODO: Подумать над названием метода
     private function matchingVariants(CatalogFiltersDto $filters): Builder
     {
-        $query = ProductVariant::query()->active()->whereColumn('product_id', 'products.id');
+        $query = ProductVariant::query()
+            ->active()
+            ->whereColumn('product_id', 'products.id');
 
         if ($filters->priceFrom !== null) {
             $query->whereRaw(self::PRICE_IN_RUBLES.' >= ?', [$filters->priceFrom]);
@@ -98,6 +110,7 @@ final class CatalogRepository
             $query->whereRaw(self::PRICE_IN_RUBLES.' <= ?', [$filters->priceTo]);
         }
 
+        // TODO: избавиться от строки preorder
         if (count($filters->availability) === 1) {
             $query->where('is_preorder', $filters->availability[0] === 'preorder');
         }
@@ -126,6 +139,7 @@ final class CatalogRepository
         };
     }
 
+    // TODO: Может убрать метод и перенести в модель?
     private function categoryIds(Category $category): Collection
     {
         return once(static fn (): Collection => $category->descendantsAndSelf()->visible()->pluck('id'));

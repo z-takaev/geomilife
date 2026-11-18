@@ -19,9 +19,6 @@ use InvalidArgumentException;
 
 final class CdekService
 {
-    /**
-     * Подключает API-клиент СДЭК и преобразователь ответов.
-     */
     public function __construct(
         private readonly CdekClient $client,
         private readonly CdekResponseMapper $mapper,
@@ -59,9 +56,12 @@ final class CdekService
      */
     public function getDeliveryPoints(CdekGetDeliveryPointsRequestDto $filters): array
     {
-        return $this->mapper->deliveryPoints($this->client->get('/v2/deliverypoints', $filters->toArray()));
+        return $this->mapper->deliveryPoints(
+            $this->client->get('/v2/deliverypoints', $filters->toArray())
+        );
     }
 
+    // TODO: Добавить комментарии
     public function getDeliveryPointCityCodes(int $page = 0, int $size = 1000): CdekDeliveryPointCityCodesPageDto
     {
         if ($page < 0) {
@@ -97,16 +97,19 @@ final class CdekService
     }
 
     /**
-     * Отправить заявку на создание отправления; ACCEPTED ещё не означает успешное создание.
+     * Отправить заявку на создание отправления.
      */
     public function createOrder(CdekCreateOrderRequestDto $order): CdekOperationResponseDto
     {
-        return $this->mapper->operation($this->client->post('/v2/orders', $order->toArray()));
+        return $this->mapper->operation(
+            $this->client->post('/v2/orders', $order->toArray())
+        );
     }
 
     /**
-     * Получить отправление по UUID, трек-номер, статус доставки и результат обработки запроса.
+     * Получить отправление по UUID
      */
+    // TODO: Изменить название
     public function getOrder(string $uuid): CdekOrderResponseDto
     {
         return $this->mapper->order($this->client->get('/v2/orders/'.$this->uuid($uuid)));
@@ -115,13 +118,14 @@ final class CdekService
     /**
      * Получает отправление СДЭК по номеру заказа интернет-магазина.
      */
+    // TODO: Изменить название
     public function findOrder(string $number): CdekOrderResponseDto
     {
         return $this->mapper->order($this->client->get('/v2/orders', ['im_number' => $number]));
     }
 
     /**
-     * Отправляет запрос на отмену отправления СДЭК по UUID.
+     * Отправляет запрос на отмену отправления СДЭК
      */
     public function cancelOrder(string $uuid): CdekOperationResponseDto
     {
@@ -213,7 +217,6 @@ final class CdekService
         return $this->mapper->operation($this->client->delete('/v2/webhooks/'.$this->uuid($uuid)));
     }
 
-    /** @return array<string, mixed> */
     private function printRequest(string $orderUuid, ?int $copyCount): array
     {
         if ($copyCount !== null && $copyCount < 1) {

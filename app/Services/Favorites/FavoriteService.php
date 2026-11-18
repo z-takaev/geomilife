@@ -24,7 +24,7 @@ final class FavoriteService
         return Auth::check()
             ? ($this->productIds ??= Cache::memo()->rememberForever(
                 $this->cacheKey(),
-                static fn (): array => auth()->user()->favorites()->pluck('product_id')->all(),
+                static fn (): array => Auth::user()->favorites()->pluck('product_id')->all(),
             ))
             : $this->validateGuestIds($guestIds);
     }
@@ -50,7 +50,7 @@ final class FavoriteService
     }
 
     /**
-     * Подготавливает доступные избранные товары для отображения.
+     * Возвращает товары для отображения.
      */
     public function items(array $guestIds = []): Collection
     {
@@ -60,6 +60,7 @@ final class FavoriteService
             return collect();
         }
 
+        // TODO: Убрать зависимость ProductRepository
         return app(ProductRepository::class)
             ->cardQuery()
             ->whereKey($ids)
@@ -84,7 +85,7 @@ final class FavoriteService
             return $this->validateGuestIds([...$guestIds, $productId]);
         }
 
-        auth()->user()->favorites()->firstOrCreate(['product_id' => $productId]);
+        Auth::user()->favorites()->firstOrCreate(['product_id' => $productId]);
         $this->forgetCache();
 
         return $this->ids();
@@ -126,7 +127,8 @@ final class FavoriteService
 
         DB::transaction(function () use ($ids): void {
             foreach ($ids as $productId) {
-                auth()->user()->favorites()->firstOrCreate(['product_id' => $productId]);
+                // TODO: Как исправить ошибку vscode
+                Auth::user()->favorites()->firstOrCreate(['product_id' => $productId]);
             }
         });
 
@@ -140,7 +142,7 @@ final class FavoriteService
     {
         abort_unless(Auth::check(), 403);
 
-        session()->put('favorites.merge_declined', auth()->id());
+        session()->put('favorites.merge_declined', Auth::id());
     }
 
     private function forgetCache(): void
@@ -151,6 +153,6 @@ final class FavoriteService
 
     private function cacheKey(): string
     {
-        return (string) config('cache.items.favorite_ids.key_prefix').auth()->id();
+        return (string) config('cache.items.favorite_ids.key_prefix') . Auth::id();
     }
 }

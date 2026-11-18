@@ -147,15 +147,15 @@ final class City extends Model
         );
     }
 
+    private static function cacheKey(int $id): string
+    {
+        return (string) config('cache.items.cities.key_prefix').$id;
+    }
+
     public function optionLabel(): string
     {
         return blank($this->region)
             ? $this->name
             : $this->name.', '.$this->region;
-    }
-
-    private static function cacheKey(int $id): string
-    {
-        return (string) config('cache.items.cities.key_prefix').$id;
     }
 }

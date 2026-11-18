@@ -26,6 +26,7 @@ final class UserProfileForm extends Form
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['nullable', 'string', 'max:255'],
             'birth_date' => ['nullable', 'date', 'before:today'],
+            // TODO: Добавить кстомное правило для телефона
             'phone' => ['required', 'string', 'regex:'.PhoneFormat::COMPACT_PATTERN, Rule::unique('users', 'phone')->ignore(auth()->id())],
             'city_id' => ['required', 'integer', Rule::exists('cities', 'id')->where('is_active', true)],
         ];

@@ -10,6 +10,7 @@ use App\Models\Order;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\ValidationException;
 
+// TODO: Зачем нам этот трейт и где он используется?
 trait ValidatesOrderManagement
 {
     private function assertStaff(FilamentUser $actor): void

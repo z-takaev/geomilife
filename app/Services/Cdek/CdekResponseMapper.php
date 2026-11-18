@@ -24,7 +24,6 @@ use OverflowException;
 final class CdekResponseMapper
 {
     /**
-     * @param  array<mixed>  $data
      * @return list<CdekCityResponseDto>
      */
     public function cities(array $data): array
@@ -38,7 +37,6 @@ final class CdekResponseMapper
     }
 
     /**
-     * @param  array<mixed>  $data
      * @return list<CdekDeliveryPointResponseDto>
      */
     public function deliveryPoints(array $data): array
@@ -72,7 +70,6 @@ final class CdekResponseMapper
         }, $this->records($data));
     }
 
-    /** @param array<mixed> $data */
     public function deliveryPointCityCodes(array $data): CdekDeliveryPointCityCodesPageDto
     {
         $points = $this->records($data);
@@ -103,7 +100,6 @@ final class CdekResponseMapper
         return new CdekDeliveryPointCityCodesPageDto($cityCodes, count($points));
     }
 
-    /** @param array<mixed> $data */
     public function calculation(array $data): CdekCalculateTariffResponseDto
     {
         $this->ensureCalculationSucceeded($data);
@@ -125,7 +121,6 @@ final class CdekResponseMapper
         );
     }
 
-    /** @param array<mixed> $data */
     public function operation(array $data): CdekOperationResponseDto
     {
         $entity = $this->optionalObject($data, 'entity');
@@ -173,7 +168,6 @@ final class CdekResponseMapper
         );
     }
 
-    /** @param array<mixed> $data */
     public function order(array $data): CdekOrderResponseDto
     {
         $operation = $this->operation($data);
@@ -195,7 +189,6 @@ final class CdekResponseMapper
         );
     }
 
-    /** @param array<mixed> $data */
     public function printDocument(array $data): CdekPrintResponseDto
     {
         $operation = $this->operation($data);
@@ -223,7 +216,6 @@ final class CdekResponseMapper
     }
 
     /**
-     * @param  array<mixed>  $data
      * @return list<CdekWebhookResponseDto>
      */
     public function webhooks(array $data): array
@@ -235,7 +227,6 @@ final class CdekResponseMapper
         ), $this->records($data));
     }
 
-    /** @param array<mixed> $data */
     private function ensureCalculationSucceeded(array $data): void
     {
         $errors = $this->issues($data, 'errors');
@@ -246,7 +237,6 @@ final class CdekResponseMapper
     }
 
     /**
-     * @param  array<mixed>  $data
      * @return array{code: string, name: ?string, dateTime: DateTimeImmutable}|null
      */
     private function latestStatus(array $data): ?array
@@ -279,7 +269,6 @@ final class CdekResponseMapper
     }
 
     /**
-     * @param  array<mixed>  $data
      * @return list<array{code: string, message: string}>
      */
     private function issues(array $data, string $key): array
@@ -291,7 +280,6 @@ final class CdekResponseMapper
     }
 
     /**
-     * @param  array<mixed>  $data
      * @return list<array<string, mixed>>
      */
     private function items(array $data, string $key): array
@@ -306,7 +294,6 @@ final class CdekResponseMapper
     }
 
     /**
-     * @param  array<mixed>  $data
      * @return list<array<string, mixed>>
      */
     private function records(array $data): array
@@ -325,7 +312,6 @@ final class CdekResponseMapper
     }
 
     /**
-     * @param  array<mixed>  $data
      * @return array<string, mixed>
      */
     private function object(array $data, string $key): array
@@ -334,7 +320,6 @@ final class CdekResponseMapper
     }
 
     /**
-     * @param  array<mixed>  $data
      * @return array<string, mixed>|null
      */
     private function optionalObject(array $data, string $key): ?array
@@ -348,13 +333,11 @@ final class CdekResponseMapper
         return $value;
     }
 
-    /** @param array<mixed> $data */
     private function string(array $data, string $key): string
     {
         return $this->optionalString($data, $key) ?? throw CdekApiException::invalidResponse();
     }
 
-    /** @param array<mixed> $data */
     private function optionalString(array $data, string $key): ?string
     {
         $value = $data[$key] ?? null;
@@ -366,7 +349,6 @@ final class CdekResponseMapper
         return $value;
     }
 
-    /** @param array<mixed> $data */
     private function integer(array $data, string $key): int
     {
         $value = $data[$key] ?? null;
@@ -378,7 +360,6 @@ final class CdekResponseMapper
         return $value;
     }
 
-    /** @param array<mixed> $data */
     private function boolean(array $data, string $key): bool
     {
         $value = $data[$key] ?? null;
@@ -390,7 +371,6 @@ final class CdekResponseMapper
         return $value;
     }
 
-    /** @param array<mixed> $data */
     private function money(array $data, string $key): Money
     {
         $value = $data[$key] ?? null;
@@ -406,13 +386,11 @@ final class CdekResponseMapper
         }
     }
 
-    /** @param array<mixed> $data */
     private function number(array $data, string $key): float
     {
         return $this->optionalNumber($data, $key) ?? throw CdekApiException::invalidResponse();
     }
 
-    /** @param array<mixed> $data */
     private function optionalNumber(array $data, string $key): ?float
     {
         $value = $data[$key] ?? null;
@@ -424,7 +402,6 @@ final class CdekResponseMapper
         return $value === null ? null : (float) $value;
     }
 
-    /** @param array<mixed> $data */
     private function date(array $data, string $key): DateTimeImmutable
     {
         $value = $this->string($data, $key);

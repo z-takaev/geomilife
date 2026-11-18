@@ -63,7 +63,7 @@
 
     @if ($category !== null && $packageOptions !== [])
         <fieldset class="catalog-filter-group">
-            <legend>{{ __('Вес / объём / количество') }}</legend>
+            <legend>{{ __('Фасовка') }}</legend>
             <div class="catalog-filter-options catalog-filter-options--scroll">
                 @foreach ($packageOptions as $index => $packageOption)
                     <label class="catalog-filter-option"

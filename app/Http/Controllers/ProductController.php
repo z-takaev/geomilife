@@ -19,6 +19,7 @@ final class ProductController extends Controller
         private readonly ProductRepository $productRepository,
     ) {}
 
+    // TODO: Сделать invoke
     public function show(string $product, Request $request): View
     {
         $product = $this->productRepository->getDetails($product);
@@ -44,7 +45,7 @@ final class ProductController extends Controller
             ->schema(BreadcrumbSchema::make($breadcrumbs));
 
         $recommendedProducts = $this->productRepository->getRecommendedProducts($product);
-        $images = $product->images();
+        $images = $product->images(); // TODO: Убрать
 
         return view(
             'products.show',

@@ -25,6 +25,7 @@ final class CreateCdekShipmentJob implements ShouldQueue
     public function handle(CdekShipmentService $service): void
     {
         $order = Order::query()->find($this->orderId);
+
         if ($order !== null && $order->cancellation_state === null && $order->status->isReadyToShip()) {
             $service->create($order);
         }

@@ -35,6 +35,7 @@
                 </dl>
             </div>
 
+            {{-- TODO: Заменить на компонент списка категорий --}}
             @if ($categories->isNotEmpty())
                 @php
                     $categoryBackgrounds = [
@@ -85,6 +86,7 @@
 
                     @if ($products->hasPages())
                         <div class="search-results-pagination">
+                            {{-- TODO: Почему в links явно указывается шаблон пагинации? --}}
                             {{ $products->onEachSide(1)->withQueryString()->links('vendor.pagination.bootstrap-5') }}
                         </div>
                     @endif

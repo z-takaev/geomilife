@@ -8,6 +8,7 @@ use App\Models\Product;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
+// TODO: Можно ли поменять на анонимный компонент?
 final class FavoriteButton extends Component
 {
     public function __construct(public Product $product, public bool $compact = false) {}

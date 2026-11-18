@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Services\Orders\OrderPaymentService;
+use Illuminate\Support\Facades\Log;
 use App\Services\Tbank\TbankService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -16,6 +17,11 @@ final class TbankWebhookController extends Controller
     public function __invoke(Request $request, TbankService $tbank, OrderPaymentService $payments): Response
     {
         abort_unless($request->isJson(), 415);
+
+        // TODO: Убрать лог
+        Log::info('tbank webhook');
+
+        // TODO: Добавить FormRequest
 
         try {
             $data = json_decode($request->getContent(), associative: true, flags: JSON_THROW_ON_ERROR);

@@ -68,6 +68,7 @@ final class TbankClient
         );
     }
 
+    // TODO: Зачем метод
     private function stringConfig(string $key): string
     {
         $value = config("tbank.{$key}");
@@ -79,6 +80,7 @@ final class TbankClient
         return $value;
     }
 
+    // TODO: Зачем метод
     private function integerConfig(string $key): int
     {
         $value = config("tbank.{$key}");

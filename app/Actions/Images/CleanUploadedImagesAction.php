@@ -7,6 +7,7 @@ namespace App\Actions\Images;
 use Illuminate\Filesystem\Filesystem;
 use RuntimeException;
 
+// TODO: изменить название и учитывать пдф документ
 final class CleanUploadedImagesAction
 {
     public function __construct(private readonly Filesystem $filesystem) {}

@@ -9,6 +9,7 @@ final class RobotsController extends Controller
     public function __invoke(): Response
     {
         $siteUrl = rtrim((string) config('app.url'), '/');
+
         $content = implode("\n", [
             'User-agent: *',
             'Disallow: /admin/',

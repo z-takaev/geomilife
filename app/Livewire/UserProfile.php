@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire;
 
 use App\Actions\Cities\GetCitySuggestionsAction;
+use App\Models\User;
 use App\Livewire\Forms\UserProfileForm;
 use App\Models\City;
 use App\Services\Cities\CurrentCityService;
@@ -12,6 +13,7 @@ use App\Services\Customers\SavedDeliveryLocationService;
 use App\Services\Telegram\TelegramConnectionService;
 use App\Support\Phone\PhoneFormat;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 final class UserProfile extends Component
@@ -22,7 +24,7 @@ final class UserProfile extends Component
 
     public function mount(): void
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         $this->form->first_name = $user->first_name;
         $this->form->last_name = $user->last_name ?? '';
@@ -55,37 +57,49 @@ final class UserProfile extends Component
 
     public function saveProfile(): void
     {
-        $user = auth()->user();
+        /** @var User */
+        $user = Auth::user();
+
+        // TODO: Избавиться от нужны использовать PhoneFormat
         $this->form->phone = PhoneFormat::normalize((string) $this->form->phone);
         $validated = $this->form->validate();
 
         $user->fill($validated);
         $user->save();
+
         $this->form->phone = PhoneFormat::format((string) $user->phone);
+
         app(CurrentCityService::class)->select($validated['city_id']);
+
         $this->dispatch('notify', message: __('Данные профиля сохранены.'), type: 'success');
     }
 
     public function setDefaultAddress(int $addressId): void
     {
-        app(SavedDeliveryLocationService::class)->setDefaultAddress(auth()->user(), $addressId);
+        app(SavedDeliveryLocationService::class)
+            ->setDefaultAddress(Auth::user(), $addressId);
+
         $this->dispatch('notify', message: __('Активный адрес обновлен.'), type: 'success');
     }
 
     public function deleteAddress(int $addressId): void
     {
-        app(SavedDeliveryLocationService::class)->deleteAddress(auth()->user(), $addressId);
+        app(SavedDeliveryLocationService::class)
+            ->deleteAddress(Auth::user(), $addressId);
     }
 
     public function setDefaultDeliveryPoint(int $pointId): void
     {
-        app(SavedDeliveryLocationService::class)->setDefaultDeliveryPoint(auth()->user(), $pointId);
+        app(SavedDeliveryLocationService::class)
+            ->setDefaultDeliveryPoint(Auth::user(), $pointId);
+
         $this->dispatch('notify', message: __('Активный пункт обновлён.'), type: 'success');
     }
 
     public function deleteDeliveryPoint(int $pointId): void
     {
-        app(SavedDeliveryLocationService::class)->deleteDeliveryPoint(auth()->user(), $pointId);
+        app(SavedDeliveryLocationService::class)
+            ->deleteDeliveryPoint(Auth::user(), $pointId);
     }
 
     public function connectTelegram(TelegramConnectionService $telegramService): ?string
@@ -96,20 +110,22 @@ final class UserProfile extends Component
             return null;
         }
 
-        return $telegramService->createConnectionUrl(auth()->user());
+        return $telegramService->createConnectionUrl(Auth::user());
     }
 
     public function disconnectTelegram(TelegramConnectionService $telegramService): void
     {
-        $telegramService->disconnect(auth()->user());
+        $telegramService->disconnect(Auth::user());
     }
 
     public function render(TelegramConnectionService $telegramService, GetCitySuggestionsAction $getCitySuggestions): View
     {
-        $user = auth()->user();
+        /** @var User */
+        $user = Auth::user();
         $addresses = $user->addresses()->with('city')->orderByDesc('is_default')->latest()->get();
         $deliveryPoints = $user->savedDeliveryPoints()->with('city')->orderByDesc('is_default')->latest()->get();
-        $telegramBotConfigured = $telegramService->isConfigured();
+        $telegramBotConfigured = $telegramService->isConfigured(); // TODO: Вынести в хелпер и в шаблоне использовать его а не явно передавать
+        // TODO: Заменить название экшена
         $cities = $getCitySuggestions->run($this->city_search);
 
         return view('livewire.user-profile', compact('user', 'addresses', 'deliveryPoints', 'telegramBotConfigured', 'cities'));

@@ -24,13 +24,15 @@ final class TbankService
     ) {}
 
     /**
-     * Создаёт платёж в Т-Банке и проверяет соответствие заказа и суммы.
+     * Создаёт платёж в Т-Банке
      */
     public function initPayment(TbankInitPaymentRequestDto $payment): TbankInitPaymentResponseDto
     {
         $data = $payment->toArray();
         $data['NotificationURL'] ??= route('tbank.webhook');
-        $result = $this->mapper->initPayment($this->client->post('Init', $data));
+        $result = $this->mapper->initPayment(
+            $this->client->post('Init', $data)
+        );
 
         if ($result->orderId !== $payment->orderId || ! $result->amount->equals($payment->amount)) {
             throw TbankApiException::invalidResponse();
@@ -40,11 +42,13 @@ final class TbankService
     }
 
     /**
-     * Запрашивает отмену платежа или возврат оплаты и проверяет ответ Т-Банка.
+     * Запрашивает отмену платежа или возврат оплаты
      */
     public function cancelPayment(TbankCancelPaymentRequestDto $payment): TbankCancelPaymentResponseDto
     {
-        $result = $this->mapper->cancelPayment($this->client->post('Cancel', $payment->toArray()));
+        $result = $this->mapper->cancelPayment(
+            $this->client->post('Cancel', $payment->toArray())
+        );
 
         if ($result->paymentId !== $payment->paymentId
             || (! $result->status->isCanceled()
@@ -57,13 +61,15 @@ final class TbankService
     }
 
     /**
-     * Получает состояние платежа и проверяет его идентификатор.
+     * Получает состояние платежа
      */
     public function getPaymentState(string $paymentId): TbankGetPaymentStateResponseDto
     {
         TbankIdentifierValidator::validatePaymentId($paymentId);
 
-        $result = $this->mapper->paymentState($this->client->post('GetState', ['PaymentId' => $paymentId]));
+        $result = $this->mapper->paymentState(
+            $this->client->post('GetState', ['PaymentId' => $paymentId])
+        );
 
         if ($result->paymentId !== $paymentId) {
             throw TbankApiException::invalidResponse();
@@ -91,6 +97,7 @@ final class TbankService
     /**
      * Проверяет терминал и подпись уведомления, затем преобразует данные в DTO.
      */
+    // TODO: Для чего этот метод?
     public function parsePaymentNotification(array $data): TbankPaymentNotificationDto
     {
         $terminalKey = config('tbank.terminal_key');

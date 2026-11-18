@@ -24,9 +24,6 @@ final class MenuServiceProvider extends ServiceProvider
         });
     }
 
-    /**
-     * @return list<MenuItem>
-     */
     private function header(CategoryRepository $categoryRepository): array
     {
         return [
@@ -50,9 +47,6 @@ final class MenuServiceProvider extends ServiceProvider
         ];
     }
 
-    /**
-     * @return list<MenuItem>
-     */
     private function footer(): array
     {
         return [
@@ -75,9 +69,6 @@ final class MenuServiceProvider extends ServiceProvider
         ];
     }
 
-    /**
-     * @return list<MenuItem>
-     */
     private function catalog(CategoryRepository $categoryRepository): array
     {
         return $categoryRepository->getActiveCatalog()

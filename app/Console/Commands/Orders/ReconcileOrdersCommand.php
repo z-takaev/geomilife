@@ -42,6 +42,7 @@ final class ReconcileOrdersCommand extends Command
                         $statuses->resumeCancellation($order);
                     } catch (Throwable $exception) {
                         report($exception);
+
                         app(OrderNotificationService::class)->queue(
                             $order,
                             'CANCELLATION_FAILED',
@@ -70,6 +71,7 @@ final class ReconcileOrdersCommand extends Command
                         }
                     } catch (Throwable $exception) {
                         report($exception);
+
                         app(OrderNotificationService::class)->queue(
                             $payment->order,
                             'PAYMENT_RECONCILE_FAILED',
@@ -82,9 +84,13 @@ final class ReconcileOrdersCommand extends Command
 
     private function reconcileShipments(): void
     {
-        Order::query()->where('delivery_method', DeliveryMethodEnum::CDEK)->where('payment_status', PaymentStatusEnum::PAID)
-            ->whereIn('status', [OrderStatusEnum::READY_TO_SHIP, OrderStatusEnum::SHIPPED])->whereNull('cancellation_state')
+        Order::query()
+            ->where('delivery_method', DeliveryMethodEnum::CDEK)
+            ->where('payment_status', PaymentStatusEnum::PAID)
+            ->whereIn('status', [OrderStatusEnum::READY_TO_SHIP, OrderStatusEnum::SHIPPED])
+            ->whereNull('cancellation_state')
             ->where(function ($query): void {
+                // TODO: Для чего whereDoesntHave и orWhereHas
                 $query->whereDoesntHave('shipment')->orWhereHas('shipment', function ($shipment): void {
                     $shipment->whereNull('last_checked_at')
                         ->orWhere('last_checked_at', '<=', now()->subMinutes((int) config('orders.reconciliation_stale_minutes')));
@@ -93,6 +99,7 @@ final class ReconcileOrdersCommand extends Command
                 foreach ($orders as $order) {
                     try {
                         $shipments = app(CdekShipmentService::class);
+
                         if ($order->status->isReadyToShip()
                             && ($order->shipment === null || $order->shipment->operation_state?->is(CdekShipmentOperationStateEnum::ABSENT))) {
                             $shipments->create($order);
@@ -101,6 +108,7 @@ final class ReconcileOrdersCommand extends Command
                         }
                     } catch (Throwable $exception) {
                         report($exception);
+
                         app(OrderNotificationService::class)->queue(
                             $order,
                             'SHIPPING_FAILED',

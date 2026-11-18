@@ -22,9 +22,6 @@ final class FixtureImages
         private readonly ProcessImageAction $processImage,
     ) {}
 
-    /**
-     * @param  Closure(Image): mixed|null  $processImage
-     */
     public function attach(
         HasMedia $model,
         string $file,
@@ -41,9 +38,6 @@ final class FixtureImages
         );
     }
 
-    /**
-     * @param  Closure(Image): mixed|null  $processImage
-     */
     public function attachRandom(
         HasMedia $model,
         string $directory,
@@ -75,9 +69,6 @@ final class FixtureImages
         );
     }
 
-    /**
-     * @param  Closure(Image): mixed|null  $processImage
-     */
     private function attachFile(
         HasMedia $model,
         string $path,
@@ -100,6 +91,6 @@ final class FixtureImages
 
     private function path(string $path): string
     {
-        return base_path('database/fixtures/images/'.ltrim($path, '/'));
+        return base_path('database/fixtures/images/' . ltrim($path, '/'));
     }
 }

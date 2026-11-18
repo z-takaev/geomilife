@@ -9,6 +9,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
+// TODO: Изменить название
 final class DeliveryQuoteErrorNotification extends Notification implements ShouldQueue
 {
     use Queueable;

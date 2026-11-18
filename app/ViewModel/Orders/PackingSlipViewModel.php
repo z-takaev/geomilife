@@ -6,6 +6,7 @@ namespace App\ViewModel\Orders;
 
 use App\Models\Order;
 
+// TODO: Подумать над этим слоем
 final readonly class PackingSlipViewModel
 {
     public function __construct(private Order $order) {}

@@ -15,6 +15,7 @@
                     <p>{{ __('Состав, получение и состояние ваших покупок') }}</p>
                 </div>
             </div>
+
             <div class="orders-list">
                 @forelse ($orders as $order)
                     <article class="customer-order-card">
@@ -37,13 +38,16 @@
                                     class="order-label">{{ __('Итого') }}</span><strong>{{ $order->total->format() }}</strong>
                             </div>
                         </div>
+
                         @if ($order->is_preorder)
                             <p class="order-preorder">
                                 {{ __('Предзаказ. Точные сроки доставки согласовываются отдельно с менеджером.') }}</p>
                         @endif
-                        <div class="customer-order-card__actions"><a href="{{ route('orders.show', $order) }}"
-                                class="order-text-button">{{ __('Подробнее о заказе') }} <span
-                                    aria-hidden="true">→</span></a>
+
+                        <div class="customer-order-card__actions">
+                            <a href="{{ route('orders.show', $order) }}"
+                                class="order-text-button">{{ __('Подробнее о заказе') }} <span aria-hidden="true">→</span>
+                            </a>
                         </div>
                     </article>
                 @empty

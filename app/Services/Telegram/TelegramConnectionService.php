@@ -8,6 +8,8 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use SergiX44\Nutgram\Nutgram;
 
+// TODO: Переименовать в TelegramService
+// TODO: Проверить в проекте где еще есть код связанный в тг и перенести его в этот сервис
 final class TelegramConnectionService
 {
     /**

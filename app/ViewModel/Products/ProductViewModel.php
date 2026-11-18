@@ -7,6 +7,7 @@ namespace App\ViewModel\Products;
 use App\Models\Product;
 use App\Models\ProductVariant;
 
+// TODO: Подумать над этим слоем
 final readonly class ProductViewModel
 {
     public array $selectedVariant;

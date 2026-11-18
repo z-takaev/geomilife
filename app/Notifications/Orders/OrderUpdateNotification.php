@@ -26,12 +26,15 @@ final class OrderUpdateNotification extends Notification implements ShouldQueue
         $this->afterCommit();
     }
 
+    // TODO: Сделать подключение понятнее и удобнее
     public function via(object $notifiable): array
     {
         $channels = [];
+
         if ($notifiable->routeNotificationFor('mail')) {
             $channels[] = 'mail';
         }
+
         if ($notifiable->routeNotificationFor('telegram')) {
             $channels[] = TelegramChannel::class;
         }
@@ -43,6 +46,7 @@ final class OrderUpdateNotification extends Notification implements ShouldQueue
     {
         if ($this->event === 'CREATED' && $this->audience === 'BUYER') {
             $this->order->loadMissing('items');
+
             $mail = (new MailMessage)
                 ->subject(__('Заказ №:number принят', ['number' => $this->order->number]));
 
@@ -95,7 +99,6 @@ final class OrderUpdateNotification extends Notification implements ShouldQueue
         return $text;
     }
 
-    /** @return array{text: string, url: string}|null */
     public function telegramAction(): ?array
     {
         $url = match (true) {
@@ -107,6 +110,7 @@ final class OrderUpdateNotification extends Notification implements ShouldQueue
         return $url === null ? null : ['text' => __('Открыть заказ'), 'url' => $url];
     }
 
+    // TODO: Тут нельзя использовать наши Enum классы? Или чего-то не хватает?
     private function message(): string
     {
         return match ($this->event) {

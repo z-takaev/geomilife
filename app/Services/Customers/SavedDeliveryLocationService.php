@@ -12,6 +12,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
+// TODO: Переделать в ProfileSevice
 final class SavedDeliveryLocationService
 {
     /**

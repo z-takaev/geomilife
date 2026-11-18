@@ -6,6 +6,7 @@
                     <h2>{{ __('Личные данные') }}</h2>
                 </div>
             </div>
+
             <form wire:submit="saveProfile" class="profile-form">
                 <label>
                     <span class="profile-form__label">{{ __('Имя') }}<span class="text-primary">*</span></span>
@@ -42,6 +43,7 @@
                         <input id="profile-city" type="search" wire:model.live.debounce.300ms="city_search"
                             placeholder="{{ __('Начните вводить город') }}" autocomplete="off" maxlength="255"
                             x-ref="searchInput" x-on:focus="show()" x-on:input="show()" required>
+                        {{-- TODO: Убрать ограничение и сделать только проверку что поле не пустое --}}
                         @if (mb_strlen(trim($city_search)) >= (int) config('cities.search_min_length'))
                             <ul class="city-selection__results" x-show="open">
                                 @forelse ($cities as $city)
@@ -67,6 +69,7 @@
                         type="submit">{{ __('Сохранить данные') }}</button></div>
             </form>
         </section>
+
         <section class="profile-card profile-addresses">
             <div class="profile-card__heading">
                 <div><span class="profile-eyebrow">{{ __('Доставка') }}</span>
@@ -77,6 +80,7 @@
                 <article wire:key="address-{{ $address->id }}"
                     class="profile-address {{ $address->is_default ? 'profile-address--active' : '' }}">
                     <div>
+                        {{-- TODO: Формировать строки не в шаблоне --}}
                         <strong>{{ $address->city->name }}{{ $address->street ? ', ' . $address->street : '' }}{{ $address->house ? ', ' . __('дом') . ' ' . $address->house : '' }}{{ $address->building ? ', ' . __('корпус') . ' ' . $address->building : '' }}</strong>
                         <p>{{ collect([$address->apartment ? __('кв.') . ' ' . $address->apartment : null, $address->entrance ? __('подъезд') . ' ' . $address->entrance : null, $address->floor ? __('этаж') . ' ' . $address->floor : null, $address->intercom ? __('домофон') . ' ' . $address->intercom : null])->filter()->join(', ') }}
                         </p>
@@ -96,14 +100,15 @@
             @empty
                 <p class="profile-muted">{{ __('Сохранённых адресов пока нет.') }}</p>
             @endforelse
-
         </section>
+
         <section class="profile-card profile-addresses">
             <div class="profile-card__heading">
                 <div><span class="profile-eyebrow">{{ __('СДЭК') }}</span>
                     <h2>{{ __('Пункты получения') }}</h2>
                 </div>
             </div>
+
             @forelse ($deliveryPoints as $point)
                 <article wire:key="point-{{ $point->id }}"
                     class="profile-address {{ $point->is_default ? 'profile-address--active' : '' }}">
@@ -126,6 +131,7 @@
                 <p class="profile-muted">{{ __('Сохранённых пунктов пока нет.') }}</p>
             @endforelse
         </section>
+
         <section class="profile-card profile-telegram">
             <div class="profile-telegram__content">
                 <span class="profile-telegram__logo" role="img" aria-label="{{ __('Логотип Telegram') }}"></span>
@@ -134,6 +140,7 @@
                     <p>{{ __('Получайте сообщения о заказах в Telegram.') }}</p>
                 </div>
             </div>
+
             @if ($user->telegram_chat_id && $user->telegram_notifications_enabled)
                 <div class="profile-telegram__controls">
                     <span
@@ -147,6 +154,7 @@
                     <button type="button" class="profile-button" x-data="telegramConnect()" x-bind:disabled="connecting"
                         x-on:click="connect()">{{ __('Подключить') }}</button>
                 </div>
+                {{-- TODO: Эта проверка наверно не нужна --}}
             @else
                 <div class="profile-telegram__controls">
                     <span class="profile-telegram__status">{{ __('Пока недоступно') }}</span>

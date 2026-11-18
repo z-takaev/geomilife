@@ -42,7 +42,6 @@ final class SyncDeliveryCitiesAction
         return count($records);
     }
 
-    /** @return list<int> */
     private function deliveryPointCityCodes(): array
     {
         $cityCodes = [];
@@ -61,10 +60,6 @@ final class SyncDeliveryCitiesAction
         return array_values($cityCodes);
     }
 
-    /**
-     * @param  list<int>  $deliveryPointCityCodes
-     * @return list<array<string, mixed>>
-     */
     private function cityRecords(array $deliveryPointCityCodes): array
     {
         $availableCityCodes = array_fill_keys($deliveryPointCityCodes, true);
@@ -87,7 +82,6 @@ final class SyncDeliveryCitiesAction
         return array_values($records);
     }
 
-    /** @param list<array<string, mixed>> $records */
     private function synchronize(array $records): void
     {
         City::query()->upsert(
@@ -97,7 +91,9 @@ final class SyncDeliveryCitiesAction
         );
 
         $actualCityCodes = array_column($records, 'cdek_code');
-        $staleCityCodes = City::query()->whereNotIn('cdek_code', $actualCityCodes)->pluck('cdek_code');
+        $staleCityCodes = City::query()
+            ->whereNotIn('cdek_code', $actualCityCodes)
+            ->pluck('cdek_code');
 
         $staleCityCodes->chunk(500)->each(static function ($cityCodes): void {
             $referencedCityCodes = City::query()
@@ -119,9 +115,7 @@ final class SyncDeliveryCitiesAction
         });
     }
 
-    /**
-     * @return array<string, mixed>
-     */
+    // TODO: Вынести этот метод в Dto класс
     private function toRecord(CdekCityResponseDto $city): array
     {
         return [

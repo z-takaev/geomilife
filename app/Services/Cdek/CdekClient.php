@@ -31,19 +31,11 @@ final class CdekClient
         $this->timeout = $this->integerConfig('timeout');
     }
 
-    /**
-     * @param  array<string, mixed>  $query
-     * @return array<mixed>
-     */
     public function get(string $uri, array $query = []): array
     {
         return $this->responseData($this->request('GET', $uri, ['query' => $query]));
     }
 
-    /**
-     * @param  array<string, mixed>  $data
-     * @return array<mixed>
-     */
     public function post(string $uri, array $data): array
     {
         return $this->responseData($this->request('POST', $uri, ['json' => $data]));
@@ -71,9 +63,6 @@ final class CdekClient
         return $contents;
     }
 
-    /**
-     * @param  array<string, mixed>  $options
-     */
     private function request(string $method, string $uri, array $options = [], string $accept = 'application/json'): Response
     {
         $response = $this->sendRequest($method, $uri, $options, $accept);
@@ -86,9 +75,6 @@ final class CdekClient
         return $response;
     }
 
-    /**
-     * @param  array<string, mixed>  $options
-     */
     private function sendRequest(string $method, string $uri, array $options, string $accept): Response
     {
         try {

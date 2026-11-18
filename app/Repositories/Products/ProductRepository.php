@@ -12,7 +12,7 @@ use Illuminate\Support\Collection;
 
 final class ProductRepository
 {
-    // TODO: Изменить название метода
+    // TODO: Изменить название метода getProduct
     public function getDetails(int|string $identifier): ?Product
     {
         return Product::query()

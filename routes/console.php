@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Log;
 use App\Services\Orders\OrderNotificationService;
 use Illuminate\Support\Facades\Schedule;
 
-// TODO: убрать временную команду
+// TODO: убрать лог
 Schedule::call(function () {
     Log::info('1');
 })->everyMinute()->name('test-log');

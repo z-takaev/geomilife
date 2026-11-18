@@ -11,11 +11,9 @@ use Spatie\Image\Enums\ImageDriver;
 use Spatie\Image\Image;
 use Spatie\TemporaryDirectory\TemporaryDirectory;
 
+// TODO: Поменять название
 final class ProcessImageAction
 {
-    /**
-     * @param  Closure(Image): mixed|null  $processImage
-     */
     public function run(string $contents, ?Closure $processImage = null): string
     {
         $directory = TemporaryDirectory::make(storage_path('app/private/image-processing'));

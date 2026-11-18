@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Webhooks\CdekWebhookRequest;
+use Illuminate\Support\Facades\Log;
 use App\Jobs\Orders\SyncCdekShipmentJob;
 use App\Models\OrderShipment;
 use Illuminate\Http\Response;
@@ -13,6 +14,9 @@ final class CdekWebhookController extends Controller
 {
     public function __invoke(CdekWebhookRequest $request): Response
     {
+        // TODO: Убрать лог
+        Log::info('cdek webhook');
+
         $shipment = OrderShipment::query()
             ->where('uuid', $request->validated('uuid'))
             ->first();

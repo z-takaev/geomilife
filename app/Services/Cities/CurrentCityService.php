@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Services\Cities;
 
 use App\Models\City;
+use App\Models\User;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Http;
@@ -19,7 +21,7 @@ final class CurrentCityService
      */
     public function current(): ?City
     {
-        $cityId = auth()->user()?->city_id ?? session('city.id') ?? request()->cookie('city_id');
+        $cityId = Auth::user()?->city_id ?? session('city.id') ?? request()->cookie('city_id');
 
         if ($cityId === null) {
             return null;
@@ -40,8 +42,11 @@ final class CurrentCityService
     public function select(int $cityId): City
     {
         $city = City::cachedById($cityId);
+
         abort_if($city === null, 404);
-        $user = auth()->user();
+
+        /** @var User */
+        $user = Auth::user();
 
         if ($user !== null) {
             $user->city()->associate($city);
@@ -60,7 +65,7 @@ final class CurrentCityService
     {
         $currentCity = $this->current();
 
-        if ($currentCity !== null || auth()->user()?->city_id !== null) {
+        if ($currentCity !== null || Auth::user()?->city_id !== null) {
             return $currentCity;
         }
 
