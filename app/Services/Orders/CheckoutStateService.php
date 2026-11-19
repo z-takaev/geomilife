@@ -6,6 +6,7 @@ namespace App\Services\Orders;
 
 use Illuminate\Support\Facades\Cache;
 
+// TODO: В чем отвественность сервиса и нужен ли он нам?
 final class CheckoutStateService
 {
     public function store(string $idempotencyKey, array $quote, array $presentation): void

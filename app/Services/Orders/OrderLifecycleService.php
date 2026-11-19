@@ -38,8 +38,11 @@ final class OrderLifecycleService
      */
     public function nextManualStatus(Order $order): ?OrderStatusEnum
     {
-        if ($order->cancellation_state !== null
-            || ($order->payment_method->isOnline() && ! $order->payment_status->isPaid())) {
+        if (
+            $order->cancellation_state !== null
+            || ($order->payment_method->isOnline()
+            && ! $order->payment_status->isPaid())
+        ) {
             return null;
         }
 
@@ -62,6 +65,7 @@ final class OrderLifecycleService
     /**
      * Переводит заказ в разрешённый статус сотрудником и запускает связанные действия.
      */
+    // TODO: поменять название метода
     public function advanceStatus(Order $order, OrderStatusEnum $status, FilamentUser $actor): void
     {
         $this->assertStaff($actor);
@@ -183,11 +187,13 @@ final class OrderLifecycleService
         app(OrderPaymentService::class)->cancelOrRefundPayments($order->fresh());
     }
 
+    // TODO: Убрать метод?
     private function notify(Order $order, string $event, string $key): void
     {
         app(OrderNotificationService::class)->queue($order->fresh(), $event, $key);
     }
 
+    // TODO: что делает метод?
     private function assertCancellationAllowed(Order $order, User|FilamentUser|null $actor, string $reason): void
     {
         if ($actor instanceof User) {
@@ -230,6 +236,7 @@ final class OrderLifecycleService
 
                 $this->notify($order, 'CANCELLATION_FAILED', 'cancel-error:'.$order->id.':'.now()->format('Y-m-d-H'));
             });
+
             report($exception);
 
             return false;

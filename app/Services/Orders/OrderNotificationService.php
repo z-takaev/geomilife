@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Throwable;
 
+// TODO: Для чего нам этот сервис и какая у него ответсвенность?
 final class OrderNotificationService
 {
     /**

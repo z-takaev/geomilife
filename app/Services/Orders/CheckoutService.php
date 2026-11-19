@@ -22,6 +22,7 @@ use App\Services\Cdek\CdekService;
 use App\Services\Customers\SavedDeliveryLocationService;
 use App\Support\Phone\PhoneFormat;
 use App\Support\Values\Money;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -64,9 +65,12 @@ final class CheckoutService
     /**
      * Рассчитывает состав, доставку и итоговую стоимость заказа по данным формы.
      */
+    // TODO: Подумать над DTO
+    // TODO: Зачем в методе мы формируем данные кроме расчета заказа? Адреса и т. д.
     public function calculateOrder(array $form): array
     {
         $cartData = $this->calculateCart();
+
         $items = $cartData['items'];
         $subtotal = $cartData['subtotal'];
         $cityId = filter_var($form['city_id'] ?? null, FILTER_VALIDATE_INT);
@@ -81,6 +85,7 @@ final class CheckoutService
         if ($city !== null) {
             $address = ['city_id' => $city->id, 'city' => $city->name, 'city_code' => $city->cdek_code];
 
+            // TODO: Конвертировть в enum
             if ($deliveryMethod === DeliveryMethodEnum::PICKUP->value) {
                 $address += [
                     'address' => $city->pickup_address,
@@ -130,6 +135,7 @@ final class CheckoutService
 
         if (! is_array($points) || array_any($points, static fn (mixed $point): bool => ! $point instanceof CdekDeliveryPointResponseDto)) {
             $points = $this->loadDeliveryPoints($city);
+
             Cache::put($cacheKey, $points, now()->addMinutes(5));
         }
 
@@ -143,8 +149,8 @@ final class CheckoutService
     {
         $query = Order::query()->where('idempotency_key', $idempotencyKey);
 
-        if (auth()->check()) {
-            $query->where('user_id', auth()->id());
+        if (Auth::check()) {
+            $query->where('user_id', Auth::id());
         } else {
             $query->whereNull('user_id')->where('checkout_session_hash', $this->sessionHash());
         }
@@ -155,6 +161,7 @@ final class CheckoutService
     /**
      * Проверяет подтверждённый расчёт и оформляет заказ без повторного создания.
      */
+    // TODO: изменить название метода
     public function placeOrder(array $form, string $idempotencyKey, int $quotedTotalMinor): Order
     {
         if ($existing = $this->findPlacedOrder($idempotencyKey)) {
@@ -164,8 +171,12 @@ final class CheckoutService
         $calculation = $this->calculateOrder($form);
         $saved = $this->state->quote($idempotencyKey);
 
-        if (! is_array($saved) || $quotedTotalMinor !== ($saved['total_minor'] ?? null)
-            || $calculation['total']->minorAmount() !== $quotedTotalMinor || ! hash_equals($saved['fingerprint'] ?? '', $calculation['fingerprint'])) {
+        if (
+            ! is_array($saved)
+            || $quotedTotalMinor !== ($saved['total_minor'] ?? null)
+            || $calculation['total']->minorAmount() !== $quotedTotalMinor
+            || ! hash_equals($saved['fingerprint'] ?? '', $calculation['fingerprint'])
+        ) {
             throw ValidationException::withMessages(['quoted_total_minor' => __('Условия заказа изменились. Проверьте итог и подтвердите его заново.')]);
         }
 
@@ -189,7 +200,8 @@ final class CheckoutService
 
         try {
             return DB::transaction(function () use ($form, $idempotencyKey, $calculation, $deliveryMethod): Order {
-                $user = auth()->user();
+                /** @var User */
+                $user = Auth::user();
 
                 if ($user !== null) {
                     User::query()
@@ -207,11 +219,16 @@ final class CheckoutService
                 }
 
                 $this->assertCurrentItems($calculation);
+
                 $order = $this->createOrderRecord($user, $form, $calculation, $idempotencyKey);
+
                 $this->saveItems($order, $calculation['items']);
+
                 $this->rememberDelivery($user, $deliveryMethod, $calculation);
 
+                // TODO: метод назвать clear
                 app(CartService::class)->removeOrderedItems($calculation['items']);
+
                 $this->notifications->queue($order, 'CREATED', 'created:'.$order->id);
 
                 return $order;
@@ -224,6 +241,7 @@ final class CheckoutService
     /**
      * Очищает номер телефона от лишних символов и заменяет начальную 8 на 7 для российских номеров.
      */
+    // TODO: Убрать метод
     public function normalizePhone(string $value): string
     {
         return PhoneFormat::normalize($value);
@@ -240,7 +258,8 @@ final class CheckoutService
         $variants = ProductVariant::query()
             ->with('product.media')
             ->whereKey(array_keys($quantities))
-            ->available()->get();
+            ->available()
+            ->get();
 
         if ($variants->count() !== count($quantities) || $variants->pluck('is_preorder')->unique()->count() > 1) {
             throw ValidationException::withMessages(['cart' => __('Состав корзины изменился. Проверьте доступность товаров.')]);
@@ -258,6 +277,7 @@ final class CheckoutService
 
             $lineTotal = $variant->price->multiply($quantity);
             $subtotal = $subtotal->add($lineTotal);
+
             $items[] = [
                 'product_id' => $variant->product_id,
                 'product_variant_id' => $variant->id,
@@ -280,6 +300,7 @@ final class CheckoutService
         return compact('items', 'subtotal') + ['is_preorder' => (bool) $variants->first()->is_preorder];
     }
 
+    // TODO: Зачем тут детали?
     private function calculateCourier(City $city, array $form): array
     {
         $address = [];
@@ -288,6 +309,7 @@ final class CheckoutService
         $floor = ($form['delivery_to_door'] ?? false) ? max(0, (int) ($form['floor'] ?? 0)) : 0;
         $liftingPrice = ($city->floor_lifting_price ?? Money::fromMinor(0))->multiply(max(0, $floor - 1));
         $deliveryPrice = $basePrice->add($doorPrice)->add($liftingPrice);
+
         $deliveryDetails = [
             'base_minor' => $basePrice->minorAmount(),
             'door_minor' => $doorPrice->minorAmount(),
@@ -308,6 +330,7 @@ final class CheckoutService
         ];
     }
 
+    // TODO: Ответсвенность метода?
     private function calculateCdek(City $city, array $form, array $items): array
     {
         $deliveryPrice = Money::fromMinor(0);
@@ -340,12 +363,14 @@ final class CheckoutService
             $rawDeliveryPrice = $calculation->totalSum;
             $roundedDeliveryMinor = intdiv($rawDeliveryPrice->minorAmount() + 50, 100) * 100;
             $deliveryPrice = Money::fromMinor($roundedDeliveryMinor);
+
             $deliveryDetails = [
                 'tariff_code' => (int) config('orders.cdek.tariff_code'),
                 'original_delivery_minor' => $rawDeliveryPrice->minorAmount(),
                 'period_min' => $calculation->periodMin,
                 'period_max' => $calculation->periodMax,
             ];
+
             $address += ['code' => $point->code, 'type' => $point->type, 'address' => $point->address, 'work_time' => $point->workTime];
         }
 
@@ -358,20 +383,28 @@ final class CheckoutService
         ];
     }
 
+    // TODO: Что делает метод?
     private function assertCurrentItems(array $calculation): void
     {
         $items = $calculation['items'];
+
         Product::query()
             ->whereKey(array_column($items, 'product_id'))
             ->orderBy('id')
             ->lockForUpdate()
             ->get();
-        $variants = ProductVariant::query()->whereKey(array_column($items, 'product_variant_id'))
+
+        $variants = ProductVariant::query()
+            ->whereKey(array_column($items, 'product_variant_id'))
             ->available()
-            ->orderBy('id')->lockForUpdate()->get()->keyBy('id');
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get()
+            ->keyBy('id');
 
         foreach ($items as $item) {
             $variant = $variants->get($item['product_variant_id']);
+
             $unchanged = $variant !== null && $variant->price->minorAmount() === $item['price_minor']
                 && $variant->old_price?->minorAmount() === $item['old_price_minor']
                 && $variant->is_preorder === $calculation['is_preorder'];
@@ -391,6 +424,7 @@ final class CheckoutService
         return hash_hmac('sha256', session()->getId(), (string) config('app.key'));
     }
 
+    // TODO: Вынести в метод или репозиторий?
     private function createOrderRecord(?User $user, array $form, array $calculation, string $idempotencyKey): Order
     {
         return Order::query()->create([
@@ -416,6 +450,7 @@ final class CheckoutService
         ]);
     }
 
+    // TODO: Зачем этот метод?
     private function saveItems(Order $order, array $items): void
     {
         foreach ($items as $item) {
@@ -454,9 +489,11 @@ final class CheckoutService
                 return $result;
             }
         }
+
         throw ValidationException::withMessages(['delivery_point_code' => __('Не удалось получить полный список пунктов. Повторите позже.')]);
     }
 
+    // TODO: Что делает метод?
     private function pointFitsPackages(CdekDeliveryPointResponseDto $point, City $city, array $packages): bool
     {
         if ($point->cityCode !== $city->cdek_code || $point->type !== 'PVZ') {

@@ -21,9 +21,6 @@ use Throwable;
 
 final class OrderDocumentService
 {
-    /**
-     * Подключает сервис получения документов СДЭК.
-     */
     public function __construct(private readonly CdekService $cdek) {}
 
     /**
@@ -32,12 +29,14 @@ final class OrderDocumentService
     public function renderPackingSlip(Order $order): string
     {
         $order->loadMissing('items', 'shipment');
+
         $options = new Options([
             'defaultFont' => 'DejaVu Sans',
             'isRemoteEnabled' => false,
             'tempDir' => storage_path('framework/cache'),
             'fontCache' => storage_path('framework/cache'),
         ]);
+
         $pdf = new Dompdf($options);
         $pdf->loadHtml(view('orders.packing-slip', (new PackingSlipViewModel($order))->data())->render());
         $pdf->setPaper('A4');
@@ -65,6 +64,7 @@ final class OrderDocumentService
         }
     }
 
+    // TODO: Добавить комментарий и узнать зачем этот метод
     public function markPendingCdekDocumentsFailed(Order $order): void
     {
         $order->documents()
@@ -84,10 +84,15 @@ final class OrderDocumentService
      */
     public function downloadCdekDocument(Order $order, OrderDocumentTypeEnum $type): string
     {
-        $document = $order->documents()->where('type', $type->value)->first();
+        $document = $order->documents()
+            ->where('type', $type->value)
+            ->first();
 
-        if ($document === null || $document->uuid === null
-            || in_array($document->state, [CdekPrintStateEnum::INVALID, CdekPrintStateEnum::REMOVED], true)) {
+        if (
+            $document === null
+            || $document->uuid === null
+            || in_array($document->state, [CdekPrintStateEnum::INVALID, CdekPrintStateEnum::REMOVED], true)
+        ) {
             $document = $this->prepareDocument($order, $type);
         }
 
@@ -175,7 +180,9 @@ final class OrderDocumentService
                     : CdekPrintStateEnum::INVALID,
                 'error' => $exception->getMessage(),
             ]);
+
             app(OrderNotificationService::class)->queue($order, 'DOCUMENT_FAILED', 'document-failed:'.$type->value.':'.hash('sha256', $exception->getMessage()));
+
             throw $exception;
         }
     }

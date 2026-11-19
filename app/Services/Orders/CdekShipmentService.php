@@ -40,8 +40,12 @@ final class CdekShipmentService
     {
         $order->refresh();
 
-        if (! $order->status->isReadyToShip() || ! $order->payment_status->isPaid()
-            || ! $order->delivery_method->isCdek() || $order->cancellation_state !== null) {
+        if (
+            ! $order->status->isReadyToShip()
+            || ! $order->payment_status->isPaid()
+            || ! $order->delivery_method->isCdek()
+            || $order->cancellation_state !== null
+        ) {
             throw ValidationException::withMessages(['status' => __('Заявка СДЭК доступна только для оплаченного заказа, готового к отправке.')]);
         }
 
@@ -61,8 +65,10 @@ final class CdekShipmentService
             return;
         }
 
-        $claimedRows = OrderShipment::query()->whereKey($shipment->id)
-            ->where('operation_state', CdekShipmentOperationStateEnum::CREATING->value)->whereNull('last_checked_at')
+        $claimedRows = OrderShipment::query()
+            ->whereKey($shipment->id)
+            ->where('operation_state', CdekShipmentOperationStateEnum::CREATING->value)
+            ->whereNull('last_checked_at')
             ->update(['last_checked_at' => now()]);
 
         if (! $claimedRows) {
@@ -85,10 +91,13 @@ final class CdekShipmentService
             return;
         }
 
+        // TODO: Убрать двойную вложенность
         if ($shipment->uuid === null) {
-            if (! $this->recoverShipment($order, $shipment)
+            if (
+                ! $this->recoverShipment($order, $shipment)
                 && $shipment->fresh()->operation_state?->is(CdekShipmentOperationStateEnum::ABSENT)
-                && $order->cancellation_state === null && $order->status->isReadyToShip()) {
+                && $order->cancellation_state === null && $order->status->isReadyToShip()
+            ) {
                 CreateCdekShipmentJob::dispatch($order->id)->afterCommit();
             }
 
@@ -96,12 +105,14 @@ final class CdekShipmentService
         }
 
         $cdekOrder = $this->cdek->getOrder($shipment->uuid);
+
         $this->applyShipmentState($order, $shipment, $cdekOrder);
     }
 
     /**
      * Запрашивает отмену отправления СДЭК и возвращает признак её подтверждения.
      */
+    // TODO: Ужасно сложный метод, отрефакторить
     public function cancel(Order $order): bool
     {
         $shipment = $order->shipment()->first();
@@ -129,13 +140,16 @@ final class CdekShipmentService
         try {
             $cdekOrder = $this->cdek->getOrder($shipment->uuid);
         } catch (CdekApiException $exception) {
-            if ($shipment->operation_state?->is(CdekShipmentOperationStateEnum::CANCELLING)
+            if (
+                $shipment->operation_state?->is(CdekShipmentOperationStateEnum::CANCELLING)
                 && ($exception->statusCode === 404
-                    || ($exception->statusCode === 400 && $exception->hasErrorCode('v2_entity_not_found')))) {
+                || ($exception->statusCode === 400 && $exception->hasErrorCode('v2_entity_not_found')))
+            ) {
                 $shipment->update(['operation_state' => CdekShipmentOperationStateEnum::CANCELLED, 'error' => null, 'last_checked_at' => now()]);
 
                 return true;
             }
+
             throw $exception;
         }
 
@@ -149,8 +163,12 @@ final class CdekShipmentService
 
         $carrierStatus = CdekOrderStatusEnum::tryFrom($cdekOrder->statusCode ?? '');
 
-        if (in_array($carrierStatus, [CdekOrderStatusEnum::REMOVED, CdekOrderStatusEnum::DELETED,
-            CdekOrderStatusEnum::CANCELLED, CdekOrderStatusEnum::CANCELED], true)) {
+        if (in_array($carrierStatus, [
+            CdekOrderStatusEnum::REMOVED,
+            CdekOrderStatusEnum::DELETED,
+            CdekOrderStatusEnum::CANCELLED,
+            CdekOrderStatusEnum::CANCELED
+        ], true)) {
             $shipment->update(['operation_state' => CdekShipmentOperationStateEnum::CANCELLED, 'error' => null, 'last_checked_at' => now()]);
 
             return true;
@@ -166,8 +184,11 @@ final class CdekShipmentService
 
         $sentAt = $shipment->payload['cancel_request_sent_at'] ?? null;
 
-        if ($shipment->operation_state?->is(CdekShipmentOperationStateEnum::CANCELLING) && $sentAt !== null
-            && CarbonImmutable::parse($sentAt)->gt(now()->subMinutes((int) config('orders.reconciliation_stale_minutes')))) {
+        if (
+            $shipment->operation_state?->is(CdekShipmentOperationStateEnum::CANCELLING)
+            && $sentAt !== null
+            && CarbonImmutable::parse($sentAt)->gt(now()->subMinutes((int) config('orders.reconciliation_stale_minutes')))
+        ) {
             return false;
         }
 
@@ -176,10 +197,12 @@ final class CdekShipmentService
             'last_checked_at' => now(),
             'payload' => [...($shipment->payload ?? []), 'cancel_request_sent_at' => now()->toIso8601String()],
         ]);
+
         $result = $this->cdek->cancelOrder($shipment->uuid);
 
         if ($result->errors !== []) {
             $shipment->update(['operation_state' => CdekShipmentOperationStateEnum::CANCEL_FAILED, 'error' => $result->errors[0]['message']]);
+
             throw new CdekApiException($result->errors[0]['message'], errors: $result->errors);
         }
 
@@ -192,6 +215,7 @@ final class CdekShipmentService
         return false;
     }
 
+    // TODO: что делает метод и рефакторинг
     private function buildRequest(Order $order): CdekCreateOrderRequestDto
     {
         $phone = preg_replace('/\D/', '', (string) Setting::cached()?->phone);
@@ -290,6 +314,7 @@ final class CdekShipmentService
             $order = Order::query()
                 ->lockForUpdate()
                 ->findOrFail($order->id);
+
             $shipment = OrderShipment::query()
                 ->lockForUpdate()
                 ->findOrFail($shipment->id);
@@ -369,12 +394,17 @@ final class CdekShipmentService
             if ($result->errors !== []) {
                 throw ValidationException::withMessages(['delivery' => $result->errors[0]['message']]);
             }
-            SyncCdekShipmentJob::dispatch($order->id)->delay(now()->addSeconds(5))->afterCommit();
+
+            SyncCdekShipmentJob::dispatch($order->id)
+                ->delay(now()->addSeconds(5))
+                ->afterCommit();
+
         } catch (Throwable $exception) {
             if ($shipment->uuid === null) {
                 $state = $exception instanceof CdekApiException && $exception->statusCode !== null && $exception->statusCode < 500
                     ? CdekShipmentOperationStateEnum::FAILED
                     : CdekShipmentOperationStateEnum::UNKNOWN;
+
                 $shipment->update(['operation_state' => $state, 'error' => $exception->getMessage()]);
             }
 
@@ -391,13 +421,16 @@ final class CdekShipmentService
             'status' => $cdekOrder->statusCode ?? $shipment->status,
             'status_at' => $cdekOrder->statusDateTime ?? $shipment->status_at,
             'request_state' => $cdekOrder->operation->state,
-            'operation_state' => in_array($shipment->operation_state, [CdekShipmentOperationStateEnum::CANCELLING,
-                CdekShipmentOperationStateEnum::CANCELLED, CdekShipmentOperationStateEnum::CANCEL_FAILED], true)
-                ? $shipment->operation_state
-                : ($cdekOrder->operation->errors !== [] ? CdekShipmentOperationStateEnum::FAILED
-                    : (($cdekOrder->operation->state?->isSuccessful() ?? false)
-                        ? CdekShipmentOperationStateEnum::REGISTERED
-                        : CdekShipmentOperationStateEnum::REGISTERING)),
+            'operation_state' => in_array($shipment->operation_state, [
+                CdekShipmentOperationStateEnum::CANCELLING,
+                CdekShipmentOperationStateEnum::CANCELLED,
+                CdekShipmentOperationStateEnum::CANCEL_FAILED
+            ], true)
+            ? $shipment->operation_state
+            : ($cdekOrder->operation->errors !== [] ? CdekShipmentOperationStateEnum::FAILED
+                : (($cdekOrder->operation->state?->isSuccessful() ?? false)
+                    ? CdekShipmentOperationStateEnum::REGISTERED
+                    : CdekShipmentOperationStateEnum::REGISTERING)),
             'error' => $cdekOrder->operation->errors[0]['message'] ?? null,
             'last_checked_at' => now(),
         ];
@@ -405,16 +438,23 @@ final class CdekShipmentService
 
     private function canPrepareDocuments(Order $order, OrderShipment $shipment, CdekOrderResponseDto $cdekOrder): bool
     {
-        if (! ($cdekOrder->operation->state?->isSuccessful() ?? false) || $cdekOrder->operation->errors !== []
-            || $order->status->isCancelled() || $order->cancellation_state !== null
-            || in_array($shipment->operation_state, [CdekShipmentOperationStateEnum::CANCELLING,
-                CdekShipmentOperationStateEnum::CANCELLED, CdekShipmentOperationStateEnum::CANCEL_FAILED], true)) {
+        if (
+            ! ($cdekOrder->operation->state?->isSuccessful() ?? false)
+            || $cdekOrder->operation->errors !== []
+            || $order->status->isCancelled()
+            || $order->cancellation_state !== null
+            || in_array($shipment->operation_state, [
+                CdekShipmentOperationStateEnum::CANCELLING,
+                CdekShipmentOperationStateEnum::CANCELLED,
+                CdekShipmentOperationStateEnum::CANCEL_FAILED], true)
+        ) {
             return false;
         }
 
         $states = $order->documents()
             ->whereIn('type', array_map(static fn (OrderDocumentTypeEnum $type): string => $type->value, OrderDocumentTypeEnum::cases()))
             ->pluck('state', 'type');
+
         $pendingStates = [
             CdekPrintStateEnum::PENDING->value,
             CdekPrintStateEnum::CREATING->value,
@@ -434,6 +474,7 @@ final class CdekShipmentService
         return false;
     }
 
+    // TODO: Разобраться с формированием номерра заказа
     private function cdekOrderNumber(Order $order): string
     {
         $prefix = config('orders.cdek.order_number_prefix');

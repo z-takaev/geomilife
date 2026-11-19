@@ -150,9 +150,11 @@ final class OrderPaymentService
             $order = Order::query()
                 ->lockForUpdate()
                 ->findOrFail($payment->order_id);
+
             $lockedPayment = Payment::query()
                 ->lockForUpdate()
                 ->findOrFail($payment->id);
+
             $nextStatus = $this->mapPaymentStatus($providerStatus);
 
             if ($this->isRefundUnconfirmed($lockedPayment, $nextStatus, $fromBankCheck)) {
@@ -208,6 +210,7 @@ final class OrderPaymentService
         $previousStatus = $order->fresh()->payment_status;
         $nextStatus = PaymentStatusEnum::UNPAID;
 
+        // TODO: Вынести в enum?
         foreach ([PaymentStatusEnum::REFUND_FAILED, PaymentStatusEnum::REFUND_PENDING, PaymentStatusEnum::PAID,
             PaymentStatusEnum::AUTHORIZED, PaymentStatusEnum::PENDING, PaymentStatusEnum::REFUNDED,
             PaymentStatusEnum::CANCELLED, PaymentStatusEnum::FAILED] as $candidate) {
@@ -226,6 +229,7 @@ final class OrderPaymentService
 
     private function mapPaymentStatus(TbankPaymentStatusEnum $status): ?PaymentStatusEnum
     {
+        // TODO: Вынести в enum?
         return match ($status) {
             TbankPaymentStatusEnum::CONFIRMED => PaymentStatusEnum::PAID,
             TbankPaymentStatusEnum::AUTHORIZED => PaymentStatusEnum::AUTHORIZED,
@@ -252,11 +256,13 @@ final class OrderPaymentService
         }
     }
 
+    // TODO: Зачем мнтод?
     private function secureRoute(string $name): string
     {
         return preg_replace('~^http://~', 'https://', route($name));
     }
 
+    // TODO: Зачем мнтод?
     private function notify(Order $order, string $event, string $key): void
     {
         app(OrderNotificationService::class)->queue($order->fresh(), $event, $key);
@@ -268,7 +274,9 @@ final class OrderPaymentService
             $lockedOrder = Order::query()
                 ->lockForUpdate()
                 ->findOrFail($order->id);
+
             $this->assertPayable($lockedOrder);
+
             $payment = $lockedOrder->payments()->create([
                 'provider' => 'TBANK',
                 'bank_order_id' => $lockedOrder->number.'-1',
@@ -300,6 +308,7 @@ final class OrderPaymentService
                 'operation_state' => null,
                 'error' => null,
             ]);
+
             $this->applyBankState($payment, $result->status);
         } catch (TbankApiException $exception) {
             $payment->update(['operation_state' => 'RECONCILE_REQUIRED', 'error' => $exception->getMessage()]);
@@ -336,8 +345,11 @@ final class OrderPaymentService
             }
 
             $cancelRequested = true;
+
             $order->update(['payment_status' => PaymentStatusEnum::REFUND_PENDING]);
+
             $result = $this->bank->cancelPayment(new TbankCancelPaymentRequestDto(paymentId: $payment->transaction_id, amount: $payment->amount));
+
             $this->applyBankState($payment->fresh(), $result->status);
         } catch (TbankApiException $exception) {
             $this->recordRefundError($order, $payment, $exception, $cancelRequested);
@@ -362,6 +374,7 @@ final class OrderPaymentService
     private function recordRefundError(Order $order, Payment $payment, TbankApiException $exception, bool $cancelRequested): void
     {
         $payment->refresh();
+
         $payment->update([
             'status' => $cancelRequested ? PaymentStatusEnum::REFUND_FAILED : $payment->status,
             'error' => $exception->getMessage(),
@@ -369,7 +382,9 @@ final class OrderPaymentService
                 ? ($exception->errorCode !== null ? null : 'REFUNDING')
                 : $payment->operation_state,
         ]);
+
         $this->refreshOrderPayment($order);
+
         $this->notify($order, 'REFUND_FAILED', 'refund-error:'.$payment->id.':'.now()->format('Y-m-d-H'));
     }
 
