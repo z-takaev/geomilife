@@ -37,4 +37,12 @@ final class FilamentUser extends Authenticatable implements FilamentUserContract
     {
         return $panel->getId() === 'admin';
     }
+
+    public function canManageOrders(): bool
+    {
+        return $this->exists && in_array($this->role, [
+            FilamentUserRoleEnum::ADMIN,
+            FilamentUserRoleEnum::MANAGER,
+        ], true);
+    }
 }

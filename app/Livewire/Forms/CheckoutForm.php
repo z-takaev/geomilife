@@ -94,7 +94,7 @@ final class CheckoutForm extends Form
             'first_name' => ['required', 'string', 'max:20'],
             'last_name' => ['required', 'string', 'max:20'],
             'phone' => ['required', 'string', function (string $attribute, mixed $value, \Closure $fail): void {
-                if (! preg_match(PhoneFormat::COMPACT_PATTERN, app(CheckoutService::class)->normalizePhone((string) $value))) {
+                if (! preg_match(PhoneFormat::COMPACT_PATTERN, PhoneFormat::normalize((string) $value))) {
                     $fail(__('Укажите корректный телефон в формате +7XXXXXXXXXX.'));
                 }
             }],

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Orders\Pages;
 
+use App\Actions\Orders\CancelOrderAction;
 use App\Enums\Cdek\CdekPrintStateEnum;
 use App\Enums\Cdek\CdekRequestStateEnum;
 use App\Enums\Cdek\CdekShipmentOperationStateEnum;
+use App\Enums\Orders\OrderCancellationStateEnum;
 use App\Enums\Orders\OrderStatusEnum;
 use App\Enums\Orders\PaymentStatusEnum;
 use App\Filament\Resources\Orders\OrderResource;
@@ -61,13 +63,16 @@ final class ViewOrder extends ViewRecord
                     ->label('Причина отмены')->required()->maxLength(1000)])
                 ->visible(fn (): bool => ! in_array($this->getRecord()->status, [OrderStatusEnum::CANCELLED, OrderStatusEnum::DELIVERED, OrderStatusEnum::SHIPPED], true)
                     && $this->getRecord()->cancellation_state === null)
-                ->action(fn (array $data) => $this->perform(fn () => app(OrderLifecycleService::class)->cancel($this->getRecord(), auth('filament')->user(), $data['reason']))),
+                ->action(fn (array $data) => $this->perform(fn () => app(CancelOrderAction::class)->run($this->getRecord(), auth('filament')->user(), $data['reason']))),
 
             Action::make('retryCancel')
                 ->label('Проверить / повторить отмену')
                 ->requiresConfirmation()
-                ->visible(fn (): bool => in_array($this->getRecord()->cancellation_state, ['PENDING', 'FAILED'], true))
-                ->action(fn () => $this->perform(fn () => app(OrderLifecycleService::class)->resumeCancellation($this->getRecord()))),
+                ->visible(fn (): bool => in_array($this->getRecord()->cancellation_state, [
+                    OrderCancellationStateEnum::PENDING->value,
+                    OrderCancellationStateEnum::FAILED->value,
+                ], true))
+                ->action(fn () => $this->perform(fn () => app(CancelOrderAction::class)->resume($this->getRecord()))),
 
             ActionGroup::make([
                 Action::make('checkPayment')

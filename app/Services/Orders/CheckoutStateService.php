@@ -6,10 +6,9 @@ namespace App\Services\Orders;
 
 use Illuminate\Support\Facades\Cache;
 
-// TODO: В чем отвественность сервиса и нужен ли он нам?
 final class CheckoutStateService
 {
-    public function store(string $idempotencyKey, array $quote, array $presentation): void
+    public function save(string $idempotencyKey, array $quote, array $presentation): void
     {
         Cache::put(
             $this->key($idempotencyKey),
@@ -18,21 +17,21 @@ final class CheckoutStateService
         );
     }
 
-    public function quote(string $idempotencyKey): ?array
+    public function getQuote(string $idempotencyKey): ?array
     {
         $state = Cache::get($this->key($idempotencyKey));
 
         return is_array($state) && is_array($state['quote'] ?? null) ? $state['quote'] : null;
     }
 
-    public function presentation(string $idempotencyKey): array
+    public function getPresentation(string $idempotencyKey): array
     {
         $state = Cache::get($this->key($idempotencyKey));
 
         return is_array($state) && is_array($state['presentation'] ?? null) ? $state['presentation'] : [];
     }
 
-    public function markDeliveryNotReady(string $idempotencyKey): void
+    public function invalidateQuote(string $idempotencyKey): void
     {
         $state = Cache::get($this->key($idempotencyKey));
 

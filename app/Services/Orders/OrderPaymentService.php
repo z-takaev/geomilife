@@ -7,6 +7,8 @@ namespace App\Services\Orders;
 use App\DTO\Tbank\TbankCancelPaymentRequestDto;
 use App\DTO\Tbank\TbankInitPaymentRequestDto;
 use App\DTO\Tbank\TbankPaymentNotificationDto;
+use App\Enums\Orders\OrderNotificationEventEnum;
+use App\Enums\Orders\PaymentOperationStateEnum;
 use App\Enums\Orders\PaymentStatusEnum;
 use App\Enums\Tbank\TbankPaymentStatusEnum;
 use App\Models\Order;
@@ -18,7 +20,12 @@ use Illuminate\Validation\ValidationException;
 
 final class OrderPaymentService
 {
-    public function __construct(private readonly TbankService $bank) {}
+    private const string PROVIDER = 'TBANK';
+
+    public function __construct(
+        private readonly TbankService $bank,
+        private readonly OrderNotificationService $notifications,
+    ) {}
 
     public function startOnlinePayment(Order $order): Payment
     {
@@ -66,11 +73,11 @@ final class OrderPaymentService
      */
     public function handleBankNotification(TbankPaymentNotificationDto $notification): void
     {
-        $payment = Payment::query()->where('provider', 'TBANK')
+        $payment = Payment::query()->where('provider', self::PROVIDER)
             ->where('transaction_id', $notification->paymentId)->first();
 
         if ($payment === null) {
-            $payment = Payment::query()->where('provider', 'TBANK')
+            $payment = Payment::query()->where('provider', self::PROVIDER)
                 ->where('bank_order_id', $notification->orderId)->first();
         }
 
@@ -110,7 +117,7 @@ final class OrderPaymentService
             return;
         }
 
-        foreach ($order->payments()->where('provider', 'TBANK')->orderBy('id')->get() as $payment) {
+        foreach ($order->payments()->where('provider', self::PROVIDER)->orderBy('id')->get() as $payment) {
             $this->refundPayment($order, $payment);
         }
     }
@@ -155,7 +162,7 @@ final class OrderPaymentService
                 ->lockForUpdate()
                 ->findOrFail($payment->id);
 
-            $nextStatus = $this->mapPaymentStatus($providerStatus);
+            $nextStatus = $providerStatus->toPaymentStatus();
 
             if ($this->isRefundUnconfirmed($lockedPayment, $nextStatus, $fromBankCheck)) {
                 $lockedPayment->update(['status' => PaymentStatusEnum::REFUND_FAILED, 'operation_state' => null, 'last_checked_at' => now()]);
@@ -173,7 +180,7 @@ final class OrderPaymentService
 
             $lockedPayment->update($values);
 
-            $this->refreshOrderPayment($order);
+            $this->syncOrderPaymentStatus($order);
         });
     }
 
@@ -190,13 +197,18 @@ final class OrderPaymentService
 
     private function shouldIgnoreProviderState(Payment $payment, ?PaymentStatusEnum $nextStatus, TbankPaymentStatusEnum $providerStatus): bool
     {
-        if (in_array($payment->provider_status, ['REFUNDED', 'REVERSED'], true)
+        if (in_array($payment->provider_status, [TbankPaymentStatusEnum::REFUNDED->value, TbankPaymentStatusEnum::REVERSED->value], true)
             || ($this->isAwaitingRefund($payment) && ($nextStatus?->isPaid() ?? false))) {
             return true;
         }
 
         $uncapturedCancellation = ($nextStatus?->isCancelled() ?? false)
-            && ! in_array($payment->provider_status, ['CONFIRMED', 'REFUNDING', 'ASYNC_REFUNDING', 'PARTIAL_REFUNDED'], true);
+            && ! in_array($payment->provider_status, [
+                TbankPaymentStatusEnum::CONFIRMED->value,
+                TbankPaymentStatusEnum::REFUNDING->value,
+                TbankPaymentStatusEnum::ASYNC_REFUNDING->value,
+                TbankPaymentStatusEnum::PARTIAL_REFUNDED->value,
+            ], true);
 
         return ($payment->status->isPaid() || $this->isAwaitingRefund($payment))
             && ! in_array($nextStatus, [PaymentStatusEnum::PAID, PaymentStatusEnum::REFUND_PENDING, PaymentStatusEnum::REFUNDED], true)
@@ -204,16 +216,13 @@ final class OrderPaymentService
             && ! $uncapturedCancellation;
     }
 
-    private function refreshOrderPayment(Order $order): void
+    private function syncOrderPaymentStatus(Order $order): void
     {
         $statuses = $order->payments()->distinct()->pluck('status');
         $previousStatus = $order->fresh()->payment_status;
         $nextStatus = PaymentStatusEnum::UNPAID;
 
-        // TODO: Вынести в enum?
-        foreach ([PaymentStatusEnum::REFUND_FAILED, PaymentStatusEnum::REFUND_PENDING, PaymentStatusEnum::PAID,
-            PaymentStatusEnum::AUTHORIZED, PaymentStatusEnum::PENDING, PaymentStatusEnum::REFUNDED,
-            PaymentStatusEnum::CANCELLED, PaymentStatusEnum::FAILED] as $candidate) {
+        foreach (PaymentStatusEnum::orderedByAggregatePriority() as $candidate) {
             if ($statuses->contains($candidate)) {
                 $nextStatus = $candidate;
                 break;
@@ -223,27 +232,12 @@ final class OrderPaymentService
         $order->update(['payment_status' => $nextStatus]);
 
         if ($nextStatus->isRefunded() && ! $previousStatus->is($nextStatus)) {
-            $this->notify($order, 'REFUNDED', 'payment-refunded:'.$order->id);
+            $this->notifications->queue(
+                $order->fresh(),
+                OrderNotificationEventEnum::REFUNDED->value,
+                'payment-refunded:'.$order->id,
+            );
         }
-    }
-
-    private function mapPaymentStatus(TbankPaymentStatusEnum $status): ?PaymentStatusEnum
-    {
-        // TODO: Вынести в enum?
-        return match ($status) {
-            TbankPaymentStatusEnum::CONFIRMED => PaymentStatusEnum::PAID,
-            TbankPaymentStatusEnum::AUTHORIZED => PaymentStatusEnum::AUTHORIZED,
-            TbankPaymentStatusEnum::REFUNDED => PaymentStatusEnum::REFUNDED,
-            TbankPaymentStatusEnum::REFUNDING, TbankPaymentStatusEnum::ASYNC_REFUNDING,
-            TbankPaymentStatusEnum::REVERSING => PaymentStatusEnum::REFUND_PENDING,
-            TbankPaymentStatusEnum::CANCELED, TbankPaymentStatusEnum::REVERSED,
-            TbankPaymentStatusEnum::DEADLINE_EXPIRED => PaymentStatusEnum::CANCELLED,
-            TbankPaymentStatusEnum::REJECTED, TbankPaymentStatusEnum::AUTH_FAIL => PaymentStatusEnum::FAILED,
-            TbankPaymentStatusEnum::NEW, TbankPaymentStatusEnum::FORM_SHOWED, TbankPaymentStatusEnum::AUTHORIZING,
-            TbankPaymentStatusEnum::THREEDS_CHECKING, TbankPaymentStatusEnum::THREEDS_CHECKED,
-            TbankPaymentStatusEnum::CONFIRMING => PaymentStatusEnum::PENDING,
-            default => null,
-        };
     }
 
     private function assertPayable(Order $order): void
@@ -256,16 +250,9 @@ final class OrderPaymentService
         }
     }
 
-    // TODO: Зачем мнтод?
-    private function secureRoute(string $name): string
+    private function secureWebhookUrl(string $routeName): string
     {
-        return preg_replace('~^http://~', 'https://', route($name));
-    }
-
-    // TODO: Зачем мнтод?
-    private function notify(Order $order, string $event, string $key): void
-    {
-        app(OrderNotificationService::class)->queue($order->fresh(), $event, $key);
+        return url()->secure(route($routeName, absolute: false));
     }
 
     private function claimPaymentAttempt(Order $order): Payment
@@ -278,12 +265,12 @@ final class OrderPaymentService
             $this->assertPayable($lockedOrder);
 
             $payment = $lockedOrder->payments()->create([
-                'provider' => 'TBANK',
+                'provider' => self::PROVIDER,
                 'bank_order_id' => $lockedOrder->number.'-1',
                 'amount' => $lockedOrder->total,
                 'status' => PaymentStatusEnum::PENDING,
                 'provider_status' => TbankPaymentStatusEnum::NEW->value,
-                'operation_state' => 'INITIATING',
+                'operation_state' => PaymentOperationStateEnum::INITIATING->value,
             ]);
 
             return $payment;
@@ -299,7 +286,7 @@ final class OrderPaymentService
                 description: 'Заказ '.$order->number,
                 successUrl: route('payment.success'),
                 failUrl: route('payment.fail'),
-                notificationUrl: $this->secureRoute('tbank.webhook'),
+                notificationUrl: $this->secureWebhookUrl('tbank.webhook'),
             ));
 
             $payment->update([
@@ -311,7 +298,10 @@ final class OrderPaymentService
 
             $this->applyBankState($payment, $result->status);
         } catch (TbankApiException $exception) {
-            $payment->update(['operation_state' => 'RECONCILE_REQUIRED', 'error' => $exception->getMessage()]);
+            $payment->update([
+                'operation_state' => PaymentOperationStateEnum::RECONCILE_REQUIRED->value,
+                'error' => $exception->getMessage(),
+            ]);
             throw $exception;
         }
     }
@@ -333,7 +323,7 @@ final class OrderPaymentService
                 return;
             }
 
-            if ($payment->operation_state === 'REFUNDING'
+            if ($payment->operation_state === PaymentOperationStateEnum::REFUNDING->value
                 && $payment->refund_requested_at?->gt(now()->subMinutes((int) config('orders.reconciliation_stale_minutes')))) {
                 return;
             }
@@ -361,10 +351,11 @@ final class OrderPaymentService
         return Payment::query()->whereKey($payment->id)
             ->whereIn('status', [PaymentStatusEnum::PENDING, PaymentStatusEnum::PAID, PaymentStatusEnum::AUTHORIZED, PaymentStatusEnum::REFUND_FAILED])
             ->where(function ($query): void {
-                $query->whereNull('operation_state')->orWhere('operation_state', '!=', 'REFUNDING')
+                $query->whereNull('operation_state')
+                    ->orWhere('operation_state', '!=', PaymentOperationStateEnum::REFUNDING->value)
                     ->orWhere('refund_requested_at', '<=', now()->subMinutes((int) config('orders.reconciliation_stale_minutes')));
             })->update([
-                'operation_state' => 'REFUNDING',
+                'operation_state' => PaymentOperationStateEnum::REFUNDING->value,
                 'refund_requested_at' => now(),
                 'status' => PaymentStatusEnum::REFUND_PENDING,
                 'error' => null,
@@ -379,13 +370,17 @@ final class OrderPaymentService
             'status' => $cancelRequested ? PaymentStatusEnum::REFUND_FAILED : $payment->status,
             'error' => $exception->getMessage(),
             'operation_state' => $cancelRequested
-                ? ($exception->errorCode !== null ? null : 'REFUNDING')
+                ? ($exception->errorCode !== null ? null : PaymentOperationStateEnum::REFUNDING->value)
                 : $payment->operation_state,
         ]);
 
-        $this->refreshOrderPayment($order);
+        $this->syncOrderPaymentStatus($order);
 
-        $this->notify($order, 'REFUND_FAILED', 'refund-error:'.$payment->id.':'.now()->format('Y-m-d-H'));
+        $this->notifications->queue(
+            $order->fresh(),
+            OrderNotificationEventEnum::REFUND_FAILED->value,
+            'refund-error:'.$payment->id.':'.now()->format('Y-m-d-H'),
+        );
     }
 
     private function paymentStateChanges(TbankPaymentStatusEnum $providerStatus, ?PaymentStatusEnum $nextStatus): array

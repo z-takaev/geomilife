@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Orders;
 
+use App\Actions\Orders\CancelOrderAction;
+use App\Actions\Orders\UpdateOrderStatusFromShipmentAction;
 use App\Enums\Orders\DeliveryMethodEnum;
 use App\Enums\Orders\OrderStatusEnum;
 use App\Enums\Orders\PaymentStatusEnum;
@@ -11,15 +13,17 @@ use App\Jobs\Orders\CreateCdekShipmentJob;
 use App\Models\FilamentUser;
 use App\Models\Order;
 use App\Models\User;
-use App\Services\Cdek\Exceptions\CdekApiException;
-use App\Support\Traits\Orders\ValidatesOrderManagement;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 final class OrderLifecycleService
 {
-    use ValidatesOrderManagement;
+    public function __construct(
+        private readonly CancelOrderAction $cancelOrder,
+        private readonly UpdateOrderStatusFromShipmentAction $shipmentStatusUpdater,
+        private readonly OrderNotificationService $notifications,
+    ) {}
 
     /**
      * Возвращает этапы обработки заказа для выбранного способа получения.
@@ -40,8 +44,7 @@ final class OrderLifecycleService
     {
         if (
             $order->cancellation_state !== null
-            || ($order->payment_method->isOnline()
-            && ! $order->payment_status->isPaid())
+            || ($order->payment_method->isOnline() && ! $order->payment_status->isPaid())
         ) {
             return null;
         }
@@ -65,7 +68,6 @@ final class OrderLifecycleService
     /**
      * Переводит заказ в разрешённый статус сотрудником и запускает связанные действия.
      */
-    // TODO: поменять название метода
     public function advanceStatus(Order $order, OrderStatusEnum $status, FilamentUser $actor): void
     {
         $this->assertStaff($actor);
@@ -97,7 +99,7 @@ final class OrderLifecycleService
             }
 
             $lockedOrder->update($changes);
-            $this->notify($lockedOrder, $status->value, 'status:'.$status->value);
+            $this->notifications->queue($lockedOrder, $status->value, 'status:'.$status->value);
 
             return true;
         });
@@ -112,24 +114,7 @@ final class OrderLifecycleService
      */
     public function updateStatusFromShipment(Order $order, OrderStatusEnum $status): void
     {
-        if (! in_array($status, [OrderStatusEnum::SHIPPED, OrderStatusEnum::DELIVERED], true)) {
-            return;
-        }
-
-        DB::transaction(function () use ($order, $status): void {
-            $lockedOrder = Order::query()
-                ->lockForUpdate()
-                ->findOrFail($order->id);
-
-            if (! $lockedOrder->delivery_method->isCdek() || $lockedOrder->cancellation_state !== null
-                || ! in_array($lockedOrder->status, [OrderStatusEnum::READY_TO_SHIP, OrderStatusEnum::SHIPPED], true)
-                || $lockedOrder->status->is($status)) {
-                return;
-            }
-
-            $lockedOrder->update(['status' => $status]);
-            $this->notify($lockedOrder, $status->value, 'status:'.$status->value);
-        });
+        $this->shipmentStatusUpdater->run($order, $status);
     }
 
     /**
@@ -137,28 +122,7 @@ final class OrderLifecycleService
      */
     public function cancel(Order $order, User|FilamentUser|null $actor, string $reason = '', bool $onlyIfNew = false): void
     {
-        DB::transaction(function () use ($order, $actor, $reason, $onlyIfNew): void {
-            $lockedOrder = Order::query()
-                ->lockForUpdate()
-                ->findOrFail($order->id);
-
-            if ($onlyIfNew && ! $lockedOrder->status->isNew()) {
-                throw new AuthorizationException;
-            }
-
-            $this->assertCancellationAllowed($lockedOrder, $actor, $reason);
-
-            if ($lockedOrder->status->isCancelled()) {
-                return;
-            }
-
-            $lockedOrder->update([
-                'cancellation_state' => 'PENDING',
-                'cancellation_reason' => $reason,
-            ]);
-        });
-
-        $this->resumeCancellation($order);
+        $this->cancelOrder->run($order, $actor, $reason, $onlyIfNew);
     }
 
     /**
@@ -166,100 +130,20 @@ final class OrderLifecycleService
      */
     public function resumeCancellation(Order $order): void
     {
-        $order->refresh();
-
-        if ($order->status->isCancelled()) {
-            app(OrderPaymentService::class)->cancelOrRefundPayments($order);
-
-            return;
-        }
-
-        if (! in_array($order->cancellation_state, ['PENDING', 'FAILED'], true)) {
-            return;
-        }
-
-        if ($order->delivery_method->isCdek() && ! $this->cancelShipment($order)) {
-            return;
-        }
-
-        $this->completeCancellation($order);
-
-        app(OrderPaymentService::class)->cancelOrRefundPayments($order->fresh());
+        $this->cancelOrder->resume($order);
     }
 
-    // TODO: Убрать метод?
-    private function notify(Order $order, string $event, string $key): void
+    private function assertStaff(FilamentUser $actor): void
     {
-        app(OrderNotificationService::class)->queue($order->fresh(), $event, $key);
-    }
-
-    // TODO: что делает метод?
-    private function assertCancellationAllowed(Order $order, User|FilamentUser|null $actor, string $reason): void
-    {
-        if ($actor instanceof User) {
-            if ($order->user_id !== $actor->id) {
-                throw new AuthorizationException;
-            }
-
-            if (! $order->status->isNew()) {
-                throw ValidationException::withMessages(['order' => 'Покупатель может отменить только новый заказ.']);
-            }
-        } elseif ($actor instanceof FilamentUser) {
-            $this->assertStaff($actor);
-
-            if (trim($reason) === '') {
-                throw ValidationException::withMessages(['reason' => 'Укажите причину отмены заказа.']);
-            }
-        }
-
-        if ($order->status->isDelivered()) {
-            throw ValidationException::withMessages(['order' => 'Полученный заказ отменить нельзя.']);
+        if (! $actor->canManageOrders()) {
+            throw new AuthorizationException;
         }
     }
 
-    private function cancelShipment(Order $order): bool
+    private function assertNotCancelling(Order $order): void
     {
-        try {
-            if (! app(CdekShipmentService::class)->cancel($order)) {
-                return false;
-            }
-        } catch (ValidationException $exception) {
-            DB::transaction(function () use ($order): void {
-                $order->update(['cancellation_state' => null]);
-
-                $this->notify($order, 'CANCELLATION_REJECTED', 'cancel-rejected:'.$order->id.':'.now()->format('Y-m-d-H'));
-            });
-            throw $exception;
-        } catch (CdekApiException $exception) {
-            DB::transaction(function () use ($order): void {
-                $order->update(['cancellation_state' => 'FAILED']);
-
-                $this->notify($order, 'CANCELLATION_FAILED', 'cancel-error:'.$order->id.':'.now()->format('Y-m-d-H'));
-            });
-
-            report($exception);
-
-            return false;
+        if ($order->cancellation_state !== null) {
+            throw ValidationException::withMessages(['order' => 'Изменение заказа во время отмены недоступно.']);
         }
-
-        return true;
-    }
-
-    private function completeCancellation(Order $order): void
-    {
-        DB::transaction(function () use ($order): void {
-            $lockedOrder = Order::query()
-                ->lockForUpdate()
-                ->findOrFail($order->id);
-
-            if ($lockedOrder->status->isCancelled()
-                || ! in_array($lockedOrder->cancellation_state, ['PENDING', 'FAILED'], true)) {
-                return;
-            }
-
-            $lockedOrder->update(['status' => OrderStatusEnum::CANCELLED, 'cancellation_state' => 'COMPLETED', 'cancelled_at' => now()]);
-
-            $this->notify($lockedOrder, 'CANCELLED', 'status:CANCELLED');
-        });
     }
 }

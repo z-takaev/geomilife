@@ -6,6 +6,7 @@ namespace App\ViewModel\Orders;
 
 use App\Enums\Cdek\CdekOrderStatusEnum;
 use App\Enums\Cdek\CdekRequestStateEnum;
+use App\Enums\Orders\OrderCancellationStateEnum;
 use App\Enums\Orders\OrderStatusEnum;
 use App\Models\Order;
 use App\Services\Orders\OrderLifecycleService;
@@ -40,7 +41,10 @@ final class OrderViewModel
             return __('Заказ отменён. Дальнейшая обработка недоступна.');
         }
 
-        if (in_array($order->cancellation_state, ['PENDING', 'FAILED'], true)) {
+        if (in_array($order->cancellation_state, [
+            OrderCancellationStateEnum::PENDING->value,
+            OrderCancellationStateEnum::FAILED->value,
+        ], true)) {
             return __('Выполняется отмена заказа. Изменение статуса недоступно.');
         }
 
@@ -140,9 +144,9 @@ final class OrderViewModel
     public static function cancellationStateLabel(?string $state): string
     {
         return match ($state) {
-            'PENDING' => __('Выполняется'),
-            'FAILED' => __('Ошибка отмены'),
-            'COMPLETED' => __('Завершена'),
+            OrderCancellationStateEnum::PENDING->value => __('Выполняется'),
+            OrderCancellationStateEnum::FAILED->value => __('Ошибка отмены'),
+            OrderCancellationStateEnum::COMPLETED->value => __('Завершена'),
             default => '—',
         };
     }
@@ -236,7 +240,10 @@ final class OrderViewModel
             'cancelUrl' => route('orders.cancel', $order),
             'quantity' => $quantity,
             'workingHours' => $order->delivery_address['working_hours'] ?? $order->delivery_address['work_time'] ?? null,
-            'isCancelling' => in_array($order->cancellation_state, ['PENDING', 'FAILED'], true),
+            'isCancelling' => in_array($order->cancellation_state, [
+                OrderCancellationStateEnum::PENDING->value,
+                OrderCancellationStateEnum::FAILED->value,
+            ], true),
             'isActive' => ! in_array($order->status, [OrderStatusEnum::CANCELLED, OrderStatusEnum::DELIVERED], true)
                 || $order->payment_status->isRefundPending(),
         ];

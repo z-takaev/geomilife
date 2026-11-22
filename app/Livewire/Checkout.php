@@ -224,7 +224,7 @@ final class Checkout extends Component
             $this->quoted_total_minor = $calculation['total']->minorAmount();
 
             // TODO: Добавить dto и может убрать сервис
-            app(CheckoutStateService::class)->store(
+            app(CheckoutStateService::class)->save(
                 $this->idempotency_key,
                 [
                     'fingerprint' => $calculation['fingerprint'],
@@ -308,7 +308,7 @@ final class Checkout extends Component
 
     public function render(GetCitySuggestionsAction $getCitySuggestions): View
     {
-        $checkoutData = app(CheckoutStateService::class)->presentation($this->idempotency_key);
+        $checkoutData = app(CheckoutStateService::class)->getPresentation($this->idempotency_key);
 
         $items = $checkoutData['items'] ?? [];
         $subtotal = Money::fromMinor($checkoutData['subtotal_minor'] ?? 0);
@@ -459,7 +459,7 @@ final class Checkout extends Component
     private function invalidateQuote(): void
     {
         app(CheckoutStateService::class)
-            ->markDeliveryNotReady($this->idempotency_key);
+            ->invalidateQuote($this->idempotency_key);
     }
 
     private function handleCityChange(): void
@@ -534,7 +534,7 @@ final class Checkout extends Component
         $pointSearch = trim($this->delivery_point_search);
 
         return $pointSearch === '' ? new Collection : $points->filter(
-            static fn (array $point): bool => mb_stripos($point['code'] . ' ' . $point['address'], $pointSearch) !== false,
+            static fn (array $point): bool => mb_stripos($point['code'].' '.$point['address'], $pointSearch) !== false,
         );
     }
 

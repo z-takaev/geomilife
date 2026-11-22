@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Enums\Tbank;
 
+use App\Enums\Orders\PaymentStatusEnum;
+
 enum TbankPaymentStatusEnum: string
 {
     case NEW = 'NEW';
@@ -39,5 +41,20 @@ enum TbankPaymentStatusEnum: string
     public function isReversed(): bool
     {
         return $this->is(self::REVERSED);
+    }
+
+    public function toPaymentStatus(): ?PaymentStatusEnum
+    {
+        return match ($this) {
+            self::CONFIRMED => PaymentStatusEnum::PAID,
+            self::AUTHORIZED => PaymentStatusEnum::AUTHORIZED,
+            self::REFUNDED => PaymentStatusEnum::REFUNDED,
+            self::REFUNDING, self::ASYNC_REFUNDING, self::REVERSING => PaymentStatusEnum::REFUND_PENDING,
+            self::CANCELED, self::REVERSED, self::DEADLINE_EXPIRED => PaymentStatusEnum::CANCELLED,
+            self::REJECTED, self::AUTH_FAIL => PaymentStatusEnum::FAILED,
+            self::NEW, self::FORM_SHOWED, self::AUTHORIZING, self::THREEDS_CHECKING,
+            self::THREEDS_CHECKED, self::CONFIRMING => PaymentStatusEnum::PENDING,
+            default => null,
+        };
     }
 }

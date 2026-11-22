@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Orders;
 
+use App\Actions\Orders\CancelOrderAction;
 use App\Enums\Cdek\CdekShipmentOperationStateEnum;
 use App\Enums\Orders\DeliveryMethodEnum;
+use App\Enums\Orders\OrderCancellationStateEnum;
+use App\Enums\Orders\OrderNotificationEventEnum;
 use App\Enums\Orders\OrderStatusEnum;
 use App\Enums\Orders\PaymentStatusEnum;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Services\Orders\CdekShipmentService;
-use App\Services\Orders\OrderLifecycleService;
 use App\Services\Orders\OrderNotificationService;
 use App\Services\Orders\OrderPaymentService;
 use Illuminate\Console\Command;
@@ -23,29 +25,38 @@ final class ReconcileOrdersCommand extends Command
 
     protected $description = 'Сверить платежи, отмены, возвраты и отправления заказов';
 
-    public function handle(OrderPaymentService $payments, OrderLifecycleService $statuses): int
-    {
-        $this->reconcileCancellations($statuses);
-        $this->reconcilePayments($payments);
-        $this->reconcileShipments();
+    public function handle(
+        CancelOrderAction $cancellations,
+        OrderPaymentService $payments,
+        CdekShipmentService $shipments,
+        OrderNotificationService $notifications,
+    ): int {
+        $this->reconcileCancellations($cancellations, $notifications);
+        $this->reconcilePayments($payments, $notifications);
+        $this->reconcileShipments($shipments, $notifications);
 
         return self::SUCCESS;
     }
 
-    private function reconcileCancellations(OrderLifecycleService $statuses): void
-    {
+    private function reconcileCancellations(
+        CancelOrderAction $cancellations,
+        OrderNotificationService $notifications,
+    ): void {
         Order::query()
-            ->whereIn('cancellation_state', ['PENDING', 'FAILED'])
-            ->chunkById(100, function ($orders) use ($statuses): void {
+            ->whereIn('cancellation_state', [
+                OrderCancellationStateEnum::PENDING->value,
+                OrderCancellationStateEnum::FAILED->value,
+            ])
+            ->chunkById(100, function ($orders) use ($cancellations, $notifications): void {
                 foreach ($orders as $order) {
                     try {
-                        $statuses->resumeCancellation($order);
+                        $cancellations->resume($order);
                     } catch (Throwable $exception) {
                         report($exception);
 
-                        app(OrderNotificationService::class)->queue(
+                        $notifications->queue(
                             $order,
-                            'CANCELLATION_FAILED',
+                            OrderNotificationEventEnum::CANCELLATION_FAILED->value,
                             'cancel-reconcile-error:'.$order->id.':'.now()->format('Y-m-d-H'),
                         );
                     }
@@ -53,14 +64,16 @@ final class ReconcileOrdersCommand extends Command
             });
     }
 
-    private function reconcilePayments(OrderPaymentService $payments): void
-    {
+    private function reconcilePayments(
+        OrderPaymentService $payments,
+        OrderNotificationService $notifications,
+    ): void {
         Payment::query()->where('provider', 'TBANK')
             ->whereIn('status', [PaymentStatusEnum::PENDING, PaymentStatusEnum::AUTHORIZED, PaymentStatusEnum::REFUND_PENDING, PaymentStatusEnum::REFUND_FAILED])
             ->where(function ($query): void {
                 $query->whereNull('last_checked_at')
                     ->orWhere('last_checked_at', '<=', now()->subMinutes((int) config('orders.reconciliation_stale_minutes')));
-            })->chunkById(100, function ($attempts) use ($payments): void {
+            })->chunkById(100, function ($attempts) use ($payments, $notifications): void {
                 foreach ($attempts as $payment) {
                     try {
                         $payments->syncPayment($payment);
@@ -72,9 +85,9 @@ final class ReconcileOrdersCommand extends Command
                     } catch (Throwable $exception) {
                         report($exception);
 
-                        app(OrderNotificationService::class)->queue(
+                        $notifications->queue(
                             $payment->order,
-                            'PAYMENT_RECONCILE_FAILED',
+                            OrderNotificationEventEnum::PAYMENT_RECONCILE_FAILED->value,
                             'payment-reconcile-error:'.$payment->id.':'.now()->format('Y-m-d-H'),
                         );
                     }
@@ -82,8 +95,10 @@ final class ReconcileOrdersCommand extends Command
             });
     }
 
-    private function reconcileShipments(): void
-    {
+    private function reconcileShipments(
+        CdekShipmentService $shipments,
+        OrderNotificationService $notifications,
+    ): void {
         Order::query()
             ->where('delivery_method', DeliveryMethodEnum::CDEK)
             ->where('payment_status', PaymentStatusEnum::PAID)
@@ -95,11 +110,9 @@ final class ReconcileOrdersCommand extends Command
                     $shipment->whereNull('last_checked_at')
                         ->orWhere('last_checked_at', '<=', now()->subMinutes((int) config('orders.reconciliation_stale_minutes')));
                 });
-            })->with('shipment')->chunkById(100, function ($orders): void {
+            })->with('shipment')->chunkById(100, function ($orders) use ($shipments, $notifications): void {
                 foreach ($orders as $order) {
                     try {
-                        $shipments = app(CdekShipmentService::class);
-
                         if ($order->status->isReadyToShip()
                             && ($order->shipment === null || $order->shipment->operation_state?->is(CdekShipmentOperationStateEnum::ABSENT))) {
                             $shipments->create($order);
@@ -109,9 +122,9 @@ final class ReconcileOrdersCommand extends Command
                     } catch (Throwable $exception) {
                         report($exception);
 
-                        app(OrderNotificationService::class)->queue(
+                        $notifications->queue(
                             $order,
-                            'SHIPPING_FAILED',
+                            OrderNotificationEventEnum::SHIPPING_FAILED->value,
                             'shipment-check:'.$order->id.':'.now()->format('Y-m-d-H'),
                         );
                     }

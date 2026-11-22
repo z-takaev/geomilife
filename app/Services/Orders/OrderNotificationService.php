@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Orders;
 
+use App\Enums\Orders\OrderNotificationAudienceEnum;
+use App\Enums\Orders\OrderNotificationEventEnum;
 use App\Models\Order;
 use App\Models\OrderNotificationEvent;
 use App\Notifications\Orders\DeliveryQuoteErrorNotification;
@@ -13,7 +15,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Throwable;
 
-// TODO: Для чего нам этот сервис и какая у него ответсвенность?
 final class OrderNotificationService
 {
     /**
@@ -71,11 +72,9 @@ final class OrderNotificationService
                 }
 
                 $order = $eventRecord->order;
-                $event = $eventRecord->event;
-                $buyerEvents = ['CREATED', 'CONFIRMED', 'READY_FOR_PICKUP',
-                    'READY_TO_SHIP', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED'];
+                $event = OrderNotificationEventEnum::tryFrom($eventRecord->event);
 
-                if (in_array($event, $buyerEvents, true)) {
+                if ($event?->isForBuyer() ?? false) {
                     $recipient = Notification::route('mail', $order->customer_email);
                     $user = $order->user;
 
@@ -83,16 +82,22 @@ final class OrderNotificationService
                         $recipient->route('telegram', (string) $user->telegram_chat_id);
                     }
 
-                    $recipient->notify((new OrderUpdateNotification($order, $event, 'BUYER'))->beforeCommit());
+                    $recipient->notify((new OrderUpdateNotification(
+                        $order,
+                        $event->value,
+                        OrderNotificationAudienceEnum::BUYER->value,
+                    ))->beforeCommit());
                 }
 
                 $managerChat = config('telegram.manager_chat_id');
-                $managerEvents = ['CREATED', 'REFUND_FAILED', 'CANCELLATION_FAILED', 'CANCELLATION_REJECTED',
-                    'SHIPPING_FAILED', 'DOCUMENT_FAILED', 'PAYMENT_RECONCILE_FAILED'];
 
-                if (filled($managerChat) && in_array($event, $managerEvents, true)) {
+                if (filled($managerChat) && ($event?->isForManager() ?? false)) {
                     Notification::route('telegram', (string) $managerChat)
-                        ->notify((new OrderUpdateNotification($order, $event, 'MANAGER'))->beforeCommit());
+                        ->notify((new OrderUpdateNotification(
+                            $order,
+                            $event->value,
+                            OrderNotificationAudienceEnum::MANAGER->value,
+                        ))->beforeCommit());
                 }
 
                 $eventRecord->update(['dispatched_at' => now()]);

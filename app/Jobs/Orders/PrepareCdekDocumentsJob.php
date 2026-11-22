@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Jobs\Orders;
 
 use App\Enums\Cdek\CdekPrintStateEnum;
+use App\Enums\Orders\OrderNotificationEventEnum;
 use App\Models\Order;
 use App\Services\Orders\OrderDocumentService;
 use App\Services\Orders\OrderNotificationService;
@@ -38,16 +39,20 @@ final class PrepareCdekDocumentsJob implements ShouldBeUniqueUntilProcessing, Sh
             if ($order->documents()->whereIn('state', [
                 CdekPrintStateEnum::CREATING->value,
                 CdekPrintStateEnum::ACCEPTED->value,
-                CdekPrintStateEnum::PROCESSING->value
+                CdekPrintStateEnum::PROCESSING->value,
             ])->exists()) {
                 if ($this->pollAttempt < 10) {
                     self::dispatch($order->id, $this->pollAttempt + 1)
                         ->delay(now()->addSeconds(30))
                         ->afterCommit();
                 } else {
-                    $service->markPendingCdekDocumentsFailed($order);
+                    $service->failTimedOutCdekDocuments($order);
 
-                    app(OrderNotificationService::class)->queue($order, 'DOCUMENT_FAILED', 'document-preparation-delayed');
+                    app(OrderNotificationService::class)->queue(
+                        $order,
+                        OrderNotificationEventEnum::DOCUMENT_FAILED->value,
+                        'document-preparation-delayed',
+                    );
                 }
             }
         }

@@ -49,6 +49,20 @@ enum PaymentStatusEnum: string implements HasColor, HasLabel
         return $this->is(self::REFUNDED);
     }
 
+    public static function orderedByAggregatePriority(): array
+    {
+        return [
+            self::REFUND_FAILED,
+            self::REFUND_PENDING,
+            self::PAID,
+            self::AUTHORIZED,
+            self::PENDING,
+            self::REFUNDED,
+            self::CANCELLED,
+            self::FAILED,
+        ];
+    }
+
     public function getLabel(): string
     {
         return match ($this) {

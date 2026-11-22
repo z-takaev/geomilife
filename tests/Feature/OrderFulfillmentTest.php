@@ -88,6 +88,25 @@ it('отправляет тариф 136 внешние размеры с окр�
         ->and(fulfillmentValue($order->fresh()->status))->toBe('READY_TO_SHIP');
 });
 
+it('использует настроенный тариф при создании отправления', function (): void {
+    config(['orders.cdek.tariff_code' => 999]);
+    $order = fulfillmentOrder(['status' => 'READY_TO_SHIP']);
+    fulfillmentOrderItem($order);
+    Http::fake([
+        'cdek.test/v2/oauth/token*' => Http::response(['access_token' => 'token', 'expires_in' => 3600]),
+        'cdek.test/v2/orders' => Http::response(
+            fulfillmentCdekResponse('11111111-1111-4111-8111-111111111111', state: 'ACCEPTED'),
+            202,
+        ),
+    ]);
+
+    app(CdekShipmentService::class)->create($order);
+
+    Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
+        && str_ends_with($request->url(), '/v2/orders')
+        && $request['tariff_code'] === 999);
+});
+
 it('добавляет к локальному номеру СДЭК уникальный идентификатор заказа', function (): void {
     config(['orders.cdek.order_number_prefix' => 'geomilife']);
     $uuid = '11111111-1111-4111-8111-111111111111';

@@ -8,6 +8,7 @@ use App\DTO\Cdek\CdekPrintResponseDto;
 use App\Enums\Cdek\CdekPrintStateEnum;
 use App\Enums\Cdek\CdekRequestStateEnum;
 use App\Enums\Orders\OrderDocumentTypeEnum;
+use App\Enums\Orders\OrderNotificationEventEnum;
 use App\Models\Order;
 use App\Models\OrderDocument;
 use App\Services\Cdek\CdekService;
@@ -21,7 +22,10 @@ use Throwable;
 
 final class OrderDocumentService
 {
-    public function __construct(private readonly CdekService $cdek) {}
+    public function __construct(
+        private readonly CdekService $cdek,
+        private readonly OrderNotificationService $notifications,
+    ) {}
 
     /**
      * Формирует упаковочный лист заказа и возвращает содержимое PDF.
@@ -64,8 +68,10 @@ final class OrderDocumentService
         }
     }
 
-    // TODO: Добавить комментарий и узнать зачем этот метод
-    public function markPendingCdekDocumentsFailed(Order $order): void
+    /**
+     * Завершает документы, готовность которых СДЭК не подтвердил за время опроса.
+     */
+    public function failTimedOutCdekDocuments(Order $order): void
     {
         $order->documents()
             ->whereIn('state', [
@@ -181,7 +187,11 @@ final class OrderDocumentService
                 'error' => $exception->getMessage(),
             ]);
 
-            app(OrderNotificationService::class)->queue($order, 'DOCUMENT_FAILED', 'document-failed:'.$type->value.':'.hash('sha256', $exception->getMessage()));
+            $this->notifications->queue(
+                $order,
+                OrderNotificationEventEnum::DOCUMENT_FAILED->value,
+                'document-failed:'.$type->value.':'.hash('sha256', $exception->getMessage()),
+            );
 
             throw $exception;
         }

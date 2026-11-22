@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\Orders\CancelOrderAction;
 use App\Actions\Orders\RepeatOrderAction;
 use App\Http\Requests\Orders\CancelOrderRequest;
 use App\Models\Order;
 use App\Navigation\BreadcrumbItem;
 use App\Navigation\Breadcrumbs;
-use App\Services\Orders\OrderLifecycleService;
 use App\Support\Seo\Schemas\BreadcrumbSchema;
 use App\ViewModel\Orders\OrderViewModel;
 use Illuminate\Contracts\View\View;
@@ -64,14 +64,14 @@ final class OrderController extends Controller
         return view('orders.show', compact('order', 'breadcrumbs', 'presentation'));
     }
 
-    public function cancel(Request $request, Order $order, OrderLifecycleService $lifecycle): RedirectResponse
+    public function cancel(Request $request, Order $order, CancelOrderAction $cancelOrder): RedirectResponse
     {
         $user = $request->user();
         abort_unless($order->user_id === $user->id, 404);
         abort_unless($order->status->isNew() && $order->cancellation_state === null, 403);
 
         $reason = app(CancelOrderRequest::class)->validated('reason') ?? __('Отмена покупателем');
-        $lifecycle->cancel($order, $user, $reason, onlyIfNew: true);
+        $cancelOrder->run($order, $user, $reason, onlyIfNew: true);
 
         return redirect()->route('orders.show', $order)->with('order_message', __('Запрос отмены принят. Состояние возврата отображается в заказе.'));
     }
