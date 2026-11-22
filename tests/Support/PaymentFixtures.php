@@ -64,7 +64,7 @@ final class PaymentFixtures
         return $order->payments()->create(array_replace([
             'provider' => 'TBANK',
             'transaction_id' => '100001',
-            'bank_order_id' => $order->number.'-1',
+            'bank_order_id' => $order->externalNumber(),
             'payment_url' => 'https://bank.test/pay/100001',
             'amount' => $order->total,
             'status' => 'PENDING',

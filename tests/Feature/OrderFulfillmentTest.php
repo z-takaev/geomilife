@@ -108,7 +108,7 @@ it('использует настроенный тариф при создани
 });
 
 it('добавляет к локальному номеру СДЭК уникальный идентификатор заказа', function (): void {
-    config(['orders.cdek.order_number_prefix' => 'geomilife']);
+    config(['orders.external_number_prefix' => 'local']);
     $uuid = '11111111-1111-4111-8111-111111111111';
     $order = fulfillmentOrder([
         'status' => 'READY_TO_SHIP',
@@ -124,13 +124,13 @@ it('добавляет к локальному номеру СДЭК уника�
 
     Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
         && str_ends_with($request->url(), '/v2/orders')
-        && $request['number'] === 'geomilife-'.$order->number.'-a1b2c3d4');
+        && $request['number'] === 'local-'.$order->number.'-a1b2c3d411114222');
     expect($order->fresh()->shipment->payload['request']['number'])
-        ->toBe('geomilife-'.$order->number.'-a1b2c3d4');
+        ->toBe('local-'.$order->number.'-a1b2c3d411114222');
 });
 
 it('восстанавливает старую заявку по номеру сохранённого запроса', function (): void {
-    config(['orders.cdek.order_number_prefix' => 'geomilife']);
+    config(['orders.external_number_prefix' => 'local']);
     $uuid = '11111111-1111-4111-8111-111111111111';
     $order = fulfillmentOrder(['status' => 'READY_TO_SHIP']);
     $shipment = $order->shipment()->create([

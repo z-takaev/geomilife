@@ -200,7 +200,7 @@ final class CdekShipmentService
 
         return new CdekCreateOrderRequestDto(
             tariffCode: (int) config('orders.cdek.tariff_code'),
-            number: $this->externalOrderNumber($order),
+            number: $order->externalNumber(),
             recipient: new CdekContactDto(name: $order->customer_name, phone: $order->customer_phone, email: $order->customer_email),
             packages: $packages,
             shipmentPoint: (string) config('orders.cdek.shipment_point'),
@@ -530,19 +530,6 @@ final class CdekShipmentService
         return false;
     }
 
-    private function externalOrderNumber(Order $order): string
-    {
-        $prefix = config('orders.cdek.order_number_prefix');
-
-        if (! is_string($prefix) || trim($prefix) === '') {
-            return (string) $order->number;
-        }
-
-        $uniquePart = substr(str_replace('-', '', $order->idempotency_key), 0, 8);
-
-        return trim($prefix, '-').'-'.$order->number.'-'.$uniquePart;
-    }
-
     private function shipmentOrderNumber(Order $order, OrderShipment $shipment): string
     {
         $storedNumber = $shipment->payload['request']['number'] ?? null;
@@ -555,6 +542,6 @@ final class CdekShipmentService
             return (string) $storedNumber;
         }
 
-        return $this->externalOrderNumber($order);
+        return $order->externalNumber();
     }
 }

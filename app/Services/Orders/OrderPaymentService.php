@@ -266,7 +266,7 @@ final class OrderPaymentService
 
             $payment = $lockedOrder->payments()->create([
                 'provider' => self::PROVIDER,
-                'bank_order_id' => $lockedOrder->number.'-1',
+                'bank_order_id' => $lockedOrder->externalNumber(),
                 'amount' => $lockedOrder->total,
                 'status' => PaymentStatusEnum::PENDING,
                 'provider_status' => TbankPaymentStatusEnum::NEW->value,

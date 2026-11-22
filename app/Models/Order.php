@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
+use LogicException;
 
 final class Order extends Model
 {
@@ -88,6 +89,28 @@ final class Order extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(OrderDocument::class);
+    }
+
+    public function externalNumber(): string
+    {
+        if ($this->number === null) {
+            throw new LogicException('Номер заказа ещё не сформирован.');
+        }
+
+        $prefix = config('orders.external_number_prefix');
+
+        if (! is_string($prefix) || trim($prefix) === '') {
+            return (string) $this->number;
+        }
+
+        $uniquePart = substr(str_replace('-', '', $this->idempotency_key), 0, 16);
+        $externalNumber = trim($prefix, '-').'-'.$this->number.'-'.$uniquePart;
+
+        if (strlen($externalNumber) > 30) {
+            throw new LogicException('Внешний номер заказа не должен превышать 30 символов.');
+        }
+
+        return $externalNumber;
     }
 
     private function assignNumberIfMissing(): void

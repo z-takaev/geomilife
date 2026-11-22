@@ -25,7 +25,10 @@ beforeEach(function (): void {
 });
 
 it('инициирует онлайн оплату нового заказа на полную сумму без кассового чека', function (): void {
-    $order = PaymentFixtures::order();
+    config(['orders.external_number_prefix' => 'local']);
+    $order = PaymentFixtures::order([
+        'idempotency_key' => 'a1b2c3d4-e5f6-4789-8123-456789abcdef',
+    ]);
     Http::fake(fn (Request $request) => Http::response([
         'Success' => true, 'ErrorCode' => '0', 'PaymentId' => '100001',
         'OrderId' => $request['OrderId'], 'Amount' => $request['Amount'],
@@ -40,6 +43,7 @@ it('инициирует онлайн оплату нового заказа н�
         ->and(PaymentFixtures::value($order->fresh()->status))->toBe('NEW');
     Http::assertSent(fn (Request $request): bool => str_ends_with($request->url(), '/Init')
         && $request['Amount'] === 135000
+        && $request['OrderId'] === 'local-'.$order->number.'-a1b2c3d4e5f64789'
         && ! array_key_exists('Receipt', $request->data())
         && ! array_key_exists('RedirectDueDate', $request->data()));
 });
