@@ -7,6 +7,7 @@ namespace App\Livewire\Forms;
 use App\DTO\Orders\CheckoutInputDto;
 use App\Enums\Orders\DeliveryMethodEnum;
 use App\Enums\Orders\PaymentMethodEnum;
+use App\Models\Address;
 use App\Models\City;
 use App\Models\Setting;
 use App\Services\Orders\CheckoutService;
@@ -33,7 +34,6 @@ final class CheckoutForm extends Form
 
     public string $delivery_method = '';
 
-    // TODO: Нельзя убрать value?
     public string $payment_method = PaymentMethodEnum::ONLINE->value;
 
     public ?int $address_id = null;
@@ -70,13 +70,31 @@ final class CheckoutForm extends Form
         ]));
     }
 
+    public function fillAddress(Address $address): void
+    {
+        $this->address_id = $address->id;
+
+        foreach (['street', 'house', 'building', 'apartment', 'entrance', 'floor', 'intercom'] as $field) {
+            $this->{$field} = $address->{$field} ?? (in_array($field, ['street', 'house'], true) ? '' : null);
+        }
+    }
+
+    public function resetAddress(): void
+    {
+        $this->reset('address_id', 'street', 'house', 'building', 'apartment', 'entrance', 'floor', 'intercom', 'delivery_to_door');
+    }
+
+    public function resetDeliveryPoint(): void
+    {
+        $this->reset('delivery_point_code');
+    }
+
     public function selectedCity(): ?City
     {
         if ($this->city_id === null) {
             $this->resolvedCityId = null;
             $this->resolvedCity = null;
 
-            // TODO: Нельзя убрать null?
             return null;
         }
 
@@ -90,7 +108,6 @@ final class CheckoutForm extends Form
 
     protected function rules(): array
     {
-        // TODO: скорректировать условия
         return [
             'first_name' => ['required', 'string', 'max:20'],
             'last_name' => ['required', 'string', 'max:20'],

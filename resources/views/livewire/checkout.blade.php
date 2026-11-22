@@ -88,21 +88,15 @@
                         </div>
                     @endauth
                     <div class="checkout-form-grid">
-                        @foreach ($contactFields as $field)
-                            <fieldset class="checkout-field"><label
-                                    for="checkout-{{ $field['name'] }}">{{ $field['label'] }} <span
-                                        class="checkout-field__required" aria-hidden="true"></span></label>
-                                <input id="checkout-{{ $field['name'] }}" type="{{ $field['type'] }}"
-                                    wire:model.blur="form.{{ $field['name'] }}"
-                                    autocomplete="{{ $field['autocomplete'] }}"
-                                    placeholder="{{ $field['placeholder'] }}"
-                                    @if ($field['name'] === 'phone') data-phone-mask inputmode="tel" maxlength="18" @endif
-                                    required>
-                                @error('form.' . $field['name'])
-                                    <small class="checkout-field-error">{{ $message }}</small>
-                                @enderror
-                            </fieldset>
-                        @endforeach
+                        <x-checkout.input name="first_name" :label="__('Имя')" :required="true"
+                            wire:model.blur="form.first_name" autocomplete="given-name" :placeholder="__('Введите имя')" />
+                        <x-checkout.input name="last_name" :label="__('Фамилия')" :required="true"
+                            wire:model.blur="form.last_name" autocomplete="family-name" :placeholder="__('Введите фамилию')" />
+                        <x-checkout.input name="phone" :label="__('Телефон')" type="tel" :required="true"
+                            wire:model.blur="form.phone" autocomplete="tel" :placeholder="__('+7 (___) ___-__-__')" data-phone-mask
+                            inputmode="tel" maxlength="18" />
+                        <x-checkout.input name="email" :label="__('Email')" type="email" :required="true"
+                            wire:model.blur="form.email" autocomplete="email" :placeholder="__('mail@example.ru')" />
                     </div>
                 </section>
 
@@ -174,7 +168,6 @@
                                     <p>{{ $city->pickup_phone }}</p>
                                     <small>{{ __('Вы сможете забрать заказ по указанному адресу после уведомления о готовности.') }}</small>
                                 </div>
-                                {{-- TODO: Заменить на $form->delivery_method->isCourier?  --}}
                             @elseif ($form->delivery_method === \App\Enums\Orders\DeliveryMethodEnum::COURIER->value)
                                 <div class="checkout-address__heading">
                                     <i class="icon icon-MapPin" aria-hidden="true"></i>
@@ -194,21 +187,14 @@
                                     </div>
                                 @endif
                                 <div class="checkout-form-grid">
-                                    @foreach ($addressFields as $field)
-                                        <fieldset
-                                            class="checkout-field {{ $field['name'] === 'street' ? 'checkout-field--wide' : '' }}">
-                                            <label for="checkout-{{ $field['name'] }}">{{ $field['label'] }}
-                                                @if ($field['required'])
-                                                    <span class="checkout-field__required" aria-hidden="true"></span>
-                                                @endif
-                                            </label>
-                                            <input id="checkout-{{ $field['name'] }}" type="text"
-                                                wire:model.blur="form.{{ $field['name'] }}" @required($field['required'])>
-                                            @error('form.' . $field['name'])
-                                                <small class="checkout-field-error">{{ $message }}</small>
-                                            @enderror
-                                        </fieldset>
-                                    @endforeach
+                                    <x-checkout.input name="street" :label="__('Улица')" :required="true"
+                                        container-class="checkout-field--wide" wire:model.blur="form.street" />
+                                    <x-checkout.input name="house" :label="__('Дом')" :required="true"
+                                        wire:model.blur="form.house" />
+                                    <x-checkout.input name="building" :label="__('Корпус / строение')"
+                                        wire:model.blur="form.building" />
+                                    <x-checkout.input name="entrance" :label="__('Подъезд')"
+                                        wire:model.blur="form.entrance" />
                                 </div>
                                 <label class="checkout-door-option"><input type="checkbox"
                                         wire:model.live="form.delivery_to_door"><span>{{ __('Доставка до двери') }}</span></label>
@@ -218,27 +204,16 @@
                                 @if ($form->delivery_to_door)
                                     <div class="checkout-door-fields">
                                         <div class="checkout-form-grid">
-                                            @foreach ($doorFields as $field)
-                                                <fieldset class="checkout-field"><label
-                                                        for="checkout-{{ $field['name'] }}">{{ $field['label'] }}
-                                                        @if ($field['required'])
-                                                            <span class="checkout-field__required"
-                                                                aria-hidden="true"></span>
-                                                        @endif
-                                                    </label><input id="checkout-{{ $field['name'] }}"
-                                                        type="{{ $field['name'] === 'floor' ? 'number' : 'text' }}"
-                                                        wire:model.live.blur="form.{{ $field['name'] }}"
-                                                        @if ($field['name'] === 'floor') min="1" max="200" step="1" inputmode="numeric" @endif
-                                                        @required($field['required'])>
-                                                    @if ($field['name'] === 'floor')
-                                                        <small
-                                                            class="checkout-field-hint">{{ __(':price за этаж, начиная со второго. Первый этаж — бесплатно.', ['price' => $floorLiftingPrice]) }}</small>
-                                                    @endif
-                                                    @error('form.' . $field['name'])
-                                                        <small class="checkout-field-error">{{ $message }}</small>
-                                                    @enderror
-                                                </fieldset>
-                                            @endforeach
+                                            <x-checkout.input name="floor" :label="__('Этаж')" type="number"
+                                                :required="true" wire:model.live.blur="form.floor" min="1"
+                                                max="200" step="1" inputmode="numeric">
+                                                <small
+                                                    class="checkout-field-hint">{{ __(':price за этаж, начиная со второго. Первый этаж — бесплатно.', ['price' => $floorLiftingPrice]) }}</small>
+                                            </x-checkout.input>
+                                            <x-checkout.input name="apartment" :label="__('Квартира / офис')" :required="true"
+                                                wire:model.live.blur="form.apartment" />
+                                            <x-checkout.input name="intercom" :label="__('Домофон')"
+                                                wire:model.live.blur="form.intercom" />
                                         </div>
                                         <p class="checkout-section__description">
                                             {{ __('Наличие лифта не влияет на стоимость подъёма.') }}

@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Livewire;
 
 use App\Actions\Cities\GetCitySuggestionsAction;
-use App\DTO\Orders\CheckoutCalculationDto;
-use App\DTO\Orders\CheckoutItemDto;
-use App\DTO\Orders\CheckoutQuoteDto;
-use App\DTO\Orders\PackedPackageDto;
+use App\Actions\Orders\CalculateCheckoutQuoteAction;
+use App\DTO\Orders\CheckoutPresentationDto;
 use App\Enums\Orders\DeliveryMethodEnum;
 use App\Enums\Orders\PaymentMethodEnum;
 use App\Livewire\Forms\CheckoutForm;
@@ -36,28 +34,38 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
-// TODO: Подумать над конструктором для сервисов
 final class Checkout extends Component
 {
-    // TODO: Убрать константу
-    private const string CDEK_QUOTE_ERROR = 'Не удалось рассчитать СДЭК. Повторите попытку или выберите другой способ получения.';
+    private const string CDEK_CALCULATION_ERROR_MESSAGE = 'Не удалось рассчитать СДЭК. Повторите попытку или выберите другой способ получения.';
+
+    private const array QUOTE_DEPENDENT_FIELDS = [
+        'city_id',
+        'delivery_method',
+        'payment_method',
+        'street',
+        'house',
+        'building',
+        'apartment',
+        'entrance',
+        'floor',
+        'intercom',
+        'delivery_to_door',
+    ];
 
     public CheckoutForm $form;
 
     public string $city_search = '';
 
-    // TODO: Что за переменная
     public bool $checkout_attempted = false;
 
-    // TODO: Что за переменная
     public bool $other_recipient = false;
 
-    // TODO: Что за переменная
+    /** @var array{first_name?: string, last_name?: string, phone?: string, email?: string} */
     public array $other_recipient_contacts = [];
 
     public string $idempotency_key = '';
 
-    // TODO: Что за переменная
+    /** Подтверждённая пользователем сумма последнего серверного расчёта. */
     public ?int $quoted_total_minor = null;
 
     public string $delivery_point_search = '';
@@ -68,9 +76,29 @@ final class Checkout extends Component
 
     private ?EloquentCollection $cachedSavedDeliveryPoints = null;
 
+    private CalculateCheckoutQuoteAction $calculateQuote;
+
+    private CheckoutService $checkout;
+
+    private CheckoutStateService $checkoutState;
+
+    private OrderNotificationService $orderNotifications;
+
     protected $listeners = ['city-selected' => 'selectCity', 'city-detected' => 'useDetectedCity'];
 
-    public function mount(CurrentCityService $cities): void
+    public function boot(
+        CalculateCheckoutQuoteAction $calculateQuote,
+        CheckoutService $checkout,
+        CheckoutStateService $checkoutState,
+        OrderNotificationService $orderNotifications,
+    ): void {
+        $this->calculateQuote = $calculateQuote;
+        $this->checkout = $checkout;
+        $this->checkoutState = $checkoutState;
+        $this->orderNotifications = $orderNotifications;
+    }
+
+    public function mount(CurrentCityService $currentCityService): void
     {
         session()->forget('checkout');
 
@@ -84,10 +112,11 @@ final class Checkout extends Component
         $this->form->email = $user?->email ?? '';
 
         $point = $this->savedDeliveryPoints()->first(
-            static fn (SavedDeliveryPoint $point): bool => $point->is_default
-                && $point->city?->is_active
-                && ! $point->city->is_cdek_excluded
-                && $point->city->cdek_code > 0, // TODO: Зачем эта проверка?
+            fn (SavedDeliveryPoint $point): bool => $point->is_default
+                && array_key_exists(
+                    DeliveryMethodEnum::CDEK->value,
+                    $this->checkout->availableDeliveryMethods($point->city),
+                ),
         );
 
         if ($point !== null) {
@@ -96,11 +125,10 @@ final class Checkout extends Component
             return;
         }
 
-        $this->form->city_id = $cities->current()?->id; // TODO: Переименовать $cities
+        $this->form->city_id = $currentCityService->current()?->id;
         $city = $this->form->selectedCity();
         $this->city_search = $city?->optionLabel() ?? '';
-        $this->form->delivery_method = (string) array_key_first(app(CheckoutService::class)
-            ->availableDeliveryMethods($city));
+        $this->form->delivery_method = (string) array_key_first($this->checkout->availableDeliveryMethods($city));
 
         $this->handleFormChange('delivery_method');
     }
@@ -137,7 +165,6 @@ final class Checkout extends Component
         $this->handleFormChange('city_id');
     }
 
-    // TODO: Зачем этот метод?
     public function useDetectedCity(int $id, ?string $name = null): void
     {
         if ($this->form->city_id === null) {
@@ -153,7 +180,7 @@ final class Checkout extends Component
 
         abort_if($address === null, 404);
 
-        $this->fillAddress($address);
+        $this->form->fillAddress($address);
         $this->form->city_id = $address->city_id;
         $this->city_search = $address->city?->optionLabel() ?? '';
         $this->form->delivery_method = DeliveryMethodEnum::COURIER->value;
@@ -164,7 +191,7 @@ final class Checkout extends Component
 
     public function clearAddress(): void
     {
-        $this->resetAddress();
+        $this->form->resetAddress();
         $this->recalculate();
     }
 
@@ -182,9 +209,9 @@ final class Checkout extends Component
         $this->recalculate();
     }
 
-    public function chooseAnotherDeliveryPoint(CurrentCityService $cities): void
+    public function chooseAnotherDeliveryPoint(CurrentCityService $currentCityService): void
     {
-        $city = $cities->current() ?? $cities->getOrDetect();
+        $city = $currentCityService->current() ?? $currentCityService->getOrDetect();
 
         $this->form->city_id = $city?->id;
         $this->city_search = $city?->optionLabel() ?? '';
@@ -222,16 +249,9 @@ final class Checkout extends Component
         $this->resetValidation(['cart', 'quote', 'quoted_total_minor', 'form.delivery_point_code']);
 
         try {
-            $calculation = app(CheckoutService::class)
-                ->calculateOrder($this->form->orderData());
+            $presentation = $this->calculateQuote->execute($this->form->orderData(), $this->idempotency_key);
 
-            $this->quoted_total_minor = $calculation->total->minorAmount();
-
-            app(CheckoutStateService::class)->save(
-                $this->idempotency_key,
-                new CheckoutQuoteDto($calculation->fingerprint, $calculation->total),
-                $this->calculationData($calculation),
-            );
+            $this->quoted_total_minor = $presentation->total->minorAmount();
         } catch (ValidationException $exception) {
             $this->invalidateQuote();
 
@@ -240,46 +260,43 @@ final class Checkout extends Component
             }
         } catch (CdekApiException $exception) {
             $this->invalidateQuote();
-            $this->addError('quote', __(self::CDEK_QUOTE_ERROR));
+            $this->addError('quote', __(self::CDEK_CALCULATION_ERROR_MESSAGE));
 
-            app(OrderNotificationService::class)
-                ->notifyQuoteError($this->form->city_id ?? 0);
+            $this->orderNotifications->notifyQuoteError($this->form->city_id ?? 0);
 
             report($exception);
         }
     }
 
-    // TODO: Изменить название
-    public function placeOrder(): void
+    public function placeOrder(CartService $cart, OrderPaymentService $orderPayment): void
     {
         $this->checkout_attempted = true;
+        $this->validateOnly('idempotency_key');
 
-        $service = app(CheckoutService::class);
-
-        $order = $service->findPlacedOrder($this->idempotency_key);
+        $order = $this->checkout->findPlacedOrder($this->idempotency_key);
 
         if ($order === null) {
             $this->form->email = EmailNormalizer::normalize($this->form->email) ?? '';
             $this->validate();
 
             try {
-                $order = $service->placeOrder($this->form->orderData(), $this->idempotency_key, $this->quoted_total_minor ?? -1);
+                $order = $this->checkout->placeOrder($this->form->orderData(), $this->idempotency_key, $this->quoted_total_minor ?? -1);
             } catch (ValidationException $exception) {
                 throw ValidationException::withMessages($this->orderErrors($exception));
             } catch (CdekApiException $exception) {
                 report($exception);
 
-                throw ValidationException::withMessages(['quote' => __(self::CDEK_QUOTE_ERROR)]);
+                throw ValidationException::withMessages(['quote' => __(self::CDEK_CALCULATION_ERROR_MESSAGE)]);
             }
 
-            $this->dispatch('cart-updated', hasItems: app(CartService::class)->hasItems());
+            $this->dispatch('cart-updated', hasItems: $cart->hasItems());
         }
 
-        app(CheckoutStateService::class)->forget($this->idempotency_key);
+        $this->checkoutState->forget($this->idempotency_key);
 
         if ($order->wasRecentlyCreated && $order->payment_method->isOnline()) {
             try {
-                $payment = app(OrderPaymentService::class)->startOnlinePayment($order);
+                $payment = $orderPayment->startOnlinePayment($order);
 
                 if ($payment->payment_url !== null) {
                     $this->redirect($payment->payment_url);
@@ -308,60 +325,37 @@ final class Checkout extends Component
 
     public function render(GetCitySuggestionsAction $getCitySuggestions): View
     {
-        $checkoutData = app(CheckoutStateService::class)->getPresentation($this->idempotency_key);
+        $presentation = $this->checkoutState->getPresentation($this->idempotency_key)
+            ?? CheckoutPresentationDto::empty();
 
-        $items = $checkoutData['items'] ?? [];
-        $subtotal = Money::fromMinor($checkoutData['subtotal_minor'] ?? 0);
-        $deliveryPrice = Money::fromMinor($checkoutData['delivery_minor'] ?? 0);
-        $total = Money::fromMinor($checkoutData['total_minor'] ?? 0);
+        $items = $presentation->items;
+        $subtotal = $presentation->subtotal;
+        $deliveryPrice = $presentation->delivery;
+        $total = $presentation->total;
 
-        $isPreorder = $checkoutData['is_preorder'] ?? false;
-        // TODO: Непонятная строка
-        $deliveryReady = ($checkoutData['delivery_ready'] ?? false) && ! $this->getErrorBag()->has('quote') && ! $this->getErrorBag()->has('form.delivery_point_code');
+        $isPreorder = $presentation->isPreorder;
+        $deliveryReady = $this->isDeliveryReady($presentation);
 
         $city = $this->form->selectedCity();
-        $points = $this->deliveryPoints($city, $checkoutData['packages'] ?? []);
+        $points = $this->deliveryPoints($city, $presentation->packages);
         $selectedDeliveryPoint = $points->firstWhere('code', $this->form->delivery_point_code);
-        $deliveryPoints = $this->pointSuggestions($points); // TODO: Скорректировать название
-        $availableDeliveryMethods = app(CheckoutService::class)->availableDeliveryMethods($city);
+        $deliveryPoints = $this->filterDeliveryPoints($points);
+        $availableDeliveryMethods = $this->checkout->availableDeliveryMethods($city);
 
         $cities = $this->form->city_id !== null && $this->city_search === $city?->optionLabel()
             ? collect()
             : $getCitySuggestions->run($this->city_search);
         $addresses = $this->addresses();
 
-        // TODO: нормально ли формировать тут поля? Или лучше убрать в версту или хотябы в методы отдельные?
-        $contactFields = [
-            ['name' => 'first_name', 'label' => __('Имя'), 'type' => 'text', 'autocomplete' => 'given-name', 'placeholder' => __('Введите имя')],
-            ['name' => 'last_name', 'label' => __('Фамилия'), 'type' => 'text', 'autocomplete' => 'family-name', 'placeholder' => __('Введите фамилию')],
-            ['name' => 'phone', 'label' => __('Телефон'), 'type' => 'tel', 'autocomplete' => 'tel', 'placeholder' => __('+7 (___) ___-__-__')],
-            ['name' => 'email', 'label' => __('Email'), 'type' => 'email', 'autocomplete' => 'email', 'placeholder' => __('mail@example.ru')],
-        ];
-
-        $addressFields = [
-            ['name' => 'street', 'label' => __('Улица'), 'required' => true],
-            ['name' => 'house', 'label' => __('Дом'), 'required' => true],
-            ['name' => 'building', 'label' => __('Корпус / строение'), 'required' => false],
-            ['name' => 'entrance', 'label' => __('Подъезд'), 'required' => false],
-        ];
-
-        $doorFields = [
-            ['name' => 'floor', 'label' => __('Этаж'), 'required' => true],
-            ['name' => 'apartment', 'label' => __('Квартира / офис'), 'required' => true],
-            ['name' => 'intercom', 'label' => __('Домофон'), 'required' => false],
-        ];
-
         $savedPoints = $this->savedDeliveryPoints();
 
         $doorDeliveryPrice = ($city?->door_delivery_price ?? Money::fromMinor(0))->format();
         $floorLiftingPrice = ($city?->floor_lifting_price ?? Money::fromMinor(0))->format();
-        // TODO: Нужна ли тут это переменная иди лучше ее в шаблон через хелпер?
         $privacyPolicyUrl = Setting::cached()?->privacyPolicyUrl() ?? '';
 
-        return view('livewire.checkout', compact('doorDeliveryPrice', 'floorLiftingPrice', 'privacyPolicyUrl', 'items', 'subtotal', 'deliveryPrice', 'total', 'isPreorder', 'deliveryReady', 'deliveryPoints', 'selectedDeliveryPoint', 'availableDeliveryMethods', 'cities', 'city', 'addresses', 'savedPoints', 'contactFields', 'addressFields', 'doorFields'));
+        return view('livewire.checkout', compact('doorDeliveryPrice', 'floorLiftingPrice', 'privacyPolicyUrl', 'items', 'subtotal', 'deliveryPrice', 'total', 'isPreorder', 'deliveryReady', 'deliveryPoints', 'selectedDeliveryPoint', 'availableDeliveryMethods', 'cities', 'city', 'addresses', 'savedPoints'));
     }
 
-    // TODO: Нужна ли тут одна проверка?
     protected function rules(): array
     {
         return ['idempotency_key' => ['required', 'uuid']];
@@ -377,8 +371,7 @@ final class Checkout extends Component
             $this->handleDeliveryChange();
         }
 
-        // TODO: Нужны ли тут все поля для перерасчета?
-        if (in_array($field, ['city_id', 'delivery_method', 'payment_method', 'street', 'house', 'building', 'apartment', 'entrance', 'floor', 'intercom', 'delivery_to_door'], true)) {
+        if (in_array($field, self::QUOTE_DEPENDENT_FIELDS, true)) {
             $this->recalculate();
         }
     }
@@ -418,47 +411,15 @@ final class Checkout extends Component
         $this->form->resetValidation(['first_name', 'last_name', 'phone', 'email']);
     }
 
-    private function calculationData(CheckoutCalculationDto $calculation): array
-    {
-        return [
-            'items' => array_map(static fn (CheckoutItemDto $item): array => $item->toArray(), $calculation->items),
-            'subtotal_minor' => $calculation->subtotal->minorAmount(),
-            'delivery_minor' => $calculation->delivery->minorAmount(),
-            'total_minor' => $calculation->total->minorAmount(),
-            'details' => $calculation->details,
-            'is_preorder' => $calculation->isPreorder,
-            'packages' => array_map(static fn (PackedPackageDto $package): array => $package->toArray(), $calculation->packages),
-            'delivery_ready' => $calculation->city !== null
-                && array_key_exists($this->form->delivery_method, app(CheckoutService::class)->availableDeliveryMethods($calculation->city))
-                && ($this->form->delivery_method !== DeliveryMethodEnum::CDEK->value || $calculation->point !== null),
-        ];
-    }
-
-    private function fillAddress(Address $address): void
-    {
-        $this->form->address_id = $address->id;
-
-        foreach (['street', 'house', 'building', 'apartment', 'entrance', 'floor', 'intercom'] as $field) {
-            $this->form->{$field} = $address->{$field} ?? (in_array($field, ['street', 'house'], true) ? '' : null);
-        }
-    }
-
-    private function resetAddress(): void
-    {
-        $this->form->reset('address_id', 'street', 'house', 'building', 'apartment', 'entrance', 'floor', 'intercom', 'delivery_to_door');
-    }
-
     private function resetDeliveryPoint(): void
     {
-        $this->form->reset('delivery_point_code');
+        $this->form->resetDeliveryPoint();
         $this->reset('saved_delivery_point_id', 'delivery_point_search');
     }
 
-    // TODO: Убрать метод
     private function invalidateQuote(): void
     {
-        app(CheckoutStateService::class)
-            ->invalidateQuote($this->idempotency_key);
+        $this->checkoutState->invalidateQuote($this->idempotency_key);
     }
 
     private function handleCityChange(): void
@@ -470,10 +431,9 @@ final class Checkout extends Component
         }
 
         $this->resetDeliveryPoint();
-        $this->resetAddress();
+        $this->form->resetAddress();
 
-        $methods = app(CheckoutService::class)
-            ->availableDeliveryMethods($this->form->selectedCity()); // TODO: Использовать $city?
+        $methods = $this->checkout->availableDeliveryMethods($city);
 
         if (! array_key_exists($this->form->delivery_method, $methods)) {
             $this->form->delivery_method = (string) array_key_first($methods);
@@ -492,7 +452,7 @@ final class Checkout extends Component
             );
 
             if ($address !== null) {
-                $this->fillAddress($address);
+                $this->form->fillAddress($address);
             }
         }
 
@@ -513,15 +473,12 @@ final class Checkout extends Component
         if (
             $city === null
             || $this->form->delivery_method !== DeliveryMethodEnum::CDEK->value
-            || ! array_key_exists(DeliveryMethodEnum::CDEK->value, app(CheckoutService::class)->availableDeliveryMethods($city))
+            || ! array_key_exists(DeliveryMethodEnum::CDEK->value, $this->checkout->availableDeliveryMethods($city))
         ) {
             return new Collection;
         }
 
-        // TODO: Отрефачить
-        $packageDtos = array_map(PackedPackageDto::fromArray(...), $packages);
-
-        return collect(app(CheckoutService::class)->deliveryPoints($city, $packageDtos))
+        return collect($this->checkout->deliveryPoints($city, $packages))
             ->map(static fn ($point): array => [
                 'code' => $point->code,
                 'address' => $point->address,
@@ -530,7 +487,7 @@ final class Checkout extends Component
             ]);
     }
 
-    private function pointSuggestions(Collection $points): Collection
+    private function filterDeliveryPoints(Collection $points): Collection
     {
         $pointSearch = trim($this->delivery_point_search);
 
@@ -539,7 +496,13 @@ final class Checkout extends Component
         );
     }
 
-    // TODO: Вынести в метод модели?
+    private function isDeliveryReady(CheckoutPresentationDto $presentation): bool
+    {
+        return $presentation->deliveryReady
+            && ! $this->getErrorBag()->has('quote')
+            && ! $this->getErrorBag()->has('form.delivery_point_code');
+    }
+
     private function addresses(): EloquentCollection
     {
         /** @var User */
