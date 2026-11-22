@@ -40,8 +40,8 @@ it('списывает только заказанное количество и
     expect($cart->count())->toBe(10);
 
     DB::transaction(fn () => $cart->removeOrderedItems([
-        ['product_variant_id' => $ordered->id, 'quantity' => 2],
-        ['product_variant_id' => $removed->id, 'quantity' => 2],
+        $ordered->id => 2,
+        $removed->id => 2,
     ]));
 
     expect($cart->quantities())->toEqual([$ordered->id => 3, $untouched->id => 3])
@@ -58,7 +58,7 @@ it('при списании не затрагивает корзину друг�
     $cart->add($variant->id, 3);
 
     DB::transaction(fn () => $cart->removeOrderedItems([
-        ['product_variant_id' => $variant->id, 'quantity' => 2],
+        $variant->id => 2,
     ]));
 
     expect($cart->quantities())->toBe([$variant->id => 1])

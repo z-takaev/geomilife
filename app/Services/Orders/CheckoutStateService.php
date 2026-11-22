@@ -4,24 +4,25 @@ declare(strict_types=1);
 
 namespace App\Services\Orders;
 
+use App\DTO\Orders\CheckoutQuoteDto;
 use Illuminate\Support\Facades\Cache;
 
 final class CheckoutStateService
 {
-    public function save(string $idempotencyKey, array $quote, array $presentation): void
+    public function save(string $idempotencyKey, CheckoutQuoteDto $quote, array $presentation): void
     {
         Cache::put(
             $this->key($idempotencyKey),
-            compact('quote', 'presentation'),
+            ['quote' => $quote->toArray(), 'presentation' => $presentation],
             (int) config('cache.items.checkout_state.ttl'),
         );
     }
 
-    public function getQuote(string $idempotencyKey): ?array
+    public function getQuote(string $idempotencyKey): ?CheckoutQuoteDto
     {
         $state = Cache::get($this->key($idempotencyKey));
 
-        return is_array($state) && is_array($state['quote'] ?? null) ? $state['quote'] : null;
+        return is_array($state) ? CheckoutQuoteDto::tryFromArray($state['quote'] ?? null) : null;
     }
 
     public function getPresentation(string $idempotencyKey): array

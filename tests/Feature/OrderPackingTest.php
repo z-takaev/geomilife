@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use App\DTO\Orders\CheckoutItemDto;
 use App\Models\ShippingBox;
 use App\Services\Orders\OrderPackingService;
+use App\Support\Values\Money;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -15,12 +17,30 @@ function fulfillmentBox(array $attributes = []): ShippingBox
     ], $attributes));
 }
 
-function fulfillmentPackingItem(array $attributes = []): array
+function fulfillmentPackingItem(array $attributes = []): CheckoutItemDto
 {
-    return array_replace([
+    $data = array_replace([
         'product_variant_id' => 1, 'quantity' => 1, 'length' => 250, 'width' => 65,
         'height' => 60, 'weight' => 500,
     ], $attributes);
+
+    return new CheckoutItemDto(
+        productId: 1,
+        productVariantId: $data['product_variant_id'],
+        productName: 'Товар',
+        variantName: 'Вариант',
+        sku: 'SKU-'.$data['product_variant_id'],
+        quantity: $data['quantity'],
+        price: Money::fromMinor(10000),
+        oldPrice: null,
+        total: Money::fromMinor(10000 * $data['quantity']),
+        weight: $data['weight'],
+        length: $data['length'],
+        width: $data['width'],
+        height: $data['height'],
+        image: '',
+        url: '',
+    );
 }
 
 it('учитывает пять миллиметров с каждой стороны и один вес коробки с защитой', function (): void {
@@ -28,14 +48,14 @@ it('учитывает пять миллиметров с каждой стор�
     $packages = app(OrderPackingService::class)->pack([fulfillmentPackingItem()]);
 
     expect($packages)->toHaveCount(1)
-        ->and($packages[0]['box_id'])->toBe($box->id)
-        ->and($packages[0]['length'])->toBe(260)
-        ->and($packages[0]['width'])->toBe(75)
-        ->and($packages[0]['height'])->toBe(70)
-        ->and($packages[0]['inner_length'])->toBe(250)
-        ->and($packages[0]['inner_width'])->toBe(65)
-        ->and($packages[0]['inner_height'])->toBe(60)
-        ->and($packages[0]['weight'])->toBe(600);
+        ->and($packages[0]->boxId)->toBe($box->id)
+        ->and($packages[0]->length)->toBe(260)
+        ->and($packages[0]->width)->toBe(75)
+        ->and($packages[0]->height)->toBe(70)
+        ->and($packages[0]->innerLength)->toBe(250)
+        ->and($packages[0]->innerWidth)->toBe(65)
+        ->and($packages[0]->innerHeight)->toBe(60)
+        ->and($packages[0]->weight)->toBe(600);
 });
 
 it('выбирает меньшую по объёму подходящую коробку', function (): void {
@@ -45,7 +65,7 @@ it('выбирает меньшую по объёму подходящую ко�
     $packages = app(OrderPackingService::class)->pack([fulfillmentPackingItem()]);
 
     expect($packages)->toHaveCount(1)
-        ->and($packages[0]['box_id'])->toBe($smallerBox->id);
+        ->and($packages[0]->boxId)->toBe($smallerBox->id);
 });
 
 it('бессрочно кеширует активные коробки и сбрасывает кеш после изменения', function (): void {
@@ -82,7 +102,7 @@ it('размещает бутылку лёжа когда стоя она не �
     ]);
 
     expect($packages)->toHaveCount(1)
-        ->and(array_sum(array_column($packages[0]['items'], 'quantity')))->toBe(1);
+        ->and(collect($packages[0]->items)->sum('quantity'))->toBe(1);
 });
 
 it('размещает товары слоями и считает все единицы без повторного веса защиты', function (): void {
@@ -92,8 +112,8 @@ it('размещает товары слоями и считает все еди
     ]);
 
     expect($packages)->toHaveCount(1)
-        ->and($packages[0]['weight'])->toBe(680)
-        ->and(array_sum(array_column($packages[0]['items'], 'quantity')))->toBe(2);
+        ->and($packages[0]->weight)->toBe(680)
+        ->and(collect($packages[0]->items)->sum('quantity'))->toBe(2);
 });
 
 it('использует несколько коробок одного типа если все товары не помещаются в одну', function (): void {
@@ -103,9 +123,9 @@ it('использует несколько коробок одного типа
     ]);
 
     expect($packages)->toHaveCount(3)
-        ->and(array_column($packages, 'box_id'))->toBe([$box->id, $box->id, $box->id])
-        ->and(array_sum(array_column($packages, 'weight')))->toBe(1140)
-        ->and(array_sum(array_map(fn (array $package): int => array_sum(array_column($package['items'], 'quantity')), $packages)))->toBe(3);
+        ->and(array_map(static fn ($package): int => $package->boxId, $packages))->toBe([$box->id, $box->id, $box->id])
+        ->and(array_sum(array_map(static fn ($package): int => $package->weight, $packages)))->toBe(1140)
+        ->and(array_sum(array_map(static fn ($package): int => collect($package->items)->sum('quantity'), $packages)))->toBe(3);
 });
 
 it('не возвращает частично упакованный заказ если одна позиция не помещается', function (): void {

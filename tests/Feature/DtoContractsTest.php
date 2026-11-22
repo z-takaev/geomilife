@@ -5,6 +5,9 @@ declare(strict_types=1);
 use App\DTO\Cdek\CdekDeliveryPointResponseDto;
 use App\DTO\Cdek\CdekOrderItemDto;
 use App\DTO\Cdek\CdekPaymentDto;
+use App\DTO\Orders\CheckoutInputDto;
+use App\DTO\Orders\CheckoutItemDto;
+use App\DTO\Orders\CheckoutQuoteDto;
 use App\Services\Cdek\CdekResponseMapper;
 use App\Services\Cdek\Exceptions\CdekApiException;
 use App\Services\Orders\CheckoutService;
@@ -122,4 +125,57 @@ it('перезагружает кеш ПВЗ с объектами прежне�
     expect($points)->toHaveCount(1)
         ->and($points[0]->code)->toBe('MSK1')
         ->and(Cache::get($cacheKey)[0])->toBeInstanceOf(CdekDeliveryPointResponseDto::class);
+});
+
+it('типизирует черновые данные оформления заказа без потери пустого состояния', function (): void {
+    $input = CheckoutInputDto::fromArray([
+        'city_id' => 15,
+        'delivery_method' => 'CDEK',
+        'payment_method' => 'ONLINE',
+        'first_name' => 'Иван',
+        'last_name' => 'Иванов',
+        'phone' => '+79990000000',
+        'email' => 'test@example.com',
+        'delivery_point_code' => 'MSK1',
+    ]);
+
+    expect($input->cityId)->toBe(15)
+        ->and($input->deliveryMethod?->value)->toBe('CDEK')
+        ->and($input->paymentMethod?->value)->toBe('ONLINE')
+        ->and(CheckoutInputDto::fromArray([])->deliveryMethod)->toBeNull();
+});
+
+it('сериализует снимок товара и котировку в прежний формат границ системы', function (): void {
+    $item = new CheckoutItemDto(
+        productId: 10,
+        productVariantId: 20,
+        productName: 'Товар',
+        variantName: 'Вариант',
+        sku: 'SKU-1',
+        quantity: 2,
+        price: Money::fromMinor(12345),
+        oldPrice: null,
+        total: Money::fromMinor(24690),
+        weight: 500,
+        length: 250,
+        width: 65,
+        height: 60,
+        image: '/image.jpg',
+        url: '/product',
+    );
+    $quote = new CheckoutQuoteDto('fingerprint', Money::fromMinor(24690));
+
+    expect($item->toArray())
+        ->toMatchArray([
+            'product_id' => 10,
+            'product_variant_id' => 20,
+            'quantity' => 2,
+            'price_minor' => 12345,
+            'old_price_minor' => null,
+            'total_minor' => 24690,
+        ])
+        ->and($quote->toArray())->toBe([
+            'fingerprint' => 'fingerprint',
+            'total_minor' => 24690,
+        ]);
 });

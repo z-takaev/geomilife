@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Tbank;
+namespace App\Support\Tbank;
 
 use InvalidArgumentException;
 
-// TODO: нужен ли этот класс?
 final class TbankIdentifierValidator
 {
     public static function validatePaymentId(string $paymentId): void

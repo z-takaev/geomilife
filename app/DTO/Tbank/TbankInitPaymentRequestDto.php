@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\DTO\Tbank;
 
-use App\Services\Tbank\TbankIdentifierValidator;
+use App\Support\Tbank\TbankIdentifierValidator;
 use App\Support\Values\Money;
 use DateTimeImmutable;
 use InvalidArgumentException;

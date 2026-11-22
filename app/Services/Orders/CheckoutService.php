@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Services\Orders;
 
 use App\DTO\Orders\CheckoutCalculationDto;
+use App\DTO\Orders\CheckoutInputDto;
+use App\DTO\Orders\CheckoutItemDto;
+use App\DTO\Orders\PackedPackageDto;
 use App\Enums\Orders\DeliveryMethodEnum;
 use App\Enums\Orders\OrderStatusEnum;
 use App\Enums\Orders\PaymentStatusEnum;
@@ -42,15 +45,14 @@ final class CheckoutService
     /**
      * Рассчитывает состав, доставку и итоговую стоимость заказа по данным формы.
      */
-    public function calculateOrder(array $form): array
+    public function calculateOrder(CheckoutInputDto $input): CheckoutCalculationDto
     {
         $cartData = $this->calculateCart();
 
         $items = $cartData['items'];
         $subtotal = $cartData['subtotal'];
-        $cityId = filter_var($form['city_id'] ?? null, FILTER_VALIDATE_INT);
-        $city = $cityId === false ? null : City::cachedById($cityId);
-        $deliveryMethod = DeliveryMethodEnum::tryFrom((string) ($form['delivery_method'] ?? ''));
+        $city = $input->cityId === null ? null : City::cachedById($input->cityId);
+        $deliveryMethod = $input->deliveryMethod;
         $deliveryPrice = Money::fromMinor(0);
         $deliveryDetails = [];
         $address = [];
@@ -60,7 +62,7 @@ final class CheckoutService
         if ($city !== null) {
             $address = ['city_id' => $city->id, 'city' => $city->name, 'city_code' => $city->cdek_code];
 
-            $delivery = $this->delivery->calculate($city, $deliveryMethod, $form, $items);
+            $delivery = $this->delivery->calculate($city, $deliveryMethod, $input, $items);
             $deliveryPrice = $delivery->price;
             $deliveryDetails = $delivery->details;
             $address += $delivery->address;
@@ -74,13 +76,13 @@ final class CheckoutService
             $this->fingerprintItems($items),
             $city?->id,
             $deliveryMethod?->value,
-            $form['payment_method'] ?? '',
+            $input->paymentMethod?->value ?? '',
             $deliveryDetails,
             $address,
-            $packages,
+            array_map(static fn (PackedPackageDto $package): array => $package->toArray(), $packages),
         ], JSON_THROW_ON_ERROR));
 
-        return (new CheckoutCalculationDto(
+        return new CheckoutCalculationDto(
             items: $items,
             subtotal: $subtotal,
             delivery: $deliveryPrice,
@@ -92,7 +94,7 @@ final class CheckoutService
             point: $point,
             fingerprint: $fingerprint,
             isPreorder: $cartData['is_preorder'],
-        ))->toArray();
+        );
     }
 
     /**
@@ -122,32 +124,32 @@ final class CheckoutService
     /**
      * Проверяет подтверждённый расчёт и оформляет заказ без повторного создания.
      */
-    public function placeOrder(array $form, string $idempotencyKey, int $quotedTotalMinor): Order
+    public function placeOrder(CheckoutInputDto $input, string $idempotencyKey, int $quotedTotalMinor): Order
     {
         if ($existing = $this->findPlacedOrder($idempotencyKey)) {
             return $existing;
         }
 
-        $calculation = $this->calculateOrder($form);
+        $calculation = $this->calculateOrder($input);
         $saved = $this->state->getQuote($idempotencyKey);
 
         if (
-            ! is_array($saved)
-            || $quotedTotalMinor !== ($saved['total_minor'] ?? null)
-            || $calculation['total']->minorAmount() !== $quotedTotalMinor
-            || ! hash_equals($saved['fingerprint'] ?? '', $calculation['fingerprint'])
+            $saved === null
+            || $saved->total->minorAmount() !== $quotedTotalMinor
+            || ! $calculation->total->equals($saved->total)
+            || ! hash_equals($saved->fingerprint, $calculation->fingerprint)
         ) {
             throw ValidationException::withMessages(['quoted_total_minor' => __('Условия заказа изменились. Проверьте итог и подтвердите его заново.')]);
         }
 
-        $city = $calculation['city'];
-        $deliveryMethod = $form['delivery_method'];
+        $city = $calculation->city;
+        $deliveryMethod = $input->deliveryMethod;
 
-        if ($city === null || ! array_key_exists($deliveryMethod, $this->availableDeliveryMethods($city))) {
+        if ($city === null || $deliveryMethod === null || ! array_key_exists($deliveryMethod->value, $this->availableDeliveryMethods($city))) {
             throw ValidationException::withMessages(['delivery_method' => __('Выбранный способ получения недоступен.')]);
         }
 
-        if ($deliveryMethod === DeliveryMethodEnum::CDEK->value && $calculation['point'] === null) {
+        if ($deliveryMethod->isCdek() && $calculation->point === null) {
             throw ValidationException::withMessages(['delivery_point_code' => __('Выберите пункт получения.')]);
         }
 
@@ -159,7 +161,7 @@ final class CheckoutService
         }
 
         try {
-            return DB::transaction(function () use ($form, $idempotencyKey, $calculation, $deliveryMethod): Order {
+            return DB::transaction(function () use ($input, $idempotencyKey, $calculation, $deliveryMethod): Order {
                 /** @var User */
                 $user = Auth::user();
 
@@ -180,13 +182,13 @@ final class CheckoutService
 
                 $this->assertItemsUnchanged($calculation);
 
-                $order = $this->createOrderRecord($user, $form, $calculation, $idempotencyKey);
+                $order = $this->createOrderRecord($user, $input, $calculation, $idempotencyKey);
 
-                $this->createOrderItems($order, $calculation['items']);
+                $this->createOrderItems($order, $calculation->items);
 
                 $this->rememberDelivery($user, $deliveryMethod, $calculation);
 
-                $this->cart->removeOrderedItems($calculation['items']);
+                $this->cart->removeOrderedItems($this->itemQuantities($calculation->items));
 
                 $this->notifications->queue($order, 'CREATED', 'created:'.$order->id);
 
@@ -228,40 +230,40 @@ final class CheckoutService
             $lineTotal = $variant->price->multiply($quantity);
             $subtotal = $subtotal->add($lineTotal);
 
-            $items[] = [
-                'product_id' => $variant->product_id,
-                'product_variant_id' => $variant->id,
-                'product_name' => $variant->product->name,
-                'variant_name' => $variant->label(),
-                'sku' => $variant->sku,
-                'quantity' => $quantity,
-                'price_minor' => $variant->price->minorAmount(),
-                'old_price_minor' => $variant->old_price?->minorAmount(),
-                'total_minor' => $lineTotal->minorAmount(),
-                'weight' => (int) $variant->weight,
-                'length' => (int) $variant->length,
-                'width' => (int) $variant->width,
-                'height' => (int) $variant->height,
-                'image' => $variant->product->getFirstMediaUrl('image', 'thumbnail'),
-                'url' => route('products.show', [$variant->product, 'variant' => $variant->id]),
-            ];
+            $items[] = new CheckoutItemDto(
+                productId: $variant->product_id,
+                productVariantId: $variant->id,
+                productName: $variant->product->name,
+                variantName: $variant->label(),
+                sku: $variant->sku,
+                quantity: $quantity,
+                price: $variant->price,
+                oldPrice: $variant->old_price,
+                total: $lineTotal,
+                weight: (int) $variant->weight,
+                length: (int) $variant->length,
+                width: (int) $variant->width,
+                height: (int) $variant->height,
+                image: $variant->product->getFirstMediaUrl('image', 'thumbnail'),
+                url: route('products.show', [$variant->product, 'variant' => $variant->id]),
+            );
         }
 
         return compact('items', 'subtotal') + ['is_preorder' => (bool) $variants->first()->is_preorder];
     }
 
-    private function assertItemsUnchanged(array $calculation): void
+    private function assertItemsUnchanged(CheckoutCalculationDto $calculation): void
     {
-        $items = $calculation['items'];
+        $items = $calculation->items;
 
         Product::query()
-            ->whereKey(array_column($items, 'product_id'))
+            ->whereKey(array_map(static fn (CheckoutItemDto $item): int => $item->productId, $items))
             ->orderBy('id')
             ->lockForUpdate()
             ->get();
 
         $variants = ProductVariant::query()
-            ->whereKey(array_column($items, 'product_variant_id'))
+            ->whereKey(array_map(static fn (CheckoutItemDto $item): int => $item->productVariantId, $items))
             ->available()
             ->orderBy('id')
             ->lockForUpdate()
@@ -269,14 +271,17 @@ final class CheckoutService
             ->keyBy('id');
 
         foreach ($items as $item) {
-            $variant = $variants->get($item['product_variant_id']);
+            $variant = $variants->get($item->productVariantId);
 
-            $unchanged = $variant !== null && $variant->price->minorAmount() === $item['price_minor']
-                && $variant->old_price?->minorAmount() === $item['old_price_minor']
-                && $variant->is_preorder === $calculation['is_preorder'];
+            $oldPriceUnchanged = ($variant?->old_price === null && $item->oldPrice === null)
+                || ($variant?->old_price !== null && $item->oldPrice !== null && $variant->old_price->equals($item->oldPrice));
+
+            $unchanged = $variant !== null && $variant->price->equals($item->price)
+                && $oldPriceUnchanged
+                && $variant->is_preorder === $calculation->isPreorder;
 
             foreach (['weight', 'length', 'width', 'height'] as $field) {
-                $unchanged = $unchanged && (int) $variant?->{$field} === $item[$field];
+                $unchanged = $unchanged && (int) $variant?->{$field} === $item->{$field};
             }
 
             if (! $unchanged) {
@@ -290,26 +295,26 @@ final class CheckoutService
         return hash_hmac('sha256', session()->getId(), (string) config('app.key'));
     }
 
-    private function createOrderRecord(?User $user, array $form, array $calculation, string $idempotencyKey): Order
+    private function createOrderRecord(?User $user, CheckoutInputDto $input, CheckoutCalculationDto $calculation, string $idempotencyKey): Order
     {
         return Order::query()->create([
             'user_id' => $user?->id,
-            'city_id' => $calculation['city']->id,
+            'city_id' => $calculation->city->id,
             'status' => OrderStatusEnum::NEW,
             'payment_status' => PaymentStatusEnum::UNPAID,
-            'delivery_method' => $form['delivery_method'],
-            'payment_method' => $form['payment_method'],
-            'subtotal' => $calculation['subtotal'],
-            'delivery_price' => $calculation['delivery'],
-            'total' => $calculation['total'],
-            'customer_name' => trim($form['first_name'].' '.$form['last_name']),
-            'customer_phone' => PhoneFormat::normalize($form['phone']),
-            'customer_email' => $form['email'],
-            'delivery_address' => $calculation['address'],
-            'delivery_details' => $calculation['details'],
-            'packages' => $calculation['packages'],
-            'comment' => $form['comment'] ?? null,
-            'is_preorder' => $calculation['is_preorder'],
+            'delivery_method' => $input->deliveryMethod,
+            'payment_method' => $input->paymentMethod,
+            'subtotal' => $calculation->subtotal,
+            'delivery_price' => $calculation->delivery,
+            'total' => $calculation->total,
+            'customer_name' => trim($input->firstName.' '.$input->lastName),
+            'customer_phone' => PhoneFormat::normalize($input->phone),
+            'customer_email' => $input->email,
+            'delivery_address' => $calculation->address,
+            'delivery_details' => $calculation->details,
+            'packages' => array_map(static fn (PackedPackageDto $package): array => $package->toArray(), $calculation->packages),
+            'comment' => $input->comment,
+            'is_preorder' => $calculation->isPreorder,
             'idempotency_key' => $idempotencyKey,
             'checkout_session_hash' => $this->sessionHash(),
         ]);
@@ -319,40 +324,45 @@ final class CheckoutService
     {
         foreach ($items as $item) {
             $order->items()->create([
-                'product_id' => $item['product_id'],
-                'product_variant_id' => $item['product_variant_id'],
-                'product_name' => $item['product_name'],
-                'variant_name' => $item['variant_name'],
-                'sku' => $item['sku'],
-                'price' => Money::fromMinor($item['price_minor']),
-                'old_price' => $item['old_price_minor'] === null ? null : Money::fromMinor($item['old_price_minor']),
-                'quantity' => $item['quantity'],
-                'total' => Money::fromMinor($item['total_minor']),
+                'product_id' => $item->productId,
+                'product_variant_id' => $item->productVariantId,
+                'product_name' => $item->productName,
+                'variant_name' => $item->variantName,
+                'sku' => $item->sku,
+                'price' => $item->price,
+                'old_price' => $item->oldPrice,
+                'quantity' => $item->quantity,
+                'total' => $item->total,
             ]);
         }
     }
 
-    private function rememberDelivery(?User $user, string $deliveryMethod, array $calculation): void
+    private function rememberDelivery(?User $user, DeliveryMethodEnum $deliveryMethod, CheckoutCalculationDto $calculation): void
     {
-        if ($user !== null && $deliveryMethod === DeliveryMethodEnum::COURIER->value) {
-            $this->locations->rememberAddress($user, $calculation['address']);
-        } elseif ($user !== null && $deliveryMethod === DeliveryMethodEnum::CDEK->value) {
-            $this->locations->rememberDeliveryPoint($user, $calculation['city'], $calculation['point']);
+        if ($user !== null && $deliveryMethod->isCourier()) {
+            $this->locations->rememberAddress($user, $calculation->address);
+        } elseif ($user !== null && $deliveryMethod->isCdek()) {
+            $this->locations->rememberDeliveryPoint($user, $calculation->city, $calculation->point);
         }
     }
 
     private function fingerprintItems(array $items): array
     {
-        return array_map(static fn (array $item): array => [
-            'product_id' => $item['product_id'],
-            'product_variant_id' => $item['product_variant_id'],
-            'quantity' => $item['quantity'],
-            'price_minor' => $item['price_minor'],
-            'old_price_minor' => $item['old_price_minor'],
-            'weight' => $item['weight'],
-            'length' => $item['length'],
-            'width' => $item['width'],
-            'height' => $item['height'],
-        ], $items);
+        return array_map(static fn (CheckoutItemDto $item): array => $item->fingerprintData(), $items);
+    }
+
+    /**
+     * @param  list<CheckoutItemDto>  $items
+     * @return array<int, int>
+     */
+    private function itemQuantities(array $items): array
+    {
+        $quantities = [];
+
+        foreach ($items as $item) {
+            $quantities[$item->productVariantId] = $item->quantity;
+        }
+
+        return $quantities;
     }
 }

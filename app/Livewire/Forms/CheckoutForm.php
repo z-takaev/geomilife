@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Forms;
 
+use App\DTO\Orders\CheckoutInputDto;
 use App\Enums\Orders\DeliveryMethodEnum;
 use App\Enums\Orders\PaymentMethodEnum;
 use App\Models\City;
@@ -59,14 +60,14 @@ final class CheckoutForm extends Form
 
     public string $delivery_point_code = '';
 
-    public function orderData(): array
+    public function orderData(): CheckoutInputDto
     {
-        return $this->only([
+        return CheckoutInputDto::fromArray($this->only([
             'city_id', 'address_id',
             'delivery_method', 'payment_method',
             'first_name', 'last_name', 'phone', 'email', 'comment',
             'street', 'house', 'building', 'apartment', 'entrance', 'floor', 'intercom', 'delivery_to_door', 'delivery_point_code',
-        ]);
+        ]));
     }
 
     public function selectedCity(): ?City

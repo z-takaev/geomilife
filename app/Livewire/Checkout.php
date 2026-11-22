@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace App\Livewire;
 
 use App\Actions\Cities\GetCitySuggestionsAction;
+use App\DTO\Orders\CheckoutCalculationDto;
+use App\DTO\Orders\CheckoutItemDto;
+use App\DTO\Orders\CheckoutQuoteDto;
+use App\DTO\Orders\PackedPackageDto;
 use App\Enums\Orders\DeliveryMethodEnum;
 use App\Enums\Orders\PaymentMethodEnum;
 use App\Livewire\Forms\CheckoutForm;
@@ -221,15 +225,11 @@ final class Checkout extends Component
             $calculation = app(CheckoutService::class)
                 ->calculateOrder($this->form->orderData());
 
-            $this->quoted_total_minor = $calculation['total']->minorAmount();
+            $this->quoted_total_minor = $calculation->total->minorAmount();
 
-            // TODO: Добавить dto и может убрать сервис
             app(CheckoutStateService::class)->save(
                 $this->idempotency_key,
-                [
-                    'fingerprint' => $calculation['fingerprint'],
-                    'total_minor' => $this->quoted_total_minor,
-                ],
+                new CheckoutQuoteDto($calculation->fingerprint, $calculation->total),
                 $this->calculationData($calculation),
             );
         } catch (ValidationException $exception) {
@@ -418,20 +418,19 @@ final class Checkout extends Component
         $this->form->resetValidation(['first_name', 'last_name', 'phone', 'email']);
     }
 
-    // TODO: Избавиться от метода
-    private function calculationData(array $calculation): array
+    private function calculationData(CheckoutCalculationDto $calculation): array
     {
         return [
-            'items' => $calculation['items'],
-            'subtotal_minor' => $calculation['subtotal']->minorAmount(),
-            'delivery_minor' => $calculation['delivery']->minorAmount(),
-            'total_minor' => $calculation['total']->minorAmount(),
-            'details' => $calculation['details'],
-            'is_preorder' => $calculation['is_preorder'],
-            'packages' => $calculation['packages'],
-            'delivery_ready' => $calculation['city'] !== null
-                && array_key_exists($this->form->delivery_method, app(CheckoutService::class)->availableDeliveryMethods($calculation['city']))
-                && ($this->form->delivery_method !== DeliveryMethodEnum::CDEK->value || $calculation['point'] !== null),
+            'items' => array_map(static fn (CheckoutItemDto $item): array => $item->toArray(), $calculation->items),
+            'subtotal_minor' => $calculation->subtotal->minorAmount(),
+            'delivery_minor' => $calculation->delivery->minorAmount(),
+            'total_minor' => $calculation->total->minorAmount(),
+            'details' => $calculation->details,
+            'is_preorder' => $calculation->isPreorder,
+            'packages' => array_map(static fn (PackedPackageDto $package): array => $package->toArray(), $calculation->packages),
+            'delivery_ready' => $calculation->city !== null
+                && array_key_exists($this->form->delivery_method, app(CheckoutService::class)->availableDeliveryMethods($calculation->city))
+                && ($this->form->delivery_method !== DeliveryMethodEnum::CDEK->value || $calculation->point !== null),
         ];
     }
 
@@ -520,7 +519,9 @@ final class Checkout extends Component
         }
 
         // TODO: Отрефачить
-        return collect(app(CheckoutService::class)->deliveryPoints($city, $packages))
+        $packageDtos = array_map(PackedPackageDto::fromArray(...), $packages);
+
+        return collect(app(CheckoutService::class)->deliveryPoints($city, $packageDtos))
             ->map(static fn ($point): array => [
                 'code' => $point->code,
                 'address' => $point->address,

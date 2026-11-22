@@ -12,6 +12,7 @@ use App\DTO\Tbank\TbankInitPaymentRequestDto;
 use App\DTO\Tbank\TbankInitPaymentResponseDto;
 use App\DTO\Tbank\TbankPaymentNotificationDto;
 use App\Services\Tbank\Exceptions\TbankApiException;
+use App\Support\Tbank\TbankIdentifierValidator;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
@@ -31,7 +32,7 @@ final class TbankService
         $data = $payment->toArray();
         $data['NotificationURL'] ??= route('tbank.webhook');
         $result = $this->mapper->initPayment(
-            $this->client->post('Init', $data)
+            $this->client->post('Init', $data),
         );
 
         if ($result->orderId !== $payment->orderId || ! $result->amount->equals($payment->amount)) {
@@ -47,7 +48,7 @@ final class TbankService
     public function cancelPayment(TbankCancelPaymentRequestDto $payment): TbankCancelPaymentResponseDto
     {
         $result = $this->mapper->cancelPayment(
-            $this->client->post('Cancel', $payment->toArray())
+            $this->client->post('Cancel', $payment->toArray()),
         );
 
         if ($result->paymentId !== $payment->paymentId
@@ -68,7 +69,7 @@ final class TbankService
         TbankIdentifierValidator::validatePaymentId($paymentId);
 
         $result = $this->mapper->paymentState(
-            $this->client->post('GetState', ['PaymentId' => $paymentId])
+            $this->client->post('GetState', ['PaymentId' => $paymentId]),
         );
 
         if ($result->paymentId !== $paymentId) {

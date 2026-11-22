@@ -118,7 +118,7 @@ final class CartService
         return ProductVariant::query()
             ->available()
             ->whereHas('cartItems.cart', static fn (Builder $query): Builder => $query
-            ->where('user_id', Auth::id()))
+                ->where('user_id', Auth::id()))
             ->exists();
     }
 
@@ -240,22 +240,23 @@ final class CartService
      * Списывает заказанное количество товаров и обновляет кеш корзины.
      */
     // TODO: Что делает и зачем метод?
-    public function removeOrderedItems(array $items): void
+    /** @param array<int, int> $quantitiesByVariant */
+    public function removeOrderedItems(array $quantitiesByVariant): void
     {
         if (auth()->check()) {
             $cartData = auth()->user()->cart()->first();
             $cartItems = $cartData?->items()
-                ->whereIn('product_variant_id', array_column($items, 'product_variant_id'))
+                ->whereIn('product_variant_id', array_keys($quantitiesByVariant))
                 ->orderBy('product_variant_id')
                 ->lockForUpdate()
                 ->get()
                 ->keyBy('product_variant_id') ?? collect();
 
-            foreach ($items as $item) {
-                $cartItem = $cartItems->get($item['product_variant_id']);
+            foreach ($quantitiesByVariant as $variantId => $quantity) {
+                $cartItem = $cartItems->get($variantId);
 
                 if ($cartItem !== null) {
-                    $remaining = $cartItem->quantity - $item['quantity'];
+                    $remaining = $cartItem->quantity - $quantity;
                     $remaining > 0 ? $cartItem->update(['quantity' => $remaining]) : $cartItem->delete();
                 }
             }
@@ -263,13 +264,13 @@ final class CartService
         } else {
             $quantities = session(self::SESSION_KEY, []);
 
-            foreach ($items as $item) {
-                $remaining = (int) ($quantities[$item['product_variant_id']] ?? 0) - $item['quantity'];
+            foreach ($quantitiesByVariant as $variantId => $quantity) {
+                $remaining = (int) ($quantities[$variantId] ?? 0) - $quantity;
 
                 if ($remaining > 0) {
-                    $quantities[$item['product_variant_id']] = $remaining;
+                    $quantities[$variantId] = $remaining;
                 } else {
-                    unset($quantities[$item['product_variant_id']]);
+                    unset($quantities[$variantId]);
                 }
             }
             session()->put(self::SESSION_KEY, $quantities);

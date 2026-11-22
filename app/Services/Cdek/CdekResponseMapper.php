@@ -8,6 +8,7 @@ use App\DTO\Cdek\CdekCalculateTariffResponseDto;
 use App\DTO\Cdek\CdekCityResponseDto;
 use App\DTO\Cdek\CdekDeliveryPointCityCodesPageDto;
 use App\DTO\Cdek\CdekDeliveryPointResponseDto;
+use App\DTO\Cdek\CdekOperationRequestDto;
 use App\DTO\Cdek\CdekOperationResponseDto;
 use App\DTO\Cdek\CdekOrderResponseDto;
 use App\DTO\Cdek\CdekPrintResponseDto;
@@ -135,33 +136,33 @@ final class CdekResponseMapper
                 throw CdekApiException::invalidResponse();
             }
 
-            $parsed = [
-                'uuid' => $this->optionalString($request, 'request_uuid'),
-                'type' => $this->string($request, 'type'),
-                'dateTime' => $this->date($request, 'date_time'),
-                'state' => $state,
-                'errors' => $this->issues($request, 'errors'),
-                'warnings' => $this->issues($request, 'warnings'),
-            ];
+            $parsed = new CdekOperationRequestDto(
+                uuid: $this->optionalString($request, 'request_uuid'),
+                type: $this->string($request, 'type'),
+                dateTime: $this->date($request, 'date_time'),
+                state: $state,
+                errors: $this->issues($request, 'errors'),
+                warnings: $this->issues($request, 'warnings'),
+            );
             $requests[] = $parsed;
 
             if ($latest === null
-                || ($parsed['type'] === 'CREATE' && $latest['type'] !== 'CREATE')
-                || (($parsed['type'] === 'CREATE') === ($latest['type'] === 'CREATE') && $parsed['dateTime'] >= $latest['dateTime'])) {
+                || ($parsed->type === 'CREATE' && $latest->type !== 'CREATE')
+                || (($parsed->type === 'CREATE') === ($latest->type === 'CREATE') && $parsed->dateTime >= $latest->dateTime)) {
                 $latest = $parsed;
             }
         }
 
-        $errors = [...$this->issues($data, 'errors'), ...($latest['errors'] ?? [])];
-        $warnings = [...$this->issues($data, 'warnings'), ...($latest['warnings'] ?? [])];
+        $errors = [...$this->issues($data, 'errors'), ...($latest?->errors ?? [])];
+        $warnings = [...$this->issues($data, 'warnings'), ...($latest?->warnings ?? [])];
 
-        if ($uuid === null && ($latest === null || $latest['state']->isSuccessful()) && $errors === []) {
+        if ($uuid === null && ($latest === null || $latest->state->isSuccessful()) && $errors === []) {
             throw CdekApiException::invalidResponse();
         }
 
         return new CdekOperationResponseDto(
             uuid: $uuid,
-            state: $latest['state'] ?? null,
+            state: $latest?->state,
             errors: $errors,
             warnings: $warnings,
             requests: $requests,

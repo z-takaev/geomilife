@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\Orders;
 
+use App\DTO\Orders\CheckoutItemDto;
+use App\DTO\Orders\PackedItemDto;
+use App\DTO\Orders\PackedPackageDto;
 use App\Models\ProductVariant;
 use App\Models\ShippingBox;
 use App\Support\Shipping\PackingBoxAdapter;
@@ -71,6 +74,10 @@ final class OrderPackingService
     /**
      * Распределяет товары по доступным коробкам и проверяет ограничения СДЭК.
      */
+    /**
+     * @param  list<CheckoutItemDto>  $items
+     * @return list<PackedPackageDto>
+     */
     public function pack(array $items): array
     {
         if ($items === []) {
@@ -81,14 +88,13 @@ final class OrderPackingService
         $itemCount = 0;
 
         foreach ($items as $item) {
-            foreach (['product_variant_id', 'quantity', 'length', 'width', 'height', 'weight'] as $field) {
-                if (! isset($item[$field]) || ! is_int($item[$field]) || $item[$field] < 1) {
-                    throw ValidationException::withMessages(['delivery' => __('Заполните вес и габариты всех товаров перед расчётом СДЭК.')]);
-                }
+            if (! $item instanceof CheckoutItemDto
+                || min($item->productVariantId, $item->quantity, $item->length, $item->width, $item->height, $item->weight) < 1) {
+                throw ValidationException::withMessages(['delivery' => __('Заполните вес и габариты всех товаров перед расчётом СДЭК.')]);
             }
 
-            $itemsWeightGrams += $item['weight'] * $item['quantity'];
-            $itemCount += $item['quantity'];
+            $itemsWeightGrams += $item->weight * $item->quantity;
+            $itemCount += $item->quantity;
         }
 
         $boxes = ShippingBox::cached();
@@ -106,7 +112,7 @@ final class OrderPackingService
         }
 
         foreach ($items as $item) {
-            $packer->addItem(new PackingItemAdapter($item), $item['quantity']);
+            $packer->addItem(new PackingItemAdapter($item), $item->quantity);
         }
 
         try {
@@ -116,7 +122,7 @@ final class OrderPackingService
         }
 
         $packages = $this->packageSnapshots($packedBoxes);
-        $packedItemCount = array_sum(array_map(static fn (array $package): int => count($package['items']), $packages));
+        $packedItemCount = array_sum(array_map(static fn (PackedPackageDto $package): int => count($package->items), $packages));
 
         if ($packedItemCount !== $itemCount || $packages === []) {
             throw ValidationException::withMessages(['delivery' => __('Не удалось упаковать все товары заказа.')]);
@@ -127,6 +133,7 @@ final class OrderPackingService
         return $packages;
     }
 
+    /** @return list<PackedPackageDto> */
     private function packageSnapshots(iterable $packedBoxes): array
     {
         $packages = [];
@@ -136,31 +143,31 @@ final class OrderPackingService
             $contents = [];
 
             foreach ($packedBox->items as $packedItem) {
-                $contents[] = array_replace($packedItem->item->itemData, [
-                    'quantity' => 1,
-                    'x' => $packedItem->x,
-                    'y' => $packedItem->y,
-                    'z' => $packedItem->z,
-                    'packed_width' => $packedItem->width,
-                    'packed_length' => $packedItem->length,
-                    'packed_height' => $packedItem->depth,
-                ]);
+                $contents[] = PackedItemDto::fromCheckoutItem(
+                    item: $packedItem->item->itemData,
+                    x: $packedItem->x,
+                    y: $packedItem->y,
+                    z: $packedItem->z,
+                    packedWidth: $packedItem->width,
+                    packedLength: $packedItem->length,
+                    packedHeight: $packedItem->depth,
+                );
             }
 
-            $packages[] = [
-                'box_id' => $boxAdapter->box->id,
-                'box_name' => $boxAdapter->box->name,
-                'number' => (string) (count($packages) + 1),
-                'length' => $boxAdapter->getOuterLength(),
-                'width' => $boxAdapter->getOuterWidth(),
-                'height' => $boxAdapter->getOuterDepth(),
-                'inner_length' => $boxAdapter->getInnerLength(),
-                'inner_width' => $boxAdapter->getInnerWidth(),
-                'inner_height' => $boxAdapter->getInnerDepth(),
-                'packaging_weight' => $boxAdapter->getEmptyWeight(),
-                'weight' => $packedBox->getWeight(),
-                'items' => $contents,
-            ];
+            $packages[] = new PackedPackageDto(
+                boxId: $boxAdapter->box->id,
+                boxName: $boxAdapter->box->name,
+                number: (string) (count($packages) + 1),
+                length: $boxAdapter->getOuterLength(),
+                width: $boxAdapter->getOuterWidth(),
+                height: $boxAdapter->getOuterDepth(),
+                innerLength: $boxAdapter->getInnerLength(),
+                innerWidth: $boxAdapter->getInnerWidth(),
+                innerHeight: $boxAdapter->getInnerDepth(),
+                packagingWeight: $boxAdapter->getEmptyWeight(),
+                weight: $packedBox->getWeight(),
+                items: $contents,
+            );
         }
 
         return $packages;
@@ -173,7 +180,8 @@ final class OrderPackingService
         }
 
         foreach ($packages as $package) {
-            $positions = collect($package['items'])->groupBy('product_variant_id')
+            $positions = collect($package->items)
+                ->groupBy(static fn (PackedItemDto $item): int => $item->productVariantId)
                 ->sum(static fn ($items): int => (int) ceil($items->sum('quantity') / 999));
 
             if ($positions > 126) {

@@ -11,6 +11,8 @@ use App\DTO\Cdek\CdekOrderItemDto;
 use App\DTO\Cdek\CdekOrderPackageDto;
 use App\DTO\Cdek\CdekOrderResponseDto;
 use App\DTO\Cdek\CdekPaymentDto;
+use App\DTO\Orders\PackedItemDto;
+use App\DTO\Orders\PackedPackageDto;
 use App\Enums\Cdek\CdekOrderStatusEnum;
 use App\Enums\Cdek\CdekPrintStateEnum;
 use App\Enums\Cdek\CdekShipmentOperationStateEnum;
@@ -216,10 +218,11 @@ final class CdekShipmentService
         $items = $order->items()->get()->keyBy('product_variant_id');
         $packages = [];
 
-        foreach ($order->packages ?? [] as $package) {
+        foreach ($order->packages ?? [] as $packageData) {
+            $package = PackedPackageDto::fromArray($packageData);
             $contents = [];
 
-            foreach (collect($package['items'])->groupBy('product_variant_id') as $variantId => $packedItems) {
+            foreach (collect($package->items)->groupBy(static fn (PackedItemDto $item): int => $item->productVariantId) as $variantId => $packedItems) {
                 $item = $packedItems->first();
                 $snapshot = $items->get($variantId);
 
@@ -237,7 +240,7 @@ final class CdekShipmentService
                         name: $snapshot->product_name,
                         wareKey: $snapshot->sku,
                         payment: new CdekPaymentDto(value: Money::fromMinor(0)),
-                        weight: (int) $item['weight'],
+                        weight: $item->weight,
                         amount: $amount,
                         cost: $snapshot->price,
                     );
@@ -246,11 +249,11 @@ final class CdekShipmentService
             }
 
             $packages[] = new CdekOrderPackageDto(
-                number: (string) $package['number'],
-                weight: (int) $package['weight'],
-                length: (int) ceil($package['length'] / 10),
-                width: (int) ceil($package['width'] / 10),
-                height: (int) ceil($package['height'] / 10),
+                number: $package->number,
+                weight: $package->weight,
+                length: (int) ceil($package->length / 10),
+                width: (int) ceil($package->width / 10),
+                height: (int) ceil($package->height / 10),
                 items: $contents,
             );
         }
@@ -302,7 +305,7 @@ final class CdekShipmentService
     private function isCancellationConfirmed(CdekOrderResponseDto $order): bool
     {
         foreach ($order->operation->requests as $request) {
-            if ($request['type'] === 'DELETE' && $request['state']->isSuccessful()) {
+            if ($request->type === 'DELETE' && $request->state->isSuccessful()) {
                 return true;
             }
         }

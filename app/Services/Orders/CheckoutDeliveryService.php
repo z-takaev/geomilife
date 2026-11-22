@@ -10,6 +10,8 @@ use App\DTO\Cdek\CdekGetDeliveryPointsRequestDto;
 use App\DTO\Cdek\CdekLocationDto;
 use App\DTO\Cdek\CdekPackageDto;
 use App\DTO\Orders\CheckoutDeliveryDto;
+use App\DTO\Orders\CheckoutInputDto;
+use App\DTO\Orders\PackedPackageDto;
 use App\Enums\Orders\DeliveryMethodEnum;
 use App\Models\City;
 use App\Services\Cdek\CdekService;
@@ -47,7 +49,7 @@ final class CheckoutDeliveryService
         return $methods;
     }
 
-    public function calculate(City $city, ?DeliveryMethodEnum $method, array $form, array $items): CheckoutDeliveryDto
+    public function calculate(City $city, ?DeliveryMethodEnum $method, CheckoutInputDto $input, array $items): CheckoutDeliveryDto
     {
         if ($method === null || ! array_key_exists($method->value, $this->availableMethods($city))) {
             return new CheckoutDeliveryDto(Money::fromMinor(0));
@@ -55,8 +57,8 @@ final class CheckoutDeliveryService
 
         return match ($method) {
             DeliveryMethodEnum::PICKUP => $this->pickup($city),
-            DeliveryMethodEnum::COURIER => $this->courier($city, $form),
-            DeliveryMethodEnum::CDEK => $this->cdek($city, $form, $items),
+            DeliveryMethodEnum::COURIER => $this->courier($city, $input),
+            DeliveryMethodEnum::CDEK => $this->cdek($city, $input, $items),
         };
     }
 
@@ -88,25 +90,31 @@ final class CheckoutDeliveryService
         );
     }
 
-    private function courier(City $city, array $form): CheckoutDeliveryDto
+    private function courier(City $city, CheckoutInputDto $input): CheckoutDeliveryDto
     {
         $basePrice = $city->courier_delivery_price ?? Money::fromMinor(0);
 
-        $doorPrice = ($form['delivery_to_door'] ?? false)
+        $doorPrice = $input->deliveryToDoor
             ? ($city->door_delivery_price ?? Money::fromMinor(0))
             : Money::fromMinor(0);
 
-        $floor = ($form['delivery_to_door'] ?? false) ? max(0, (int) ($form['floor'] ?? 0)) : 0;
+        $floor = $input->deliveryToDoor ? max(0, (int) $input->floor) : 0;
 
         $liftingPrice = ($city->floor_lifting_price ?? Money::fromMinor(0))->multiply(max(0, $floor - 1));
 
         $address = [];
 
-        foreach (['street', 'house', 'building', 'entrance', 'floor', 'apartment', 'intercom'] as $field) {
-            $address[$field] = trim((string) ($form[$field] ?? ''));
-        }
+        $address = [
+            'street' => trim($input->street),
+            'house' => trim($input->house),
+            'building' => trim((string) $input->building),
+            'entrance' => trim((string) $input->entrance),
+            'floor' => trim((string) $input->floor),
+            'apartment' => trim((string) $input->apartment),
+            'intercom' => trim((string) $input->intercom),
+        ];
 
-        $address['address'] = trim($address['street'] . ' ' . $address['house']);
+        $address['address'] = trim($address['street'].' '.$address['house']);
 
         return new CheckoutDeliveryDto(
             price: $basePrice->add($doorPrice)->add($liftingPrice),
@@ -114,16 +122,16 @@ final class CheckoutDeliveryService
                 'base_minor' => $basePrice->minorAmount(),
                 'door_minor' => $doorPrice->minorAmount(),
                 'lifting_minor' => $liftingPrice->minorAmount(),
-                'delivery_to_door' => (bool) ($form['delivery_to_door'] ?? false),
+                'delivery_to_door' => $input->deliveryToDoor,
             ],
             address: $address,
         );
     }
 
-    private function cdek(City $city, array $form, array $items): CheckoutDeliveryDto
+    private function cdek(City $city, CheckoutInputDto $input, array $items): CheckoutDeliveryDto
     {
         $packages = $this->packing->pack($items);
-        $pointCode = (string) ($form['delivery_point_code'] ?? '');
+        $pointCode = $input->deliveryPointCode;
 
         if ($pointCode === '') {
             return new CheckoutDeliveryDto(Money::fromMinor(0), packages: $packages);
@@ -141,11 +149,11 @@ final class CheckoutDeliveryService
         $calculation = $this->cdek->calculateTariff(new CdekCalculateTariffRequestDto(
             fromLocation: new CdekLocationDto(code: (int) config('orders.cdek.city_code')),
             toLocation: new CdekLocationDto(code: $city->cdek_code),
-            packages: array_map(static fn (array $package): CdekPackageDto => new CdekPackageDto(
-                weight: $package['weight'],
-                length: (int) ceil($package['length'] / 10),
-                width: (int) ceil($package['width'] / 10),
-                height: (int) ceil($package['height'] / 10),
+            packages: array_map(static fn (PackedPackageDto $package): CdekPackageDto => new CdekPackageDto(
+                weight: $package->weight,
+                length: (int) ceil($package->length / 10),
+                width: (int) ceil($package->width / 10),
+                height: (int) ceil($package->height / 10),
             ), $packages),
             shipmentPoint: (string) config('orders.cdek.shipment_point'),
             deliveryPoint: $point->code,
@@ -202,8 +210,8 @@ final class CheckoutDeliveryService
         }
 
         foreach ($packages as $package) {
-            if (($point->weightMin !== null && $package['weight'] < $point->weightMin * 1000)
-                || ($point->weightMax !== null && $package['weight'] > $point->weightMax * 1000)) {
+            if (($point->weightMin !== null && $package->weight < $point->weightMin * 1000)
+                || ($point->weightMax !== null && $package->weight > $point->weightMax * 1000)) {
                 return false;
             }
 
@@ -212,9 +220,9 @@ final class CheckoutDeliveryService
             }
 
             $packageSize = [
-                (int) ceil($package['length'] / 10),
-                (int) ceil($package['width'] / 10),
-                (int) ceil($package['height'] / 10),
+                (int) ceil($package->length / 10),
+                (int) ceil($package->width / 10),
+                (int) ceil($package->height / 10),
             ];
             sort($packageSize);
             $fits = false;
