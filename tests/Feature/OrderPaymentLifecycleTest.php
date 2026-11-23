@@ -86,6 +86,24 @@ it('отклоняет неподписанный вебхук без измен
     expect(PaymentFixtures::value($order->fresh()->payment_status))->toBe('UNPAID');
 });
 
+it('принимает только корректный JSON-объект вебхука', function (): void {
+    $this->post(route('tbank.webhook'))->assertUnsupportedMediaType();
+
+    $this->call(
+        method: 'POST',
+        uri: route('tbank.webhook'),
+        server: ['CONTENT_TYPE' => 'application/json', 'HTTP_ACCEPT' => 'application/json'],
+        content: '{',
+    )->assertUnprocessable()->assertJsonValidationErrors('notification');
+
+    $this->call(
+        method: 'POST',
+        uri: route('tbank.webhook'),
+        server: ['CONTENT_TYPE' => 'application/json', 'HTTP_ACCEPT' => 'application/json'],
+        content: json_encode(['notification'], JSON_THROW_ON_ERROR),
+    )->assertUnprocessable()->assertJsonValidationErrors('notification');
+});
+
 it('подтверждённый вебхук обновляет оплату один раз и не откатывается авторизацией', function (): void {
     $order = PaymentFixtures::order();
     $payment = PaymentFixtures::payment($order);

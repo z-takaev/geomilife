@@ -62,6 +62,18 @@ it('возвращает пустой результат для пустого �
         ->assertDontSee('Льняное масло');
 });
 
+it('нормализует поисковый запрос', function (): void {
+    $query = str_repeat('а', 256);
+
+    $this->get(route('search', ['q' => '  '.$query.'  ']))
+        ->assertOk()
+        ->assertViewHas('query', str_repeat('а', 255));
+
+    $this->get(route('search', ['q' => ['масло']]))
+        ->assertOk()
+        ->assertViewHas('query', '');
+});
+
 it('проверяет длину запроса поисковых подсказок', function (): void {
     Livewire::test(SearchSuggestions::class)
         ->set('query', str_repeat('а', 256))

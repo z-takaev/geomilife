@@ -12,8 +12,7 @@ use Illuminate\Contracts\View\View;
 
 final class CheckoutController extends Controller
 {
-    // TODO: Заменить метод на index
-    public function __invoke(CartService $cart): View
+    public function index(CartService $cart): View
     {
         abort_if($cart->count() === 0, 404);
 
@@ -59,7 +58,6 @@ final class CheckoutController extends Controller
 
     public function paymentFail(): View
     {
-        // TODO: Поменять текст
         $title = __('Оплата не завершена');
         $description = (string) session('order_message', __('Заказ сохранён. Свяжитесь с нами для уточнения оплаты.'));
         $icon = 'icon-question';

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SearchRequest;
 use App\Navigation\BreadcrumbItem;
 use App\Navigation\Breadcrumbs;
 use App\Repositories\Categories\CategoryRepository;
 use App\Repositories\Products\ProductRepository;
 use App\Support\Seo\Schemas\BreadcrumbSchema;
 use Illuminate\Contracts\View\View;
-use Illuminate\Http\Request;
 
 final class SearchController extends Controller
 {
@@ -19,7 +19,7 @@ final class SearchController extends Controller
         private readonly CategoryRepository $categoryRepository,
     ) {}
 
-    public function __invoke(Request $request): View
+    public function __invoke(SearchRequest $request): View
     {
         $breadcrumbs = Breadcrumbs::make(
             BreadcrumbItem::make(__('Поиск'), route('search')),
@@ -30,9 +30,7 @@ final class SearchController extends Controller
             fallbackTitle: __('Поиск'),
         )->schema(BreadcrumbSchema::make($breadcrumbs));
 
-        // TODO: Добавить FormRequest
-        $queryValue = $request->query('q', '');
-        $query = is_string($queryValue) ? mb_substr(trim($queryValue), 0, 255) : '';
+        $query = $request->searchQuery();
 
         $categories = $this->categoryRepository->search($query);
         $products = $this->productRepository->search($query);

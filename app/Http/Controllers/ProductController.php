@@ -19,8 +19,7 @@ final class ProductController extends Controller
         private readonly ProductRepository $productRepository,
     ) {}
 
-    // TODO: Сделать invoke
-    public function show(string $product, Request $request): View
+    public function __invoke(string $product, Request $request): View
     {
         $product = $this->productRepository->getDetails($product);
 

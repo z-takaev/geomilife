@@ -22,7 +22,26 @@ use App\Filament\Resources\Reviews\ReviewResource;
 use App\Filament\Resources\Seo\SeoResource;
 use App\Filament\Resources\ShippingBoxes\ShippingBoxResource;
 use App\Filament\Resources\Users\UserResource;
+use App\Models\Article;
+use App\Models\Category;
+use App\Models\City;
+use App\Models\Faq;
+use App\Models\HomeSlide;
+use App\Models\News;
+use App\Models\Page;
+use App\Models\Product;
+use App\Models\ProductAttribute;
+use App\Models\Promo;
+use App\Models\Review;
+use App\Models\Seo;
+use App\Models\Setting;
+use App\Models\ShippingBox;
+use App\Models\User;
+use App\Policies\Filament\AdminResourcePolicy;
+use App\Policies\Filament\ReadOnlyResourcePolicy;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -40,10 +59,30 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 final class AdminPanelProvider extends PanelProvider
 {
+    public function boot(): void
+    {
+        TextInput::configureUsing(static function (TextInput $component): void {
+            $component->trim(static fn (TextInput $component): bool => ! $component->isPassword());
+        });
+
+        Textarea::configureUsing(static function (Textarea $component): void {
+            $component->trim();
+        });
+
+        foreach ([Article::class, Category::class, City::class, Faq::class, HomeSlide::class, News::class, Page::class, ProductAttribute::class, Promo::class, Review::class, Seo::class, Setting::class, ShippingBox::class] as $model) {
+            Gate::policy($model, AdminResourcePolicy::class);
+        }
+
+        foreach ([Product::class, User::class] as $model) {
+            Gate::policy($model, ReadOnlyResourcePolicy::class);
+        }
+    }
+
     public function panel(Panel $panel): Panel
     {
         return $panel

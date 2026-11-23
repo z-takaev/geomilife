@@ -59,9 +59,9 @@ Route::get('/catalog/{category}', [CatalogController::class, 'show'])->name('cat
 
 Route::get('/search', SearchController::class)->name('search');
 
-Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
+Route::get('/products/{product}', ProductController::class)->name('products.show');
 
-Route::get('/checkout', CheckoutController::class)->name('checkout');
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
 Route::get('/checkout/success', [CheckoutController::class, 'orderSuccess'])->name('checkout.success');
 Route::get('/payment/success', [CheckoutController::class, 'paymentSuccess'])->name('payment.success');
 Route::get('/payment/fail', [CheckoutController::class, 'paymentFail'])->name('payment.fail');
@@ -85,15 +85,15 @@ Route::middleware('guest')->group(function (): void {
 Route::middleware('auth')->group(function (): void {
     Route::post('/logout', [SignInController::class, 'logout'])->name('logout');
 
-    // TODO: Обернуть в контроллер
-    Route::get('/email/verify', [EmailVerificationController::class, 'showVerificationNotice'])
-        ->name('verification.notice');
-    Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verifyEmail'])
-        ->middleware(['signed', 'throttle:6,1'])
-        ->name('verification.verify');
-    Route::post('/email/verification-notification', [EmailVerificationController::class, 'resendVerificationEmail'])
-        ->middleware('throttle:6,1')
-        ->name('verification.send');
+    Route::controller(EmailVerificationController::class)->group(function (): void {
+        Route::get('/email/verify', 'showVerificationNotice')->name('verification.notice');
+        Route::get('/email/verify/{id}/{hash}', 'verifyEmail')
+            ->middleware(['signed', 'throttle:6,1'])
+            ->name('verification.verify');
+        Route::post('/email/verification-notification', 'resendVerificationEmail')
+            ->middleware('throttle:6,1')
+            ->name('verification.send');
+    });
 });
 
 Route::middleware(['auth', 'verified'])->group(function (): void {
