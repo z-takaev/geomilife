@@ -9,7 +9,6 @@ use Illuminate\Contracts\Database\Eloquent\Castable;
 use InvalidArgumentException;
 use OverflowException;
 
-// TODO: У нас в системе используются только целые числи, проверить работу класса
 final readonly class Money implements Castable
 {
     public const string CURRENCY = 'RUB';
@@ -33,17 +32,14 @@ final readonly class Money implements Castable
         return new self($minorAmount);
     }
 
-    // TODO: Зачем тут тип строки?
     public static function fromRubles(int|string $rubles): self
     {
         $value = str_replace(',', '.', trim((string) $rubles));
 
-        // TODO: скорректировать проверку
         if (preg_match('/^(\d+)(?:\.(\d{1,2}))?$/', $value, $matches) !== 1) {
             throw new InvalidArgumentException('Некорректное значение денежной суммы.');
         }
 
-        // TODO: Что за проверки
         $wholeRubles = self::parseWholeRubles($matches[1]);
         $minorPart = (int) str_pad($matches[2] ?? '', 2, '0');
 
@@ -54,7 +50,6 @@ final readonly class Money implements Castable
         return new self($wholeRubles * self::MINOR_UNITS_PER_RUBLE + $minorPart);
     }
 
-    // TODO: Зачем метод?
     public static function tryFromRubles(int|string $rubles): ?self
     {
         try {

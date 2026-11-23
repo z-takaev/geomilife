@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Livewire;
 
 use App\Actions\Cities\GetCitySuggestionsAction;
-use App\Models\User;
 use App\Livewire\Forms\UserProfileForm;
 use App\Models\City;
+use App\Models\User;
 use App\Services\Cities\CurrentCityService;
 use App\Services\Customers\SavedDeliveryLocationService;
 use App\Services\Telegram\TelegramConnectionService;
@@ -61,7 +61,7 @@ final class UserProfile extends Component
         $user = Auth::user();
 
         // TODO: Избавиться от нужны использовать PhoneFormat
-        $this->form->phone = PhoneFormat::normalize((string) $this->form->phone);
+        $this->form->phone = PhoneFormat::normalizeForValidation($this->form->phone);
         $validated = $this->form->validate();
 
         $user->fill($validated);

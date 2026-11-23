@@ -21,7 +21,7 @@
                                 <p class="contacts-info-card__label">{{ __('Телефон') }}</p>
                                 <a href="{{ phone_href(settings()?->phone) }}"
                                     class="contacts-info-card__value link-primary">
-                                    {{ __(settings()?->phone) }}
+                                    {{ phone_format(settings()?->phone) }}
                                 </a>
                             </div>
                         </div>

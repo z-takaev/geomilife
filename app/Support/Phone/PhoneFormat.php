@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Support\Phone;
 
-// TODO: Разобраться с классом
 final class PhoneFormat
 {
     private const string FORMATTED_BODY = '\\+7 \\(\\d{3}\\) \\d{3}-\\d{2}-\\d{2}';
@@ -34,6 +33,26 @@ final class PhoneFormat
         }
 
         return '+'.$digits;
+    }
+
+    public static function isValid(string $value): bool
+    {
+        $value = trim($value);
+
+        if (preg_match('/\A[\d\s()+-]+\z/u', $value) !== 1) {
+            return false;
+        }
+
+        if (str_contains($value, '+') && (! str_starts_with($value, '+7') || substr_count($value, '+') !== 1)) {
+            return false;
+        }
+
+        return preg_match(self::COMPACT_PATTERN, self::normalize($value)) === 1;
+    }
+
+    public static function normalizeForValidation(?string $value): ?string
+    {
+        return $value !== null && self::isValid($value) ? self::normalize($value) : $value;
     }
 
     public static function format(string $value): string

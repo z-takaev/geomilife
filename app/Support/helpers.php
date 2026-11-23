@@ -37,3 +37,10 @@ if (! function_exists('phone_href')) {
         return $normalizedPhone === '' ? '' : 'tel:'.$normalizedPhone;
     }
 }
+
+if (! function_exists('phone_format')) {
+    function phone_format(?string $phone): string
+    {
+        return PhoneFormat::format((string) $phone);
+    }
+}

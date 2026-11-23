@@ -49,11 +49,11 @@ it('проверяет обязательные поля и формат тел�
     Notification::fake();
 
     Livewire::test(QuestionForm::class)
-        ->set('form.phone', '89991234567')
+        ->set('form.phone', '123')
         ->call('submit')
         ->assertHasErrors([
             'form.name' => 'required',
-            'form.phone' => 'regex',
+            'form.phone',
             'form.message' => 'required',
         ]);
 

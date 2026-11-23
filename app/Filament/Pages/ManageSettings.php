@@ -6,6 +6,7 @@ namespace App\Filament\Pages;
 
 use App\Filament\Forms\Components\SpatieMediaLibrary;
 use App\Models\Setting;
+use App\Rules\PhoneNumber;
 use App\Support\Email\EmailNormalizer;
 use App\Support\Phone\PhoneFormat;
 use BackedEnum;
@@ -73,7 +74,9 @@ final class ManageSettings extends Page
                                         ->tel()
                                         ->mask(PhoneFormat::MASK)
                                         ->required()
-                                        ->regex(PhoneFormat::FORMATTED_PATTERN),
+                                        ->rule(new PhoneNumber)
+                                        ->mutateStateForValidationUsing(static fn (?string $state): ?string => PhoneFormat::normalizeForValidation($state))
+                                        ->dehydrateStateUsing(static fn (?string $state): ?string => PhoneFormat::normalizeForValidation($state)),
                                     TextInput::make('email')
                                         ->label('Email')
                                         ->email()

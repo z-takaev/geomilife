@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Support\Traits\HasOrder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,7 +12,6 @@ use Illuminate\Support\Facades\Cache;
 final class Faq extends Model
 {
     use HasFactory;
-    use HasOrder;
 
     protected $fillable = [
         'question', 'answer',
@@ -30,6 +28,14 @@ final class Faq extends Model
 
     protected static function booted(): void
     {
+        self::creating(static function (self $faq): void {
+            if ($faq->order !== null) {
+                return;
+            }
+
+            $faq->order = ((int) self::query()->max('order')) + 1;
+        });
+
         self::saved(static function (): void {
             Cache::forget((string) config('cache.items.faqs.key'));
         });

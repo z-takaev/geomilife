@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Auth;
 
 use App\Models\User;
+use App\Rules\PhoneNumber;
 use App\Support\Email\EmailNormalizer;
 use App\Support\Phone\PhoneFormat;
 use Illuminate\Foundation\Http\FormRequest;
@@ -29,7 +30,7 @@ final class SignUpRequest extends FormRequest
             'first_name' => ['required', 'string', 'max:30'],
             'last_name' => ['required', 'string', 'max:30'],
             'email' => ['required', 'string', 'email', 'max:50', Rule::unique(User::class)],
-            'phone' => ['required', 'string', 'regex:'.PhoneFormat::COMPACT_PATTERN, Rule::unique(User::class)],
+            'phone' => ['required', 'string', new PhoneNumber, Rule::unique(User::class)],
             'city_id' => ['required', 'integer', Rule::exists('cities', 'id')->where('is_active', true)],
             'password' => ['required', 'confirmed', 'max:50', Password::defaults()],
             'terms' => ['accepted'],
@@ -42,7 +43,7 @@ final class SignUpRequest extends FormRequest
             'first_name' => trim((string) $this->input('first_name')),
             'last_name' => trim((string) $this->input('last_name')),
             'email' => EmailNormalizer::normalize((string) $this->input('email')),
-            'phone' => PhoneFormat::normalize((string) $this->input('phone')),
+            'phone' => PhoneFormat::normalizeForValidation((string) $this->input('phone')),
         ]);
     }
 }

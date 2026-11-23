@@ -10,6 +10,7 @@ use App\Filament\Resources\Users\UserResource;
 use App\Models\Order;
 use App\Models\OrderDocument;
 use App\Models\Payment;
+use App\Support\Phone\PhoneFormat;
 use App\Support\Values\Money;
 use App\ViewModel\Orders\OrderViewModel;
 use Filament\Infolists\Components\RepeatableEntry;
@@ -47,7 +48,8 @@ final class OrderInfolist
 
             Section::make('Покупатель')->schema([
                 TextEntry::make('customer_name')->label('Получатель')->placeholder('—'),
-                TextEntry::make('customer_phone')->label('Телефон')->placeholder('—')->copyable(),
+                TextEntry::make('customer_phone')->label('Телефон')->placeholder('—')->copyable()
+                    ->formatStateUsing(static fn (?string $state): string => PhoneFormat::format((string) $state)),
                 TextEntry::make('customer_email')->label('Email')->placeholder('—')->copyable(),
                 TextEntry::make('customer_account')->label('Аккаунт')
                     ->state(fn (Order $record): string => OrderViewModel::accountLabel($record))

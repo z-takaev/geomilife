@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Casts\NormalizedPhoneCast;
 use App\Support\Values\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -34,6 +35,7 @@ final class City extends Model
             'is_cdek_excluded' => 'boolean',
             'is_pickup_available' => 'boolean',
             'is_courier_available' => 'boolean',
+            'pickup_phone' => NormalizedPhoneCast::class,
             'courier_delivery_price' => Money::class,
             'floor_lifting_price' => Money::class,
             'door_delivery_price' => Money::class,

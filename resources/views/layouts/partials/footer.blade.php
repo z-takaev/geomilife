@@ -32,7 +32,7 @@
                                     {{ __(settings()?->address) }}
                                 </span>
                                 <a href="{{ phone_href(settings()?->phone) }}"
-                                    class="link infor-phone font-main">{{ __(settings()?->phone) }}</a>
+                                    class="link infor-phone font-main">{{ phone_format(settings()?->phone) }}</a>
                                 <a href="mailto:{{ settings()?->email }}"
                                     class="link infor-email font-main text-decoration-underline">{{ __(settings()?->email) }}</a>
                                 <ul class="social-list">

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Forms;
 
-use App\Support\Phone\PhoneFormat;
+use App\Rules\PhoneNumber;
 use Illuminate\Validation\Rule;
 use Livewire\Form;
 
@@ -26,8 +26,7 @@ final class UserProfileForm extends Form
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['nullable', 'string', 'max:255'],
             'birth_date' => ['nullable', 'date', 'before:today'],
-            // TODO: Добавить кстомное правило для телефона
-            'phone' => ['required', 'string', 'regex:'.PhoneFormat::COMPACT_PATTERN, Rule::unique('users', 'phone')->ignore(auth()->id())],
+            'phone' => ['required', 'string', new PhoneNumber, Rule::unique('users', 'phone')->ignore(auth()->id())],
             'city_id' => ['required', 'integer', Rule::exists('cities', 'id')->where('is_active', true)],
         ];
     }

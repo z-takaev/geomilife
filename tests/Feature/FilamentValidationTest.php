@@ -69,7 +69,7 @@ it('сохраняет все настройки доставки города',
     Livewire::test(EditCity::class, ['record' => $city->id])->fillForm($data)->call('save')->assertHasNoFormErrors();
     $city->refresh();
     foreach (array_diff_key($data, array_flip(['courier_delivery_price', 'door_delivery_price', 'floor_lifting_price'])) as $field => $value) {
-        expect($city->{$field})->toBe($value);
+        expect($city->{$field})->toBe($field === 'pickup_phone' ? '+79991234567' : $value);
     }
     foreach (['courier_delivery_price', 'door_delivery_price', 'floor_lifting_price'] as $field) {
         expect($city->{$field}->minorAmount())->toBe($data[$field] * 100);
@@ -94,14 +94,18 @@ it('показывает блоки доставки только при акт�
         ->assertSchemaComponentVisible('courier-fields');
 });
 
-it('проверяет реквизиты доставки в форме города', function (string $field, mixed $value, string $rule): void {
+it('проверяет реквизиты доставки в форме города', function (string $field, mixed $value, ?string $rule): void {
     $city = CheckoutFixtures::city();
-    Livewire::test(EditCity::class, ['record' => $city->id])->fillForm([$field => $value])
-        ->call('save')->assertHasFormErrors([$field => $rule]);
+    $expectedErrors = $rule === null ? [$field] : [$field => $rule];
+
+    Livewire::test(EditCity::class, ['record' => $city->id])
+        ->fillForm([$field => $value])
+        ->call('save')
+        ->assertHasFormErrors($expectedErrors);
 })->with([
     ['pickup_address', '', 'required'], ['pickup_working_hours', '', 'required'],
     ['pickup_phone', '', 'required'],
-    ['pickup_phone', 'не телефон', 'regex'], ['door_delivery_price', '', 'required'],
+    ['pickup_phone', 'не телефон', null], ['door_delivery_price', '', 'required'],
     ['courier_delivery_price', -1, 'min'], ['floor_lifting_price', '1.5', 'integer'],
 ]);
 
@@ -206,7 +210,7 @@ it('требует источник отзыва', function (): void {
 it('проверяет телефон пользователя на сервере', function (): void {
     Livewire::test(CreateUser::class)->fillForm([
         'first_name' => 'Покупатель', 'email' => 'buyer@example.com', 'phone' => 'не телефон', 'password' => 'Password123',
-    ])->call('create')->assertHasFormErrors(['phone' => 'regex']);
+    ])->call('create')->assertHasFormErrors(['phone']);
 });
 
 it('показывает регион в вариантах выбора города и ищет по названию и региону', function (): void {
@@ -290,6 +294,22 @@ it('проверяет уникальность email после нормали�
     Livewire::test(CreateUser::class)->fillForm([
         'first_name' => 'Второй', 'email' => ' BUYER@EXAMPLE.COM ', 'password' => 'Password123',
     ])->call('create')->assertHasFormErrors(['email' => 'unique']);
+});
+
+it('проверяет уникальность телефона после нормализации маски', function (): void {
+    User::query()->create([
+        'first_name' => 'Первый',
+        'email' => 'first@example.com',
+        'phone' => '+79991234567',
+        'password' => 'Password123',
+    ]);
+
+    Livewire::test(CreateUser::class)->fillForm([
+        'first_name' => 'Второй',
+        'email' => 'second@example.com',
+        'phone' => '+7 (999) 123-45-67',
+        'password' => 'Password123',
+    ])->call('create')->assertHasFormErrors(['phone' => 'unique']);
 });
 
 it('не записывает количество вне допустимого диапазона напрямую в базу', function (int $value): void {

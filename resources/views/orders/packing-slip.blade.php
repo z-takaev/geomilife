@@ -110,7 +110,7 @@
 <body>
     <h1>{{ __('Сборка заказа №:number', ['number' => $order->number]) }}</h1>
     <p>{{ __('Дата оформления') }}: {{ $order->created_at->format('d.m.Y H:i') }}</p>
-    <p>{{ __('Получатель') }}: {{ $order->customer_name }} · {{ $order->customer_phone }}</p>
+    <p>{{ __('Получатель') }}: {{ $order->customer_name }} · {{ phone_format($order->customer_phone) }}</p>
     <p>{{ __('Способ получения') }}: {{ $deliveryLabel }}</p>
     <p>{{ __('Оплата') }}: {{ $order->payment_status->getLabel() }}</p>
     @if ($order->is_preorder)

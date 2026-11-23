@@ -14,7 +14,7 @@
                 {{ __(settings()?->address) }}
             </a>
             <a href="{{ phone_href(settings()?->phone) }}" class="h5 fw-medium text-black mb-12">
-                {{ __(settings()?->phone) }}
+                {{ phone_format(settings()?->phone) }}
             </a>
             <a href="mailto:{{ settings()?->email }}" class="text-caption-01 text-black mb-20">
                 {{ __(settings()?->email) }}

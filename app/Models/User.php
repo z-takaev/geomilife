@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Casts\NormalizedPhoneCast;
 use App\Support\Email\NormalizedEmailCast;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -34,6 +35,7 @@ final class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email' => NormalizedEmailCast::class,
+            'phone' => NormalizedPhoneCast::class,
             'birth_date' => 'date',
             'email_verified_at' => 'datetime',
             'is_blocked' => 'boolean',

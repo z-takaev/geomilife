@@ -32,3 +32,12 @@ it('формирует ссылку для звонка', function (?string $pho
     [null, ''],
     ['', ''],
 ]);
+
+it('форматирует телефон для отображения', function (?string $phone, string $formatted): void {
+    expect(phone_format($phone))->toBe($formatted);
+})->with([
+    ['+79991234567', '+7 (999) 123-45-67'],
+    ['89991234567', '+7 (999) 123-45-67'],
+    [null, ''],
+    ['', ''],
+]);

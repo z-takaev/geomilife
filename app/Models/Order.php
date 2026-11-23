@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Casts\NormalizedPhoneCast;
 use App\Enums\Orders\DeliveryMethodEnum;
 use App\Enums\Orders\OrderStatusEnum;
 use App\Enums\Orders\PaymentMethodEnum;
@@ -39,6 +40,7 @@ final class Order extends Model
     {
         return [
             'customer_email' => NormalizedEmailCast::class,
+            'customer_phone' => NormalizedPhoneCast::class,
             'number' => 'integer',
             'status' => OrderStatusEnum::class,
             'payment_status' => PaymentStatusEnum::class,

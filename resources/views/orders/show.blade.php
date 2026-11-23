@@ -75,7 +75,7 @@
                             </div>
                             <div>
                                 <dt>{{ __('Телефон') }}</dt>
-                                <dd>{{ $order->customer_phone }}</dd>
+                                <dd>{{ phone_format($order->customer_phone) }}</dd>
                             </div>
                             <div>
                                 <dt>{{ __('Email') }}</dt>

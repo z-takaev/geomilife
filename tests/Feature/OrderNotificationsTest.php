@@ -161,7 +161,7 @@ it('включает сохранённый состав и сведения з�
             '350 ₽',
             '1 550 ₽',
             $order->customer_name,
-            $order->customer_phone,
+            phone_format($order->customer_phone),
             $order->customer_email,
             'Позвоните перед выдачей',
         )

@@ -17,7 +17,7 @@
                     <li>
                         <a href="{{ phone_href(settings()?->phone) }}" class="info link-primary">
                             <i class="icon icon-phone-call"></i>
-                            {{ __(settings()?->phone) }}
+                            {{ phone_format(settings()?->phone) }}
                         </a>
                     </li>
                     <li class="br-line type-vertical d-none d-md-block"></li>

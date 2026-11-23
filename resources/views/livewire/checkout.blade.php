@@ -165,7 +165,7 @@
                                 <div class="checkout-info">
                                     <p>{{ $city->pickup_address }}</p>
                                     <p>{{ $city->pickup_working_hours }}</p>
-                                    <p>{{ $city->pickup_phone }}</p>
+                                    <p>{{ phone_format($city->pickup_phone) }}</p>
                                     <small>{{ __('Вы сможете забрать заказ по указанному адресу после уведомления о готовности.') }}</small>
                                 </div>
                             @elseif ($form->delivery_method === \App\Enums\Orders\DeliveryMethodEnum::COURIER->value)

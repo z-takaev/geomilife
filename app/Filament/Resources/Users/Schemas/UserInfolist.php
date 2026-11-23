@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use App\Support\Phone\PhoneFormat;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
@@ -16,7 +17,8 @@ final class UserInfolist
             TextEntry::make('first_name')->label('Имя'),
             TextEntry::make('last_name')->label('Фамилия'),
             TextEntry::make('email')->label('Email'),
-            TextEntry::make('phone')->label('Телефон'),
+            TextEntry::make('phone')->label('Телефон')
+                ->formatStateUsing(static fn (?string $state): string => PhoneFormat::format((string) $state)),
             TextEntry::make('birth_date')->label('Дата рождения')->date('d.m.Y')->placeholder('—'),
             TextEntry::make('city.name')->label('Город'),
             TextEntry::make('telegram_username')->label('Telegram')->placeholder('—'),

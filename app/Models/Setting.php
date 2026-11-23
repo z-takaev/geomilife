@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Casts\NormalizedPhoneCast;
 use App\Support\Email\NormalizedEmailCast;
 use App\Support\Media\ImageMimeTypes;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -47,6 +47,7 @@ final class Setting extends Model implements HasMedia
         return [
             'snow_enabled' => 'boolean',
             'benefits' => 'array',
+            'phone' => NormalizedPhoneCast::class,
             'email' => NormalizedEmailCast::class,
             'admin_email' => NormalizedEmailCast::class,
         ];
@@ -60,30 +61,6 @@ final class Setting extends Model implements HasMedia
 
         self::deleted(static function (): void {
             Cache::memo()->forget((string) config('cache.items.settings.key'));
-        });
-    }
-
-    // TODO: Подумать над кастом? См PhoneFormat
-    protected function phone(): Attribute
-    {
-        return Attribute::get(static function (?string $value): ?string {
-            if ($value === null) {
-                return null;
-            }
-
-            $digits = preg_replace('/\D/', '', $value);
-
-            if ($digits === null || strlen($digits) !== 11 || ! in_array($digits[0], ['7', '8'], true)) {
-                return $value;
-            }
-
-            return sprintf(
-                '+7 (%s) %s-%s-%s',
-                substr($digits, 1, 3),
-                substr($digits, 4, 3),
-                substr($digits, 7, 2),
-                substr($digits, 9, 2),
-            );
         });
     }
 
@@ -106,7 +83,6 @@ final class Setting extends Model implements HasMedia
 
     public function yandexMapUrl(): ?string
     {
-        // TODO: Нужен ли preg_match?
         if (! is_string($this->yandex_map_id) || preg_match('/\A[a-f0-9]{64}\z/', $this->yandex_map_id) !== 1) {
             return null;
         }

@@ -8,6 +8,7 @@ use App\Actions\Users\ExportUsersAction;
 use App\Filament\Resources\Users\Pages\ListUsers;
 use App\Filament\Resources\Users\UserResource;
 use App\Models\User;
+use App\Support\Phone\PhoneFormat;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
@@ -41,6 +42,7 @@ final class UsersTable
                     ->sortable(),
                 TextColumn::make('phone')
                     ->label('Телефон')
+                    ->formatStateUsing(static fn (?string $state): string => PhoneFormat::format((string) $state))
                     ->placeholder('—')
                     ->searchable(),
                 IconColumn::make('is_blocked')

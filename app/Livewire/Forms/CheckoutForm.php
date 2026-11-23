@@ -10,8 +10,8 @@ use App\Enums\Orders\PaymentMethodEnum;
 use App\Models\Address;
 use App\Models\City;
 use App\Models\Setting;
+use App\Rules\PhoneNumber;
 use App\Services\Orders\CheckoutService;
-use App\Support\Phone\PhoneFormat;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Livewire\Form;
@@ -111,11 +111,7 @@ final class CheckoutForm extends Form
         return [
             'first_name' => ['required', 'string', 'max:20'],
             'last_name' => ['required', 'string', 'max:20'],
-            'phone' => ['required', 'string', function (string $attribute, mixed $value, \Closure $fail): void {
-                if (! preg_match(PhoneFormat::COMPACT_PATTERN, PhoneFormat::normalize((string) $value))) {
-                    $fail(__('Укажите корректный телефон в формате +7XXXXXXXXXX.'));
-                }
-            }],
+            'phone' => ['required', 'string', new PhoneNumber],
             'email' => ['required', 'email', 'max:30'],
             'city_id' => ['required', 'integer', Rule::exists('cities', 'id')->where('is_active', true)],
             'delivery_method' => ['required', Rule::in(array_keys(app(CheckoutService::class)->availableDeliveryMethods($this->selectedCity())))],

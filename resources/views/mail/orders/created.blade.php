@@ -43,7 +43,7 @@
 
 <h2>{{ __('Получатель') }}</h2>
 <p>{{ $order->customer_name }}<br>
-{{ __('Телефон: :phone', ['phone' => $order->customer_phone]) }}<br>
+{{ __('Телефон: :phone', ['phone' => phone_format($order->customer_phone)]) }}<br>
 {{ __('Email: :email', ['email' => $order->customer_email]) }}</p>
 
 @if (filled($order->comment))

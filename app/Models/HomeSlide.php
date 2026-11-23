@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Support\Media\ImageMimeTypes;
-use App\Support\Traits\HasOrder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,7 +15,6 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 final class HomeSlide extends Model implements HasMedia
 {
     use HasFactory;
-    use HasOrder;
     use InteractsWithMedia;
 
     protected $fillable = [
@@ -35,6 +33,14 @@ final class HomeSlide extends Model implements HasMedia
 
     protected static function booted(): void
     {
+        self::creating(static function (self $homeSlide): void {
+            if ($homeSlide->order !== null) {
+                return;
+            }
+
+            $homeSlide->order = ((int) self::query()->max('order')) + 1;
+        });
+
         self::saved(static function (): void {
             Cache::forget((string) config('cache.items.home_slides.key'));
         });

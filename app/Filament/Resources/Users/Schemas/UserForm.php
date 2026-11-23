@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Users\Schemas;
 
 use App\Models\City;
+use App\Rules\PhoneNumber;
 use App\Support\Email\EmailNormalizer;
 use App\Support\Phone\PhoneFormat;
 use Filament\Forms\Components\Checkbox;
@@ -48,7 +49,9 @@ final class UserForm
                     ->label('Телефон')
                     ->tel()
                     ->mask(PhoneFormat::MASK)
-                    ->regex(PhoneFormat::FORMATTED_OR_COMPACT_PATTERN)
+                    ->rule(new PhoneNumber)
+                    ->mutateStateForValidationUsing(static fn (?string $state): ?string => PhoneFormat::normalizeForValidation($state))
+                    ->dehydrateStateUsing(static fn (?string $state): ?string => PhoneFormat::normalizeForValidation($state))
                     ->unique(ignoreRecord: true)
                     ->maxLength(40),
                 TextInput::make('password')

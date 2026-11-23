@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use App\Models\Article;
 use App\Models\City;
+use App\Models\Faq;
 use App\Models\FilamentUser;
+use App\Models\HomeSlide;
 use App\Models\Order;
 use App\Models\ProductAttribute;
 use App\Models\ProductVariant;
@@ -49,10 +51,21 @@ it('сохраняет деньги в копейках и сериализуе�
 });
 
 it('сбрасывает кеш настроек после сохранения', function (): void {
-    $setting = Setting::query()->create(['phone' => '111']);
-    expect(Setting::cached()->phone)->toBe('111');
-    $setting->update(['phone' => '222']);
-    expect(Setting::cached()->phone)->toBe('222');
+    $setting = Setting::query()->create(['phone' => '+7 (999) 123-45-67']);
+    expect(Setting::cached()->phone)->toBe('+79991234567');
+    $setting->update(['phone' => '89997654321']);
+    expect(Setting::cached()->phone)->toBe('+79997654321');
+});
+
+it('автоматически назначает порядок вопросам и слайдам', function (): void {
+    Faq::query()->create(['question' => 'Первый вопрос', 'answer' => 'Ответ', 'order' => 5]);
+    $faq = Faq::query()->create(['question' => 'Второй вопрос', 'answer' => 'Ответ']);
+
+    HomeSlide::query()->create(['order' => 3]);
+    $homeSlide = HomeSlide::query()->create();
+
+    expect($faq->order)->toBe(6)
+        ->and($homeSlide->order)->toBe(4);
 });
 
 it('сохраняет и сериализует незаданные денежные поля как null', function (): void {

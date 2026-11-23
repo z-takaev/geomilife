@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Cities\Schemas;
 
+use App\Rules\PhoneNumber;
 use App\Support\Phone\PhoneFormat;
 use App\Support\Values\Money;
 use Filament\Forms\Components\Textarea;
@@ -48,7 +49,7 @@ final class CityForm
         return [
             'pickup_address' => [Rule::requiredIf($pickupAvailable), 'nullable', 'string', 'max:200'],
             'pickup_working_hours' => [Rule::requiredIf($pickupAvailable), 'nullable', 'string', 'max:50'],
-            'pickup_phone' => [Rule::requiredIf($pickupAvailable), 'nullable', 'string', 'max:40', 'regex:'.PhoneFormat::FORMATTED_OR_COMPACT_PATTERN],
+            'pickup_phone' => [Rule::requiredIf($pickupAvailable), 'nullable', 'string', 'max:40', new PhoneNumber],
             'courier_delivery_price' => [Rule::requiredIf($courierAvailable), 'nullable', 'integer', 'min:0', 'max:9999'],
             'door_delivery_price' => [Rule::requiredIf($courierAvailable), 'nullable', 'integer', 'min:0', 'max:9999'],
             'floor_lifting_price' => [Rule::requiredIf($courierAvailable), 'nullable', 'integer', 'min:0', 'max:9999'],
@@ -63,7 +64,9 @@ final class CityForm
             TextInput::make('pickup_phone')
                 ->label('Телефон точки самовывоза')
                 ->tel()
-                ->telRegex(PhoneFormat::FORMATTED_OR_COMPACT_PATTERN),
+                ->mask(PhoneFormat::MASK)
+                ->mutateStateForValidationUsing(static fn (?string $state): ?string => PhoneFormat::normalizeForValidation($state))
+                ->dehydrateStateUsing(static fn (?string $state): ?string => PhoneFormat::normalizeForValidation($state)),
         ];
 
         foreach ($fields as $field) {
