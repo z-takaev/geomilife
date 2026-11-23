@@ -104,7 +104,7 @@ final class CdekShipmentService
             return;
         }
 
-        $cdekOrder = $this->cdek->getOrder($shipment->uuid);
+        $cdekOrder = $this->cdek->getOrderByUuid($shipment->uuid);
 
         $this->applyShipmentState($order, $shipment, $cdekOrder);
     }
@@ -133,7 +133,7 @@ final class CdekShipmentService
         }
 
         try {
-            $cdekOrder = $this->cdek->getOrder($shipment->uuid);
+            $cdekOrder = $this->cdek->getOrderByUuid($shipment->uuid);
         } catch (CdekApiException $exception) {
             if ($this->isMissingAfterCancellationRequest($shipment, $exception)) {
                 $this->markCancelled($shipment);
@@ -341,7 +341,7 @@ final class CdekShipmentService
     private function recoverShipment(Order $order, OrderShipment $shipment): bool
     {
         try {
-            $cdekOrder = $this->cdek->findOrder($this->shipmentOrderNumber($order, $shipment));
+            $cdekOrder = $this->cdek->findOrderByNumber($this->shipmentOrderNumber($order, $shipment));
         } catch (CdekApiException $exception) {
             if ($exception->statusCode === 404) {
                 $sentAt = $shipment->payload['request_sent_at'] ?? $shipment->last_checked_at?->toIso8601String() ?? $shipment->created_at?->toIso8601String();

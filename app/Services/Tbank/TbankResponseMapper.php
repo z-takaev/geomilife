@@ -14,10 +14,11 @@ use App\Enums\Tbank\TbankPaymentStatusEnum;
 use App\Services\Tbank\Exceptions\TbankApiException;
 use App\Support\Values\Money;
 
-// TODO: Для чего слой Mapper нужен?
-// TODO: Добавить phpdoblock для возвращаемых массивов dto
 final class TbankResponseMapper
 {
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public function initPayment(array $data): TbankInitPaymentResponseDto
     {
         $url = $this->string($data, 'PaymentURL');
@@ -35,6 +36,9 @@ final class TbankResponseMapper
         );
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public function cancelPayment(array $data): TbankCancelPaymentResponseDto
     {
         $amounts = [];
@@ -57,6 +61,9 @@ final class TbankResponseMapper
         );
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public function paymentState(array $data): TbankGetPaymentStateResponseDto
     {
         return new TbankGetPaymentStateResponseDto(
@@ -67,6 +74,9 @@ final class TbankResponseMapper
         );
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public function checkOrder(array $data): TbankCheckOrderResponseDto
     {
         $payments = $data['Payments'] ?? null;
@@ -92,6 +102,9 @@ final class TbankResponseMapper
         return new TbankCheckOrderResponseDto(orderId: $this->string($data, 'OrderId'), payments: $result);
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public function paymentNotification(array $data): TbankPaymentNotificationDto
     {
         if (! is_bool($data['Success'] ?? null)) {

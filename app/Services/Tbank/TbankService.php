@@ -98,7 +98,6 @@ final class TbankService
     /**
      * Проверяет терминал и подпись уведомления, затем преобразует данные в DTO.
      */
-    // TODO: Для чего этот метод?
     public function parsePaymentNotification(array $data): TbankPaymentNotificationDto
     {
         $terminalKey = config('tbank.terminal_key');

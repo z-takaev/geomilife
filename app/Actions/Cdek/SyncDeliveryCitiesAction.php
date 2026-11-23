@@ -115,7 +115,6 @@ final class SyncDeliveryCitiesAction
         });
     }
 
-    // TODO: Вынести этот метод в Dto класс
     private function toRecord(CdekCityResponseDto $city): array
     {
         return [

@@ -35,11 +35,10 @@ final class PrepareCdekDocumentsJob implements ShouldBeUniqueUntilProcessing, Sh
         if ($order !== null && ! $order->status->isCancelled() && $order->cancellation_state === null) {
             $service->prepareCdekDocuments($order);
 
-            // TODO: нельзя тут убрать value?
             if ($order->documents()->whereIn('state', [
-                CdekPrintStateEnum::CREATING->value,
-                CdekPrintStateEnum::ACCEPTED->value,
-                CdekPrintStateEnum::PROCESSING->value,
+                CdekPrintStateEnum::CREATING,
+                CdekPrintStateEnum::ACCEPTED,
+                CdekPrintStateEnum::PROCESSING,
             ])->exists()) {
                 if ($this->pollAttempt < 10) {
                     self::dispatch($order->id, $this->pollAttempt + 1)

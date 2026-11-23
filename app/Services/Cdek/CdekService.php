@@ -57,11 +57,13 @@ final class CdekService
     public function getDeliveryPoints(CdekGetDeliveryPointsRequestDto $filters): array
     {
         return $this->mapper->deliveryPoints(
-            $this->client->get('/v2/deliverypoints', $filters->toArray())
+            $this->client->get('/v2/deliverypoints', $filters->toArray()),
         );
     }
 
-    // TODO: Добавить комментарии
+    /**
+     * Получить страницу кодов городов России, в которых доступны ПВЗ.
+     */
     public function getDeliveryPointCityCodes(int $page = 0, int $size = 1000): CdekDeliveryPointCityCodesPageDto
     {
         if ($page < 0) {
@@ -102,15 +104,14 @@ final class CdekService
     public function createOrder(CdekCreateOrderRequestDto $order): CdekOperationResponseDto
     {
         return $this->mapper->operation(
-            $this->client->post('/v2/orders', $order->toArray())
+            $this->client->post('/v2/orders', $order->toArray()),
         );
     }
 
     /**
      * Получить отправление по UUID
      */
-    // TODO: Изменить название
-    public function getOrder(string $uuid): CdekOrderResponseDto
+    public function getOrderByUuid(string $uuid): CdekOrderResponseDto
     {
         return $this->mapper->order($this->client->get('/v2/orders/'.$this->uuid($uuid)));
     }
@@ -118,8 +119,7 @@ final class CdekService
     /**
      * Получает отправление СДЭК по номеру заказа интернет-магазина.
      */
-    // TODO: Изменить название
-    public function findOrder(string $number): CdekOrderResponseDto
+    public function findOrderByNumber(string $number): CdekOrderResponseDto
     {
         return $this->mapper->order($this->client->get('/v2/orders', ['im_number' => $number]));
     }

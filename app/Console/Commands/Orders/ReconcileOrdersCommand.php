@@ -105,7 +105,6 @@ final class ReconcileOrdersCommand extends Command
             ->whereIn('status', [OrderStatusEnum::READY_TO_SHIP, OrderStatusEnum::SHIPPED])
             ->whereNull('cancellation_state')
             ->where(function ($query): void {
-                // TODO: Для чего whereDoesntHave и orWhereHas
                 $query->whereDoesntHave('shipment')->orWhereHas('shipment', function ($shipment): void {
                     $shipment->whereNull('last_checked_at')
                         ->orWhere('last_checked_at', '<=', now()->subMinutes((int) config('orders.reconciliation_stale_minutes')));
