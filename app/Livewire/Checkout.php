@@ -289,7 +289,7 @@ final class Checkout extends Component
                 throw ValidationException::withMessages(['quote' => __(self::CDEK_CALCULATION_ERROR_MESSAGE)]);
             }
 
-            $this->dispatch('cart-updated', hasItems: $cart->hasItems());
+            $this->dispatch('cart-updated', ...$cart->state());
         }
 
         $this->checkoutState->forget($this->idempotency_key);

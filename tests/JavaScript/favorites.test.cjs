@@ -33,11 +33,27 @@ function browser(saved = null) {
         },
     };
     vm.runInNewContext(readFileSync('public/assets/js/alpine.js', 'utf8'), context);
-    return { storage, stores, shown, window: context.window, component(wire, authenticated = false, ids = [], itemsLoaded = false) {
-        const component = context.window.wishlistBrowser(wire, authenticated, ids, itemsLoaded);
-        component.$store = stores;
-        return component;
-    } };
+    return {
+        storage,
+        stores,
+        shown,
+        window: context.window,
+        component(wire, authenticated = false, ids = [], itemsLoaded = false) {
+            const component = context.window.wishlistBrowser(wire, authenticated, ids, itemsLoaded);
+            component.$store = stores;
+            return component;
+        },
+        cartComponent(wire, quantities = {}, count = 0, itemsLoaded = false) {
+            const component = context.window.shoppingCart(wire, quantities, count, itemsLoaded);
+            component.$store = stores;
+            return component;
+        },
+        productSelector(variants, initialVariantId = null) {
+            const component = context.window.productVariantSelector(variants, initialVariantId);
+            component.$store = stores;
+            return component;
+        },
+    };
 }
 
 test('гость восстанавливает список из сессии браузера и сохраняет изменения', async () => {
@@ -151,6 +167,16 @@ test('сбой запроса корзины освобождает блокир
     assert.equal(calls, 2);
 });
 
+test('корзина инициализирует количества и суммарный счётчик', () => {
+    const app = browser();
+
+    app.cartComponent({}, { 4: 2, 7: 3 }, 5).init();
+
+    assert.equal(app.stores.cart.quantity(4), 2);
+    assert.equal(app.stores.cart.quantity(7), 3);
+    assert.equal(app.stores.cart.count, 5);
+});
+
 test('корзина открывается только после первой загрузки товаров', async () => {
     const app = browser();
     let loaded = false;
@@ -185,31 +211,45 @@ test('выбор фасовки проверяет идентификатор и
     assert.equal(selector.selectedProductUrl, 'https://shop.test/products/oil?source=home&variant=2');
 });
 
-test('количество товара ограничивается допустимым диапазоном', () => {
-    const selector = browser().window.productVariantSelector([{ id: 1 }]);
-    for (const [input, expected] of [['invalid', 1], [-1, 1], [0, 1], [1001, 1000], ['12', 12]]) {
-        selector.quantity = input;
-        selector.normalizeQuantity();
-        assert.equal(selector.quantity, expected);
-    }
-    selector.quantity = 1000;
-    selector.increaseQuantity();
-    assert.equal(selector.quantity, 1000);
-    selector.quantity = 1;
-    selector.decreaseQuantity();
+test('кнопка добавляет одну единицу и заменяется актуальным количеством', async () => {
+    const app = browser();
+    const calls = [];
+    const wire = {
+        async add(...parameters) {
+            calls.push(parameters);
+            return { quantities: { 2: 1 }, count: 1 };
+        },
+    };
+    app.cartComponent(wire).init();
+    const selector = app.productSelector([{ id: 2 }], 2);
+
+    assert.equal(selector.isInCart, false);
+    await selector.addToCart();
+
+    assert.equal(selector.isInCart, true);
     assert.equal(selector.quantity, 1);
+    assert.deepEqual(calls, [[2, 1]]);
 });
 
-test('количество сбрасывается только после успешного добавления в корзину', async () => {
-    const selector = browser().window.productVariantSelector([{ id: 2 }]);
-    const calls = [];
-    let success = false;
-    selector.$store = { cart: { async add(...parameters) { calls.push(parameters); return success; } } };
-    selector.quantity = 5;
-    await selector.addToCart();
-    assert.equal(selector.quantity, 5);
-    success = true;
-    await selector.addToCart();
-    assert.equal(selector.quantity, 1);
-    assert.deepEqual(calls, [[2, 5], [2, 5]]);
+test('переключатель синхронизирует все экземпляры товара и удаляет последнюю единицу', async () => {
+    const app = browser();
+    const wire = {
+        async changeQuantity(variantId, change) {
+            const quantity = app.stores.cart.quantity(variantId) + change;
+            const quantities = quantity > 0 ? { [variantId]: quantity } : {};
+
+            return { quantities, count: Math.max(0, quantity) };
+        },
+    };
+    app.cartComponent(wire, { 2: 1 }, 1).init();
+    const first = app.productSelector([{ id: 2 }], 2);
+    const second = app.productSelector([{ id: 2 }], 2);
+
+    await first.increaseQuantity();
+    assert.equal(second.quantity, 2);
+
+    await second.decreaseQuantity();
+    await second.decreaseQuantity();
+    assert.equal(first.isInCart, false);
+    assert.equal(app.stores.cart.count, 0);
 });

@@ -21,15 +21,16 @@ final class ShoppingCart extends Component
         }
     }
 
-    public function add(int $variantId, int $quantity, CartService $cart): bool
+    public function add(int $variantId, int $quantity, CartService $cart): array|false
     {
         try {
             $cart->add($variantId, $quantity);
             $this->items_loaded = true;
-            $this->dispatch('cart-updated', hasItems: $cart->hasItems());
+            $state = $cart->state();
+            $this->dispatch('cart-updated', ...$state);
             $this->dispatch('notify', message: __('Товар добавлен в корзину.'), type: 'success');
 
-            return true;
+            return $state;
         } catch (ValidationException $exception) {
             $this->skipRender();
             $this->dispatch('notify', message: collect($exception->errors())->flatten()->first(), type: 'error');
@@ -38,19 +39,24 @@ final class ShoppingCart extends Component
         }
     }
 
-    public function changeQuantity(int $variantId, int $change, CartService $cart): void
+    public function changeQuantity(int $variantId, int $change, CartService $cart): array|false
     {
         try {
             $quantity = $cart->changeQuantity($variantId, $change);
             $this->items_loaded = true;
-            $this->dispatch('cart-updated', hasItems: $cart->hasItems());
+            $state = $cart->state();
+            $this->dispatch('cart-updated', ...$state);
 
             if ($quantity === 0) {
                 $this->dispatch('notify', message: __('Товар удалён из корзины.'), type: 'success');
             }
+
+            return $state;
         } catch (ValidationException $exception) {
             $this->skipRender();
             $this->dispatch('notify', message: collect($exception->errors())->flatten()->first(), type: 'error');
+
+            return false;
         }
     }
 
@@ -58,7 +64,7 @@ final class ShoppingCart extends Component
     {
         $cart->remove($variantId);
         $this->items_loaded = true;
-        $this->dispatch('cart-updated', hasItems: $cart->hasItems());
+        $this->dispatch('cart-updated', ...$cart->state());
         $this->dispatch('notify', message: __('Товар удалён из корзины.'), type: 'success');
     }
 
@@ -67,7 +73,7 @@ final class ShoppingCart extends Component
         try {
             $cart->merge();
             $this->items_loaded = true;
-            $this->dispatch('cart-updated', hasItems: $cart->hasItems());
+            $this->dispatch('cart-updated', ...$cart->state());
             $this->dispatch('cart-merge-resolved');
             $this->dispatch('notify', message: __('Корзины объединены.'), type: 'success');
         } catch (ValidationException $exception) {
@@ -91,10 +97,13 @@ final class ShoppingCart extends Component
     public function render(CartService $cart): View
     {
         $items = $this->items_loaded ? $cart->items() : [];
-        $count = $this->items_loaded ? array_sum(array_column($items, 'quantity')) : 0;
-        $hasItems = $this->items_loaded ? $items !== [] : $cart->hasItems();
+        $quantities = $this->items_loaded
+            ? array_column($items, 'quantity', 'id')
+            : $cart->availableQuantities();
+        $count = array_sum($quantities);
+        $hasItems = $count > 0;
         $total = $this->items_loaded ? $cart->total() : Money::fromMinor(0);
 
-        return view('livewire.shopping-cart', compact('items', 'count', 'hasItems', 'total'));
+        return view('livewire.shopping-cart', compact('items', 'quantities', 'count', 'hasItems', 'total'));
     }
 }

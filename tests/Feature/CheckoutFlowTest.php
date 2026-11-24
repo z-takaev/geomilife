@@ -28,7 +28,10 @@ it('создаёт заказ без хранения отдельного по�
     $city = CheckoutFixtures::city();
     app(CartService::class)->add(CheckoutFixtures::variant()->getKey(), 1);
 
-    CheckoutFixtures::form($city)->call('placeOrder')->assertHasNoErrors();
+    CheckoutFixtures::form($city)
+        ->call('placeOrder')
+        ->assertHasNoErrors()
+        ->assertDispatched('cart-updated', quantities: [], count: 0);
 
     expect(Schema::hasColumn('orders', 'consent'))->toBeFalse()
         ->and(Order::query()->sole()->getAttributes())->not->toHaveKey('consent');

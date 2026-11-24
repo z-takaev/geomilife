@@ -1,15 +1,9 @@
-window.productVariantSelector = function (
-    variants,
-    initialVariantId = null,
-    productUrl = null,
-    closeQuickViewAfterAdding = false,
-) {
+window.productVariantSelector = function (variants, initialVariantId = null, productUrl = null) {
     const hasInitialVariant = variants.some((variant) => variant.id === initialVariantId);
 
     return {
         variants,
         selectedVariantId: hasInitialVariant ? initialVariantId : (variants[0]?.id ?? null),
-        quantity: 1,
 
         get selectedVariant() {
             return this.variants.find((variant) => variant.id === this.selectedVariantId) ?? null;
@@ -22,36 +16,36 @@ window.productVariantSelector = function (
             return url.href;
         },
 
+        get quantity() {
+            return this.$store.cart.quantity(this.selectedVariantId);
+        },
+
+        get isInCart() {
+            return this.quantity > 0;
+        },
+
         selectVariant(variantId) {
             if (this.variants.some((variant) => variant.id === variantId)) {
                 this.selectedVariantId = variantId;
             }
         },
 
-        decreaseQuantity() {
-            this.normalizeQuantity();
-            this.quantity = Math.max(1, this.quantity - 1);
-        },
-
-        increaseQuantity() {
-            this.normalizeQuantity();
-            this.quantity = Math.min(1000, this.quantity + 1);
-        },
-
-        async addToCart() {
-            this.normalizeQuantity();
-            if (this.selectedVariantId && (await this.$store.cart.add(this.selectedVariantId, this.quantity))) {
-                this.quantity = 1;
-                if (closeQuickViewAfterAdding) {
-                    bootstrap.Offcanvas.getInstance(document.getElementById('quickView'))?.hide();
-                }
+        async decreaseQuantity() {
+            if (this.selectedVariantId && this.isInCart) {
+                await this.$store.cart.changeQuantity(this.selectedVariantId, -1);
             }
         },
 
-        normalizeQuantity() {
-            const quantity = Number.parseInt(this.quantity, 10);
+        async increaseQuantity() {
+            if (this.selectedVariantId && this.isInCart) {
+                await this.$store.cart.changeQuantity(this.selectedVariantId, 1);
+            }
+        },
 
-            this.quantity = Number.isSafeInteger(quantity) ? Math.min(1000, Math.max(1, quantity)) : 1;
+        async addToCart() {
+            if (this.selectedVariantId && !this.isInCart) {
+                await this.$store.cart.add(this.selectedVariantId, 1);
+            }
         },
     };
 };
@@ -63,7 +57,8 @@ window.addEventListener('catalog-filters-applied', () => {
 
 document.addEventListener('alpine:init', () => {
     Alpine.store('cart', {
-        hasItems: false,
+        quantities: {},
+        count: 0,
         busy: false,
         itemsLoaded: false,
         wire: null,
@@ -71,13 +66,38 @@ document.addEventListener('alpine:init', () => {
             if (!this.wire || this.busy) return false;
             this.busy = true;
             try {
-                const added = await this.wire.add(variantId, quantity);
-                if (added) this.itemsLoaded = true;
+                const state = await this.wire.add(variantId, quantity);
+                if (state) {
+                    this.update(state.quantities, state.count);
+                    this.itemsLoaded = true;
+                }
 
-                return added;
+                return Boolean(state);
             } finally {
                 this.busy = false;
             }
+        },
+        async changeQuantity(variantId, change) {
+            if (!this.wire || this.busy) return false;
+            this.busy = true;
+            try {
+                const state = await this.wire.changeQuantity(variantId, change);
+                if (state) {
+                    this.update(state.quantities, state.count);
+                    this.itemsLoaded = true;
+                }
+
+                return Boolean(state);
+            } finally {
+                this.busy = false;
+            }
+        },
+        quantity(variantId) {
+            return Number(this.quantities[variantId] ?? 0);
+        },
+        update(quantities, count) {
+            this.quantities = quantities;
+            this.count = count;
         },
         async open() {
             if (!this.wire || this.busy) return;
@@ -162,12 +182,15 @@ window.wishlistBrowser = function (wire, authenticated, accountIds, itemsLoaded)
     };
 };
 
-window.shoppingCart = function (wire, hasItems, itemsLoaded) {
+window.shoppingCart = function (wire, quantities, count, itemsLoaded) {
     return {
         init() {
             this.$store.cart.wire = wire;
-            this.$store.cart.hasItems = hasItems;
+            this.$store.cart.update(quantities, count);
             this.$store.cart.itemsLoaded = itemsLoaded;
+        },
+        update(quantities, count) {
+            this.$store.cart.update(quantities, count);
         },
     };
 };

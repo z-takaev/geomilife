@@ -50,7 +50,7 @@ it('читает актуальные количества для корзины
 it('хранит гостевую корзину в сессии и считает количество и итог', function (): void {
     $variant = cartVariant();
     Livewire::test(ShoppingCart::class)->call('add', $variant->id, 2)->assertViewHas('count', 2)->assertViewHas('total', fn (Money $total): bool => $total->toRubles() === '1780.00')
-        ->assertDispatched('cart-updated', hasItems: true);
+        ->assertDispatched('cart-updated', quantities: [$variant->id => 2], count: 2);
     expect(session('cart.items'))->toBe([$variant->id => 2]);
     expect(app(CartService::class)->count())->toBe(2);
     expect(app(CartService::class)->items()[0]['total']->toRubles())->toBe('1780.00');
@@ -58,14 +58,29 @@ it('хранит гостевую корзину в сессии и считае
     Livewire::test(ShoppingCart::class)->call('remove', $variant->id)->assertSee('Корзина пока пуста.');
 });
 
-it('передаёт в шапку только признак наличия товаров без подсчёта количества', function (): void {
+it('передаёт в интерфейс актуальные количества товаров без загрузки мини-корзины', function (): void {
     $variant = cartVariant();
     $user = cartUser();
     $user->cart()->create()->items()->create(['product_variant_id' => $variant->id, 'quantity' => 7]);
 
     Livewire::actingAs($user)->test(ShoppingCart::class)
         ->assertViewHas('hasItems', true)
-        ->assertViewHas('count', 0);
+        ->assertViewHas('count', 7)
+        ->assertViewHas('quantities', [$variant->id => 7]);
+});
+
+it('синхронизирует количество и удаляет товар при уменьшении с единицы', function (): void {
+    $variant = cartVariant();
+
+    Livewire::test(ShoppingCart::class)
+        ->call('add', $variant->id, 1)
+        ->call('changeQuantity', $variant->id, 1)
+        ->assertDispatched('cart-updated', quantities: [$variant->id => 2], count: 2)
+        ->call('changeQuantity', $variant->id, -1)
+        ->call('changeQuantity', $variant->id, -1)
+        ->assertDispatched('cart-updated', quantities: [], count: 0);
+
+    expect(session('cart.items'))->toBe([]);
 });
 
 it('сохраняет вариации пользователя в базе и увеличивает количество без дублей', function (): void {
@@ -214,7 +229,7 @@ it('загружает содержимое существующей корзи�
 
     Livewire::actingAs($user)->test(ShoppingCart::class)
         ->assertDontSee($variant->product->name)
-        ->assertViewHas('count', 0)
+        ->assertViewHas('count', 2)
         ->assertViewHas('hasItems', true)
         ->call('loadItems')
         ->assertSee($variant->product->name);

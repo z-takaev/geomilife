@@ -35,6 +35,39 @@ final class CartService
     }
 
     /**
+     * Возвращает количества доступных товаров по идентификаторам вариантов.
+     */
+    public function availableQuantities(): array
+    {
+        $quantities = $this->quantities();
+
+        if ($quantities === []) {
+            return [];
+        }
+
+        $availableVariantIds = ProductVariant::query()
+            ->whereKey(array_keys($quantities))
+            ->available()
+            ->pluck('id')
+            ->all();
+
+        return array_intersect_key($quantities, array_flip($availableVariantIds));
+    }
+
+    /**
+     * @return array{quantities: array<int, int>, count: int}
+     */
+    public function state(): array
+    {
+        $quantities = $this->availableQuantities();
+
+        return [
+            'quantities' => $quantities,
+            'count' => array_sum($quantities),
+        ];
+    }
+
+    /**
      * Возвращает товары корзины для отображения.
      */
     public function items(): array
@@ -79,20 +112,7 @@ final class CartService
      */
     public function count(): int
     {
-        $quantities = $this->quantities();
-
-        if ($quantities === []) {
-            return 0;
-        }
-
-        $availableVariantIds = ProductVariant::query()
-            ->whereKey(array_keys($quantities))
-            ->available()
-            ->pluck('id');
-
-        return $availableVariantIds->sum(
-            static fn (int $variantId): int => (int) $quantities[$variantId],
-        );
+        return $this->state()['count'];
     }
 
     /**

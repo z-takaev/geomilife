@@ -153,11 +153,14 @@
                             </a>
                         </li>
                         <li>
-                            <a href="#shoppingCart" class="nav-icon-item nav-icon-item--cart text-primary link" x-data
+                            <a href="#shoppingCart" class="nav-icon-item text-primary link" x-data
                                 x-on:click.prevent="$store.cart.open()"
-                                x-bind:class="{ 'has-items': $store.cart.hasItems }"
+                                x-bind:class="{ 'has-num': $store.cart.count > 0 }"
                                 aria-label="{{ __('Открыть корзину') }}">
                                 <i class="icon icon-ShoppingCartSimple"></i>
+                                <span class="number-count text-caption-02" x-show="$store.cart.count > 0" x-cloak>
+                                    <span x-text="$store.cart.count">0</span>
+                                </span>
                             </a>
                         </li>
                     </ul>

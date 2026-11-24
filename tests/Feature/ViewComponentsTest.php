@@ -31,6 +31,14 @@ it('не позволяет вводить количество товара в�
         ->not->toContain('x-on:change');
 });
 
+it('показывает кнопку добавления с новым названием', function (): void {
+    $product = Product::factory()->make();
+
+    expect(Blade::render('<x-products.add-to-cart-button :variant="$variant" />', [
+        'variant' => $product->variants()->make(['is_preorder' => false]),
+    ]))->toContain('В корзину')->not->toContain('>Купить<');
+});
+
 it('ограничивает заголовки карточек новостей и статей двумя строками', function (): void {
     expect(Blade::render('<x-news.card date="15 ноября" description="Описание" image="/news.jpg" title="Новость" />'))
         ->toContain('text-primary font-sora text-line-clamp-2')
