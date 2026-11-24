@@ -35,19 +35,7 @@
                 </dl>
             </div>
 
-            {{-- TODO: Заменить на компонент списка категорий --}}
             @if ($categories->isNotEmpty())
-                @php
-                    $categoryBackgrounds = [
-                        'bg-peach-blush',
-                        'bg-pale-cream',
-                        'bg-mint-whisper',
-                        'bg-ice-blue',
-                        'bg-lavender-mist',
-                        'bg-lilac-cloud',
-                    ];
-                @endphp
-
                 <section class="search-results-section" aria-labelledby="search-categories-title">
                     <div class="search-results-section__heading">
                         <h2 id="search-categories-title" class="search-results-section__title">
@@ -55,19 +43,7 @@
                         <span class="search-results-section__count">{{ $categories->count() }}</span>
                     </div>
 
-                    <div class="featured-categories-grid">
-                        @foreach ($categories as $category)
-                            @php
-                                $productsCount = $category->total_active_products_count;
-                            @endphp
-                            <x-categories.card :background="$categoryBackgrounds[$loop->index % count($categoryBackgrounds)]" :image="$category->getFirstMediaUrl('image')" :name="$category->name" :product-count="trans_choice(
-                                '{0} Нет товаров|{1} :count товар|[2,4] :count товара|[5,*] :count товаров',
-                                $productsCount,
-                                ['count' => $productsCount],
-                            )"
-                                :url="route('catalog.category', $category)" />
-                        @endforeach
-                    </div>
+                    <x-categories-list :categories="$categories" />
                 </section>
             @endif
 
@@ -86,8 +62,7 @@
 
                     @if ($products->hasPages())
                         <div class="search-results-pagination">
-                            {{-- TODO: Почему в links явно указывается шаблон пагинации? --}}
-                            {{ $products->onEachSide(1)->withQueryString()->links('vendor.pagination.bootstrap-5') }}
+                            {{ $products->onEachSide(1)->withQueryString()->links() }}
                         </div>
                     @endif
                 @else

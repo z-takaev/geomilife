@@ -11,8 +11,7 @@ use Spatie\Image\Enums\ImageDriver;
 use Spatie\Image\Image;
 use Spatie\TemporaryDirectory\TemporaryDirectory;
 
-// TODO: Поменять название
-final class ProcessImageAction
+final class ConvertUploadedImageAction
 {
     public function run(string $contents, ?Closure $processImage = null): string
     {

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Actions\Images\CleanUploadedImagesAction;
+use App\Actions\Images\CleanUploadedMediaAction;
 use Illuminate\Filesystem\Filesystem;
 
-it('очищает только директорию изображений', function (): void {
+it('очищает директории изображений и документов', function (): void {
     $filesystem = app(Filesystem::class);
     $testStoragePath = storage_path('framework/testing/clean-uploaded-images');
 
@@ -22,12 +22,12 @@ it('очищает только директорию изображений', fu
     $filesystem->put($documentPath, 'document');
 
     try {
-        app(CleanUploadedImagesAction::class)->run();
+        app(CleanUploadedMediaAction::class)->run();
 
         expect($filesystem->isDirectory($imagesPath))->toBeTrue()
             ->and($filesystem->directories($imagesPath))->toBeEmpty()
             ->and($filesystem->files($imagesPath))->toBeEmpty()
-            ->and($filesystem->exists($documentPath))->toBeTrue();
+            ->and($filesystem->exists($documentPath))->toBeFalse();
     } finally {
         $filesystem->deleteDirectory($testStoragePath);
     }

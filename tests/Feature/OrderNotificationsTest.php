@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Enums\Orders\OrderNotificationAudienceEnum;
+use App\Enums\Orders\OrderNotificationEventEnum;
 use App\Enums\Orders\PaymentMethodEnum;
 use App\Enums\Orders\PaymentStatusEnum;
 use App\Models\Order;
 use App\Models\User;
-use App\Notifications\Orders\DeliveryQuoteErrorNotification;
+use App\Notifications\Orders\CdekDeliveryQuoteFailedNotification;
 use App\Notifications\Orders\OrderUpdateNotification;
 use App\Services\Orders\OrderNotificationService;
 use App\Support\Values\Money;
@@ -47,8 +49,8 @@ it('направляет уведомление на email получателя 
 
     Notification::assertSentOnDemand(
         OrderUpdateNotification::class,
-        fn (OrderUpdateNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notification->audience === 'BUYER'
-            && $notification->event === 'CREATED'
+        fn (OrderUpdateNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notification->audience === OrderNotificationAudienceEnum::BUYER
+            && $notification->event === OrderNotificationEventEnum::CREATED
             && $notifiable->routes['mail'] === 'recipient@example.test'
             && in_array('mail', $channels, true),
     );
@@ -63,7 +65,7 @@ it('добавляет Telegram покупателя только при вкл�
 
     Notification::assertSentOnDemand(
         OrderUpdateNotification::class,
-        fn (OrderUpdateNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notification->audience === 'BUYER'
+        fn (OrderUpdateNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notification->audience === OrderNotificationAudienceEnum::BUYER
             && (($notifiable->routes['telegram'] ?? null) === ($enabled ? '1234567' : null)),
     );
 })->with([true, false]);
@@ -73,13 +75,13 @@ it('уведомляет менеджеров о новом заказе и не
 
     Notification::assertSentOnDemand(
         OrderUpdateNotification::class,
-        fn (OrderUpdateNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notification->audience === 'MANAGER'
+        fn (OrderUpdateNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notification->audience === OrderNotificationAudienceEnum::MANAGER
             && $notifiable->routes['telegram'] === '-1001234567890'
             && ! isset($notifiable->routes['mail']),
     );
     Notification::assertSentOnDemand(
         OrderUpdateNotification::class,
-        fn (OrderUpdateNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notification->audience === 'BUYER' && ! isset($notifiable->routes['telegram']),
+        fn (OrderUpdateNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notification->audience === OrderNotificationAudienceEnum::BUYER && ! isset($notifiable->routes['telegram']),
     );
 });
 
@@ -99,7 +101,7 @@ it('письмо гостю содержит номер заказа и собы
     Notification::assertSentOnDemand(
         OrderUpdateNotification::class,
         function (OrderUpdateNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool {
-            if ($notification->audience !== 'BUYER') {
+            if ($notification->audience !== OrderNotificationAudienceEnum::BUYER) {
                 return false;
             }
             $mail = $notification->toMail($notifiable);
@@ -117,9 +119,9 @@ it('уведомляет менеджеров об ошибке расчёта �
     $service->notifyQuoteError(44, 'Ошибка API');
     $service->notifyQuoteError(44, 'Ошибка API');
 
-    Notification::assertSentOnDemandTimes(DeliveryQuoteErrorNotification::class, 1);
+    Notification::assertSentOnDemandTimes(CdekDeliveryQuoteFailedNotification::class, 1);
     Notification::assertSentOnDemand(
-        DeliveryQuoteErrorNotification::class,
+        CdekDeliveryQuoteFailedNotification::class,
         fn ($notification, array $channels, AnonymousNotifiable $notifiable): bool => $notifiable->routes['telegram'] === '-1001234567890'
             && str_contains($notification->toTelegram($notifiable), '44'),
     );
@@ -145,7 +147,7 @@ it('включает сохранённый состав и сведения з�
     ]);
     $variant->product->update(['name' => 'Новое название каталога']);
     $variant->update(['price' => Money::fromRubles(9999)]);
-    $mail = (new OrderUpdateNotification($order->fresh(), 'CREATED'))->toMail(new AnonymousNotifiable);
+    $mail = (new OrderUpdateNotification($order->fresh(), OrderNotificationEventEnum::CREATED))->toMail(new AnonymousNotifiable);
     $html = (string) $mail->render();
     $plain = (string) app(Markdown::class)->renderText($mail->markdown, $mail->data());
 
@@ -185,7 +187,7 @@ it('включает сохранённый состав и сведения з�
 it('показывает способ получения и адрес из заказа', function (string $method, array $address, array $expected): void {
     $order = notificationOrder();
     $order->update(['delivery_method' => $method, 'delivery_address' => $address]);
-    $mail = (new OrderUpdateNotification($order, 'CREATED'))->toMail(new AnonymousNotifiable);
+    $mail = (new OrderUpdateNotification($order, OrderNotificationEventEnum::CREATED))->toMail(new AnonymousNotifiable);
 
     expect((string) $mail->render())->toContain(...$expected)
         ->toContain('бесплатно');
@@ -204,7 +206,7 @@ it('не предлагает отложенную оплату в письме 
         'payment_method' => $method,
         'payment_status' => $status,
     ]);
-    $mail = (new OrderUpdateNotification($order, 'CREATED'))->toMail(new AnonymousNotifiable);
+    $mail = (new OrderUpdateNotification($order, OrderNotificationEventEnum::CREATED))->toMail(new AnonymousNotifiable);
     $body = (string) $mail->render();
 
     expect($body)->toContain($order->payment_method->getLabel())
@@ -224,14 +226,14 @@ it('не предлагает отложенную оплату в письме 
 it('обозначает предзаказ и скрывает незаполненные необязательные сведения', function (): void {
     $order = notificationOrder();
     $order->update(['is_preorder' => true]);
-    $body = (string) (new OrderUpdateNotification($order, 'CREATED'))->toMail(new AnonymousNotifiable)->render();
+    $body = (string) (new OrderUpdateNotification($order, OrderNotificationEventEnum::CREATED))->toMail(new AnonymousNotifiable)->render();
 
     expect($body)->toContain('Предзаказ', 'Точные сроки доставки согласовываются отдельно с менеджером')
         ->not->toContain('Комментарий к заказу', 'График:', 'Пункт:');
 });
 
 it('отображает разделы письма как html без блоков исходного кода', function (): void {
-    $mail = (new OrderUpdateNotification(notificationOrder(), 'CREATED'))->toMail(new AnonymousNotifiable);
+    $mail = (new OrderUpdateNotification(notificationOrder(), OrderNotificationEventEnum::CREATED))->toMail(new AnonymousNotifiable);
 
     expect((string) $mail->render())->toContain('<h2', 'Товары в заказе')
         ->not->toContain('<pre', '&lt;h2&gt;', '&lt;p&gt;');
@@ -240,7 +242,7 @@ it('отображает разделы письма как html без блок
 it('оставляет уведомления об изменениях короткими и добавляет трек-номер при отправке', function (): void {
     $order = notificationOrder();
     $order->shipment()->create(['cdek_number' => '1234567890']);
-    $mail = (new OrderUpdateNotification($order, 'SHIPPED'))->toMail(new AnonymousNotifiable);
+    $mail = (new OrderUpdateNotification($order, OrderNotificationEventEnum::SHIPPED))->toMail(new AnonymousNotifiable);
 
     expect((string) $mail->render())->toContain("Заказ №{$order->number} передан в СДЭК.", '1234567890')
         ->not->toContain(
@@ -254,7 +256,7 @@ it('оставляет уведомления об изменениях коро
 
 it('понятно сообщает об изменении статуса без приветствия суммы и благодарности', function (string $event, string $message): void {
     $order = notificationOrder(CheckoutFixtures::user());
-    $mail = (new OrderUpdateNotification($order, $event))->toMail(new AnonymousNotifiable);
+    $mail = (new OrderUpdateNotification($order, OrderNotificationEventEnum::from($event)))->toMail(new AnonymousNotifiable);
     $body = (string) $mail->render();
 
     expect($body)->toContain($message)
@@ -269,7 +271,7 @@ it('понятно сообщает об изменении статуса бе�
 it('указывает номер и причину в письме об отмене', function (): void {
     $order = notificationOrder();
     $order->update(['cancellation_reason' => 'Товар закончился']);
-    $body = (string) (new OrderUpdateNotification($order, 'CANCELLED'))->toMail(new AnonymousNotifiable)->render();
+    $body = (string) (new OrderUpdateNotification($order, OrderNotificationEventEnum::CANCELLED))->toMail(new AnonymousNotifiable)->render();
 
     expect($body)->toContain("Ваш заказ №{$order->number} был отменён.", 'Причина: Товар закончился')
         ->not->toContain('Здравствуйте', 'Спасибо за заказ в GeoMiLife', $order->total->format());
@@ -277,7 +279,7 @@ it('указывает номер и причину в письме об отм�
 
 it('кратко сообщает о подтверждённом банком возврате', function (): void {
     $order = notificationOrder();
-    $body = (string) (new OrderUpdateNotification($order, 'REFUNDED'))->toMail(new AnonymousNotifiable)->render();
+    $body = (string) (new OrderUpdateNotification($order, OrderNotificationEventEnum::REFUNDED))->toMail(new AnonymousNotifiable)->render();
 
     expect($body)->toContain("Возврат оплаты по заказу №{$order->number} подтверждён банком.")
         ->not->toContain('Здравствуйте', 'Спасибо за заказ в GeoMiLife', $order->total->format());
@@ -286,7 +288,7 @@ it('кратко сообщает о подтверждённом банком �
 it('ссылка из письма владельцу требует входа и проверяет владельца заказа', function (): void {
     $user = CheckoutFixtures::user();
     $order = notificationOrder($user);
-    $mail = (new OrderUpdateNotification($order, 'CREATED'))->toMail(new AnonymousNotifiable);
+    $mail = (new OrderUpdateNotification($order, OrderNotificationEventEnum::CREATED))->toMail(new AnonymousNotifiable);
 
     expect($mail->actionUrl)->toBe(route('orders.show', $order));
     $this->getJson($mail->actionUrl)->assertUnauthorized();

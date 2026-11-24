@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Forms\Components;
 
-use App\Actions\Images\ProcessImageAction;
+use App\Actions\Images\ConvertUploadedImageAction;
 use App\Support\Media\ImageMimeTypes;
 use Closure;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
@@ -88,7 +88,7 @@ final class SpatieMediaLibrary extends SpatieMediaLibraryFileUpload
             }
 
             try {
-                $contents = app(ProcessImageAction::class)->run($file->get(), $component->imageProcessing);
+                $contents = app(ConvertUploadedImageAction::class)->run($file->get(), $component->imageProcessing);
             } catch (ImagickException|InvalidArgumentException|CouldNotLoadImage $exception) {
                 report($exception);
 

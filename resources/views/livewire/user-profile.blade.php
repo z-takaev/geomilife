@@ -43,7 +43,6 @@
                         <input id="profile-city" type="search" wire:model.live.debounce.300ms="city_search"
                             placeholder="{{ __('Начните вводить город') }}" autocomplete="off" maxlength="255"
                             x-ref="searchInput" x-on:focus="show()" x-on:input="show()" required>
-                        {{-- TODO: Убрать ограничение и сделать только проверку что поле не пустое --}}
                         @if (mb_strlen(trim($city_search)) >= (int) config('cities.search_min_length'))
                             <ul class="city-selection__results" x-show="open">
                                 @forelse ($cities as $city)
@@ -80,7 +79,6 @@
                 <article wire:key="address-{{ $address->id }}"
                     class="profile-address {{ $address->is_default ? 'profile-address--active' : '' }}">
                     <div>
-                        {{-- TODO: Формировать строки не в шаблоне --}}
                         <strong>{{ $address->city->name }}{{ $address->street ? ', ' . $address->street : '' }}{{ $address->house ? ', ' . __('дом') . ' ' . $address->house : '' }}{{ $address->building ? ', ' . __('корпус') . ' ' . $address->building : '' }}</strong>
                         <p>{{ collect([$address->apartment ? __('кв.') . ' ' . $address->apartment : null, $address->entrance ? __('подъезд') . ' ' . $address->entrance : null, $address->floor ? __('этаж') . ' ' . $address->floor : null, $address->intercom ? __('домофон') . ' ' . $address->intercom : null])->filter()->join(', ') }}
                         </p>
@@ -154,7 +152,6 @@
                     <button type="button" class="profile-button" x-data="telegramConnect()" x-bind:disabled="connecting"
                         x-on:click="connect()">{{ __('Подключить') }}</button>
                 </div>
-                {{-- TODO: Эта проверка наверно не нужна --}}
             @else
                 <div class="profile-telegram__controls">
                     <span class="profile-telegram__status">{{ __('Пока недоступно') }}</span>

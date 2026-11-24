@@ -60,7 +60,6 @@ final class UserProfile extends Component
         /** @var User */
         $user = Auth::user();
 
-        // TODO: Избавиться от нужны использовать PhoneFormat
         $this->form->phone = PhoneFormat::normalizeForValidation($this->form->phone);
         $validated = $this->form->validate();
 
@@ -124,8 +123,7 @@ final class UserProfile extends Component
         $user = Auth::user();
         $addresses = $user->addresses()->with('city')->orderByDesc('is_default')->latest()->get();
         $deliveryPoints = $user->savedDeliveryPoints()->with('city')->orderByDesc('is_default')->latest()->get();
-        $telegramBotConfigured = $telegramService->isConfigured(); // TODO: Вынести в хелпер и в шаблоне использовать его а не явно передавать
-        // TODO: Заменить название экшена
+        $telegramBotConfigured = $telegramService->isConfigured();
         $cities = $getCitySuggestions->run($this->city_search);
 
         return view('livewire.user-profile', compact('user', 'addresses', 'deliveryPoints', 'telegramBotConfigured', 'cities'));

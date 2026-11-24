@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Actions\Images\CleanUploadedImagesAction;
+use App\Actions\Images\CleanUploadedMediaAction;
 use Database\Seeders\FactorySeeder;
 use Illuminate\Console\Command;
 
@@ -14,7 +14,7 @@ final class InstallProjectCommand extends Command
 
     protected $description = 'Установить проект и заполнить начальные данные';
 
-    public function handle(CleanUploadedImagesAction $cleanUploadedImages): int
+    public function handle(CleanUploadedMediaAction $cleanUploadedMedia): int
     {
         $this->components->info('Установка проекта...');
 
@@ -26,7 +26,7 @@ final class InstallProjectCommand extends Command
             return self::FAILURE;
         }
 
-        $cleanUploadedImages->run();
+        $cleanUploadedMedia->run();
 
         if ($this->call('migrate', ['--seed' => true, '--force' => true]) !== self::SUCCESS) {
             return self::FAILURE;

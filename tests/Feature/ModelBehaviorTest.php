@@ -57,6 +57,11 @@ it('сбрасывает кеш настроек после сохранения
     expect(Setting::cached()->phone)->toBe('+79997654321');
 });
 
+it('определяет наличие ссылок на социальные сети', function (): void {
+    expect((new Setting)->hasSocialLinks())->toBeFalse()
+        ->and(new Setting(['telegram_url' => 'https://t.me/geomilife'])->hasSocialLinks())->toBeTrue();
+});
+
 it('автоматически назначает порядок вопросам и слайдам', function (): void {
     Faq::query()->create(['question' => 'Первый вопрос', 'answer' => 'Ответ', 'order' => 5]);
     $faq = Faq::query()->create(['question' => 'Второй вопрос', 'answer' => 'Ответ']);

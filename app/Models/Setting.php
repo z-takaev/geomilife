@@ -81,6 +81,15 @@ final class Setting extends Model implements HasMedia
             Storage::disk('public')->url($this->privacy_policy) : null;
     }
 
+    public function hasSocialLinks(): bool
+    {
+        return filled($this->instagram_url)
+            || filled($this->youtube_url)
+            || filled($this->vk_url)
+            || filled($this->telegram_url)
+            || filled($this->whatsapp_url);
+    }
+
     public function yandexMapUrl(): ?string
     {
         if (! is_string($this->yandex_map_id) || preg_match('/\A[a-f0-9]{64}\z/', $this->yandex_map_id) !== 1) {

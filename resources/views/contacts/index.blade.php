@@ -38,12 +38,7 @@
                             </div>
                         </div>
 
-                        {{-- TODO: Вынести в отдельный метод модели для проверки --}}
-                        @if (settings()?->instagram_url ||
-                                settings()?->youtube_url ||
-                                settings()?->vk_url ||
-                                settings()?->telegram_url ||
-                                settings()?->whatsapp_url)
+                        @if (settings()?->hasSocialLinks())
                             <div class="contacts-info-card contacts-info-card--social">
                                 <div>
                                     <p class="contacts-info-card__label">{{ __('Социальные сети') }}</p>
@@ -122,7 +117,7 @@
 
                 <div class="col-lg-4">
                     <div class="col-right_sidebar sticky-top">
-                        <livewire:question-form />
+                        <livewire:feedback-form />
                     </div>
                 </div>
 

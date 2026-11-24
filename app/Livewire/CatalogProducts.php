@@ -93,10 +93,9 @@ final class CatalogProducts extends Component
     {
         $products = $this->catalogProducts($catalogRepository);
         $hasMoreProducts = $products->currentPage() + $this->additionalPages < $products->lastPage();
-        // TODO: Зачем catalogKey?
+        // Пересоздаём сетку при смене фильтров, сортировки или страницы.
         $catalogKey = hash('xxh128', json_encode([$this->appliedFilters, $this->sort, $products->currentPage()]));
         $packageOptions = $this->packageOptions();
-        // TODO: Нужно ли на каждом рендере получать эти данные?
         $sortOptions = CatalogSortEnum::cases();
         $categories = $this->category === null
             ? $categoryRepository->getActiveCatalog()
@@ -127,7 +126,6 @@ final class CatalogProducts extends Component
         ];
     }
 
-    // TODO: Нужен ли этот метод и DTO?
     private function normalizeFilters(): CatalogFiltersDto
     {
         $filters = CatalogFiltersDto::fromArray($this->appliedFilters, $this->packageOptions());

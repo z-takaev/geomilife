@@ -105,3 +105,10 @@ it('учитывает включительно границы периода а
     'начинается завтра' => [1, 2, false],
     'закончилась вчера' => [-2, -1, false],
 ]);
+
+it('регистрирует только изображение карточки', function (string $modelClass): void {
+    $model = new $modelClass;
+    $model->registerMediaConversions();
+
+    expect(collect($model->mediaConversions)->map->getName()->all())->toBe(['card']);
+})->with([Article::class, News::class, Promo::class]);

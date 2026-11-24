@@ -7,7 +7,6 @@ namespace App\Actions\Cities;
 use App\Models\City;
 use Illuminate\Support\Collection;
 
-// TODO: Вынести в метод модели
 final class GetCitySuggestionsAction
 {
     public function run(string $search): Collection

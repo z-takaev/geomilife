@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Livewire\QuestionForm;
+use App\Livewire\FeedbackForm;
 use App\Models\Setting;
-use App\Notifications\QuestionSubmittedNotification;
+use App\Notifications\FeedbackNotification;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Notification;
@@ -14,21 +14,21 @@ it('отправляет вопрос администратору и очища
     Notification::fake();
     Setting::query()->create(['admin_email' => 'admin@example.com']);
 
-    Livewire::test(QuestionForm::class)
-        ->set('form.name', 'Иван')
-        ->set('form.phone', '+7 (999) 123-45-67')
-        ->set('form.message', 'Когда доставят заказ?')
+    Livewire::test(FeedbackForm::class)
+        ->set('name', 'Иван')
+        ->set('phone', '+7 (999) 123-45-67')
+        ->set('message', 'Когда доставят заказ?')
         ->call('submit')
         ->assertHasNoErrors()
-        ->assertSet('form.name', '')
-        ->assertSet('form.phone', '')
-        ->assertSet('form.message', '')
+        ->assertSet('name', '')
+        ->assertSet('phone', '')
+        ->assertSet('message', '')
         ->assertDispatched('question-sent');
 
-    Notification::assertSentOnDemandTimes(QuestionSubmittedNotification::class, 1);
+    Notification::assertSentOnDemandTimes(FeedbackNotification::class, 1);
     Notification::assertSentOnDemand(
-        QuestionSubmittedNotification::class,
-        function (QuestionSubmittedNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool {
+        FeedbackNotification::class,
+        function (FeedbackNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool {
             $mail = $notification->toMail($notifiable);
 
             return $notifiable->routes['mail'] === 'admin@example.com'
@@ -48,13 +48,13 @@ it('отправляет вопрос администратору и очища
 it('проверяет обязательные поля и формат телефона', function (): void {
     Notification::fake();
 
-    Livewire::test(QuestionForm::class)
-        ->set('form.phone', '123')
+    Livewire::test(FeedbackForm::class)
+        ->set('phone', '123')
         ->call('submit')
         ->assertHasErrors([
-            'form.name' => 'required',
-            'form.phone',
-            'form.message' => 'required',
+            'name' => 'required',
+            'phone',
+            'message' => 'required',
         ]);
 
     Notification::assertNothingSent();
@@ -63,16 +63,16 @@ it('проверяет обязательные поля и формат тел�
 it('не отправляет вопрос без адреса администратора', function (): void {
     Notification::fake();
 
-    Livewire::test(QuestionForm::class)
-        ->set('form.name', 'Иван')
-        ->set('form.phone', '+7 (999) 123-45-67')
-        ->set('form.message', 'Вопрос')
+    Livewire::test(FeedbackForm::class)
+        ->set('name', 'Иван')
+        ->set('phone', '+7 (999) 123-45-67')
+        ->set('message', 'Вопрос')
         ->call('submit')
-        ->assertHasErrors('form.message')
+        ->assertHasErrors('message')
         ->assertSee('Не удалось отправить вопрос. Попробуйте позже.')
-        ->assertSet('form.name', 'Иван')
-        ->assertSet('form.phone', '+7 (999) 123-45-67')
-        ->assertSet('form.message', 'Вопрос');
+        ->assertSet('name', 'Иван')
+        ->assertSet('phone', '+7 (999) 123-45-67')
+        ->assertSet('message', 'Вопрос');
 
     Notification::assertNothingSent();
 });

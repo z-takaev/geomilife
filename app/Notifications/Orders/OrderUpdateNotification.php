@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Notifications\Orders;
 
+use App\Enums\Orders\OrderNotificationAudienceEnum;
+use App\Enums\Orders\OrderNotificationEventEnum;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Models\Order;
 use App\Notifications\Channels\TelegramChannel;
@@ -21,12 +23,14 @@ final class OrderUpdateNotification extends Notification implements ShouldQueue
 
     public array $backoff = [10, 60, 300, 900];
 
-    public function __construct(public Order $order, public string $event, public string $audience = 'BUYER')
-    {
+    public function __construct(
+        public Order $order,
+        public OrderNotificationEventEnum $event,
+        public OrderNotificationAudienceEnum $audience = OrderNotificationAudienceEnum::BUYER,
+    ) {
         $this->afterCommit();
     }
 
-    // TODO: Сделать подключение понятнее и удобнее
     public function via(object $notifiable): array
     {
         $channels = [];
@@ -44,7 +48,7 @@ final class OrderUpdateNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        if ($this->event === 'CREATED' && $this->audience === 'BUYER') {
+        if ($this->event === OrderNotificationEventEnum::CREATED && $this->audience === OrderNotificationAudienceEnum::BUYER) {
             $this->order->loadMissing('items');
 
             $mail = (new MailMessage)
@@ -65,11 +69,11 @@ final class OrderUpdateNotification extends Notification implements ShouldQueue
             ->greeting('')
             ->line($this->message());
 
-        if ($this->event === 'CANCELLED' && filled($this->order->cancellation_reason)) {
+        if ($this->event === OrderNotificationEventEnum::CANCELLED && filled($this->order->cancellation_reason)) {
             $mail->line(__('Причина: :reason', ['reason' => $this->order->cancellation_reason]));
         }
 
-        if ($this->event === 'SHIPPED' && filled($this->order->shipment?->cdek_number)) {
+        if ($this->event === OrderNotificationEventEnum::SHIPPED && filled($this->order->shipment?->cdek_number)) {
             $mail->line(__('Трек-номер СДЭК: :number', ['number' => $this->order->shipment->cdek_number]));
         }
 
@@ -82,17 +86,17 @@ final class OrderUpdateNotification extends Notification implements ShouldQueue
 
     public function toTelegram(object $notifiable): string
     {
-        if ($this->audience === 'MANAGER') {
+        if ($this->audience === OrderNotificationAudienceEnum::MANAGER) {
             return $this->managerTelegramMessage();
         }
 
         $text = $this->message();
 
-        if ($this->event === 'CANCELLED' && filled($this->order->cancellation_reason)) {
+        if ($this->event === OrderNotificationEventEnum::CANCELLED && filled($this->order->cancellation_reason)) {
             $text .= "\n".__('Причина: :reason', ['reason' => $this->order->cancellation_reason]);
         }
 
-        if ($this->event === 'SHIPPED' && filled($this->order->shipment?->cdek_number)) {
+        if ($this->event === OrderNotificationEventEnum::SHIPPED && filled($this->order->shipment?->cdek_number)) {
             $text .= "\n".__('Трек-номер СДЭК: :number', ['number' => $this->order->shipment->cdek_number]);
         }
 
@@ -102,7 +106,7 @@ final class OrderUpdateNotification extends Notification implements ShouldQueue
     public function telegramAction(): ?array
     {
         $url = match (true) {
-            $this->audience === 'MANAGER' => OrderResource::getUrl('view', ['record' => $this->order], panel: 'admin'),
+            $this->audience === OrderNotificationAudienceEnum::MANAGER => OrderResource::getUrl('view', ['record' => $this->order], panel: 'admin'),
             $this->order->user_id !== null => route('orders.show', $this->order),
             default => null,
         };
@@ -110,39 +114,38 @@ final class OrderUpdateNotification extends Notification implements ShouldQueue
         return $url === null ? null : ['text' => __('Открыть заказ'), 'url' => $url];
     }
 
-    // TODO: Тут нельзя использовать наши Enum классы? Или чего-то не хватает?
     private function message(): string
     {
         return match ($this->event) {
-            'CREATED' => __('Ваш заказ №:number принят.', ['number' => $this->order->number]),
-            'CONFIRMED' => __('Мы подтвердили заказ №:number и начали его собирать.', ['number' => $this->order->number]),
-            'READY_FOR_PICKUP' => __('Заказ №:number готов к выдаче. Вы сможете забрать его по указанному адресу.', ['number' => $this->order->number]),
-            'READY_TO_SHIP' => __('Заказ №:number собран и готовится к передаче в СДЭК.', ['number' => $this->order->number]),
-            'SHIPPED' => __('Заказ №:number передан в СДЭК.', ['number' => $this->order->number]),
-            'DELIVERED' => __('Заказ №:number доставлен.', ['number' => $this->order->number]),
-            'CANCELLED' => __('Ваш заказ №:number был отменён.', ['number' => $this->order->number]),
-            'REFUNDED' => __('Возврат оплаты по заказу №:number подтверждён банком.', ['number' => $this->order->number]),
-            'REFUND_FAILED' => __('Возврат оплаты не завершён. Требуется проверка.'),
-            'CANCELLATION_FAILED' => __('Не удалось завершить отмену заказа. Требуется проверка.'),
-            'CANCELLATION_REJECTED' => __('СДЭК отклонил отмену отправления. Требуется проверка.'),
-            'SHIPPING_FAILED', 'DOCUMENT_FAILED' => __('Ошибка операции СДЭК. Откройте заказ для проверки.'),
-            'PAYMENT_RECONCILE_FAILED' => __('Не удалось сверить платёж с банком. Требуется проверка.'),
-            default => __('Заказ №:number обновлён. Проверьте его состояние.', ['number' => $this->order->number]),
+            OrderNotificationEventEnum::CREATED => __('Ваш заказ №:number принят.', ['number' => $this->order->number]),
+            OrderNotificationEventEnum::CONFIRMED => __('Мы подтвердили заказ №:number и начали его собирать.', ['number' => $this->order->number]),
+            OrderNotificationEventEnum::READY_FOR_PICKUP => __('Заказ №:number готов к выдаче. Вы сможете забрать его по указанному адресу.', ['number' => $this->order->number]),
+            OrderNotificationEventEnum::READY_TO_SHIP => __('Заказ №:number собран и готовится к передаче в СДЭК.', ['number' => $this->order->number]),
+            OrderNotificationEventEnum::SHIPPED => __('Заказ №:number передан в СДЭК.', ['number' => $this->order->number]),
+            OrderNotificationEventEnum::DELIVERED => __('Заказ №:number доставлен.', ['number' => $this->order->number]),
+            OrderNotificationEventEnum::CANCELLED => __('Ваш заказ №:number был отменён.', ['number' => $this->order->number]),
+            OrderNotificationEventEnum::REFUNDED => __('Возврат оплаты по заказу №:number подтверждён банком.', ['number' => $this->order->number]),
+            OrderNotificationEventEnum::REFUND_FAILED => __('Возврат оплаты не завершён. Требуется проверка.'),
+            OrderNotificationEventEnum::CANCELLATION_FAILED => __('Не удалось завершить отмену заказа. Требуется проверка.'),
+            OrderNotificationEventEnum::CANCELLATION_REJECTED => __('СДЭК отклонил отмену отправления. Требуется проверка.'),
+            OrderNotificationEventEnum::SHIPPING_FAILED,
+            OrderNotificationEventEnum::DOCUMENT_FAILED => __('Ошибка операции СДЭК. Откройте заказ для проверки.'),
+            OrderNotificationEventEnum::PAYMENT_RECONCILE_FAILED => __('Не удалось сверить платёж с банком. Требуется проверка.'),
         };
     }
 
     private function mailSubject(): string
     {
         return match ($this->event) {
-            'CANCELLED' => __('Заказ №:number отменён', ['number' => $this->order->number]),
-            'REFUNDED' => __('Возврат оплаты по заказу №:number', ['number' => $this->order->number]),
+            OrderNotificationEventEnum::CANCELLED => __('Заказ №:number отменён', ['number' => $this->order->number]),
+            OrderNotificationEventEnum::REFUNDED => __('Возврат оплаты по заказу №:number', ['number' => $this->order->number]),
             default => __('Статус заказа №:number изменён', ['number' => $this->order->number]),
         };
     }
 
     private function managerTelegramMessage(): string
     {
-        if ($this->event === 'CREATED') {
+        if ($this->event === OrderNotificationEventEnum::CREATED) {
             return implode("\n", [
                 __('Новый заказ №:number', ['number' => $this->order->number]),
                 __('Покупатель: :name', ['name' => $this->order->customer_name]),

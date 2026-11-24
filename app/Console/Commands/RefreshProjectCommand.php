@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Actions\Images\CleanUploadedImagesAction;
+use App\Actions\Images\CleanUploadedMediaAction;
 use Database\Seeders\FactorySeeder;
 use Illuminate\Console\Command;
 
@@ -16,7 +16,7 @@ final class RefreshProjectCommand extends Command
 
     protected $description = 'Пересоздать базу данных и заполнить начальные данные';
 
-    public function handle(CleanUploadedImagesAction $cleanUploadedImages): int
+    public function handle(CleanUploadedMediaAction $cleanUploadedMedia): int
     {
         if (! $this->option('force') && ! $this->confirm('Все данные в базе будут удалены. Продолжить?')) {
             $this->components->warn('Обновление проекта отменено.');
@@ -30,7 +30,7 @@ final class RefreshProjectCommand extends Command
             return self::FAILURE;
         }
 
-        $cleanUploadedImages->run();
+        $cleanUploadedMedia->run();
 
         if ($this->call('migrate:fresh', ['--seed' => true, '--force' => true]) !== self::SUCCESS) {
             return self::FAILURE;

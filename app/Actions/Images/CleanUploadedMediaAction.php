@@ -7,24 +7,28 @@ namespace App\Actions\Images;
 use Illuminate\Filesystem\Filesystem;
 use RuntimeException;
 
-// TODO: изменить название и учитывать пдф документ
-final class CleanUploadedImagesAction
+final class CleanUploadedMediaAction
 {
     public function __construct(private readonly Filesystem $filesystem) {}
 
     public function run(): void
     {
-        $imagesStoragePath = storage_path('app/public/images');
+        foreach (['images', 'documents'] as $directory) {
+            $this->cleanDirectory(storage_path("app/public/{$directory}"));
+        }
+    }
 
-        $this->filesystem->ensureDirectoryExists($imagesStoragePath);
+    private function cleanDirectory(string $path): void
+    {
+        $this->filesystem->ensureDirectoryExists($path);
 
-        foreach ($this->filesystem->directories($imagesStoragePath) as $directory) {
+        foreach ($this->filesystem->directories($path) as $directory) {
             if (! $this->filesystem->deleteDirectory($directory)) {
                 throw new RuntimeException("Не удалось удалить директорию {$directory}.");
             }
         }
 
-        foreach ($this->filesystem->files($imagesStoragePath) as $file) {
+        foreach ($this->filesystem->files($path) as $file) {
             if ($file->getFilename() === '.gitignore') {
                 continue;
             }

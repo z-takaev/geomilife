@@ -31,7 +31,6 @@
                     @if ($products->isNotEmpty())
                         <div class="catalog-products-grid" wire:key="catalog-results-{{ $catalogKey }}">
                             @foreach ($products as $product)
-                                {{-- TODO: зачем в ключе тут catalog_variant_id --}}
                                 <x-products.card :product="$product"
                                     :wire:key="'catalog-product-'.$product->getKey().'-'.$product->getAttribute('catalog_variant_id')" />
                             @endforeach

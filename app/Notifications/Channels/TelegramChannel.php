@@ -8,8 +8,6 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
-// TODO: как используется класс?
-// TODO: Использовать подключеный пакет Nutgram?
 final class TelegramChannel
 {
     public function send(object $notifiable, Notification $notification): void

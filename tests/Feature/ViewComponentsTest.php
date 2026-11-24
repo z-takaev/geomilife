@@ -38,6 +38,18 @@ it('ограничивает заголовки карточек новосте�
         ->toContain('cl-text-main link-underline text-line-clamp-2');
 });
 
+it('выводит категории общим компонентом списка', function (): void {
+    $category = Category::query()->create([
+        'name' => 'Масла',
+        'slug' => 'oils-list',
+        'is_active' => true,
+    ])->setAttribute('total_active_products_count', 2);
+
+    expect(Blade::render('<x-categories-list :categories="$categories" />', [
+        'categories' => collect([$category]),
+    ]))->toContain('Масла', '2 товара', route('catalog.category', $category));
+});
+
 it('показывает в копирайте текущий год', function (): void {
     $this->travelTo(now()->setDate(2031, 4, 5));
 

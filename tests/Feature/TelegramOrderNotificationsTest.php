@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Enums\Orders\OrderNotificationAudienceEnum;
+use App\Enums\Orders\OrderNotificationEventEnum;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Notifications\Channels\TelegramChannel;
 use App\Notifications\Orders\OrderUpdateNotification;
@@ -18,6 +20,17 @@ beforeEach(function (): void {
     config(['telegram.bot_token' => 'test-token', 'telegram.manager_chat_id' => '-1001234567890']);
 });
 
+it('принимает типизированные событие и аудиторию', function (): void {
+    $notification = new OrderUpdateNotification(
+        fulfillmentOrder(),
+        OrderNotificationEventEnum::CREATED,
+        OrderNotificationAudienceEnum::MANAGER,
+    );
+
+    expect($notification->event)->toBe(OrderNotificationEventEnum::CREATED)
+        ->and($notification->audience)->toBe(OrderNotificationAudienceEnum::MANAGER);
+});
+
 it('не отправляет покупателю уведомление об успешной оплате', function (string $event): void {
     app(OrderNotificationService::class)->queue(fulfillmentOrder(), $event, $event);
 
@@ -26,7 +39,11 @@ it('не отправляет покупателю уведомление об �
 
 it('сообщает менеджерам о новом заказе с подписанными полями и кнопкой', function (): void {
     $order = fulfillmentOrder();
-    $notification = new OrderUpdateNotification($order, 'CREATED', 'MANAGER');
+    $notification = new OrderUpdateNotification(
+        $order,
+        OrderNotificationEventEnum::CREATED,
+        OrderNotificationAudienceEnum::MANAGER,
+    );
 
     expect($notification->toTelegram(new AnonymousNotifiable))
         ->toBe("Новый заказ №{$order->number}\nПокупатель: {$order->customer_name}\nТелефон: {$order->customer_phone}\nEmail: {$order->customer_email}\nПолучение: СДЭК\nОплата: Картой онлайн\nСумма: {$order->total->format()}")
@@ -39,7 +56,7 @@ it('сообщает менеджерам о новом заказе с подп
     Notification::assertSentOnDemandTimes(OrderUpdateNotification::class, 2);
     Notification::assertSentOnDemand(
         OrderUpdateNotification::class,
-        fn (OrderUpdateNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notification->audience === 'MANAGER'
+        fn (OrderUpdateNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notification->audience === OrderNotificationAudienceEnum::MANAGER
             && $notifiable->routes['telegram'] === '-1001234567890',
     );
 });
@@ -50,7 +67,7 @@ it('уведомляет о последующих статусах только
     Notification::assertSentOnDemandTimes(OrderUpdateNotification::class, 1);
     Notification::assertSentOnDemand(
         OrderUpdateNotification::class,
-        fn (OrderUpdateNotification $notification): bool => $notification->audience === 'BUYER',
+        fn (OrderUpdateNotification $notification): bool => $notification->audience === OrderNotificationAudienceEnum::BUYER,
     );
 })->with(['CONFIRMED', 'READY_FOR_PICKUP', 'READY_TO_SHIP', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED']);
 
@@ -60,12 +77,16 @@ it('сохраняет сообщения менеджерам об ошибка
     Notification::assertSentOnDemandTimes(OrderUpdateNotification::class, 1);
     Notification::assertSentOnDemand(
         OrderUpdateNotification::class,
-        fn (OrderUpdateNotification $notification): bool => $notification->audience === 'MANAGER',
+        fn (OrderUpdateNotification $notification): bool => $notification->audience === OrderNotificationAudienceEnum::MANAGER,
     );
 })->with(['REFUND_FAILED', 'CANCELLATION_FAILED', 'SHIPPING_FAILED', 'DOCUMENT_FAILED', 'PAYMENT_RECONCILE_FAILED', 'CANCELLATION_REJECTED']);
 
 it('объясняет менеджерам причину технического уведомления', function (string $event, string $message): void {
-    $notification = new OrderUpdateNotification(fulfillmentOrder(), $event, 'MANAGER');
+    $notification = new OrderUpdateNotification(
+        fulfillmentOrder(),
+        OrderNotificationEventEnum::from($event),
+        OrderNotificationAudienceEnum::MANAGER,
+    );
     $text = $notification->toTelegram(new AnonymousNotifiable);
 
     expect($text)->toContain($message)->not->toContain('Трек-номер', 'Обновление заказа.');
@@ -78,7 +99,7 @@ it('показывает трек только покупателю при от�
     $user = CheckoutFixtures::user();
     $order = fulfillmentOrder(['user_id' => $user->id, 'status' => 'SHIPPED']);
     $order->shipment()->create(['cdek_number' => '1234567890']);
-    $notification = new OrderUpdateNotification($order, 'SHIPPED');
+    $notification = new OrderUpdateNotification($order, OrderNotificationEventEnum::SHIPPED);
 
     expect($notification->toTelegram(new AnonymousNotifiable))
         ->toContain("Заказ №{$order->number} передан в СДЭК.", 'Трек-номер СДЭК: 1234567890')
@@ -92,7 +113,8 @@ it('показывает трек только покупателю при от�
 it('не добавляет трек в уведомления об отмене и возврате', function (string $event): void {
     $order = fulfillmentOrder(['cancellation_reason' => 'Просьба покупателя']);
     $order->shipment()->create(['cdek_number' => '1234567890']);
-    $text = (new OrderUpdateNotification($order, $event))->toTelegram(new AnonymousNotifiable);
+    $text = (new OrderUpdateNotification($order, OrderNotificationEventEnum::from($event)))
+        ->toTelegram(new AnonymousNotifiable);
 
     expect($text)->not->toContain('1234567890', 'Трек-номер', 'Сумма:');
 })->with(['CANCELLED', 'REFUNDED']);
@@ -100,7 +122,11 @@ it('не добавляет трек в уведомления об отмене
 it('передаёт Telegram кнопку открытия заказа', function (): void {
     Http::fake(['api.telegram.org/*' => Http::response(['ok' => true])]);
     $order = fulfillmentOrder();
-    $notification = new OrderUpdateNotification($order, 'CREATED', 'MANAGER');
+    $notification = new OrderUpdateNotification(
+        $order,
+        OrderNotificationEventEnum::CREATED,
+        OrderNotificationAudienceEnum::MANAGER,
+    );
     $notifiable = (new AnonymousNotifiable)->route('telegram', '-1001234567890');
 
     app(TelegramChannel::class)->send($notifiable, $notification);
@@ -114,7 +140,7 @@ it('передаёт Telegram кнопку открытия заказа', funct
 });
 
 it('не добавляет ссылку доступа в письмо о заказе без владельца', function (): void {
-    $notification = new OrderUpdateNotification(fulfillmentOrder(), 'CREATED');
+    $notification = new OrderUpdateNotification(fulfillmentOrder(), OrderNotificationEventEnum::CREATED);
     $mail = $notification->toMail(new AnonymousNotifiable);
 
     expect($mail->actionUrl)->toBeNull()

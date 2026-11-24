@@ -7,8 +7,7 @@ namespace App\Notifications;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-// TODO: Изменить название
-final class QuestionSubmittedNotification extends Notification
+final class FeedbackNotification extends Notification
 {
     public function __construct(
         public readonly string $name,

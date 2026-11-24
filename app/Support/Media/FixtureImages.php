@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Media;
 
-use App\Actions\Images\ProcessImageAction;
+use App\Actions\Images\ConvertUploadedImageAction;
 use Closure;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -19,7 +19,7 @@ final class FixtureImages
     private const array ALLOWED_EXTENSIONS = ['jpeg', 'jpg', 'png', 'webp'];
 
     public function __construct(
-        private readonly ProcessImageAction $processImage,
+        private readonly ConvertUploadedImageAction $convertUploadedImage,
     ) {}
 
     public function attach(
@@ -80,7 +80,7 @@ final class FixtureImages
             throw new RuntimeException("Изображение фикстуры {$path} не найдено.");
         }
 
-        $contents = ($this->processImage)->run(File::get($path), $processImage);
+        $contents = ($this->convertUploadedImage)->run(File::get($path), $processImage);
 
         return $model
             ->addMediaFromString($contents)

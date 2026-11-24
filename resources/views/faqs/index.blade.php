@@ -55,7 +55,7 @@
 
                 <div class="col-lg-4">
                     <div class="col-right_sidebar sticky-top">
-                        <livewire:question-form />
+                        <livewire:feedback-form />
                     </div>
                 </div>
             </div>

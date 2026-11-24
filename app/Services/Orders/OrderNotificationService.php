@@ -8,7 +8,7 @@ use App\Enums\Orders\OrderNotificationAudienceEnum;
 use App\Enums\Orders\OrderNotificationEventEnum;
 use App\Models\Order;
 use App\Models\OrderNotificationEvent;
-use App\Notifications\Orders\DeliveryQuoteErrorNotification;
+use App\Notifications\Orders\CdekDeliveryQuoteFailedNotification;
 use App\Notifications\Orders\OrderUpdateNotification;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -44,7 +44,7 @@ final class OrderNotificationService
         if (! filled($chatId) || ! Cache::add('orders:quote-error:'.$cityId, true, now()->addMinutes(5))) {
             return;
         }
-        Notification::route('telegram', (string) $chatId)->notify(new DeliveryQuoteErrorNotification($cityId));
+        Notification::route('telegram', (string) $chatId)->notify(new CdekDeliveryQuoteFailedNotification($cityId));
     }
 
     /**
@@ -84,8 +84,8 @@ final class OrderNotificationService
 
                     $recipient->notify((new OrderUpdateNotification(
                         $order,
-                        $event->value,
-                        OrderNotificationAudienceEnum::BUYER->value,
+                        $event,
+                        OrderNotificationAudienceEnum::BUYER,
                     ))->beforeCommit());
                 }
 
@@ -95,8 +95,8 @@ final class OrderNotificationService
                     Notification::route('telegram', (string) $managerChat)
                         ->notify((new OrderUpdateNotification(
                             $order,
-                            $event->value,
-                            OrderNotificationAudienceEnum::MANAGER->value,
+                            $event,
+                            OrderNotificationAudienceEnum::MANAGER,
                         ))->beforeCommit());
                 }
 

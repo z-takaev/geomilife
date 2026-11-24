@@ -75,6 +75,12 @@ it('сбрасывает состояние SEO при переходе к др�
         ->and($manager->getImage())->toBe(asset('default.webp'))->and($manager->getSchemas())->toBe([]);
 });
 
+it('преобразует локаль приложения для Open Graph', function (): void {
+    app()->setLocale('en');
+
+    expect((new SeoManager)->getLocale())->toBe('en_US');
+});
+
 it('создает SEO только для индексируемых статических страниц', function (): void {
     $this->seed(SeoSeeder::class);
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Actions\Images\ProcessImageAction;
+use App\Actions\Images\ConvertUploadedImageAction;
 use App\Filament\Forms\Components\SpatieMediaLibrary;
 use App\Filament\Resources\Pages\Schemas\PageForm;
 use Filament\Schemas\Components\Tabs;
@@ -29,7 +29,7 @@ it('обрезает изображения страницы до размера
     $imageProcessing = (new ReflectionProperty($component, 'imageProcessing'))->getValue($component);
     $source = new Imagick;
     $source->newImage(1600, 800, new ImagickPixel('red'), 'png');
-    $result = app(ProcessImageAction::class)->run($source->getImageBlob(), $imageProcessing);
+    $result = app(ConvertUploadedImageAction::class)->run($source->getImageBlob(), $imageProcessing);
     $image = new Imagick;
     $image->readImageBlob($result);
 
