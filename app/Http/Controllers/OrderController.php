@@ -10,14 +10,20 @@ use App\Http\Requests\Orders\CancelOrderRequest;
 use App\Models\Order;
 use App\Navigation\BreadcrumbItem;
 use App\Navigation\Breadcrumbs;
+use App\Services\Orders\OrderLifecycleService;
 use App\Support\Seo\Schemas\BreadcrumbSchema;
-use App\ViewModel\Orders\OrderViewModel;
+use App\ViewModel\Orders\OrderDeliveryViewModel;
+use App\ViewModel\Orders\OrderDetailsViewModel;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 final class OrderController extends Controller
 {
+    public function __construct(
+        private readonly OrderLifecycleService $lifecycle,
+    ) {}
+
     public function index(): View
     {
         $breadcrumbs = Breadcrumbs::make(
@@ -30,15 +36,15 @@ final class OrderController extends Controller
         )->schema(BreadcrumbSchema::make($breadcrumbs));
 
         $orders = auth()->user()->orders()
-            ->with('shipment')
-            ->withSum('items', 'quantity')
             ->latest()
             ->orderByDesc('id')
             ->paginate(10);
 
-        $presentations = $orders->getCollection()->mapWithKeys(static fn (Order $order): array => [$order->id => OrderViewModel::data($order)]);
+        $deliveryViewModels = $orders->getCollection()->mapWithKeys(
+            static fn (Order $order): array => [$order->id => new OrderDeliveryViewModel($order)],
+        );
 
-        return view('orders.index', compact('breadcrumbs', 'orders', 'presentations'));
+        return view('orders.index', compact('breadcrumbs', 'orders', 'deliveryViewModels'));
     }
 
     public function show(Order $order): View
@@ -59,9 +65,10 @@ final class OrderController extends Controller
             sectionTitle: __('Мои заказы'),
         )->schema(BreadcrumbSchema::make($breadcrumbs));
 
-        $presentation = OrderViewModel::data($order);
+        $order->load('items', 'shipment');
+        $viewModel = new OrderDetailsViewModel($order, $this->lifecycle);
 
-        return view('orders.show', compact('order', 'breadcrumbs', 'presentation'));
+        return view('orders.show', compact('order', 'breadcrumbs', 'viewModel'));
     }
 
     public function cancel(Request $request, Order $order, CancelOrderAction $cancelOrder): RedirectResponse

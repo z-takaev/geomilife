@@ -42,7 +42,8 @@ final class OrderDocumentService
         ]);
 
         $pdf = new Dompdf($options);
-        $pdf->loadHtml(view('orders.packing-slip', (new PackingSlipViewModel($order))->data())->render());
+        $viewModel = new PackingSlipViewModel($order);
+        $pdf->loadHtml(view('orders.packing-slip', compact('viewModel'))->render());
         $pdf->setPaper('A4');
         $pdf->render();
 

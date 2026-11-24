@@ -57,7 +57,7 @@
                 </div>
 
                 <div class="col-lg-8">
-                    <div class="tf-product-info-wrap product-detail__info" x-data="productVariantSelector(@js($productViewModel->variantOptions), @js($productViewModel->selectedVariant['id']))">
+                    <div class="tf-product-info-wrap product-detail__info" x-data="productVariantSelector(@js($productViewModel->variantOptions), @js($productViewModel->selectedVariant->id))">
                         <div class="tf-product-info-heading">
                             <div class="product-info-meta">
                                 <a href="{{ route('catalog.category', $product->category) }}"
@@ -78,7 +78,7 @@
                         </div>
                         <div class="quickview-product-variant product-detail__variant">
                             <div class="variant-picker-item variant-unit">
-                                <x-products.variant-selector :variants="$productViewModel->variantOptions" :selected-id="$productViewModel->selectedVariant['id']" />
+                                <x-products.variant-selector :variants="$productViewModel->variantOptions" :selected-id="$productViewModel->selectedVariant->id" />
                             </div>
                         </div>
 

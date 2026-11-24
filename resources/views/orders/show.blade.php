@@ -30,7 +30,7 @@
                 </div>
             @endif
 
-            @if ($presentation['isCancelling'])
+            @if ($viewModel->isCancelling)
                 <div class="checkout-info" role="status">
                     {{ __('Отмена выполняется. Мы сообщим о завершении и результате возврата оплаты.') }}</div>
             @endif
@@ -40,7 +40,7 @@
             @endif
 
             <ol class="order-stages">
-                @foreach ($presentation['stages'] as $stage)
+                @foreach ($viewModel->stages as $stage)
                     <li class="{{ $stage['done'] ? 'is-done' : '' }}"><span aria-hidden="true"></span>{{ $stage['label'] }}
                     </li>
                 @endforeach
@@ -85,11 +85,11 @@
                     </section>
 
                     <section class="order-panel">
-                        <h3>{{ $presentation['deliveryLabel'] }}</h3>
-                        <p class="order-address">{{ $presentation['addressLabel'] }}</p>
+                        <h3>{{ $viewModel->delivery->label }}</h3>
+                        <p class="order-address">{{ $viewModel->delivery->address }}</p>
 
-                        @if ($presentation['workingHours'])
-                            <p>{{ __('График: :hours', ['hours' => $presentation['workingHours']]) }}</p>
+                        @if ($viewModel->delivery->workingHours)
+                            <p>{{ __('График: :hours', ['hours' => $viewModel->delivery->workingHours]) }}</p>
                         @endif
 
                         @if ($order->delivery_method->isPickup())
@@ -136,7 +136,7 @@
                 <aside class="order-detail-summary order-panel">
                     <h3>{{ __('Оплата и итог') }}</h3><span
                         class="order-badge order-badge--{{ $order->payment_status->getColor() }}">{{ $order->payment_status->getLabel() }}</span>
-                    <p>{{ $presentation['paymentLabel'] }}</p>
+                    <p>{{ $order->payment_method->getLabel() }}</p>
 
                     <dl class="checkout-summary__rows">
                         <div class="checkout-summary__row">
@@ -145,7 +145,7 @@
                         </div>
                         <div class="checkout-summary__row">
                             <dt>{{ __('Доставка') }}</dt>
-                            <dd>{{ $presentation['deliveryPriceLabel'] }}</dd>
+                            <dd>{{ $viewModel->delivery->priceLabel }}</dd>
                         </div>
                     </dl>
 
@@ -172,8 +172,8 @@
                         <button type="submit" class="profile-button w-100">{{ __('Повторить заказ') }}</button>
                     </form>
 
-                    @if ($presentation['canCancel'])
-                        <form method="post" action="{{ $presentation['cancelUrl'] }}" class="order-cancel-form" x-data
+                    @if ($viewModel->canCancel)
+                        <form method="post" action="{{ $viewModel->cancelUrl }}" class="order-cancel-form" x-data
                             @submit="if (!confirm(@js(__('Отменить заказ? Онлайн-оплата будет возвращена полностью.')))) $event.preventDefault()">
                             @csrf
                             <input type="hidden" name="reason" value="{{ __('Отмена покупателем') }}">

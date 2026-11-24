@@ -1,5 +1,5 @@
 <div {{ $attributes->class(['swiper-slide']) }}>
-    <article class="card-product home-product-card" x-data="productVariantSelector(@js($productViewModel->variantOptions), @js($productViewModel->selectedVariant['id']), @js($productViewModel->productUrl))">
+    <article class="card-product home-product-card" x-data="productVariantSelector(@js($productViewModel->variantOptions), @js($productViewModel->selectedVariant->id), @js($productViewModel->productUrl))">
         <div class="card-product_wrapper home-product-card__media">
             <a href="{{ $productViewModel->productUrl }}" x-bind:href="selectedProductUrl" class="product-img"
                 aria-label="{{ $product->name }}">
@@ -46,7 +46,7 @@
             </a>
 
             <div class="product-card-order">
-                <x-products.variant-selector :variants="$productViewModel->variantOptions" :selected-id="$productViewModel->selectedVariant['id']" compact />
+                <x-products.variant-selector :variants="$productViewModel->variantOptions" :selected-id="$productViewModel->selectedVariant->id" compact />
                 <x-products.price :variant="$productViewModel->selectedVariant" compact />
                 <div class="product-card-purchase">
                     <x-products.quantity-selector compact />

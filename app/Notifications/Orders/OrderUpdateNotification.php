@@ -9,7 +9,7 @@ use App\Enums\Orders\OrderNotificationEventEnum;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Models\Order;
 use App\Notifications\Channels\TelegramChannel;
-use App\ViewModel\Orders\OrderViewModel;
+use App\ViewModel\Orders\OrderConfirmationViewModel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -60,7 +60,7 @@ final class OrderUpdateNotification extends Notification implements ShouldQueue
 
             return $mail->markdown('mail.orders.created', [
                 'order' => $this->order,
-                'presentation' => OrderViewModel::confirmation($this->order),
+                'viewModel' => new OrderConfirmationViewModel($this->order),
             ]);
         }
 

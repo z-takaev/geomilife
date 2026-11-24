@@ -3,10 +3,10 @@
 <h1>{{ __('Ваш заказ принят') }}</h1>
 <p>{{ __('Здравствуйте, :name!', ['name' => $order->customer_name]) }}</p>
 <p><strong>{{ __('Заказ №:number', ['number' => $order->number]) }}</strong><br>
-{{ __('Дата оформления: :date', ['date' => $presentation['createdAtLabel']]) }}</p>
+{{ __('Дата оформления: :date', ['date' => $viewModel->createdAtLabel]) }}</p>
 
 @if ($order->is_preorder)
-<p><strong>{{ __('Предзаказ') }}</strong><br>{{ $presentation['deliveryHint'] }}</p>
+<p><strong>{{ __('Предзаказ') }}</strong><br>{{ $viewModel->deliveryHint }}</p>
 @endif
 
 <h2>{{ __('Товары в заказе') }}</h2>
@@ -22,23 +22,23 @@
 
 <x-mail::panel>
 {{ __('Товары: :subtotal', ['subtotal' => ($order->subtotal ?? $order->total)->format()]) }}<br>
-{{ __('Доставка: :price', ['price' => $presentation['deliveryPriceLabel']]) }}<br>
+{{ __('Доставка: :price', ['price' => $viewModel->delivery->priceLabel]) }}<br>
 <strong>{{ __('Итого: :total', ['total' => $order->total->format()]) }}</strong>
 </x-mail::panel>
 
 <h2>{{ __('Оплата') }}</h2>
-<p>{{ __('Способ оплаты: :method', ['method' => $presentation['paymentLabel']]) }}</p>
+<p>{{ __('Способ оплаты: :method', ['method' => $order->payment_method->getLabel()]) }}</p>
 
 <h2>{{ __('Получение заказа') }}</h2>
-<p><strong>{{ $presentation['deliveryLabel'] }}</strong><br>{{ $presentation['addressLabel'] }}</p>
-@if ($presentation['workingHours'])
-<p>{{ __('График: :hours', ['hours' => $presentation['workingHours']]) }}</p>
+<p><strong>{{ $viewModel->delivery->label }}</strong><br>{{ $viewModel->delivery->address }}</p>
+@if ($viewModel->delivery->workingHours)
+<p>{{ __('График: :hours', ['hours' => $viewModel->delivery->workingHours]) }}</p>
 @endif
 @if ($order->delivery_method->isCdek() && filled($order->delivery_address['code'] ?? null))
 <p>{{ __('Пункт: :code', ['code' => $order->delivery_address['code']]) }}</p>
 @endif
 @if (!$order->is_preorder)
-<p>{{ $presentation['deliveryHint'] }}</p>
+<p>{{ $viewModel->deliveryHint }}</p>
 @endif
 
 <h2>{{ __('Получатель') }}</h2>

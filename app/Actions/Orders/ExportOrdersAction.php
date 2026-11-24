@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Orders;
 
 use App\Models\Order;
-use App\ViewModel\Orders\OrderViewModel;
+use App\ViewModel\Orders\OrderDeliveryViewModel;
 use Illuminate\Database\Eloquent\Builder;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -68,11 +68,13 @@ final class ExportOrdersAction
 
     private function row(Order $order): array
     {
+        $delivery = new OrderDeliveryViewModel($order);
+
         return [
             $order->number, $order->created_at->format('d.m.Y H:i:s'),
             $order->customer_name, $order->customer_phone, $order->customer_email,
-            (string) ($order->delivery_address['city'] ?? ''), OrderViewModel::deliveryLabel($order),
-            OrderViewModel::address($order), $order->status->getLabel(), $order->payment_status->getLabel(),
+            (string) ($order->delivery_address['city'] ?? ''), $delivery->label,
+            $delivery->address, $order->status->getLabel(), $order->payment_status->getLabel(),
             $order->payment_method->getLabel(),
             intdiv($order->subtotal->minorAmount(), 100), intdiv($order->delivery_price->minorAmount(), 100),
             intdiv($order->total->minorAmount(), 100), (string) ($order->shipment?->cdek_number ?? ''),

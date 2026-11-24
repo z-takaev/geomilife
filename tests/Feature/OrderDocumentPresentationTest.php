@@ -70,7 +70,9 @@ it('показывает причины ошибок отправления и �
 it('формирует понятную накладную для сборки без статуса заказа', function (): void {
     $order = fulfillmentOrder();
     fulfillmentOrderItem($order);
-    $html = view('orders.packing-slip', (new PackingSlipViewModel($order))->data())->render();
+    $order->load('items', 'shipment');
+    $viewModel = new PackingSlipViewModel($order);
+    $html = view('orders.packing-slip', compact('viewModel'))->render();
 
     expect($html)->not->toContain('Статус заказа')
         ->toContain(

@@ -12,6 +12,7 @@ use App\Models\Payment;
 use App\Services\Cart\CartService;
 use App\Services\Orders\OrderNotificationService;
 use App\Services\Orders\OrderPaymentService;
+use App\ViewModel\Orders\OrderDeliveryViewModel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
@@ -37,7 +38,7 @@ it('индексирует поиск позиций и упорядоченны
     ))->toBeTrue();
 });
 
-it('считает количество товаров в карточках без загрузки полных позиций заказа', function (): void {
+it('готовит карточки заказов без загрузки полных позиций заказа', function (): void {
     $user = PaymentFixtures::user();
     $order = PaymentFixtures::order(['user_id' => $user->id]);
     $emptyOrder = PaymentFixtures::order(['user_id' => $user->id]);
@@ -49,8 +50,8 @@ it('считает количество товаров в карточках б�
     });
 
     $this->actingAs($user)->get(route('orders.index'))->assertOk()
-        ->assertViewHas('presentations', fn ($presentations): bool => $presentations[$order->id]['quantity'] === 5
-            && $presentations[$emptyOrder->id]['quantity'] === 0);
+        ->assertViewHas('deliveryViewModels', fn ($viewModels): bool => $viewModels[$order->id] instanceof OrderDeliveryViewModel
+            && $viewModels[$emptyOrder->id] instanceof OrderDeliveryViewModel);
 
     expect($loadedItems)->toBe(0);
 

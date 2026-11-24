@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>{{ __('Сборка заказа №:number', ['number' => $order->number]) }}</title>
+    <title>{{ __('Сборка заказа №:number', ['number' => $viewModel->order->number]) }}</title>
     <style>
         @page {
             margin: 28px;
@@ -108,25 +108,26 @@
 </head>
 
 <body>
-    <h1>{{ __('Сборка заказа №:number', ['number' => $order->number]) }}</h1>
-    <p>{{ __('Дата оформления') }}: {{ $order->created_at->format('d.m.Y H:i') }}</p>
-    <p>{{ __('Получатель') }}: {{ $order->customer_name }} · {{ phone_format($order->customer_phone) }}</p>
-    <p>{{ __('Способ получения') }}: {{ $deliveryLabel }}</p>
-    <p>{{ __('Оплата') }}: {{ $order->payment_status->getLabel() }}</p>
-    @if ($order->is_preorder)
+    <h1>{{ __('Сборка заказа №:number', ['number' => $viewModel->order->number]) }}</h1>
+    <p>{{ __('Дата оформления') }}: {{ $viewModel->order->created_at->format('d.m.Y H:i') }}</p>
+    <p>{{ __('Получатель') }}: {{ $viewModel->order->customer_name }} ·
+        {{ phone_format($viewModel->order->customer_phone) }}</p>
+    <p>{{ __('Способ получения') }}: {{ $viewModel->deliveryLabel }}</p>
+    <p>{{ __('Оплата') }}: {{ $viewModel->order->payment_status->getLabel() }}</p>
+    @if ($viewModel->order->is_preorder)
         <p class="notice">{{ __('Предзаказ. Точные сроки согласовываются с менеджером.') }}</p>
     @endif
-    @if ($order->payment_method->isPickup() && !$order->payment_status->isPaid())
-        <p class="notice">{{ __('Получить оплату при выдаче') }}: {{ $order->total->format() }}</p>
+    @if ($viewModel->order->payment_method->isPickup() && !$viewModel->order->payment_status->isPaid())
+        <p class="notice">{{ __('Получить оплату при выдаче') }}: {{ $viewModel->order->total->format() }}</p>
     @endif
     <h2>{{ __('Адрес / пункт получения') }}</h2>
-    <div class="details">{{ $address }}</div>
-    @if ($order->delivery_method->isCourier())
+    <div class="details">{{ $viewModel->address }}</div>
+    @if ($viewModel->order->delivery_method->isCourier())
         <p>{{ __('Доставка до двери') }}:
-            {{ $order->delivery_details['delivery_to_door'] ?? false ? __('Да') : __('Нет') }}</p>
+            {{ $viewModel->order->delivery_details['delivery_to_door'] ?? false ? __('Да') : __('Нет') }}</p>
     @endif
-    @if ($order->shipment?->cdek_number)
-        <p>{{ __('Трек-номер СДЭК') }}: {{ $order->shipment->cdek_number }}</p>
+    @if ($viewModel->order->shipment?->cdek_number)
+        <p>{{ __('Трек-номер СДЭК') }}: {{ $viewModel->order->shipment->cdek_number }}</p>
     @endif
     <table>
         <thead>
@@ -139,7 +140,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($order->items as $item)
+            @foreach ($viewModel->order->items as $item)
                 <tr>
                     <td>{{ $item->sku }}</td>
                     <td>{{ $item->product_name }}<br>{{ $item->variant_name }}</td>
@@ -153,25 +154,25 @@
     <div class="totals">
         <div class="totals__row">
             <span class="totals__label">{{ __('Товары') }}</span>
-            <span class="totals__value">{{ $order->subtotal->format() }}</span>
+            <span class="totals__value">{{ $viewModel->order->subtotal->format() }}</span>
         </div>
         <div class="totals__row">
             <span class="totals__label">{{ __('Доставка') }}</span>
-            <span class="totals__value">{{ $order->delivery_price->format() }}</span>
+            <span class="totals__value">{{ $viewModel->order->delivery_price->format() }}</span>
         </div>
         <div class="totals__row totals__total">
             <span class="totals__label">{{ __('Итого') }}</span>
-            <span class="totals__value">{{ $order->total->format() }}</span>
+            <span class="totals__value">{{ $viewModel->order->total->format() }}</span>
         </div>
     </div>
-    @if ($order->comment)
-        <p>{{ __('Комментарий покупателя') }}: {{ $order->comment }}</p>
+    @if ($viewModel->order->comment)
+        <p>{{ __('Комментарий покупателя') }}: {{ $viewModel->order->comment }}</p>
     @endif
-    @if ($packages)
+    @if ($viewModel->packages)
         <h2>{{ __('Распределение по коробкам') }}</h2>
-        @foreach ($packages as $packageIndex => $package)
+        @foreach ($viewModel->packages as $packageIndex => $package)
             <section class="package">
-                <h3>{{ __('Коробка :current из :total', ['current' => $packageIndex + 1, 'total' => count($packages)]) }}
+                <h3>{{ __('Коробка :current из :total', ['current' => $packageIndex + 1, 'total' => count($viewModel->packages)]) }}
                 </h3>
                 <p>{{ __('Место №:number', ['number' => $package['number']]) }} ·
                     {{ $package['box_name'] ?? __('Коробка') }} · {{ $package['length'] }} × {{ $package['width'] }}

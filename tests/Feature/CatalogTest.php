@@ -241,7 +241,7 @@ it('выбирает безопасную фасовку при чужом ил�
         'price' => Money::fromRubles(10), 'is_active' => false]);
     $variantId = $selection === 'foreign' ? $otherProduct->variants()->first()->id : $hidden->id;
     $this->get(route('products.show', [$product, 'variant' => $variantId]))->assertOk()
-        ->assertViewHas('productViewModel', fn ($viewModel): bool => $viewModel->selectedVariant['id'] === $default->id);
+        ->assertViewHas('productViewModel', fn ($viewModel): bool => $viewModel->selectedVariant->id === $default->id);
 })->with(['foreign', 'inactive']);
 
 it('публикует в SEO цену, валюту и наличие выбранной фасовки', function (): void {

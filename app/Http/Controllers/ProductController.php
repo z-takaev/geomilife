@@ -40,7 +40,7 @@ final class ProductController extends Controller
         )
             ->image($product->getFirstMediaUrl('image'))
             ->type('product')
-            ->schema(ProductSchema::make($product, $productViewModel->selectedVariant['id']))
+            ->schema(ProductSchema::make($product, $productViewModel->selectedVariant->id))
             ->schema(BreadcrumbSchema::make($breadcrumbs));
 
         $recommendedProducts = $this->productRepository->getRecommendedProducts($product);

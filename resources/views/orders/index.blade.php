@@ -28,8 +28,8 @@
                         </div>
                         <div class="customer-order-card__body">
                             <div><span
-                                    class="order-label">{{ __('Получение') }}</span><strong>{{ $presentations[$order->id]['deliveryLabel'] }}</strong>
-                                <p>{{ $presentations[$order->id]['addressLabel'] }}</p>
+                                    class="order-label">{{ __('Получение') }}</span><strong>{{ $deliveryViewModels[$order->id]->label }}</strong>
+                                <p>{{ $deliveryViewModels[$order->id]->address }}</p>
                             </div>
                             <div><span
                                     class="order-label">{{ __('Оплата') }}</span><strong>{{ $order->payment_status->getLabel() }}</strong>

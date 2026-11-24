@@ -17,12 +17,13 @@ use App\Jobs\Orders\PrepareCdekDocumentsJob;
 use App\Services\Orders\CdekShipmentService;
 use App\Services\Orders\OrderLifecycleService;
 use App\Services\Orders\OrderPaymentService;
-use App\ViewModel\Orders\OrderViewModel;
+use App\ViewModel\Orders\OrderManagementViewModel;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
@@ -30,15 +31,26 @@ final class ViewOrder extends ViewRecord
 {
     protected static string $resource = OrderResource::class;
 
+    protected function resolveRecord(int|string $key): Model
+    {
+        return parent::resolveRecord($key)->load([
+            'documents',
+            'items',
+            'payments',
+            'shipment',
+            'user',
+        ]);
+    }
+
     public function processingActions(): array
     {
         $actions = [];
 
         foreach ([OrderStatusEnum::CONFIRMED, OrderStatusEnum::READY_FOR_PICKUP, OrderStatusEnum::READY_TO_SHIP, OrderStatusEnum::DELIVERED] as $status) {
             $actions[] = Action::make('status_'.$status->value)
-                ->label(fn (): string => OrderViewModel::transitionLabel($this->getRecord(), $status))
-                ->modalHeading(fn (): string => OrderViewModel::transitionLabel($this->getRecord(), $status))
-                ->modalDescription(fn (): string => OrderViewModel::transitionDescription($this->getRecord(), $status))
+                ->label(fn (OrderManagementViewModel $viewModel): string => $viewModel->transitionLabel($this->getRecord(), $status))
+                ->modalHeading(fn (OrderManagementViewModel $viewModel): string => $viewModel->transitionLabel($this->getRecord(), $status))
+                ->modalDescription(fn (OrderManagementViewModel $viewModel): string => $viewModel->transitionDescription($this->getRecord(), $status))
                 ->modalSubmitActionLabel('Подтвердить')
                 ->requiresConfirmation()
                 ->visible(fn (): bool => $this->nextStatus() === $status)
@@ -58,7 +70,7 @@ final class ViewOrder extends ViewRecord
                 ->label('Отменить заказ')
                 ->color('danger')
                 ->requiresConfirmation()
-                ->modalDescription(fn (): string => OrderViewModel::cancellationDescription($this->getRecord()))
+                ->modalDescription(fn (OrderManagementViewModel $viewModel): string => $viewModel->cancellationDescription($this->getRecord()))
                 ->schema([Textarea::make('reason')
                     ->label('Причина отмены')->required()->maxLength(1000)])
                 ->visible(fn (): bool => ! in_array($this->getRecord()->status, [OrderStatusEnum::CANCELLED, OrderStatusEnum::DELIVERED, OrderStatusEnum::SHIPPED], true)

@@ -12,7 +12,8 @@ use App\Models\OrderDocument;
 use App\Models\Payment;
 use App\Support\Phone\PhoneFormat;
 use App\Support\Values\Money;
-use App\ViewModel\Orders\OrderViewModel;
+use App\ViewModel\Orders\OrderDeliveryViewModel;
+use App\ViewModel\Orders\OrderManagementViewModel;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\RepeatableEntry\TableColumn;
 use Filament\Infolists\Components\TextEntry;
@@ -40,9 +41,11 @@ final class OrderInfolist
 
             Section::make('Обработка заказа')->schema([
                 View::make('filament.orders.processing-stages')
-                    ->viewData(fn (Order $record): array => ['stages' => OrderViewModel::processingStages($record)]),
+                    ->viewData(fn (Order $record, OrderManagementViewModel $viewModel): array => [
+                        'stages' => $viewModel->processingStages($record),
+                    ]),
                 TextEntry::make('processing_hint')->hiddenLabel()
-                    ->state(fn (Order $record): string => OrderViewModel::processingHint($record)),
+                    ->state(fn (Order $record, OrderManagementViewModel $viewModel): string => $viewModel->processingHint($record)),
                 Actions::make(fn (ViewOrder $livewire): array => $livewire->processingActions())->key('processingActions'),
             ])->columnSpanFull(),
 
@@ -52,7 +55,7 @@ final class OrderInfolist
                     ->formatStateUsing(static fn (?string $state): string => PhoneFormat::format((string) $state)),
                 TextEntry::make('customer_email')->label('Email')->placeholder('—')->copyable(),
                 TextEntry::make('customer_account')->label('Аккаунт')
-                    ->state(fn (Order $record): string => OrderViewModel::accountLabel($record))
+                    ->state(fn (Order $record, OrderManagementViewModel $viewModel): string => $viewModel->accountLabel($record))
                     ->url(fn (Order $record): ?string => $record->user === null
                         ? null
                         : UserResource::getUrl('view', ['record' => $record->user])),
@@ -61,14 +64,14 @@ final class OrderInfolist
 
             Section::make('Получение')->schema([
                 TextEntry::make('delivery_label')->label('Способ')
-                    ->state(fn (Order $record): string => OrderViewModel::deliveryLabel($record)),
+                    ->state(fn (Order $record): string => (new OrderDeliveryViewModel($record))->label),
                 TextEntry::make('address_text')
                     ->label(fn (Order $record): string => match (true) {
                         $record->delivery_method->isCdek() => 'ПВЗ',
                         $record->delivery_method->isCourier() => 'Адрес',
                         default => 'Место получения',
                     })
-                    ->state(fn (Order $record): string => OrderViewModel::address($record) ?: '—'),
+                    ->state(fn (Order $record): string => (new OrderDeliveryViewModel($record))->address ?: '—'),
                 TextEntry::make('shipment.cdek_number')->label('Трек-номер')->placeholder('—')->copyable()
                     ->visible(fn (Order $record): bool => $record->delivery_method->isCdek()),
                 TextEntry::make('delivery_details.base_minor')->label('Курьер')
@@ -139,7 +142,7 @@ final class OrderInfolist
 
             Section::make('Отмена заказа')->schema([
                 TextEntry::make('cancellation_state')->label('Состояние')
-                    ->formatStateUsing(fn (?string $state): string => OrderViewModel::cancellationStateLabel($state)),
+                    ->formatStateUsing(fn (?string $state, OrderManagementViewModel $viewModel): string => $viewModel->cancellationStateLabel($state)),
                 TextEntry::make('cancellation_reason')->label('Причина')->placeholder('—'),
                 TextEntry::make('cancelled_at')->label('Дата отмены')->dateTime('d.m.Y H:i')->placeholder('—'),
                 TextEntry::make('payment_status')->label('Состояние возврата')->badge()
@@ -150,9 +153,9 @@ final class OrderInfolist
 
             Section::make('Доставка СДЭК')->schema([
                 TextEntry::make('shipment_status')->label('Статус доставки')
-                    ->state(fn (Order $record): string => OrderViewModel::cdekStatusLabel($record)),
+                    ->state(fn (Order $record, OrderManagementViewModel $viewModel): string => $viewModel->cdekStatusLabel($record)),
                 TextEntry::make('shipment_registration')->label('Состояние регистрации')
-                    ->state(fn (Order $record): string => OrderViewModel::cdekRegistrationLabel($record)),
+                    ->state(fn (Order $record, OrderManagementViewModel $viewModel): string => $viewModel->cdekRegistrationLabel($record)),
                 TextEntry::make('shipment.error')->label('Причина ошибки')->color('danger')
                     ->visible(fn (Order $record): bool => filled($record->shipment?->error))->columnSpanFull(),
                 TextEntry::make('documents_empty')->hiddenLabel()->state('Документы ещё не сформированы')

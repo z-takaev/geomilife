@@ -18,7 +18,7 @@
                 @if ($storyVideoUrl)
                     <a href="#home-story-video-popup" class="tf-btn home-story-button popup-video">
                         <i class="icon icon-Play" aria-hidden="true"></i>
-                        {{ __('Смотреть нашу историю') }}
+                        {{ __('Смотреть') }}
                     </a>
                 @endif
             </div>

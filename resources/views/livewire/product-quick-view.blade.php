@@ -46,7 +46,7 @@
         </div>
 
         <div class="canvas-body ps-md-0 tf-quick-view" wire:loading.remove
-            wire:key="quick-view-product-{{ $opening }}" x-data="productVariantSelector(@js($productViewModel?->variantOptions ?? []), @js($productViewModel->selectedVariant['id'] ?? null), @js($productViewModel?->productUrl), true)">
+            wire:key="quick-view-product-{{ $opening }}" x-data="productVariantSelector(@js($productViewModel?->variantOptions ?? []), @js($productViewModel?->selectedVariant->id), @js($productViewModel?->productUrl), true)">
             @if ($product !== null)
 
                 <div class="quickview-product-info">
@@ -68,7 +68,7 @@
                 </div>
                 <div class="quickview-product-variant">
                     <div class="variant-picker-item variant-unit">
-                        <x-products.variant-selector :variants="$productViewModel->variantOptions" :selected-id="$productViewModel->selectedVariant['id']" />
+                        <x-products.variant-selector :variants="$productViewModel->variantOptions" :selected-id="$productViewModel->selectedVariant->id" />
                     </div>
                 </div>
                 <div class="quickview-product-total-btn">

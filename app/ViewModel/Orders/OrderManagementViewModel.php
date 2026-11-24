@@ -11,11 +11,18 @@ use App\Enums\Orders\OrderStatusEnum;
 use App\Models\Order;
 use App\Services\Orders\OrderLifecycleService;
 
-final class OrderViewModel
+final readonly class OrderManagementViewModel
 {
-    public static function processingStages(Order $order): array
+    public function __construct(
+        private OrderLifecycleService $lifecycle,
+    ) {}
+
+    /**
+     * @return list<array{label: string, current: bool, color: string}>
+     */
+    public function processingStages(Order $order): array
     {
-        $steps = app(OrderLifecycleService::class)->stages($order);
+        $steps = $this->lifecycle->stages($order);
         $position = array_search($order->status, $steps, true);
         $stages = [];
 
@@ -23,18 +30,24 @@ final class OrderViewModel
             $stages[] = [
                 'label' => $step->getLabel(),
                 'current' => $step->is($order->status),
-                'color' => $step->is($order->status) ? 'primary' : ($position !== false && $index < $position ? 'success' : 'gray'),
+                'color' => $step->is($order->status)
+                    ? 'primary'
+                    : ($position !== false && $index < $position ? 'success' : 'gray'),
             ];
         }
 
         if ($order->status->isCancelled()) {
-            $stages[] = ['label' => OrderStatusEnum::CANCELLED->getLabel(), 'current' => true, 'color' => 'danger'];
+            $stages[] = [
+                'label' => OrderStatusEnum::CANCELLED->getLabel(),
+                'current' => true,
+                'color' => 'danger',
+            ];
         }
 
         return $stages;
     }
 
-    public static function processingHint(Order $order): string
+    public function processingHint(Order $order): string
     {
         if ($order->status->isCancelled()) {
             return __('Заказ отменён. Дальнейшая обработка недоступна.');
@@ -67,18 +80,20 @@ final class OrderViewModel
         return __('Проверьте заказ и выполните следующий шаг.');
     }
 
-    public static function transitionLabel(Order $order, OrderStatusEnum $status): string
+    public function transitionLabel(Order $order, OrderStatusEnum $status): string
     {
         return match ($status) {
             OrderStatusEnum::CONFIRMED => __('Подтвердить и начать сборку'),
             OrderStatusEnum::READY_FOR_PICKUP => __('Подготовить к выдаче'),
             OrderStatusEnum::READY_TO_SHIP => __('Подготовить к отправке'),
-            OrderStatusEnum::DELIVERED => $order->delivery_method->isPickup() ? __('Подтвердить выдачу') : __('Подтвердить доставку'),
+            OrderStatusEnum::DELIVERED => $order->delivery_method->isPickup()
+                ? __('Подтвердить выдачу')
+                : __('Подтвердить доставку'),
             default => $status->getLabel(),
         };
     }
 
-    public static function transitionDescription(Order $order, OrderStatusEnum $status): string
+    public function transitionDescription(Order $order, OrderStatusEnum $status): string
     {
         $description = __(':from → :to. Покупателю будет отправлено уведомление.', [
             'from' => $order->status->getLabel(),
@@ -98,7 +113,7 @@ final class OrderViewModel
         return $description;
     }
 
-    public static function cancellationDescription(Order $order): string
+    public function cancellationDescription(Order $order): string
     {
         $description = __('Заказ будет отменён. Укажите причину отмены.');
 
@@ -115,32 +130,7 @@ final class OrderViewModel
         return $description;
     }
 
-    public static function address(Order $order): string
-    {
-        $snapshot = $order->delivery_address ?? [];
-        $parts = [$snapshot['city'] ?? null];
-
-        if ($order->delivery_method->isCourier() && ! empty($snapshot['street'])) {
-            $parts[] = $snapshot['street'];
-
-            foreach (['house' => __('дом'), 'building' => __('корпус'), 'entrance' => __('подъезд'), 'floor' => __('этаж'), 'apartment' => __('кв.'), 'intercom' => __('домофон')] as $field => $label) {
-                if (filled($snapshot[$field] ?? null)) {
-                    $parts[] = $label.' '.$snapshot[$field];
-                }
-            }
-        } else {
-            $parts[] = $snapshot['address'] ?? $snapshot['street'] ?? null;
-        }
-
-        return implode(', ', array_unique(array_filter($parts, static fn ($value): bool => filled($value))));
-    }
-
-    public static function deliveryLabel(Order $order): string
-    {
-        return $order->delivery_method->getLabel();
-    }
-
-    public static function cancellationStateLabel(?string $state): string
+    public function cancellationStateLabel(?string $state): string
     {
         return match ($state) {
             OrderCancellationStateEnum::PENDING->value => __('Выполняется'),
@@ -150,7 +140,7 @@ final class OrderViewModel
         };
     }
 
-    public static function accountLabel(Order $order): string
+    public function accountLabel(Order $order): string
     {
         if ($order->user === null) {
             return __('Гость');
@@ -161,7 +151,7 @@ final class OrderViewModel
         return $name !== '' ? $name : $order->user->email;
     }
 
-    public static function cdekStatusLabel(Order $order): string
+    public function cdekStatusLabel(Order $order): string
     {
         $status = $order->shipment?->status;
 
@@ -172,7 +162,7 @@ final class OrderViewModel
         return CdekOrderStatusEnum::tryFrom($status)?->getLabel() ?? __('Неизвестный статус СДЭК');
     }
 
-    public static function cdekRegistrationLabel(Order $order): string
+    public function cdekRegistrationLabel(Order $order): string
     {
         $shipment = $order->shipment;
 
@@ -188,63 +178,9 @@ final class OrderViewModel
             CdekRequestStateEnum::ACCEPTED, CdekRequestStateEnum::WAITING => __('Регистрируется'),
             CdekRequestStateEnum::SUCCESSFUL => __('Зарегистрировано'),
             CdekRequestStateEnum::INVALID => __('Ошибка регистрации'),
-            default => $shipment->uuid === null ? __('Не зарегистрировано в СДЭК') : __('Зарегистрировано'),
+            default => $shipment->uuid === null
+                ? __('Не зарегистрировано в СДЭК')
+                : __('Зарегистрировано'),
         };
-    }
-
-    public static function confirmation(Order $order): array
-    {
-        $presentation = self::data($order);
-        $dateFormat = 'd.m.Y H:i';
-        $timezone = config('app.timezone');
-
-        return $presentation + [
-            'createdAtLabel' => $order->created_at->timezone($timezone)->format($dateFormat),
-            'deliveryHint' => match (true) {
-                $order->is_preorder => __('Точные сроки доставки согласовываются отдельно с менеджером'),
-                $order->delivery_method->isPickup() => __('Вы сможете забрать заказ по указанному адресу после уведомления о готовности.'),
-                $order->delivery_method->isCourier() => __('Время доставки согласует менеджер.'),
-                default => __('Мы сообщим вам, когда заказ будет передан в СДЭК.'),
-            },
-        ];
-    }
-
-    public static function data(Order $order): array
-    {
-        $order->loadMissing('shipment');
-
-        if (array_key_exists('items_sum_quantity', $order->getAttributes())) {
-            $quantity = (int) $order->getAttribute('items_sum_quantity');
-        } else {
-            $order->loadMissing('items');
-            $quantity = $order->items->sum('quantity');
-        }
-
-        $canCancel = $order->user_id !== null && $order->status->isNew() && $order->cancellation_state === null;
-        $steps = app(OrderLifecycleService::class)->stages($order);
-        $position = array_search($order->status, $steps, true);
-        $stages = [];
-
-        foreach ($steps as $index => $step) {
-            $stages[] = ['label' => $step->getLabel(), 'done' => $position !== false && $index <= $position];
-        }
-
-        return [
-            'deliveryLabel' => self::deliveryLabel($order),
-            'deliveryPriceLabel' => $order->delivery_price->minorAmount() === 0 ? __('бесплатно') : $order->delivery_price->format(),
-            'addressLabel' => self::address($order),
-            'paymentLabel' => $order->payment_method->getLabel(),
-            'canCancel' => $canCancel,
-            'stages' => $stages,
-            'cancelUrl' => route('orders.cancel', $order),
-            'quantity' => $quantity,
-            'workingHours' => $order->delivery_address['working_hours'] ?? $order->delivery_address['work_time'] ?? null,
-            'isCancelling' => in_array($order->cancellation_state, [
-                OrderCancellationStateEnum::PENDING->value,
-                OrderCancellationStateEnum::FAILED->value,
-            ], true),
-            'isActive' => ! in_array($order->status, [OrderStatusEnum::CANCELLED, OrderStatusEnum::DELIVERED], true)
-                || $order->payment_status->isRefundPending(),
-        ];
     }
 }
