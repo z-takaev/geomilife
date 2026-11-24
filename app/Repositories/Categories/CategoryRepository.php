@@ -78,7 +78,6 @@ final class CategoryRepository
         Cache::memo()->forget((string) config('cache.items.catalog_categories.key'));
     }
 
-    // TODO: Подумать над выносом метода
     private function buildTree(Collection $categories): Collection
     {
         $rootCategories = new Collection;
@@ -107,7 +106,6 @@ final class CategoryRepository
         return $rootCategories;
     }
 
-    // TODO: Как работает метод? И может вынести его из этого класса?
     private function withProductCounts(Collection $categories): Collection
     {
         return $categories->each(static function (Category $category): void {

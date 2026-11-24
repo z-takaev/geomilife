@@ -20,7 +20,6 @@ final class CartService
     /**
      * Возвращает количества товаров в корзине по идентификаторам вариантов.
      */
-    // TODO: Используется ли метод?
     public function quantities(): array
     {
         if (! Auth::check()) {
@@ -99,7 +98,6 @@ final class CartService
     /**
      * Проверяет наличие хотя бы одного доступного товара в корзине.
      */
-    // TODO: Нельзя использовать проверку с методом count?
     public function hasItems(): bool
     {
         if ($this->cachedItems !== null) {
@@ -238,9 +236,9 @@ final class CartService
 
     /**
      * Списывает заказанное количество товаров и обновляет кеш корзины.
+     *
+     * @param  array<int, int>  $quantitiesByVariant
      */
-    // TODO: Что делает и зачем метод?
-    /** @param array<int, int> $quantitiesByVariant */
     public function removeOrderedItems(array $quantitiesByVariant): void
     {
         if (auth()->check()) {

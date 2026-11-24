@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Collection;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
@@ -96,6 +97,17 @@ final class Product extends Model implements HasMedia, Seoable
             ->active()
             ->whereHas('category', static fn (Builder $query): Builder => $query->visible())
             ->has('activeVariants');
+    }
+
+    public function scopeForCard(Builder $query): void
+    {
+        $query
+            ->select(['products.id', 'name', 'slug', 'is_new', 'is_hit'])
+            ->available()
+            ->with([
+                'activeVariants:id,product_id,unit,value,price,old_price,is_preorder',
+                'media' => static fn (MorphMany $query): MorphMany => $query->where('collection_name', 'image'),
+            ]);
     }
 
     public function scopeDiscounted(Builder $query): void

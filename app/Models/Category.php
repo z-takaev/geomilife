@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 use Openplain\FilamentTreeView\Concerns\HasTreeStructure;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -82,6 +83,11 @@ final class Category extends Model implements HasMedia, Seoable
             'ancestors',
             static fn (Builder $query): Builder => $query->where('is_active', false),
         );
+    }
+
+    public function visibleSubtreeIds(): Collection
+    {
+        return once(fn (): Collection => $this->descendantsAndSelf()->visible()->pluck('id'));
     }
 
     public function canBeDeleted(): bool

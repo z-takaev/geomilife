@@ -8,17 +8,14 @@ use App\DTO\Products\CatalogFiltersDto;
 use App\Enums\Catalog\CatalogSortEnum;
 use App\Enums\Products\ProductUnitEnum;
 use App\Models\Category;
+use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
 
 final class CatalogRepository
 {
-    // TODO: Вынести константу в MONEY
     private const string PRICE_IN_RUBLES = '(product_variants.price / 100)';
-
-    public function __construct(private readonly ProductRepository $products) {}
 
     public function getProducts(
         ?Category $category,
@@ -28,14 +25,13 @@ final class CatalogRepository
         int $additionalPages = 0,
     ): LengthAwarePaginator {
         $perPage = config('pagination.per_page.catalog');
-        $variants = $this->matchingVariants($filters);
-        // TODO: Убрать зависимость от ProductRepository
-        $query = $this->products->cardQuery()
-            ->when($category, fn (Builder $query): Builder => $query->whereIn('category_id', $this->categoryIds($category)));
+        $variants = $this->matchingVariantsQuery($filters);
+        $query = Product::query()
+            ->forCard()
+            ->when($category, fn (Builder $query): Builder => $query->whereIn('category_id', $category->visibleSubtreeIds()));
 
         $total = (clone $query)->whereExists(clone $variants)->count();
 
-        // TODO: Понять нужен ли PRICE_IN_RUBLES
         $variants->selectRaw('id as catalog_variant_id, '.self::PRICE_IN_RUBLES.' as catalog_price');
 
         match ($sort) {
@@ -44,9 +40,8 @@ final class CatalogRepository
             default => null,
         };
 
-        // TODO: почему лимит 1?
+        // Карточка товара использует первый подходящий вариант по заданному порядку.
         $variants->orderBy('order')->limit(1);
-        // TODO: Что делает запрос?
         $query->joinLateral($variants, 'selected_variant')
             ->addSelect(['selected_variant.catalog_variant_id', 'selected_variant.catalog_price']);
 
@@ -63,11 +58,12 @@ final class CatalogRepository
         return new LengthAwarePaginator($products, $total, $perPage, $page);
     }
 
+    /**
+     * @return list<array{value: string, label: string}>
+     */
     public function getPackageOptions(Category $category): array
     {
         return once(function () use ($category): array {
-            $categoryIds = $this->categoryIds($category);
-            // TODO: зачем тут array_flip?
             $unitOrder = array_flip(array_column(ProductUnitEnum::cases(), 'value'));
 
             return ProductVariant::query()
@@ -77,15 +73,15 @@ final class CatalogRepository
                     'product',
                     static fn (Builder $query): Builder => $query
                         ->active()
-                        ->whereIn('category_id', $categoryIds),
+                        ->whereIn('category_id', $category->visibleSubtreeIds()),
                 )
                 ->distinct()
-                ->get() // TODO: Что за сортировка?
+                ->get()
                 ->sortBy(static fn (ProductVariant $variant): string => sprintf(
                     '%02d-%010d',
                     $unitOrder[$variant->unit->value],
                     $variant->value,
-                )) // TODO: какой формат получается после map?
+                ))
                 ->map(static fn (ProductVariant $variant): array => [
                     'value' => $variant->unit->value.'|'.$variant->value,
                     'label' => $variant->label(),
@@ -95,8 +91,7 @@ final class CatalogRepository
         });
     }
 
-    // TODO: Подумать над названием метода
-    private function matchingVariants(CatalogFiltersDto $filters): Builder
+    private function matchingVariantsQuery(CatalogFiltersDto $filters): Builder
     {
         $query = ProductVariant::query()
             ->active()
@@ -110,7 +105,6 @@ final class CatalogRepository
             $query->whereRaw(self::PRICE_IN_RUBLES.' <= ?', [$filters->priceTo]);
         }
 
-        // TODO: избавиться от строки preorder
         if (count($filters->availability) === 1) {
             $query->where('is_preorder', $filters->availability[0] === 'preorder');
         }
@@ -137,11 +131,5 @@ final class CatalogRepository
             CatalogSortEnum::NAME => $query->orderBy('name')->orderBy('products.id'),
             default => $query->orderBy('products.id'),
         };
-    }
-
-    // TODO: Может убрать метод и перенести в модель?
-    private function categoryIds(Category $category): Collection
-    {
-        return once(static fn (): Collection => $category->descendantsAndSelf()->visible()->pluck('id'));
     }
 }

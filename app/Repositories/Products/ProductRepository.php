@@ -12,8 +12,7 @@ use Illuminate\Support\Collection;
 
 final class ProductRepository
 {
-    // TODO: Изменить название метода getProduct
-    public function getDetails(int|string $identifier): ?Product
+    public function getProduct(int|string $identifier): ?Product
     {
         return Product::query()
             ->available()
@@ -24,7 +23,8 @@ final class ProductRepository
 
     public function getHitProducts(int $limit = 10): Collection
     {
-        return $this->cardQuery()
+        return Product::query()
+            ->forCard()
             ->where('is_hit', true)
             ->inRandomOrder()
             ->limit($limit)
@@ -33,7 +33,8 @@ final class ProductRepository
 
     public function getNewProducts(int $limit = 10): Collection
     {
-        return $this->cardQuery()
+        return Product::query()
+            ->forCard()
             ->where('is_new', true)
             ->inRandomOrder()
             ->limit($limit)
@@ -42,7 +43,8 @@ final class ProductRepository
 
     public function getDiscountedProducts(int $limit = 10): Collection
     {
-        return $this->cardQuery()
+        return Product::query()
+            ->forCard()
             ->discounted()
             ->inRandomOrder()
             ->limit($limit)
@@ -51,7 +53,8 @@ final class ProductRepository
 
     public function getRecommendedProducts(Product $product, int $limit = 10): Collection
     {
-        return $this->cardQuery()
+        return Product::query()
+            ->forCard()
             ->whereKeyNot($product->getKey())
             ->orderByRaw('case when category_id = ? then 0 else 1 end', [$product->category_id])
             ->inRandomOrder()
@@ -61,7 +64,7 @@ final class ProductRepository
 
     public function search(string $searchQuery): LengthAwarePaginator
     {
-        return $this->applySearch($this->cardQuery(), $searchQuery)
+        return $this->applySearch(Product::query()->forCard(), $searchQuery)
             ->latest()
             ->paginate(config('pagination.per_page.search'))
             ->withQueryString();
@@ -81,18 +84,6 @@ final class ProductRepository
             ->get();
     }
 
-    public function cardQuery(): Builder
-    {
-        return Product::query()
-            ->select(['products.id', 'name', 'slug', 'is_new', 'is_hit'])
-            ->available()
-            ->with([
-                'activeVariants:id,product_id,unit,value,price,old_price,is_preorder',
-                'media' => static fn (MorphMany $query): MorphMany => $query->where('collection_name', 'image'),
-            ]);
-    }
-
-    // TODO: Убрать метод
     private function applySearch(Builder $query, string $searchQuery): Builder
     {
         if ($searchQuery === '') {

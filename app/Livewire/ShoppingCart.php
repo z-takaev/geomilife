@@ -10,7 +10,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
-// TODO: Заменить название
 final class ShoppingCart extends Component
 {
     public bool $items_loaded = false;

@@ -26,7 +26,7 @@ final class ProductQuickView extends Component
 
     public function render(ProductRepository $products): View
     {
-        $product = $this->productId === null ? null : $products->getDetails($this->productId);
+        $product = $this->productId === null ? null : $products->getProduct($this->productId);
         $images = $product?->images() ?? collect();
         $productViewModel = $product === null ? null : new ProductViewModel($product, $this->variantId);
 

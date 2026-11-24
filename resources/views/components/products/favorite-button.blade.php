@@ -1,3 +1,5 @@
+@props(['product', 'compact' => false])
+
 <button type="button"
     {{ $attributes->class(['hover-tooltip', 'tooltip-left box-icon' => $compact, 'tf-btn-icon btn-add-wishlist' => !$compact]) }}
     x-data="favoriteButton(@js($product->getKey()))" x-on:click="toggle()" x-bind:aria-disabled="!$store.wishlist.ready || $store.wishlist.busy"

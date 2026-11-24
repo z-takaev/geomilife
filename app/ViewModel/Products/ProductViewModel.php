@@ -7,7 +7,6 @@ namespace App\ViewModel\Products;
 use App\Models\Product;
 use App\Models\ProductVariant;
 
-// TODO: Подумать над этим слоем
 final readonly class ProductViewModel
 {
     public array $selectedVariant;
@@ -32,7 +31,6 @@ final readonly class ProductViewModel
 
         $this->selectedVariant = $options->get($product->selectedVariant($variantId)->getKey());
         $this->variantOptions = $options->values()->all();
-        // TODO: Для чего $this->productUrl ?
         $this->productUrl = route('products.show', [$product, 'variant' => $this->selectedVariant['id']]);
         $this->hasDiscount = $product->hasDiscount();
     }

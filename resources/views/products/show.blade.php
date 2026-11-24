@@ -52,7 +52,6 @@
                             @endif
                         </div>
                     @else
-                        {{-- TODO: Зачем эта проверка? Изображения всегда есть у нас. --}}
                         <span class="home-product-card__image-placeholder">{{ __('Изображение отсутствует') }}</span>
                     @endif
                 </div>

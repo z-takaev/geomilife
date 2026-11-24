@@ -21,7 +21,7 @@ final class ProductController extends Controller
 
     public function __invoke(string $product, Request $request): View
     {
-        $product = $this->productRepository->getDetails($product);
+        $product = $this->productRepository->getProduct($product);
 
         abort_if($product === null, 404);
 
@@ -44,7 +44,7 @@ final class ProductController extends Controller
             ->schema(BreadcrumbSchema::make($breadcrumbs));
 
         $recommendedProducts = $this->productRepository->getRecommendedProducts($product);
-        $images = $product->images(); // TODO: Убрать
+        $images = $product->images();
 
         return view(
             'products.show',

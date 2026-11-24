@@ -118,7 +118,6 @@
                                 <p class="order-muted">{{ __('Трек-номер появится после подготовки отправления.') }}</p>
                             @endif
                             @if (isset($order->delivery_details['period_min']))
-                                {{-- TODO: Откуда берется ориентировочный срок? --}}
                                 <p>
                                     {{ __('Ориентировочный срок: :min–:max рабочих дней.', ['min' => $order->delivery_details['period_min'], 'max' => $order->delivery_details['period_max']]) }}
                                 </p>

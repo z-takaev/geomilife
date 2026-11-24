@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Favorites;
 
 use App\Models\Product;
-use App\Repositories\Products\ProductRepository;
+use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -60,9 +60,8 @@ final class FavoriteService
             return collect();
         }
 
-        // TODO: Убрать зависимость ProductRepository
-        return app(ProductRepository::class)
-            ->cardQuery()
+        return Product::query()
+            ->forCard()
             ->whereKey($ids)
             ->latest('id')
             ->get()
@@ -121,14 +120,15 @@ final class FavoriteService
      */
     public function merge(array $guestIds): void
     {
-        abort_unless(Auth::check(), 403);
+        $user = Auth::user();
+
+        abort_unless($user instanceof User, 403);
 
         $ids = $this->availableGuestIds($guestIds);
 
-        DB::transaction(function () use ($ids): void {
+        DB::transaction(function () use ($ids, $user): void {
             foreach ($ids as $productId) {
-                // TODO: Как исправить ошибку vscode
-                Auth::user()->favorites()->firstOrCreate(['product_id' => $productId]);
+                $user->favorites()->firstOrCreate(['product_id' => $productId]);
             }
         });
 
