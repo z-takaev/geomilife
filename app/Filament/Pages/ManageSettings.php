@@ -27,6 +27,7 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Spatie\Image\Enums\Fit;
 use Spatie\Image\Image;
 
@@ -208,6 +209,7 @@ final class ManageSettings extends Page
                                                 ->maxSize(5120)
                                                 ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 750, 360))
                                                 ->helperText('Рекомендуемый размер: 750×360 пикселей.'),
+                                            self::bannerUrlField('banner_wide_url'),
                                         ])
                                         ->columns(2)
                                         ->collapsible()
@@ -230,6 +232,7 @@ final class ManageSettings extends Page
                                                         ->maxSize(5120)
                                                         ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 750, 360))
                                                         ->helperText('Рекомендуемый размер: 750×360 пикселей.'),
+                                                    self::bannerUrlField('banner_double_first_url'),
                                                 ]),
                                             Fieldset::make('Второй баннер')
                                                 ->schema([
@@ -247,6 +250,7 @@ final class ManageSettings extends Page
                                                         ->maxSize(5120)
                                                         ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 750, 360))
                                                         ->helperText('Рекомендуемый размер: 750×360 пикселей.'),
+                                                    self::bannerUrlField('banner_double_second_url'),
                                                 ]),
                                         ])
                                         ->collapsible()
@@ -269,6 +273,7 @@ final class ManageSettings extends Page
                                                         ->maxSize(5120)
                                                         ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 750, 360))
                                                         ->helperText('Рекомендуемый размер: 750×360 пикселей.'),
+                                                    self::bannerUrlField('banner_triple_first_url'),
                                                 ]),
                                             Fieldset::make('Второй баннер')
                                                 ->schema([
@@ -286,6 +291,7 @@ final class ManageSettings extends Page
                                                         ->maxSize(5120)
                                                         ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 750, 360))
                                                         ->helperText('Рекомендуемый размер: 750×360 пикселей.'),
+                                                    self::bannerUrlField('banner_triple_second_url'),
                                                 ]),
                                             Fieldset::make('Третий баннер')
                                                 ->schema([
@@ -303,6 +309,7 @@ final class ManageSettings extends Page
                                                         ->maxSize(5120)
                                                         ->processImage(static fn (Image $image): Image => $image->fit(Fit::Crop, 750, 360))
                                                         ->helperText('Рекомендуемый размер: 750×360 пикселей.'),
+                                                    self::bannerUrlField('banner_triple_third_url'),
                                                 ]),
                                         ])
                                         ->collapsible()
@@ -373,6 +380,24 @@ final class ManageSettings extends Page
             ->success()
             ->title('Конфигурация сайта сохранена')
             ->send();
+    }
+
+    private static function bannerUrlField(string $name): TextInput
+    {
+        return TextInput::make($name)
+            ->label('Ссылка')
+            ->helperText('Например: /catalog, #catalog или https://example.com.')
+            ->string()
+            ->maxLength(2048)
+            ->rules([
+                'not_regex:/[\s\x00-\x1F\x7F\\\\]/u',
+                Rule::anyOf([
+                    ['url:http,https'],
+                    ['regex:~\A/(?!/).*\z~u'],
+                    ['regex:~\A#.+\z~u'],
+                ]),
+            ])
+            ->columnSpanFull();
     }
 
     private function getRecord(): Setting

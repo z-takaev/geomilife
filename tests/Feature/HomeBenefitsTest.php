@@ -14,6 +14,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\Support\CheckoutFixtures;
@@ -56,6 +57,8 @@ it('показывает пять исходных преимуществ на �
     foreach (SettingSeeder::BENEFITS as $benefit) {
         $response->assertSee($benefit['title'])->assertSee($benefit['description']);
     }
+    $response->assertSee('data-auto="true"', false)
+        ->assertSee('data-delay="3000"', false);
 });
 
 it('располагает настройки по пяти табам начиная с контактной информации', function (): void {
@@ -129,14 +132,42 @@ it('группирует изображения баннеров по раскл
     )))->toBe([
         'banner_wide_image',
         'banner_wide_mobile_image',
+        'banner_wide_url',
     ])->and($groupedFields['Двойной баннер'])->toBe([
-        'Первый баннер' => ['banner_double_first_image', 'banner_double_first_mobile_image'],
-        'Второй баннер' => ['banner_double_second_image', 'banner_double_second_mobile_image'],
+        'Первый баннер' => ['banner_double_first_image', 'banner_double_first_mobile_image', 'banner_double_first_url'],
+        'Второй баннер' => ['banner_double_second_image', 'banner_double_second_mobile_image', 'banner_double_second_url'],
     ])->and($groupedFields['Тройной баннер'])->toBe([
-        'Первый баннер' => ['banner_triple_first_image', 'banner_triple_first_mobile_image'],
-        'Второй баннер' => ['banner_triple_second_image', 'banner_triple_second_mobile_image'],
-        'Третий баннер' => ['banner_triple_third_image', 'banner_triple_third_mobile_image'],
+        'Первый баннер' => ['banner_triple_first_image', 'banner_triple_first_mobile_image', 'banner_triple_first_url'],
+        'Второй баннер' => ['banner_triple_second_image', 'banner_triple_second_mobile_image', 'banner_triple_second_url'],
+        'Третий баннер' => ['banner_triple_third_image', 'banner_triple_third_mobile_image', 'banner_triple_third_url'],
     ]);
+});
+
+it('хранит необязательные ссылки для всех баннеров', function (): void {
+    $fields = [
+        'banner_wide_url',
+        'banner_double_first_url',
+        'banner_double_second_url',
+        'banner_triple_first_url',
+        'banner_triple_second_url',
+        'banner_triple_third_url',
+    ];
+
+    expect(Schema::hasColumns('settings', $fields))->toBeTrue();
+
+    Livewire::test(ManageSettings::class)
+        ->fillForm([...$this->formData, ...array_fill_keys($fields, '/catalog')])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect(Setting::query()->sole()->only($fields))->toBe(array_fill_keys($fields, '/catalog'));
+});
+
+it('отклоняет небезопасную ссылку баннера', function (): void {
+    Livewire::test(ManageSettings::class)
+        ->fillForm([...$this->formData, 'banner_wide_url' => 'javascript:alert(1)'])
+        ->call('save')
+        ->assertHasFormErrors(['banner_wide_url']);
 });
 
 it('сохраняет тексты пяти преимуществ и выводит изменения на главной с обновлением кеша', function (): void {

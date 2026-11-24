@@ -21,7 +21,9 @@ use Tests\Support\CheckoutFixtures;
 
 it('возвращает ошибку при прямом переходе к оформлению пустой корзины', function (): void {
     $this->get(route('checkout'))->assertNotFound();
-    Livewire::test(ShoppingCart::class)->assertDontSeeHtml('href="'.route('checkout').'"');
+    Livewire::test(ShoppingCart::class)
+        ->assertDontSeeHtml('href="'.route('checkout').'"')
+        ->assertDontSee('Итого');
 });
 
 it('открывает оформление с товарами в корзине', function (): void {

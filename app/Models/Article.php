@@ -29,7 +29,7 @@ final class Article extends Model implements HasMedia, HasRichContent, Seoable
 
     protected $fillable = [
         'title', 'slug',
-        'excerpt', 'content',
+        'content',
         'published_at', 'is_active',
     ];
 

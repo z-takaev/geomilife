@@ -45,9 +45,17 @@ it('выводит категории общим компонентом спис
         'is_active' => true,
     ])->setAttribute('total_active_products_count', 2);
 
-    expect(Blade::render('<x-categories-list :categories="$categories" />', [
+    expect(Blade::render('<x-categories.list :categories="$categories" />', [
         'categories' => collect([$category]),
     ]))->toContain('Масла', '2 товара', route('catalog.category', $category));
+});
+
+it('делает баннер ссылкой только при заполненном URL', function (): void {
+    expect(Blade::render('<x-home.banner image="/banner.jpg" url="/catalog" />'))
+        ->toContain('<a href="/catalog"')
+        ->and(Blade::render('<x-home.banner image="/banner.jpg" />'))
+        ->toContain('<div')
+        ->not->toContain('<a');
 });
 
 it('показывает в копирайте текущий год', function (): void {

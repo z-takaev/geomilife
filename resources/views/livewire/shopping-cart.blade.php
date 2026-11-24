@@ -67,11 +67,11 @@
                 </div>
             </div>
             <div class="canvas-footer">
-                <div class="tf-cart-totals-discounts fw-medium text-primary">
-                    <h4 class="tf-cart-total-text">{{ __('Итого') }}</h4>
-                    <h4 class="tf-totals-total-value">{{ $total->format() }}</h4>
-                </div>
                 @if ($hasItems)
+                    <div class="tf-cart-totals-discounts fw-medium text-primary">
+                        <h4 class="tf-cart-total-text">{{ __('Итого') }}</h4>
+                        <h4 class="tf-totals-total-value">{{ $total->format() }}</h4>
+                    </div>
                     <div class="group-btn">
                         <a href="{{ route('checkout') }}"
                             class="tf-btn animate-btn w-100">{{ __('Оформить заказ') }}</a>

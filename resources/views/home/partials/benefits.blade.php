@@ -2,7 +2,7 @@
     <div class="container">
         <div class="swiper tf-swiper" data-preview="5" data-tablet="3" data-mobile-sm="2" data-mobile="1" data-space-lg="24"
             data-space-md="20" data-space="15" data-pagination="1" data-pagination-sm="2" data-pagination-md="3"
-            data-pagination-lg="5">
+            data-pagination-lg="5" data-auto="true" data-loop="true" data-delay="3000">
             <div class="swiper-wrapper">
                 @foreach (settings()?->benefits ?? [] as $benefit)
                     <div class="swiper-slide">

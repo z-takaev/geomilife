@@ -3,10 +3,12 @@
         [
             'collection' => 'banner_double_first_image',
             'mobileCollection' => 'banner_double_first_mobile_image',
+            'url' => settings()?->banner_double_first_url,
         ],
         [
             'collection' => 'banner_double_second_image',
             'mobileCollection' => 'banner_double_second_mobile_image',
+            'url' => settings()?->banner_double_second_url,
         ],
     ];
 @endphp
@@ -21,20 +23,12 @@
                             $hasMobileImage = settings()?->hasMedia($banner['mobileCollection']) ?? false;
                         @endphp
 
-                        <a href="#" @class([
-                            'home-banner-link',
-                            'home-banner-link--double',
-                            'home-banner-link--has-mobile-image' => $hasMobileImage,
-                        ])>
-                            <picture>
-                                @if ($hasMobileImage)
-                                    <source media="(max-width: 991px)"
-                                        srcset="{{ settings()?->getFirstMediaUrl($banner['mobileCollection']) }}">
-                                @endif
-                                <img loading="lazy" src="{{ settings()?->getFirstMediaUrl($banner['collection']) }}"
-                                    alt="">
-                            </picture>
-                        </a>
+                        <x-home.banner :image="settings()?->getFirstMediaUrl($banner['collection'])" :mobile-image="$hasMobileImage ? settings()?->getFirstMediaUrl($banner['mobileCollection']) : null" :url="$banner['url']"
+                            @class([
+                                'home-banner-link',
+                                'home-banner-link--double',
+                                'home-banner-link--has-mobile-image' => $hasMobileImage,
+                            ]) />
                     @endif
                 @endforeach
             </div>

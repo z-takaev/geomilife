@@ -10,7 +10,6 @@ use App\Filament\Resources\Seo\Schemas\SeoForm;
 use App\Support\Media\ImageMimeTypes;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
@@ -50,11 +49,6 @@ final class ArticleForm
                                 DatePicker::make('published_at')
                                     ->label('Дата публикации')
                                     ->required(),
-                                Textarea::make('excerpt')
-                                    ->label('Краткое описание')
-                                    ->maxLength(500)
-                                    ->rows(4)
-                                    ->columnSpanFull(),
                                 RichEditor::make('content')
                                     ->label('Содержание')
                                     ->required()

@@ -43,7 +43,7 @@
                         <span class="search-results-section__count">{{ $categories->count() }}</span>
                     </div>
 
-                    <x-categories-list :categories="$categories" />
+                    <x-categories.list :categories="$categories" />
                 </section>
             @endif
 

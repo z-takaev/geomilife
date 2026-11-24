@@ -21,7 +21,6 @@ final readonly class ArticleSchema implements SchemaContract
         return array_filter([
             '@type' => 'Article',
             'headline' => $this->article->title,
-            'description' => $this->article->excerpt,
             'image' => $this->article->getFirstMediaUrl('image') ?: null,
             'datePublished' => $this->article->published_at?->toAtomString(),
             'dateModified' => $this->article->updated_at?->toAtomString(),

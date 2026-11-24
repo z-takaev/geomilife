@@ -8,6 +8,6 @@
             </a>
         </div>
 
-        <x-categories-list :categories="$featuredCategories" animated />
+        <x-categories.list :categories="$featuredCategories" animated />
     </div>
 </section>

@@ -272,7 +272,11 @@ it('задает ограничения текстовым полям и вло�
     Livewire::test(EditPage::class, ['record' => $page->getRouteKey()])
         ->assertFormFieldExists('content', fn ($field): bool => $field->getMaxLength() === 50000
             && $field->getFileAttachmentsMaxSize() === 5120);
-    foreach ([CreateArticle::class, CreateNews::class, CreatePromo::class] as $component) {
+    Livewire::test(CreateArticle::class)
+        ->assertFormFieldDoesNotExist('excerpt')
+        ->assertFormFieldExists('content', fn ($field): bool => $field->getMaxLength() === 50000
+            && $field->getFileAttachmentsMaxSize() === 5120);
+    foreach ([CreateNews::class, CreatePromo::class] as $component) {
         Livewire::test($component)
             ->assertFormFieldExists('excerpt', fn ($field): bool => $field->getMaxLength() === 500)
             ->assertFormFieldExists('content', fn ($field): bool => $field->getMaxLength() === 50000

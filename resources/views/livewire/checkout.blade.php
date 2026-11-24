@@ -29,7 +29,8 @@
                     </div>
                 @endif
                 @if ($checkout_attempted && $errors->any())
-                    <div class="checkout-errors" role="alert">
+                    <div class="checkout-errors" role="alert" tabindex="-1" x-init="$nextTick(() => { $el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        $el.focus({ preventScroll: true }) })">
                         <strong>{{ __('Проверьте данные заказа') }}</strong>
                         <ul>
                             @foreach ($errors->all() as $error)

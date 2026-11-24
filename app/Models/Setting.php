@@ -39,6 +39,9 @@ final class Setting extends Model implements HasMedia
         'footer_title', 'footer_description',
         'instagram_url', 'youtube_url', 'vk_url', 'telegram_url', 'whatsapp_url',
         'story_title', 'story_description', 'story_video_url',
+        'banner_wide_url',
+        'banner_double_first_url', 'banner_double_second_url',
+        'banner_triple_first_url', 'banner_triple_second_url', 'banner_triple_third_url',
         'benefits', 'privacy_policy', 'snow_enabled',
     ];
 

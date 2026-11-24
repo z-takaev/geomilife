@@ -23,6 +23,8 @@ it('выводит причину отказа в общем списке оши
     @$document->loadHTML('<?xml encoding="utf-8" ?>'.$component->html());
     $xpath = new DOMXPath($document);
     expect($xpath->query('//div[contains(@class, "checkout-errors")]//li[contains(., "Выберите город для доставки.")]')->length)->toBe(1)
+        ->and($xpath->query('//div[contains(@class, "checkout-errors")][@tabindex="-1"]')->length)->toBe(1)
+        ->and($component->html())->toContain("scrollIntoView({ behavior: 'smooth'")
         ->and($xpath->query('//aside//p[contains(., "Выберите город для доставки.")]')->length)->toBe(0);
 });
 

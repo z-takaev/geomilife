@@ -14,6 +14,7 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Support\Values\Money;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Tests\Support\CheckoutFixtures;
 
@@ -28,6 +29,10 @@ it('генерирует уникальные адреса и сохраняет
 it('уважает явно заданный slug', function (): void {
     $article = Article::query()->create(['published_at' => today(), 'title' => 'О компании', 'slug' => 'about']);
     expect($article->slug)->toBe('about');
+});
+
+it('не хранит краткое описание статьи', function (): void {
+    expect(Schema::hasColumn('articles', 'excerpt'))->toBeFalse();
 });
 
 it('нормализует email во всех сохраняющих их моделях', function (): void {
