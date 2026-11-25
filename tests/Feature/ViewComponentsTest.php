@@ -31,6 +31,18 @@ it('не позволяет вводить количество товара в�
         ->not->toContain('x-on:change');
 });
 
+it('выводит статус корзины справа от счётчика в обоих вариантах компонента', function (string $component): void {
+    $html = Blade::render($component);
+
+    expect($html)
+        ->toContain('<span class="product-in-cart" x-show="isInCart" x-cloak>В корзине</span>')
+        ->and(strpos($html, 'Увеличить количество'))
+        ->toBeLessThan(strpos($html, 'В корзине'));
+})->with([
+    '<x-products.quantity-selector compact />',
+    '<x-products.quantity-selector />',
+]);
+
 it('показывает кнопку добавления с новым названием', function (): void {
     $product = Product::factory()->make();
 

@@ -8,15 +8,7 @@
             <div class="row justify-content-center">
                 <article class="col-lg-9 content-detail-main-column">
                     <div class="content-detail-main">
-                        <div class="content-detail-main-image">
-                            <img loading="lazy" src="{{ $news->getFirstMediaUrl('image') }}" alt="{{ $news->title }}">
-                        </div>
-                        <div class="content-detail-heading">
-                            <time class="content-detail-date" datetime="{{ $news->published_at->toDateString() }}">
-                                {{ $news->published_at->translatedFormat('j F Y') }}
-                            </time>
-                            {{-- <h2 class="content-detail-title cl-text-main font-sora">{{ $news->title }}</h2> --}}
-                        </div>
+                        <x-content-detail-cover :date="$news->published_at" :image="$news->getFirstMediaUrl('image')" :title="$news->title" />
                         <div class="content-detail-body">
                             {{ $news->getRichContentAttribute('content') }}
                         </div>

@@ -32,6 +32,24 @@ it('открывает публичную детальную страницу', 
     'акция' => [Promo::class, 'promos.show'],
 ]);
 
+it('показывает дату над обложкой на детальной странице', function (string $modelClass, string $routeName, string $dateField, string $dateLabel): void {
+    $model = $modelClass::factory()->create();
+    $date = $model->{$dateField};
+
+    $this->get(route($routeName, $model))
+        ->assertOk()
+        ->assertSeeInOrder([
+            'datetime="'.$date->toDateString().'"',
+            'icon-CalendarBlank',
+            $dateLabel.$date->translatedFormat('j F Y'),
+            'class="content-detail-main-image"',
+        ], false);
+})->with([
+    'новость' => [News::class, 'news.show', 'published_at', ''],
+    'статья' => [Article::class, 'articles.show', 'published_at', ''],
+    'акция' => [Promo::class, 'promos.show', 'end_at', 'Акция действует до '],
+]);
+
 it('открывает целевую страницу', function (): void {
     $page = Page::query()->create([
         'key' => 'about',

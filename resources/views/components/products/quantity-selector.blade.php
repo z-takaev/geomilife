@@ -24,3 +24,5 @@
         <span class="icon icon-plus" aria-hidden="true"></span>
     </button>
 </div>
+
+<span class="product-in-cart" x-show="isInCart" x-cloak>{{ __('В корзине') }}</span>
