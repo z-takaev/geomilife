@@ -2119,7 +2119,7 @@ h6,
 
  ------------------------------------------------------------------------------ */
 /*--------- Abstracts variable ---------- */
-header {
+.tf-header {
     position: sticky;
     z-index: 100;
     -webkit-transition: all 0.3s ease;
@@ -2128,14 +2128,14 @@ header {
     -o-transition: all 0.3s ease;
     transition: all 0.3s ease;
 }
-header.header-sticky.style-2 {
+.tf-header.header-sticky.style-2 {
     background-color: var(--white);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
 }
-header.header-sticky.style-2 .header-inner {
+.tf-header.header-sticky.style-2 .header-inner {
     box-shadow: unset;
 }
-header.header-sticky .header-inner {
+.tf-header.header-sticky .header-inner {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
 }
 
@@ -4636,6 +4636,12 @@ header.header-sticky .header-inner {
 @media (max-width: 575px) {
     .merge-confirmation__actions {
         flex-direction: column-reverse;
+    }
+    .merge-confirmation__actions .tf-btn {
+        flex: none;
+        height: auto;
+        min-height: 44px;
+        padding-block: 12px;
     }
     .merge-confirmation .title-pop {
         font-size: 23px;
@@ -7695,12 +7701,21 @@ select.select-2 {
     text-overflow: ellipsis;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+    color: var(--text-black);
 }
-.article-list-content {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+.article-list-item:hover .article-list-title,
+.article-list-item:focus-visible .article-list-title {
+    text-decoration: underline;
+}
+.article-list-item:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+@media (min-width: 992px) {
+    .article-list-item {
+        grid-template-columns: 128px minmax(0, 1fr);
+    }
 }
 
 .content-detail-main {
@@ -7868,12 +7883,16 @@ select.select-2 {
         font-size: 20px;
     }
     .article-list-item {
-        grid-template-columns: 105px minmax(0, 1fr);
-        gap: 16px;
-        padding: 16px;
+        grid-template-columns: clamp(64px, 20vw, 88px) minmax(0, 1fr);
+        gap: 14px;
+        padding: 12px;
     }
     .article-list-title {
-        font-size: 18px;
+        display: block;
+        overflow: visible;
+        overflow-wrap: anywhere;
+        font-size: 16px;
+        line-height: 1.35;
     }
     .content-detail-main {
         gap: 24px;
@@ -15052,14 +15071,12 @@ body.story-video-open {
     }
 
     .home-offer-card .entry-content,
-    .news-archive-card .entry-content,
-    .article-list-content {
+    .news-archive-card .entry-content {
         gap: 10px;
     }
 
     .home-offer-card .entry_title,
-    .news-archive-card .entry_title,
-    .article-list-title {
+    .news-archive-card .entry_title {
         font-size: 18px;
     }
 
@@ -15076,8 +15093,7 @@ body.story-video-open {
     }
 
     .home-offer-link,
-    .news-archive-card .tf-btn-line,
-    .article-list-content .tf-btn-line {
+    .news-archive-card .tf-btn-line {
         padding-top: 10px;
         font-size: 14px;
     }
@@ -16969,6 +16985,10 @@ body.story-video-open {
 .checkout-empty,
 .order-muted {
     color: var(--text-secondary);
+}
+
+.order-muted {
+    margin-bottom: 10px;
 }
 
 .orders-page__heading {

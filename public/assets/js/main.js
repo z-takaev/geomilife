@@ -148,9 +148,9 @@
     /* Header Sticky
   -------------------------------------------------------------------------*/
     var headerSticky = function () {
+        const $header = $('.tf-header');
         let lastScrollTop = 0;
         let delta = 5;
-        let navbarHeight = $('header').outerHeight();
         let didScroll = false;
 
         $(window).scroll(function () {
@@ -160,24 +160,24 @@
         setInterval(function () {
             if (didScroll) {
                 let st = $(window).scrollTop();
-                navbarHeight = $('header').outerHeight();
+                const navbarHeight = $header.outerHeight();
 
                 if (st > navbarHeight) {
                     if (st > lastScrollTop + delta) {
-                        $('header').css('top', `-${navbarHeight}px`);
+                        $header.css('top', `-${navbarHeight}px`);
                         $('.sticky-top').css('top', '15px');
                     } else if (st < lastScrollTop - delta) {
-                        if ($('header').hasClass('header-abs')) {
-                            $('header').css('top', '15px');
+                        if ($header.hasClass('header-abs')) {
+                            $header.css('top', '15px');
                         } else {
-                            $('header').css('top', '0');
+                            $header.css('top', '0');
                         }
-                        $('header').addClass('header-sticky');
+                        $header.addClass('header-sticky');
                         $('.sticky-top').css('top', `${30 + navbarHeight}px`);
                     }
                 } else {
-                    $('header').css('top', 'unset');
-                    $('header').removeClass('header-sticky');
+                    $header.css('top', 'unset');
+                    $header.removeClass('header-sticky');
                     $('.sticky-top').css('top', '15px');
                 }
 
@@ -926,7 +926,7 @@
             var target = $(targetId);
 
             if (target.length) {
-                var headerHeight = $('header').outerHeight() || 0;
+                var headerHeight = $('.tf-header').outerHeight() || 0;
                 var offsetTop = target.offset().top - headerHeight - 15;
 
                 $('html, body').animate(

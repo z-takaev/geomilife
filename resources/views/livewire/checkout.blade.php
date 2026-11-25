@@ -29,8 +29,10 @@
                     </div>
                 @endif
                 @if ($checkout_attempted && $errors->any())
-                    <div class="checkout-errors" role="alert" tabindex="-1" x-init="$nextTick(() => { $el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        $el.focus({ preventScroll: true }) })">
+                    <div class="checkout-errors" role="alert" tabindex="-1" x-init="$nextTick(() => {
+                        $el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        $el.focus({ preventScroll: true })
+                    })">
                         <strong>{{ __('Проверьте данные заказа') }}</strong>
                         <ul>
                             @foreach ($errors->all() as $error)
@@ -334,7 +336,7 @@
                                 wire:model.live="form.payment_method"
                                 value="{{ \App\Enums\Orders\PaymentMethodEnum::ONLINE->value }}"><span
                                 class="checkout-payment-option__check"
-                                aria-hidden="true"></span><span><strong>{{ \App\Enums\Orders\PaymentMethodEnum::ONLINE->getLabel() }}</strong><small>{{ __('На защищённой странице Т-Банка. Оплата сразу при оформлении.') }}</small></span></label>
+                                aria-hidden="true"></span><span><strong>{{ \App\Enums\Orders\PaymentMethodEnum::ONLINE->getLabel() }}</strong><small>{{ __('На защищённой странице Т-Банка.') }}</small></span></label>
                         @if ($form->delivery_method === \App\Enums\Orders\DeliveryMethodEnum::PICKUP->value)
                             <label class="checkout-payment-option"><input type="radio"
                                     wire:model.live="form.payment_method"
