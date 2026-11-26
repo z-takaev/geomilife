@@ -752,7 +752,7 @@
         let isPopupOpen = false;
 
         const initializeVideoPlayer = function () {
-            if (typeof window.VK?.VideoPlayer !== 'function') {
+            if (!videoFrame.getAttribute('src') || typeof window.VK?.VideoPlayer !== 'function') {
                 return;
             }
 
