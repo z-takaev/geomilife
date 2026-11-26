@@ -15,6 +15,7 @@
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0",
         "livewire/livewire": "^4.4",
+        "mews/captcha": "^3.5.1",
         "nutgram/nutgram": "^4.0",
         "openplain/filament-tree-view": "^0.5.6",
         "phpoffice/phpspreadsheet": "^5.10",

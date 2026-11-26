@@ -39,11 +39,34 @@
                     <span class="invalid-feedback d-block">{{ $message }}</span>
                 @enderror
             </fieldset>
+
+            <fieldset class="tf-field">
+                <label for="question-captcha" class="tf-lable cl-text-main">
+                    {{ __('Код с картинки') }}<span class="text-primary">*</span>
+                </label>
+                <div class="faq-question-form__captcha">
+                    <div class="faq-question-form__challenge">
+                        <img src="{{ $captchaImageUrl }}" alt="{{ __('Проверочный код') }}" width="345"
+                            height="65">
+                        <button type="button" class="faq-question-form__refresh" wire:click="refreshCaptcha"
+                            wire:loading.attr="disabled" wire:target="refreshCaptcha, submit">
+                            {{ __('Обновить код') }}
+                        </button>
+                    </div>
+
+                    <input type="text" id="question-captcha" name="captcha" wire:model="captcha"
+                        placeholder="{{ __('Введите код') }}" autocomplete="off" autocapitalize="off"
+                        spellcheck="false" maxlength="16" required @class(['is-invalid' => $errors->has('captcha')])>
+                </div>
+                @error('captcha')
+                    <span class="invalid-feedback d-block">{{ $message }}</span>
+                @enderror
+            </fieldset>
         </div>
 
         <div class="btn-wrap">
             <button type="submit" class="tf-btn-text-icon fw-semibold animate-btn animate-dark"
-                wire:loading.attr="disabled" wire:target="submit">
+                wire:loading.attr="disabled" wire:target="submit, refreshCaptcha">
                 <span wire:loading.remove wire:target="submit">{{ __('Отправить вопрос') }}</span>
                 <span wire:loading wire:target="submit">{{ __('Отправка...') }}</span>
                 <span class="ic-wrap" aria-hidden="true">

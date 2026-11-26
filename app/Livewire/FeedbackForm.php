@@ -9,6 +9,7 @@ use App\Notifications\FeedbackNotification;
 use App\Rules\PhoneNumber;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Notification;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 final class FeedbackForm extends Component
@@ -19,9 +20,37 @@ final class FeedbackForm extends Component
 
     public string $message = '';
 
+    public string $captcha = '';
+
+    #[Locked]
+    public string $captchaImageUrl;
+
+    public function mount(): void
+    {
+        $this->refreshCaptcha();
+    }
+
+    public function refreshCaptcha(): void
+    {
+        $this->captchaImageUrl = captcha_src();
+        $this->reset('captcha');
+        $this->resetValidation('captcha');
+    }
+
     public function submit(): void
     {
         $validated = $this->validate();
+
+        try {
+            $this->validate(
+                ['captcha' => ['bail', 'required', 'string', 'max:16', 'captcha']],
+                ['captcha.captcha' => __('Код неверный или устарел. Введите новый код с картинки.')],
+                ['captcha' => __('код с картинки')],
+            );
+        } finally {
+            $this->refreshCaptcha();
+        }
+
         $adminEmail = Setting::cached()?->admin_email;
 
         if (blank($adminEmail)) {

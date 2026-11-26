@@ -7629,6 +7629,39 @@ select.select-2 {
 .faq-question-form {
     background-color: var(--white);
 }
+.faq-question-form__captcha {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 12px;
+}
+.faq-question-form__challenge {
+    display: grid;
+    justify-items: start;
+    gap: 4px;
+    max-width: 100%;
+}
+.faq-question-form__challenge img {
+    display: block;
+    width: 220px;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+.faq-question-form__captcha input {
+    flex: 1 1 160px;
+    min-width: 0;
+}
+.faq-question-form__refresh {
+    color: var(--text-secondary);
+    font-size: 14px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+.faq-question-form__refresh:hover {
+    color: var(--text-black);
+}
 .app-toast {
     color: var(--text-white);
     background-color: var(--primary);

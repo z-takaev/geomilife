@@ -14,10 +14,14 @@ it('отправляет вопрос администратору и очища
     Notification::fake();
     Setting::query()->create(['admin_email' => 'admin@example.com']);
 
+    config(['captcha.characters' => ['A']]);
+    $this->get('/captcha/default')->assertOk();
+
     Livewire::test(FeedbackForm::class)
         ->set('name', 'Иван')
         ->set('phone', '+7 (999) 123-45-67')
         ->set('message', 'Когда доставят заказ?')
+        ->set('captcha', 'AAAAAA')
         ->call('submit')
         ->assertHasNoErrors()
         ->assertSet('name', '')
@@ -63,10 +67,14 @@ it('проверяет обязательные поля и формат тел�
 it('не отправляет вопрос без адреса администратора', function (): void {
     Notification::fake();
 
+    config(['captcha.characters' => ['A']]);
+    $this->get('/captcha/default')->assertOk();
+
     Livewire::test(FeedbackForm::class)
         ->set('name', 'Иван')
         ->set('phone', '+7 (999) 123-45-67')
         ->set('message', 'Вопрос')
+        ->set('captcha', 'AAAAAA')
         ->call('submit')
         ->assertHasErrors('message')
         ->assertSee('Не удалось отправить вопрос. Попробуйте позже.')
@@ -74,5 +82,41 @@ it('не отправляет вопрос без адреса админист�
         ->assertSet('phone', '+7 (999) 123-45-67')
         ->assertSet('message', 'Вопрос');
 
+    Notification::assertNothingSent();
+});
+
+it('не отправляет вопрос без кода с картинки', function (): void {
+    Notification::fake();
+    Setting::query()->create(['admin_email' => 'admin@example.com']);
+
+    Livewire::test(FeedbackForm::class)
+        ->set('name', 'Иван')
+        ->set('phone', '+7 (999) 123-45-67')
+        ->set('message', 'Вопрос')
+        ->call('submit')
+        ->assertHasErrors(['captcha' => 'required']);
+
+    Notification::assertNothingSent();
+});
+
+it('отклоняет неверный код и обновляет картинку, сохраняя вопрос', function (): void {
+    Notification::fake();
+    Setting::query()->create(['admin_email' => 'admin@example.com']);
+    config(['captcha.characters' => ['A']]);
+    $this->get('/captcha/default')->assertOk();
+
+    $form = Livewire::test(FeedbackForm::class)
+        ->set('name', 'Иван')
+        ->set('phone', '+7 (999) 123-45-67')
+        ->set('message', 'Вопрос')
+        ->set('captcha', 'BBBBBB');
+    $initialImageUrl = $form->get('captchaImageUrl');
+
+    $form->call('submit')
+        ->assertHasErrors(['captcha' => 'captcha'])
+        ->assertSet('captcha', '')
+        ->assertSet('message', 'Вопрос');
+
+    expect($form->get('captchaImageUrl'))->not->toBe($initialImageUrl);
     Notification::assertNothingSent();
 });
