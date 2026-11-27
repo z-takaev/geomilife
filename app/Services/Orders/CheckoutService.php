@@ -190,7 +190,9 @@ final class CheckoutService
 
                 $this->cart->removeOrderedItems($this->itemQuantities($calculation->items));
 
-                $this->notifications->queue($order, 'CREATED', 'created:'.$order->id);
+                if (! $order->payment_method->isOnline()) {
+                    $this->notifications->queue($order, 'CREATED', 'created:'.$order->id);
+                }
 
                 return $order;
             });

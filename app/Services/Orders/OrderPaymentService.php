@@ -231,6 +231,15 @@ final class OrderPaymentService
 
         $order->update(['payment_status' => $nextStatus]);
 
+        if ($order->payment_method->isOnline() && ! $order->status->isCancelled()
+            && $nextStatus->isPaid() && ! $previousStatus->isPaid()) {
+            $this->notifications->queue(
+                $order->fresh(),
+                OrderNotificationEventEnum::CREATED->value,
+                'created:'.$order->id,
+            );
+        }
+
         if ($nextStatus->isRefunded() && ! $previousStatus->is($nextStatus)) {
             $this->notifications->queue(
                 $order->fresh(),

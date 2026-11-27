@@ -2,10 +2,16 @@
 
 declare(strict_types=1);
 
+use App\Enums\Orders\OrderNotificationAudienceEnum;
+use App\Enums\Orders\OrderNotificationEventEnum;
 use App\Enums\Orders\PaymentMethodEnum;
+use App\Models\Setting;
+use App\Notifications\Channels\TelegramChannel;
+use App\Notifications\Orders\OrderUpdateNotification;
 use App\Services\Orders\OrderPaymentService;
 use App\Services\Tbank\Exceptions\TbankApiException;
 use Illuminate\Http\Client\Request;
+use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
@@ -21,6 +27,7 @@ beforeEach(function (): void {
     Http::preventStrayRequests();
     Mail::fake();
     Notification::fake();
+    config(['telegram.manager_chat_id' => '-1001234567890']);
     $this->freezeSecond();
 });
 
@@ -118,7 +125,11 @@ it('подтверждённый вебхук обновляет оплату о
         ->and(PaymentFixtures::value($payment->fresh()->status))->toBe('PAID')
         ->and($order->payments()->count())->toBe(1)
         ->and(PaymentFixtures::value($order->fresh()->status))->toBe('NEW');
-    Notification::assertNothingSent();
+    Notification::assertSentOnDemandTimes(OrderUpdateNotification::class, 2);
+    Notification::assertSentOnDemand(
+        OrderUpdateNotification::class,
+        fn (OrderUpdateNotification $notification): bool => $notification->event === OrderNotificationEventEnum::CREATED,
+    );
     Http::assertNotSent(fn (Request $request): bool => str_contains($request->url(), 'cdek'));
 });
 
@@ -129,6 +140,7 @@ it('авторизация не считается окончательной о
     $this->postJson(route('tbank.webhook'), PaymentFixtures::notification($payment, 'AUTHORIZED'))->assertOk();
 
     expect(PaymentFixtures::value($order->fresh()->payment_status))->toBe('AUTHORIZED');
+    Notification::assertNothingSent();
 });
 
 it('вебхук с чужой суммой или заказом не подтверждает оплату', function (array $overrides): void {
@@ -200,6 +212,7 @@ it('позднюю оплату отменённого заказа возвра
 
     expect(PaymentFixtures::value($order->fresh()->status))->toBe('CANCELLED')
         ->and(PaymentFixtures::value($order->fresh()->payment_status))->toBe('REFUNDED');
+    $this->assertDatabaseMissing('order_notification_events', ['order_id' => $order->id, 'event' => 'CREATED']);
     expect(Http::recorded(fn (Request $request): bool => str_ends_with($request->url(), '/Cancel')))->toHaveCount(1);
     Http::assertSent(fn (Request $request): bool => str_ends_with($request->url(), '/Cancel')
         && $request['Amount'] === 135000 && ! array_key_exists('Receipt', $request->data()));
@@ -252,4 +265,33 @@ it('после таймаута инициализации восстанавл�
         ->and($order->payments()->count())->toBe(1);
     Http::assertSent(fn (Request $request): bool => str_ends_with($request->url(), '/CheckOrder'));
     Http::assertNotSent(fn (Request $request): bool => str_ends_with($request->url(), '/Init'));
+});
+
+it('уведомляет о новом заказе после восстановления оплаты сверкой только один раз', function (): void {
+    $order = PaymentFixtures::order();
+    $order->user->update(['telegram_chat_id' => '1234567', 'telegram_notifications_enabled' => true]);
+    Setting::query()->create(['admin_email' => 'admin@example.test']);
+    $payment = PaymentFixtures::payment($order);
+    Http::fake(['bank.test/v2/GetState' => Http::response(PaymentFixtures::state($payment, 'CONFIRMED'))]);
+
+    app(OrderPaymentService::class)->syncPayment($payment);
+    app(OrderPaymentService::class)->syncPayment($payment);
+    $this->postJson(route('tbank.webhook'), PaymentFixtures::notification($payment, 'CONFIRMED'))->assertOk();
+
+    Notification::assertSentOnDemandTimes(OrderUpdateNotification::class, 2);
+    foreach ([
+        [OrderNotificationAudienceEnum::BUYER, $order->customer_email, '1234567'],
+        [OrderNotificationAudienceEnum::MANAGER, 'admin@example.test', '-1001234567890'],
+    ] as [$audience, $email, $chatId]) {
+        Notification::assertSentOnDemand(
+            OrderUpdateNotification::class,
+            fn (OrderUpdateNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notification->audience === $audience
+                && $notifiable->routes['mail'] === $email
+                && $notifiable->routes['telegram'] === $chatId
+                && in_array('mail', $channels, true)
+                && in_array(TelegramChannel::class, $channels, true),
+        );
+    }
+    $this->assertDatabaseHas('order_notification_events', ['order_id' => $order->id, 'event' => 'CREATED']);
+    $this->assertDatabaseCount('order_notification_events', 1);
 });

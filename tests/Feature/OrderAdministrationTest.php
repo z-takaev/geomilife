@@ -229,3 +229,41 @@ it('запрещает владельцу заказа и гостю прямо�
     $this->actingAs($user)->getJson(route($route, $order))->assertUnauthorized();
     Http::assertNothingSent();
 })->with(['admin.orders.packing-slip', 'admin.orders.cdek-waybill', 'admin.orders.cdek-barcodes']);
+
+it('показывает неоплаченные онлайн заказы только в отдельной вкладке', function (string $status): void {
+    $this->actingAs(fulfillmentEmployee(), 'filament');
+    $unpaid = fulfillmentOrder(['payment_status' => $status]);
+    $paid = fulfillmentOrder();
+    $pickup = fulfillmentOrder(['payment_method' => 'PICKUP', 'payment_status' => 'UNPAID']);
+    $refunded = fulfillmentOrder(['payment_status' => 'REFUNDED']);
+    $refunding = fulfillmentOrder(['payment_status' => 'REFUND_PENDING']);
+    $refundFailed = fulfillmentOrder(['payment_status' => 'REFUND_FAILED']);
+
+    Livewire::test(ListOrders::class)
+        ->assertSee('Неоплаченные онлайн заказы')
+        ->assertCanSeeTableRecords([$paid, $pickup, $refunded, $refunding, $refundFailed])
+        ->assertCanNotSeeTableRecords([$unpaid])
+        ->set('activeTab', 'unpaid_online')
+        ->assertCanSeeTableRecords([$unpaid])
+        ->assertCanNotSeeTableRecords([$paid, $pickup, $refunded, $refunding, $refundFailed]);
+})->with(['UNPAID', 'PENDING', 'AUTHORIZED', 'FAILED', 'CANCELLED']);
+
+it('экспортирует только заказы выбранной вкладки', function (string $tab, string $status): void {
+    $this->actingAs(fulfillmentEmployee(), 'filament');
+    $paid = fulfillmentOrder();
+    $unpaid = fulfillmentOrder(['payment_status' => 'PENDING']);
+
+    $component = Livewire::test(ListOrders::class)
+        ->set('activeTab', $tab)
+        ->callAction('exportExcel')
+        ->assertFileDownloaded();
+
+    $spreadsheet = fulfillmentSpreadsheet(base64_decode($component->effects['download']['content'], true));
+    try {
+        $sheet = $spreadsheet->getActiveSheet();
+        expect($sheet->getHighestDataRow())->toBe(2)
+            ->and($sheet->getCell('A2')->getValue())->toBe($status === 'PAID' ? $paid->number : $unpaid->number);
+    } finally {
+        $spreadsheet->disconnectWorksheets();
+    }
+})->with([['main', 'PAID'], ['unpaid_online', 'PENDING']]);

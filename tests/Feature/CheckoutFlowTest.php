@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\Orders\PaymentMethodEnum;
 use App\Livewire\Checkout;
 use App\Models\Order;
+use App\Notifications\Orders\OrderUpdateNotification;
 use App\Services\Cart\CartService;
 use App\Support\Phone\PhoneFormat;
 use App\Support\Values\Money;
@@ -393,3 +394,19 @@ it('при ошибке оплаты гостю не предлагают нед
         ->assertDontSee('Повторите оплату на странице заказа.');
     $this->assertDatabaseCount('orders', 1);
 });
+
+it('откладывает уведомления онлайн заказа до оплаты и сразу уведомляет при получении', function (string $method, int $events): void {
+    $city = CheckoutFixtures::city();
+    app(CartService::class)->add(CheckoutFixtures::variant()->id, 1);
+
+    CheckoutFixtures::form($city, ['payment_method' => $method])
+        ->call('placeOrder')->assertHasNoErrors();
+
+    $order = Order::query()->sole();
+    $this->assertDatabaseCount('order_notification_events', $events);
+    if ($events === 0) {
+        Notification::assertNothingSent();
+    } else {
+        Notification::assertSentOnDemand(OrderUpdateNotification::class);
+    }
+})->with([['ONLINE', 0], ['PICKUP', 1]]);
