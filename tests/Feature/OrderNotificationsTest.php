@@ -110,6 +110,38 @@ it('уведомляет менеджеров о новом заказе и не
     );
 });
 
+it('отображает письмо о новом заказе администратору отдельными строками без приветствия', function (): void {
+    $order = notificationOrder();
+    $order->update(['customer_name' => 'Покупатель <script>alert(1)</script>']);
+    $mail = (new OrderUpdateNotification($order, OrderNotificationEventEnum::CREATED, OrderNotificationAudienceEnum::MANAGER))
+        ->toMail(new AnonymousNotifiable);
+    $html = (string) $mail->render();
+    $plain = (string) app(Markdown::class)->renderText($mail->markdown, $mail->data());
+
+    foreach ([$html, $plain] as $body) {
+        expect($body)->toContain(
+            "Новый заказ №{$order->number}",
+            'Покупатель:',
+            'Телефон:',
+            $order->customer_phone,
+            $order->customer_email,
+            $order->delivery_method->getLabel(),
+            $order->payment_method->getLabel(),
+            $order->total->format(),
+            'Открыть заказ',
+            $mail->actionUrl,
+        )->not->toContain('Здравствуйте', 'Hello!', '<script>', '<pre');
+    }
+
+    $document = new DOMDocument;
+    @$document->loadHTML('<?xml encoding="utf-8" ?>'.$html);
+    $xpath = new DOMXPath($document);
+
+    foreach (['Покупатель:', 'Телефон:', 'Email:', 'Получение:', 'Оплата:', 'Сумма:'] as $label) {
+        expect($xpath->query('//p[starts-with(normalize-space(.), "'.$label.'")]')->length)->toBe(1);
+    }
+});
+
 it('не создаёт повторных уведомлений при повторной обработке одного бизнес-события', function (): void {
     $order = notificationOrder();
     $service = app(OrderNotificationService::class);
