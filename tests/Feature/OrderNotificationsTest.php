@@ -40,6 +40,31 @@ beforeEach(function (): void {
     config(['telegram.manager_chat_id' => '-1001234567890']);
 });
 
+it('использует единую тему писем покупателю для всех событий одного заказа', function (): void {
+    $order = notificationOrder();
+
+    foreach (OrderNotificationEventEnum::cases() as $event) {
+        if (! $event->isForBuyer()) {
+            continue;
+        }
+
+        $mail = (new OrderUpdateNotification($order, $event))->toMail(new AnonymousNotifiable);
+
+        expect($mail->subject)->toBe("GeoMiLife — заказ №{$order->number}");
+    }
+});
+
+it('использует разные темы писем покупателю для разных заказов', function (): void {
+    $firstOrder = notificationOrder();
+    $secondOrder = notificationOrder();
+    $firstMail = (new OrderUpdateNotification($firstOrder, OrderNotificationEventEnum::CREATED))->toMail(new AnonymousNotifiable);
+    $secondMail = (new OrderUpdateNotification($secondOrder, OrderNotificationEventEnum::CREATED))->toMail(new AnonymousNotifiable);
+
+    expect($firstMail->subject)->toBe("GeoMiLife — заказ №{$firstOrder->number}")
+        ->and($secondMail->subject)->toBe("GeoMiLife — заказ №{$secondOrder->number}")
+        ->not->toBe($firstMail->subject);
+});
+
 it('направляет уведомление на email получателя из снимка заказа, а не текущего профиля', function (): void {
     $user = User::query()->create([
         'first_name' => 'Владелец', 'email' => 'profile@example.test', 'password' => 'password',

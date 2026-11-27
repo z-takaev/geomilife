@@ -51,11 +51,11 @@ it('показывает кнопку добавления с новым наз�
     ]))->toContain('В корзину')->not->toContain('>Купить<');
 });
 
-it('ограничивает заголовки карточек новостей и статей двумя строками', function (): void {
+it('выводит заголовки карточек новостей и статей с соответствующими стилями', function (): void {
     expect(Blade::render('<x-news.card date="15 ноября" description="Описание" image="/news.jpg" title="Новость" />'))
         ->toContain('text-primary font-sora text-line-clamp-2')
         ->and(Blade::render('<x-articles.card image="/article.jpg" title="Статья" />'))
-        ->toContain('cl-text-main link-underline text-line-clamp-2');
+        ->toContain('<h2 class="article-list-title h5">Статья</h2>');
 });
 
 it('выводит категории общим компонентом списка', function (): void {

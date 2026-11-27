@@ -60,7 +60,7 @@ final class OrderUpdateNotification extends Notification implements ShouldQueue
             $this->order->loadMissing('items');
 
             $mail = (new MailMessage)
-                ->subject(__('Заказ №:number принят', ['number' => $this->order->number]));
+                ->subject($this->mailSubject());
 
             if ($this->order->user_id !== null) {
                 $mail->action(__('Открыть заказ'), route('orders.show', $this->order));
@@ -144,11 +144,7 @@ final class OrderUpdateNotification extends Notification implements ShouldQueue
 
     private function mailSubject(): string
     {
-        return match ($this->event) {
-            OrderNotificationEventEnum::CANCELLED => __('Заказ №:number отменён', ['number' => $this->order->number]),
-            OrderNotificationEventEnum::REFUNDED => __('Возврат оплаты по заказу №:number', ['number' => $this->order->number]),
-            default => __('Статус заказа №:number изменён', ['number' => $this->order->number]),
-        };
+        return __('GeoMiLife — заказ №:number', ['number' => $this->order->number]);
     }
 
     private function managerTelegramMessage(): string

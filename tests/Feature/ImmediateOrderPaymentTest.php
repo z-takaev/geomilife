@@ -61,12 +61,13 @@ it('при повторной отправке оформления не отк�
     Http::assertSentCount(1);
 });
 
-it('предлагает онлайн оплату только сразу при оформлении', function (): void {
+it('показывает оплату картой на защищённой странице банка при оформлении', function (): void {
     $city = CheckoutFixtures::city();
     app(CartService::class)->add(CheckoutFixtures::variant()->id, 1);
 
     CheckoutFixtures::form($city, ['payment_method' => PaymentMethodEnum::ONLINE->value])
-        ->assertSee('Оплата сразу при оформлении')
+        ->assertSee('Картой онлайн')
+        ->assertSee('На защищённой странице Т-Банка.')
         ->assertDontSee('Оплатите в течение часа');
 });
 
