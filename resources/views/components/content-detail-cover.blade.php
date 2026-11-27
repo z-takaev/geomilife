@@ -6,6 +6,8 @@
         <span>{{ $expires ? __('Акция действует до :date', ['date' => $date->translatedFormat('j F Y')]) : $date->translatedFormat('j F Y') }}</span>
     </time>
 
+    <h1 class="content-detail-title font-sora">{{ $title }}</h1>
+
     <div class="content-detail-main-image">
         <img loading="lazy" src="{{ $image }}" alt="{{ $title }}">
     </div>

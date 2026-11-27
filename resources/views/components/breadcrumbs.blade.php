@@ -1,4 +1,4 @@
-@props(['title', 'breadcrumbs'])
+@props(['title' => null, 'breadcrumbs'])
 
 <section {{ $attributes->class(['s-page-title', 'inner-page-title']) }}>
     <div class="container">
@@ -26,6 +26,8 @@
             </ol>
         </nav>
 
-        <h1 class="page-title font-sora">{{ $title }}</h1>
+        @if ($title)
+            <h1 class="page-title font-sora">{{ $title }}</h1>
+        @endif
     </div>
 </section>

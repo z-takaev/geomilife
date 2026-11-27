@@ -1,7 +1,7 @@
 @extends('layouts.base')
 
 @section('content')
-    <x-breadcrumbs :title="$article->title" :breadcrumbs="$breadcrumbs" />
+    <x-breadcrumbs :breadcrumbs="$breadcrumbs" />
 
     <section class="content-detail-section flat-spacing">
         <div class="container">

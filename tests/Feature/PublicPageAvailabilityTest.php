@@ -50,6 +50,30 @@ it('показывает дату над обложкой на детально�
     'акция' => [Promo::class, 'promos.show', 'end_at', 'Акция действует до '],
 ]);
 
+it('показывает единственный заголовок материала после даты вместо блока хлебных крошек', function (string $modelClass, string $routeName): void {
+    $model = $modelClass::factory()->create();
+
+    $response = $this->get(route($routeName, $model))
+        ->assertOk()
+        ->assertSeeInOrder([
+            'class="content-detail-date"',
+            '<h1 class="content-detail-title font-sora">'.e($model->title).'</h1>',
+            'class="content-detail-main-image"',
+        ], false);
+
+    $document = new DOMDocument;
+    @$document->loadHTML('<?xml encoding="UTF-8">'.$response->getContent());
+    $xpath = new DOMXPath($document);
+
+    expect($xpath->query('//h1'))->toHaveCount(1)
+        ->and($xpath->query('//section[contains(@class, "s-page-title")]//h1'))->toHaveCount(0)
+        ->and($xpath->query('//nav[@aria-label="Хлебные крошки"]'))->toHaveCount(1);
+})->with([
+    'новость' => [News::class, 'news.show'],
+    'статья' => [Article::class, 'articles.show'],
+    'акция' => [Promo::class, 'promos.show'],
+]);
+
 it('открывает целевую страницу', function (): void {
     $page = Page::query()->create([
         'key' => 'about',
