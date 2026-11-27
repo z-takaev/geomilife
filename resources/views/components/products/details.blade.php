@@ -25,7 +25,7 @@
             @if ($hasDescription)
                 <div class="tab-pane fade show active" id="{{ $prefix }}-description" role="tabpanel"
                     aria-labelledby="{{ $prefix }}-description-tab" tabindex="0">
-                    <p>{{ $product->description }}</p>
+                    <p class="product-description-text">{{ $product->description }}</p>
                 </div>
             @endif
 

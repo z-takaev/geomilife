@@ -43,11 +43,11 @@ it('не сохраняет адрес из незавершённой или н
     $this->assertDatabaseCount('addresses', 0);
 });
 
-it('подставляет активный адрес и позволяет выбрать другой не меняя активность до заказа', function (): void {
+it('позволяет вручную выбрать адрес не меняя активность до заказа', function (): void {
     $active = $this->user->addresses()->create(CheckoutFixtures::address($this->city, ['house' => '1', 'is_default' => true]));
     $other = $this->user->addresses()->create(CheckoutFixtures::address($this->city, ['house' => '2']));
     app(CartService::class)->add(CheckoutFixtures::variant()->getKey(), 1);
-    Livewire::test(Checkout::class)->set('form.delivery_method', 'COURIER')->assertSet('form.address_id', $active->getKey())
+    Livewire::test(Checkout::class)->set('form.delivery_method', 'COURIER')->assertSet('form.address_id', null)
         ->call('selectAddress', $other->getKey())->assertSet('form.house', '2');
     expect($active->fresh()->is_default)->toBeTrue()->and($other->fresh()->is_default)->toBeFalse();
 });

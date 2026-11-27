@@ -129,7 +129,7 @@ final class CatalogRepository
             CatalogSortEnum::PRICE_ASC => $query->orderBy('catalog_price')->orderBy('products.id'),
             CatalogSortEnum::PRICE_DESC => $query->orderByDesc('catalog_price')->orderByDesc('products.id'),
             CatalogSortEnum::NAME => $query->orderBy('name')->orderBy('products.id'),
-            default => $query->orderBy('products.id'),
+            default => $query->orderByDesc('products.id'),
         };
     }
 }

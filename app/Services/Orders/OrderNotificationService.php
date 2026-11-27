@@ -8,6 +8,7 @@ use App\Enums\Orders\OrderNotificationAudienceEnum;
 use App\Enums\Orders\OrderNotificationEventEnum;
 use App\Models\Order;
 use App\Models\OrderNotificationEvent;
+use App\Models\Setting;
 use App\Notifications\Orders\CdekDeliveryQuoteFailedNotification;
 use App\Notifications\Orders\OrderUpdateNotification;
 use Illuminate\Support\Facades\Cache;
@@ -90,14 +91,21 @@ final class OrderNotificationService
                 }
 
                 $managerChat = config('telegram.manager_chat_id');
+                $adminEmail = $event === OrderNotificationEventEnum::CREATED
+                    ? Setting::cached()?->admin_email
+                    : null;
 
-                if (filled($managerChat) && ($event?->isForManager() ?? false)) {
-                    Notification::route('telegram', (string) $managerChat)
-                        ->notify((new OrderUpdateNotification(
-                            $order,
-                            $event,
-                            OrderNotificationAudienceEnum::MANAGER,
-                        ))->beforeCommit());
+                if (($event?->isForManager() ?? false) && (filled($managerChat) || filled($adminEmail))) {
+                    $recipient = Notification::routes(array_filter([
+                        'telegram' => $managerChat,
+                        'mail' => $adminEmail,
+                    ]));
+
+                    $recipient->notify((new OrderUpdateNotification(
+                        $order,
+                        $event,
+                        OrderNotificationAudienceEnum::MANAGER,
+                    ))->beforeCommit());
                 }
 
                 $eventRecord->update(['dispatched_at' => now()]);

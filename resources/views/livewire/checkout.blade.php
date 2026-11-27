@@ -4,7 +4,14 @@
             <div class="checkout-info" role="status">{{ session('order_message') }}</div>
         @endif
 
-        <form wire:submit="placeOrder" class="checkout-page" novalidate>
+        <form wire:submit="placeOrder" class="checkout-page" novalidate x-data
+            x-on:checkout-validation-failed.window="$nextTick(() => requestAnimationFrame(() => {
+                const field = Array.from($el.querySelectorAll('[aria-invalid=true], .checkout-field-error')).find(el => el.getClientRects().length);
+                if (field) {
+                    field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    field.focus({ preventScroll: true });
+                }
+            }))">
             <div class="checkout-page__main">
                 @guest
                     <div class="checkout-login-note" role="status">
@@ -28,24 +35,6 @@
                         {{ __('Товары в вашем заказе поставляются под заказ. Точные сроки доставки менеджер согласует с вами отдельно.') }}
                     </div>
                 @endif
-                @if ($checkout_attempted && $errors->any())
-                    <div class="checkout-errors" role="alert" tabindex="-1" x-init="$nextTick(() => {
-                        $el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        $el.focus({ preventScroll: true })
-                    })">
-                        <strong>{{ __('Проверьте данные заказа') }}</strong>
-                        <ul>
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                        @if ($errors->has('quoted_total_minor') || $errors->has('quote'))
-                            <button type="button" class="order-text-button"
-                                wire:click="recalculate">{{ __('Пересчитать и подтвердить новый итог') }}</button>
-                        @endif
-                    </div>
-                @endif
-
                 <section class="checkout-section" aria-labelledby="checkout-products-title">
                     <div class="checkout-section__heading checkout-section__heading--products"><span
                             class="checkout-section__number">{{ __('1') }}</span>
@@ -120,9 +109,11 @@
                         <label for="checkout-city">{{ __('Город') }} <span class="checkout-field__required"
                                 aria-hidden="true"></span></label>
                         <div class="checkout-suggestions__input">
-                            <input id="checkout-city" type="text" role="combobox" aria-autocomplete="list"
-                                aria-controls="checkout-city-results" x-bind:aria-expanded="open" x-ref="searchInput"
-                                wire:model="city_search"
+                            <input id="checkout-city"
+                                aria-invalid="{{ $errors->has('form.city_id') ? 'true' : 'false' }}"
+                                aria-describedby="checkout-error-city_id" type="text" role="combobox"
+                                aria-autocomplete="list" aria-controls="checkout-city-results"
+                                x-bind:aria-expanded="open" x-ref="searchInput" wire:model="city_search"
                                 x-on:input.debounce.300ms="if (Array.from($event.target.value.trim()).length >= {{ (int) config('cities.search_min_length') }}) $wire.$commit()"
                                 x-on:focus="show()" x-on:input="show()" x-on:click="show()"
                                 x-on:keydown.enter.prevent placeholder="{{ __('Начните вводить город') }}"
@@ -145,14 +136,16 @@
                             </ul>
                         </div>
                         @error('form.city_id')
-                            <small class="checkout-field-error">{{ $message }}</small>
+                            <small id="checkout-error-city_id" class="checkout-field-error">{{ $message }}</small>
                         @enderror
                     </fieldset>
                     <div class="checkout-delivery-options">
                         @foreach ($availableDeliveryMethods as $value => $label)
                             <label class="checkout-delivery-option"><input type="radio"
-                                    wire:model.live="form.delivery_method" value="{{ $value }}"><span
-                                    class="checkout-delivery-option__content"><span
+                                    wire:model.live="form.delivery_method"
+                                    aria-invalid="{{ $errors->has('form.delivery_method') ? 'true' : 'false' }}"
+                                    aria-describedby="checkout-error-delivery_method"
+                                    value="{{ $value }}"><span class="checkout-delivery-option__content"><span
                                         class="checkout-delivery-option__icon" aria-hidden="true"><i
                                             class="icon {{ $value === 'PICKUP' ? 'icon-Storefront' : ($value === 'COURIER' ? 'icon-Truck' : 'icon-package') }}"></i></span><span
                                         class="checkout-delivery-option__body"><strong>{{ $label }}</strong><small>{{ $value === 'PICKUP' ? __('Бесплатно') : ($value === 'COURIER' ? __('Время согласует менеджер') : __('В пункт выдачи')) }}</small></span><span
@@ -160,6 +153,10 @@
                                         aria-hidden="true"></span></span></label>
                         @endforeach
                     </div>
+                    @error('form.delivery_method')
+                        <small id="checkout-error-delivery_method" class="checkout-field-error"
+                            tabindex="-1">{{ $message }}</small>
+                    @enderror
 
                     @if ($city && $form->delivery_method !== '')
                         <div class="checkout-address checkout-delivery-details"
@@ -177,6 +174,7 @@
                                     <h5>{{ __('Адрес доставки') }}</h5>
                                 </div>
                                 @if ($addresses->isNotEmpty())
+                                    <strong>{{ __('Ваши сохранённые адреса') }}</strong>
                                     <div class="checkout-saved-options">
                                         @foreach ($addresses as $address)
                                             <button type="button"
@@ -189,6 +187,9 @@
                                             wire:click="clearAddress">{{ __('Новый адрес') }}</button>
                                     </div>
                                 @endif
+                                @error('form.address_id')
+                                    <small class="checkout-field-error" tabindex="-1">{{ $message }}</small>
+                                @enderror
                                 <div class="checkout-form-grid">
                                     <x-checkout.input name="street" :label="__('Улица')" :required="true"
                                         container-class="checkout-field--wide" wire:model.blur="form.street" />
@@ -231,9 +232,8 @@
                                 @if ($savedPoints->isNotEmpty())
                                     <div class="checkout-saved-points" x-data="{ scroll(direction) { this.$refs.points.scrollBy({ left: direction * this.$refs.points.clientWidth, behavior: 'smooth' }) } }">
                                         <div class="checkout-saved-points__heading">
-                                            <strong>{{ __('Ваши пункты получения') }}</strong>
-                                            <button type="button" class="order-text-button"
-                                                wire:click="chooseAnotherDeliveryPoint">{{ __('Выбрать другой') }}</button>
+                                            <strong>{{ __('Ваши сохранённые пункты получения') }}</strong>
+
                                         </div>
                                         <div @class([
                                             'checkout-saved-points__slider',
@@ -273,9 +273,12 @@
                                         x-on:keydown.arrow-up.prevent="move($event, -1)">
                                         <label for="checkout-point-search">{{ __('Поиск пункта СДЭК') }}</label>
                                         <div class="checkout-suggestions__input">
-                                            <input id="checkout-point-search" type="text" role="combobox"
-                                                aria-autocomplete="list" aria-controls="checkout-point-results"
-                                                x-bind:aria-expanded="open" x-ref="searchInput"
+                                            <input id="checkout-point-search"
+                                                aria-invalid="{{ $errors->has('form.delivery_point_code') ? 'true' : 'false' }}"
+                                                aria-describedby="checkout-error-delivery_point_code" type="text"
+                                                role="combobox" aria-autocomplete="list"
+                                                aria-controls="checkout-point-results" x-bind:aria-expanded="open"
+                                                x-ref="searchInput"
                                                 wire:model.live.debounce.300ms="delivery_point_search"
                                                 autocomplete="off" maxlength="255" x-on:input="show()"
                                                 x-on:focus="show()" x-on:click="show()" x-on:keydown.enter.prevent
@@ -295,7 +298,7 @@
                                                     </li>
                                                 @empty
                                                     <li class="checkout-suggestions__empty">
-                                                        {{ __('Подходящих пунктов не найдено. Измените поиск или повторите расчёт.') }}
+                                                        {{ __('Подходящих пунктов не найдено. Измените поиск.') }}
                                                     </li>
                                                 @endforelse
                                             </ul>
@@ -303,7 +306,9 @@
                                     </fieldset>
                                 @endif
                                 @if ($selectedDeliveryPoint)
-                                    <div class="checkout-info checkout-selected-point" role="status">
+                                    <div class="checkout-info checkout-selected-point" role="status"
+                                        aria-invalid="{{ $errors->has('form.delivery_point_code') ? 'true' : 'false' }}"
+                                        aria-describedby="checkout-error-delivery_point_code" tabindex="-1">
                                         <button type="button"
                                             class="order-text-button checkout-selected-point__change"
                                             wire:click="clearDeliveryPoint">{{ __('Изменить') }}</button>
@@ -311,15 +316,22 @@
                                         <p>{{ $selectedDeliveryPoint['address'] }}</p>
                                     </div>
                                 @endif
-                                <button type="button" class="order-text-button" wire:click="recalculate"
-                                    wire:loading.attr="disabled">{{ __('Повторить расчёт') }}</button>
+
                             @endif
                         </div>
                     @endif
+                    @error('form.delivery_point_code')
+                        <small id="checkout-error-delivery_point_code" class="checkout-field-error"
+                            tabindex="-1">{{ $message }}</small>
+                    @enderror
                     <fieldset class="checkout-field checkout-field--comment"><label
                             for="checkout-comment">{{ __('Комментарий к заказу') }}</label>
-                        <textarea id="checkout-comment" wire:model.blur="form.comment"
+                        <textarea id="checkout-comment" aria-invalid="{{ $errors->has('form.comment') ? 'true' : 'false' }}"
+                            aria-describedby="checkout-error-comment" wire:model.blur="form.comment"
                             placeholder="{{ __('Например, позвонить перед доставкой') }}"></textarea>
+                        @error('form.comment')
+                            <small id="checkout-error-comment" class="checkout-field-error">{{ $message }}</small>
+                        @enderror
                     </fieldset>
                 </section>
 
@@ -334,17 +346,25 @@
                     <div class="checkout-payment-options">
                         <label class="checkout-payment-option"><input type="radio"
                                 wire:model.live="form.payment_method"
+                                aria-invalid="{{ $errors->has('form.payment_method') ? 'true' : 'false' }}"
+                                aria-describedby="checkout-error-payment_method"
                                 value="{{ \App\Enums\Orders\PaymentMethodEnum::ONLINE->value }}"><span
                                 class="checkout-payment-option__check"
                                 aria-hidden="true"></span><span><strong>{{ \App\Enums\Orders\PaymentMethodEnum::ONLINE->getLabel() }}</strong><small>{{ __('На защищённой странице Т-Банка.') }}</small></span></label>
                         @if ($form->delivery_method === \App\Enums\Orders\DeliveryMethodEnum::PICKUP->value)
                             <label class="checkout-payment-option"><input type="radio"
                                     wire:model.live="form.payment_method"
+                                    aria-invalid="{{ $errors->has('form.payment_method') ? 'true' : 'false' }}"
+                                    aria-describedby="checkout-error-payment_method"
                                     value="{{ \App\Enums\Orders\PaymentMethodEnum::PICKUP->value }}"><span
                                     class="checkout-payment-option__check"
                                     aria-hidden="true"></span><span><strong>{{ \App\Enums\Orders\PaymentMethodEnum::PICKUP->getLabel() }}</strong><small>{{ __('Оплата в точке самовывоза') }}</small></span></label>
                         @endif
                     </div>
+                    @error('form.payment_method')
+                        <small id="checkout-error-payment_method" class="checkout-field-error"
+                            tabindex="-1">{{ $message }}</small>
+                    @enderror
                 </section>
             </div>
 
@@ -370,10 +390,20 @@
                 </div>
                 @if ($privacyPolicyUrl)
                     <label class="checkout-agreement"><input type="checkbox" wire:model="form.agreement"
-                            class="tf-check style-4 radius-3" required><span>{{ __('Соглашаюсь с') }} <a
-                                href="{{ $privacyPolicyUrl }}" target="_blank"
+                            aria-invalid="{{ $errors->has('form.agreement') ? 'true' : 'false' }}"
+                            aria-describedby="checkout-error-agreement" class="tf-check style-4 radius-3"
+                            required><span>{{ __('Соглашаюсь с') }} <a href="{{ $privacyPolicyUrl }}"
+                                target="_blank"
                                 rel="noopener">{{ __('политикой обработки персональных данных') }}</a></span></label>
                 @endif
+                @error('form.agreement')
+                    <small id="checkout-error-agreement" class="checkout-field-error">{{ $message }}</small>
+                @enderror
+                @foreach (['cart', 'quote', 'quoted_total_minor', 'idempotency_key'] as $errorKey)
+                    @error($errorKey)
+                        <div class="checkout-field-error" role="alert" tabindex="-1">{{ $message }}</div>
+                    @enderror
+                @endforeach
                 <button type="submit" class="tf-btn animate-btn w-100 checkout-summary__submit"
                     wire:loading.attr="disabled"><span wire:loading.remove
                         wire:target="placeOrder">{{ __('Оформить заказ') }}</span><span wire:loading

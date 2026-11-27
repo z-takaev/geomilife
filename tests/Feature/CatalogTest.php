@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
+use App\DTO\Products\CatalogFiltersDto;
 use App\Enums\Products\ProductUnitEnum;
 use App\Livewire\CatalogProducts;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductAttribute;
 use App\Models\ProductVariant;
+use App\Repositories\Products\CatalogRepository;
 use App\Repositories\Products\ProductRepository;
 use App\Support\Values\Money;
 use Illuminate\Support\Facades\DB;
@@ -224,12 +226,13 @@ it('догружает товары без дублей и сбрасывает 
     for ($index = 1; $index <= 5; $index++) {
         $ids[] = createCatalogProduct($category, 'Товар '.$index, 'product-'.$index, 100 * $index)->id;
     }
+    $ids = array_reverse($ids);
     Livewire::test(CatalogProducts::class)->assertViewHas('products', fn ($products): bool => $products->count() === 2)
         ->call('loadMore')->assertViewHas('products', fn ($products): bool => $products->pluck('id')->all() === array_slice($ids, 0, 4))
         ->call('loadMore')->assertViewHas('products', fn ($products): bool => $products->pluck('id')->all() === $ids)
         ->assertViewHas('hasMoreProducts', false)
         ->set('form.priceFrom', '400')->call('applyFilters')->assertSet('additionalPages', 0)
-        ->assertViewHas('products', fn ($products): bool => $products->pluck('id')->all() === array_slice($ids, 3));
+        ->assertViewHas('products', fn ($products): bool => $products->pluck('id')->all() === array_slice($ids, 0, 2));
 });
 
 it('выбирает безопасную фасовку при чужом или отключенном идентификаторе', function (string $selection): void {
@@ -268,4 +271,19 @@ it('восстанавливает черновик фильтров из URL и
         ->assertSet('appliedFilters.priceFrom', '300')
         ->set('appliedFilters.priceFrom', '200')
         ->assertSet('form.priceFrom', '200');
+});
+
+it('показывает новый товар первым в каталоге и категории', function (): void {
+    $category = createCatalogCategory('Новинки', 'recent-products');
+    createCatalogProduct($category, 'Старый товар', 'older-product', 500);
+    createCatalogProduct($category, 'Новый товар', 'newer-product', 500);
+
+    $this->get(route('catalog.index'))->assertSeeInOrder(['Новый товар', 'Старый товар']);
+    $products = app(CatalogRepository::class)->getProducts(
+        $category,
+        new CatalogFiltersDto,
+        null,
+        1,
+    );
+    expect($products->first()->name)->toBe('Новый товар');
 });

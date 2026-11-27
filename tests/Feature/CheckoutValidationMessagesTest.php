@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Validator;
 use Livewire\Livewire;
 use Tests\Support\CheckoutFixtures;
 
-it('выводит причину отказа в общем списке ошибок без отдельной подсказки над кнопкой', function (): void {
+it('выводит ошибку под полем города без общего списка', function (): void {
     app(CartService::class)->add(CheckoutFixtures::variant()->id, 1);
     $component = Livewire::test(Checkout::class)->assertDontSee('Выберите город для доставки.')
         ->call('placeOrder')->assertHasErrors(['form.city_id'])->assertSee('Выберите город для доставки.')
@@ -22,10 +22,10 @@ it('выводит причину отказа в общем списке оши
     $document = new DOMDocument;
     @$document->loadHTML('<?xml encoding="utf-8" ?>'.$component->html());
     $xpath = new DOMXPath($document);
-    expect($xpath->query('//div[contains(@class, "checkout-errors")]//li[contains(., "Выберите город для доставки.")]')->length)->toBe(1)
-        ->and($xpath->query('//div[contains(@class, "checkout-errors")][@tabindex="-1"]')->length)->toBe(1)
+    expect($xpath->query('//small[@id="checkout-error-city_id"][contains(., "Выберите город для доставки.")]')->length)->toBe(1)
+        ->and($xpath->query('//div[contains(@class, "checkout-errors")]')->length)->toBe(0)
         ->and($component->html())->toContain("scrollIntoView({ behavior: 'smooth'")
-        ->and($xpath->query('//aside//p[contains(., "Выберите город для доставки.")]')->length)->toBe(0);
+        ->and($xpath->query('//input[@id="checkout-city"][@aria-invalid="true"]')->length)->toBe(1);
 });
 
 it('переводит название каждого поля оформления в сообщениях валидации', function (string $field): void {

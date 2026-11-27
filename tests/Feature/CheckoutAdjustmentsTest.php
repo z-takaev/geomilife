@@ -93,7 +93,7 @@ it('объясняет причину недоступности оформле�
         ->assertSee('В этом городе нет доступных способов доставки.');
 });
 
-it('автоматически выбирает основной ПВЗ другого города и позволяет изменить выбор', function (): void {
+it('использует город профиля и выбирает сохранённый ПВЗ вручную', function (): void {
     $city = CheckoutFixtures::city(['cdek_code' => 44, 'is_cdek_excluded' => false]);
     $user = CheckoutFixtures::user(['city_id' => CheckoutFixtures::city()->id]);
     $this->actingAs($user);
@@ -102,6 +102,8 @@ it('автоматически выбирает основной ПВЗ друг
     ShippingBox::query()->create(['name' => 'Коробка', 'length' => 100, 'width' => 100, 'height' => 100, 'weight' => 10, 'is_active' => true]);
     app(CartService::class)->add(CheckoutFixtures::variant(['weight' => 200, 'length' => 10, 'width' => 10, 'height' => 10])->id, 1);
     Livewire::test(Checkout::class)
+        ->assertSet('form.city_id', $user->city_id)->assertSet('saved_delivery_point_id', null)
+        ->call('selectSavedDeliveryPoint', $point->id)
         ->assertSet('form.city_id', $city->id)->assertSet('saved_delivery_point_id', $point->id)
         ->assertViewHas('selectedDeliveryPoint', fn ($point): bool => $point['code'] === 'MSK100')
         ->assertViewHas('deliveryReady', true)

@@ -198,7 +198,7 @@ final class ProductForm
                                         TextInput::make('value')
                                             ->label('Значение')
                                             ->required()
-                                            ->maxLength(50),
+                                            ->maxLength(255),
                                     ])
                                     ->defaultItems(0)
                                     ->columns(2)

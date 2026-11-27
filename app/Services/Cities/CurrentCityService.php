@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Services\Cities;
 
 use App\Models\City;
-use App\Models\User;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -17,11 +16,16 @@ final class CurrentCityService
     private array $cities = [];
 
     /**
-     * Возвращает выбранный активный город из профиля, сессии или cookie.
+     * Возвращает выбранный активный город из явного выбора, профиля или геолокации.
      */
     public function current(): ?City
     {
-        $cityId = Auth::user()?->city_id ?? session('city.id') ?? request()->cookie('city_id');
+        $rememberedCityId = session('city.id') ?? request()->cookie('city_id');
+        $isSelected = session('city.selected') ?? request()->cookie('city_selected');
+
+        $cityId = $isSelected
+            ? $rememberedCityId
+            : (Auth::user()?->city_id ?? $rememberedCityId);
 
         if ($cityId === null) {
             return null;
@@ -37,7 +41,7 @@ final class CurrentCityService
     }
 
     /**
-     * Сохраняет выбранный активный город в профиле, сессии и cookie.
+     * Сохраняет выбранный активный город в сессии и cookie.
      */
     public function select(int $cityId): City
     {
@@ -45,15 +49,7 @@ final class CurrentCityService
 
         abort_if($city === null, 404);
 
-        /** @var User */
-        $user = Auth::user();
-
-        if ($user !== null) {
-            $user->city()->associate($city);
-            $user->save();
-        }
-
-        $this->remember($city);
+        $this->remember($city, selected: true);
 
         return $city;
     }
@@ -78,9 +74,10 @@ final class CurrentCityService
         return $city;
     }
 
-    private function remember(City $city): void
+    private function remember(City $city, bool $selected = false): void
     {
-        session()->put('city', ['id' => $city->getKey()]);
+        session()->put('city', ['id' => $city->getKey(), 'selected' => $selected]);
+        Cookie::queue(Cookie::forever('city_selected', $selected ? '1' : '0'));
         Cookie::queue(Cookie::forever('city_id', (string) $city->getKey()));
 
         $this->cities[$city->getKey()] = $city;

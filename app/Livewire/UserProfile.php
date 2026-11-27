@@ -8,7 +8,6 @@ use App\Actions\Cities\GetCitySuggestionsAction;
 use App\Livewire\Forms\UserProfileForm;
 use App\Models\City;
 use App\Models\User;
-use App\Services\Cities\CurrentCityService;
 use App\Services\Customers\SavedDeliveryLocationService;
 use App\Services\Telegram\TelegramConnectionService;
 use App\Support\Phone\PhoneFormat;
@@ -67,8 +66,6 @@ final class UserProfile extends Component
         $user->save();
 
         $this->form->phone = PhoneFormat::format((string) $user->phone);
-
-        app(CurrentCityService::class)->select($validated['city_id']);
 
         $this->dispatch('notify', message: __('Данные профиля сохранены.'), type: 'success');
     }

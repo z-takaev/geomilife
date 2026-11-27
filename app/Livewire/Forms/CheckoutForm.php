@@ -56,7 +56,7 @@ final class CheckoutForm extends Form
 
     public string $comment = '';
 
-    public bool $agreement = false;
+    public bool $agreement = true;
 
     public string $delivery_point_code = '';
 

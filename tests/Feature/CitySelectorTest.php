@@ -36,11 +36,11 @@ it('сохраняет определённый по IP город в сесси
     Http::assertSentCount(1);
 });
 
-it('сохраняет выбранный город в аккаунте, сессии и cookie', function (): void {
+it('сохраняет выбранный город в сессии и cookie без изменения аккаунта', function (): void {
     $user = User::query()->create(['first_name' => 'Иван', 'email' => 'buyer@example.com', 'password' => 'Password123']);
     $city = City::query()->create(['cdek_code' => 44, 'name' => 'Москва', 'is_active' => true]);
     Livewire::actingAs($user)->test(CitySelector::class)->call('select', $city->id);
-    expect($user->fresh()->city_id)->toBe($city->id)
+    expect($user->fresh()->city_id)->toBeNull()
         ->and(session('city.id'))->toBe($city->id)
         ->and(Cookie::queued('city_id')->getValue())->toBe((string) $city->id)
         ->and(app(CurrentCityService::class)->current()->id)->toBe($city->id);

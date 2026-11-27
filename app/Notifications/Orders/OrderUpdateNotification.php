@@ -48,6 +48,14 @@ final class OrderUpdateNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
+        if ($this->audience === OrderNotificationAudienceEnum::MANAGER) {
+            return (new MailMessage)
+                ->subject(__('Новый заказ №:number', ['number' => $this->order->number]))
+                ->greeting('')
+                ->line($this->managerTelegramMessage())
+                ->action(__('Открыть заказ'), OrderResource::getUrl('view', ['record' => $this->order], panel: 'admin'));
+        }
+
         if ($this->event === OrderNotificationEventEnum::CREATED && $this->audience === OrderNotificationAudienceEnum::BUYER) {
             $this->order->loadMissing('items');
 

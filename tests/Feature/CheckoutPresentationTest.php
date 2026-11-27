@@ -16,27 +16,27 @@ it('показывает подсказки оформления только п
         ->call('selectCity', $city->id)->assertDontSeeHtml('id="checkout-block-reason"');
 });
 
-it('возвращает город пользователя при выборе другого ПВЗ и не выбирает сохранённый пункт повторно', function (): void {
+it('сохраняет город профиля при выборе города доставки', function (): void {
     $home = CheckoutFixtures::city();
     $other = CheckoutFixtures::city(['name' => 'Другой город']);
     $user = CheckoutFixtures::user(['city_id' => $home->id]);
     $this->actingAs($user);
-    Livewire::test(Checkout::class)->call('selectCity', $other->id)
-        ->call('chooseAnotherDeliveryPoint')->assertSet('form.city_id', $home->id)
-        ->assertSet('city_search', $home->name)->assertSet('form.delivery_point_code', '')
-        ->assertSet('saved_delivery_point_id', null);
+
+    Livewire::test(Checkout::class)->assertSet('form.city_id', $home->id)
+        ->call('selectCity', $other->id)->assertSet('form.city_id', $other->id)
+        ->assertDontSee('Выбрать другой')->assertDontSee('Повторить расчёт');
+
+    expect($user->fresh()->city_id)->toBe($home->id);
 });
 
-it('возвращает определённый системой город гостя при выборе другого ПВЗ', function (): void {
+it('использует город гостя из шапки', function (): void {
     $city = CheckoutFixtures::city();
-    session()->put('city.id', $city->id);
-    Livewire::test(Checkout::class)->call('selectCity', CheckoutFixtures::city()->id)
-        ->call('chooseAnotherDeliveryPoint')->assertSet('form.city_id', $city->id)->assertSet('city_search', $city->name);
+    session()->put('city', ['id' => $city->id, 'selected' => true]);
+    Livewire::test(Checkout::class)->assertSet('form.city_id', $city->id);
 });
 
-it('оставляет выбор города пустым если город пользователя и системы неизвестен', function (): void {
-    Livewire::test(Checkout::class)->call('selectCity', CheckoutFixtures::city()->id)
-        ->call('chooseAnotherDeliveryPoint')->assertSet('form.city_id', null)->assertSet('city_search', '')
+it('оставляет город гостя пустым если город неизвестен', function (): void {
+    Livewire::test(Checkout::class)->assertSet('form.city_id', null)
         ->assertSee('Начните вводить город');
 });
 
